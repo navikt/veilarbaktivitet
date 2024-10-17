@@ -51,7 +51,9 @@ fun JsonNode.deserialiserEksternVarselHendelse(): EksternVarsling {
         EksternVarselStatus.sendt -> {
             when (this["renotifikasjon"].asBoolean()) {
                 true -> Renotifikasjon(varseltype, varselId)
-                else -> Sendt(varseltype, varselId)
+                else -> {
+                    Sendt(varseltype, varselId)
+                }
             }
         }
         EksternVarselStatus.bestilt -> {

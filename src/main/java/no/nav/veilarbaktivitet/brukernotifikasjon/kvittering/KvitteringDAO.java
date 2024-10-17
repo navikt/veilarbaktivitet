@@ -49,8 +49,8 @@ public class KvitteringDAO {
                         " set" +
                         " BEKREFTET_SENDT = CURRENT_TIMESTAMP, " +
                         " VARSEL_KVITTERING_STATUS = :varselKvitteringStatus" +
-                        " where BRUKERNOTIFIKASJON.VARSEL_KVITTERING_STATUS != 'FEILET' " +
-                        " and STATUS != 'AVSLUTTET'" +
+//                        " where BRUKERNOTIFIKASJON.VARSEL_KVITTERING_STATUS != 'FEILET' " +
+                        " where STATUS != 'AVSLUTTET'" +
                         " and BRUKERNOTIFIKASJON_ID = :brukernotifikasjonId"
                 , param
         );

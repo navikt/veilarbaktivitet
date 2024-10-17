@@ -126,7 +126,7 @@ class MoteSmsTest extends SpringBootTestBase {
 
         moteSmsCronjobber();
         // Blir først sendt en oppgave på stilling-fra-nav
-//        brukernotifikasjonAsserts.assertOppgaveSendt(happyBruker.getFnrAsFnr());
+        brukernotifikasjonAsserts.assertOppgaveSendt(happyBruker.getFnrAsFnr());
         // Blir sendt en beskjed på mote
         brukernotifikasjonAsserts.assertBeskjedSendt(happyBruker.getFnrAsFnr());
         brukernotifikasjonAsserts.assertSkalIkkeHaProdusertFlereMeldinger();

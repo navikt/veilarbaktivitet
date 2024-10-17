@@ -68,7 +68,7 @@ open class VarselHendelseConsumer(
                  * (typisk ved at bruker er inne og leser på ditt nav)
                  * før eksternt varsel er sendt ut
                  */
-                kvitteringDAO.setAvsluttetHvisVarselKvitteringStatusErIkkeSatt(varselId)
+//                kvitteringDAO.setAvsluttetHvisVarselKvitteringStatusErIkkeSatt(varselId)
                 kvitteringDAO.setFullfortForGyldige(varselId)
                 log.info(
                     "Brukernotifikasjon fullført for bestillingsId={}",

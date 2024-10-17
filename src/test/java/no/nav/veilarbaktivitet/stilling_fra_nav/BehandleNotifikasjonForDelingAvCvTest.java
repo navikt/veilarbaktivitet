@@ -82,11 +82,11 @@ class BehandleNotifikasjonForDelingAvCvTest extends SpringBootTestBase {
 
 
         //Send meldinger til rekruteringsbistand
-        rekrutteringsbistandConsumer = kafkaTestService.createStringAvroConsumer(utTopic);
         int behandlede = behandleNotifikasjonForDelingAvCvCronService.behandleFerdigstilteNotifikasjoner(500);
         assertThat(behandlede).isEqualTo(2);
 
         // sjekk at vi har sendt melding til rekrutteringsbistand
+        rekrutteringsbistandConsumer = kafkaTestService.createStringAvroConsumer(utTopic);
         ConsumerRecord<String, DelingAvCvRespons> delingAvCvResponsRecord = getSingleRecord(rekrutteringsbistandConsumer, utTopic, DEFAULT_WAIT_TIMEOUT_DURATION);
         assertThat(delingAvCvResponsRecord.value().getBestillingsId()).isEqualTo(utenSvar.getStillingFraNavData().getBestillingsId());
         assertThat(delingAvCvResponsRecord.value().getTilstand()).isEqualTo(TilstandEnum.HAR_VARSLET);
