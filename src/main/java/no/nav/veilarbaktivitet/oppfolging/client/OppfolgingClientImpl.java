@@ -4,11 +4,13 @@ import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.rest.client.RestUtils;
-import no.nav.veilarbaktivitet.arkivering.Maal;
 import no.nav.veilarbaktivitet.oppfolging.periode.GjeldendePeriodeMetrikk;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
-import okhttp3.*;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -114,24 +116,6 @@ public class OppfolgingClientImpl implements OppfolgingClient {
                 return Optional.empty();
             }
             return RestUtils.parseJsonResponse(response, MålDTO.class);
-        } catch (Exception e) {
-            throw internalServerError(e, request.url().toString());
-        }
-    }
-
-    @Override
-    public Optional<List<Maal>> hentMålListe(Person.Fnr fnr) {
-        String uri = String.format("%s/veilarboppfolging/api/oppfolging/malListe?fnr=%s", baseUrl, fnr.get());
-        Request request = new Request.Builder()
-                .url(uri)
-                .get()
-                .build();
-        try (Response response = veilarboppfolgingOnBehalfOfHttpClient.newCall(request).execute()) {
-            RestUtils.throwIfNotSuccessful(response);
-            if (response.code() == HttpStatus.NO_CONTENT.value()) {
-                return Optional.empty();
-            }
-            return RestUtils.parseJsonArrayResponse(response, Maal.class);
         } catch (Exception e) {
             throw internalServerError(e, request.url().toString());
         }

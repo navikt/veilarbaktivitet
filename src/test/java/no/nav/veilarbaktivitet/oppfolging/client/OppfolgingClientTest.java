@@ -1,7 +1,6 @@
 package no.nav.veilarbaktivitet.oppfolging.client;
 
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
-import no.nav.veilarbaktivitet.arkivering.Maal;
 import no.nav.veilarbaktivitet.oppfolging.periode.GjeldendePeriodeMetrikk;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
@@ -13,7 +12,6 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.Mockito;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 

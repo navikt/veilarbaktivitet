@@ -1,6 +1,5 @@
 package no.nav.veilarbaktivitet.oppfolging.client;
 
-import no.nav.veilarbaktivitet.arkivering.Maal;
 import no.nav.veilarbaktivitet.person.Person;
 
 import java.util.List;
@@ -17,6 +16,4 @@ public interface OppfolgingClient {
     Optional<SakDTO> hentSak(UUID oppfolgingsperiodeId);
 
     Optional<MålDTO> hentMål(Person.Fnr fnr);
-
-    Optional<List<Maal>> hentMålListe(Person.Fnr fnr);
 }

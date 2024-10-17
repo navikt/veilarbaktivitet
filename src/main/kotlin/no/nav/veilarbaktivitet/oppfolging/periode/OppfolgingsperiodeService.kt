@@ -1,11 +1,10 @@
 package no.nav.veilarbaktivitet.oppfolging.periode
 
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService
-import no.nav.veilarbaktivitet.arkivering.Maal
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService
 import no.nav.veilarbaktivitet.oppfolging.client.MålDTO
-import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingClient
+import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO
 import no.nav.veilarbaktivitet.oppfolging.client.SakDTO
 import no.nav.veilarbaktivitet.person.Person.AktorId
 import no.nav.veilarbaktivitet.person.Person.Fnr
@@ -55,9 +54,5 @@ class OppfolgingsperiodeService(
 
     fun hentMål(fnr: Fnr): MålDTO {
         return oppfolgingClient.hentMål(fnr).orElseGet(null)
-    }
-
-    fun hentMålListe(fnr: Fnr): List<Maal> {
-        return oppfolgingClient.hentMålListe(fnr).orElseGet(null)
     }
 }
