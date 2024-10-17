@@ -11,7 +11,6 @@ import no.nav.veilarbaktivitet.config.ForhaandsorienteringResource
 import no.nav.veilarbaktivitet.config.OppfolgingsperiodeResource
 import no.nav.veilarbaktivitet.person.Person
 import no.nav.veilarbaktivitet.person.UserInContext
-import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.*
@@ -39,7 +38,7 @@ open class ArenaController(
         getInputFeilmelding(forhaandsorientering, arenaaktivitetId)
             .ifPresent { feilmelding: String? -> throw ResponseStatusException(HttpStatus.BAD_REQUEST, feilmelding) }
         val ident = authService.getInnloggetVeilederIdent()
-        return arenaService.opprettFHO(arenaaktivitetId, Person.fnr(fnr.get()), forhaandsorientering, ident.get())
+        return arenaService.opprettFHO(arenaaktivitetId, Person.fnr(fnr.get()), forhaandsorientering!!, ident.get())
     }
 
     @GetMapping("/tiltak-raw")

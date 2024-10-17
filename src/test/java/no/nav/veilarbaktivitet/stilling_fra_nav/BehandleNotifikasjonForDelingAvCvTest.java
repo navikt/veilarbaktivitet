@@ -6,7 +6,6 @@ import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
 import no.nav.veilarbaktivitet.avro.TilstandEnum;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAsserts;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAssertsConfig;
-import no.nav.veilarbaktivitet.brukernotifikasjon.kvittering.EksternVarslingKvitteringConsumer;
 import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendBrukernotifikasjonCron;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
@@ -42,9 +41,6 @@ class BehandleNotifikasjonForDelingAvCvTest extends SpringBootTestBase {
     @Autowired
     JdbcTemplate jdbc;
 
-    @Autowired
-    EksternVarslingKvitteringConsumer eksternVarslingKvitteringConsumer;
-
     @Value("${topic.ut.stillingFraNav}")
     private String utTopic;
 
@@ -77,8 +73,8 @@ class BehandleNotifikasjonForDelingAvCvTest extends SpringBootTestBase {
         AktivitetDTO medSvar = aktivitetTestService.svarPaaDelingAvCv(true, mockBruker, veileder, skalFaaSvar, new Date());
 
         //kviteringer på varsel
-        brukernotifikasjonAsserts.sendEksternVarseltOk(utenSvarOppgave);
-        brukernotifikasjonAsserts.sendEksternVarseltOk(medSvarOppgave);
+        brukernotifikasjonAsserts.simulerEksternVarselStatusSendt(utenSvarOppgave);
+        brukernotifikasjonAsserts.simulerEksternVarselStatusSendt(medSvarOppgave);
 
 
         //Send meldinger til rekruteringsbistand
@@ -126,8 +122,8 @@ class BehandleNotifikasjonForDelingAvCvTest extends SpringBootTestBase {
         // simuler kvittering fra brukernotifikasjoner
 
         // les oppgave-notifikasjon
-        brukernotifikasjonAsserts.sendEksternVarseletFeilet(utenSvarOppgave);
-        brukernotifikasjonAsserts.sendEksternVarseletFeilet(medSvarOppgave);
+        brukernotifikasjonAsserts.simulerEksternVarselStatusFeilet(utenSvarOppgave);
+        brukernotifikasjonAsserts.simulerEksternVarselStatusFeilet(medSvarOppgave);
 
         rekrutteringsbistandConsumer = kafkaTestService.createStringAvroConsumer(utTopic);
         int behandlede = behandleNotifikasjonForDelingAvCvCronService.behandleFeiledeNotifikasjoner(500);

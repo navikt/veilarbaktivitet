@@ -18,6 +18,7 @@ import java.sql.ResultSet;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +31,7 @@ public class VarselDAO {
     private static SkalSendes mapRow(ResultSet rs, int rowNum) {
         return SkalSendes.builder()
                 .fnr(Person.fnr(rs.getString("foedselsnummer")))
-                .brukernotifikasjonId(rs.getString("brukernotifikasjon_id"))
+                .brukernotifikasjonId(UUID.fromString(rs.getString("brukernotifikasjon_id")))
                 .brukernotifikasjonLopeNummer(rs.getLong("id"))
                 .melding(rs.getString("melding"))
                 .varselType(VarselType.valueOf(rs.getString("type")))

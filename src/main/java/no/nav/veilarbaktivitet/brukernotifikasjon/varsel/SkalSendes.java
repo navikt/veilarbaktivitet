@@ -6,12 +6,13 @@ import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
 import no.nav.veilarbaktivitet.person.Person;
 
 import java.net.URL;
+import java.util.UUID;
 
 @Getter
 @Builder
-class SkalSendes {
+public class SkalSendes {
     private final long brukernotifikasjonLopeNummer;
-    private final String brukernotifikasjonId;
+    private final UUID brukernotifikasjonId;
     private final VarselType varselType;
     private final String melding;
     private final String oppfolgingsperiode;

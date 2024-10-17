@@ -4,14 +4,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.brukernotifikasjon.kvittering.VarselKvitteringStatus;
-import no.nav.veilarbaktivitet.person.Person;
+import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.MinSideBrukernotifikasjonsId;
+import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.UtgåendeVarsel;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 
-import java.net.URL;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -41,9 +41,9 @@ public class BrukerNotifikasjonDAO {
                 """, params);
     }
 
-    public boolean finnesBrukernotifikasjon(String bestillingsId) {
+    public boolean finnesBrukernotifikasjon(MinSideBrukernotifikasjonsId bestillingsId) {
         SqlParameterSource params = new MapSqlParameterSource()
-                .addValue("brukernotifikasjon_id", bestillingsId);
+                .addValue("brukernotifikasjon_id", bestillingsId.getValue().toString());
         String sql = """
             SELECT COUNT(*) FROM BRUKERNOTIFIKASJON
             WHERE BRUKERNOTIFIKASJON_ID=:brukernotifikasjon_id
@@ -65,30 +65,19 @@ public class BrukerNotifikasjonDAO {
         return antall > 0;
     }
 
-    long opprettBrukernotifikasjon(
-            UUID brukernotifikasjonId,
-            Person.Fnr foedselsnummer,
-            String melding,
-            UUID oppfolgingsperiode,
-            VarselType type,
-            VarselStatus status,
-            URL url,
-            String epostTitel,
-            String epostBody,
-            String smsTekst
-    ) {
+    long opprettBrukernotifikasjonIOutbox(UtgåendeVarsel utgåendeVarsel) {
         SqlParameterSource params = new MapSqlParameterSource()
-                .addValue("brukernotifikasjon_id", brukernotifikasjonId.toString())
-                .addValue("foedselsnummer", foedselsnummer.get())
-                .addValue("oppfolgingsperiode", oppfolgingsperiode.toString())
-                .addValue("type", type.name())
-                .addValue("url", url.toString())
-                .addValue("status", status.name())
+                .addValue("brukernotifikasjon_id", utgåendeVarsel.getBrukernotifikasjonId().getValue().toString())
+                .addValue("foedselsnummer", utgåendeVarsel.getFoedselsnummer().get())
+                .addValue("oppfolgingsperiode", utgåendeVarsel.getOppfolgingsperiode().toString())
+                .addValue("type", utgåendeVarsel.getType().name())
+                .addValue("url", utgåendeVarsel.getUrl().toString())
+                .addValue("status", utgåendeVarsel.getStatus().name())
                 .addValue("varsel_kvittering_status", VarselKvitteringStatus.IKKE_SATT.name())
-                .addValue("epostTittel", epostTitel)
-                .addValue("epostBody", epostBody)
-                .addValue("smsTekst", smsTekst)
-                .addValue("melding", melding);
+                .addValue("epostTittel", utgåendeVarsel.getEpostTitel())
+                .addValue("epostBody", utgåendeVarsel.getEpostBody())
+                .addValue("smsTekst", utgåendeVarsel.getSmsTekst())
+                .addValue("melding", utgåendeVarsel.getMelding());
 
 
         GeneratedKeyHolder generatedKeyHolder = new GeneratedKeyHolder();

@@ -9,13 +9,13 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAsserts
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAssertsConfig
-import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendBrukernotifikasjonCron
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaJsonTemplate
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringTemplate
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService
 import no.nav.veilarbaktivitet.person.Innsender
 import no.nav.veilarbaktivitet.util.DateUtils
 import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
 import org.assertj.core.api.SoftAssertions
 import org.assertj.core.api.ThrowingConsumer
@@ -32,45 +32,46 @@ import java.util.*
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
-import java.util.function.BinaryOperator
-import java.util.function.Consumer
-import java.util.function.Function
 import java.util.stream.Collectors
 import kotlin.Double
 import kotlin.Exception
+import kotlin.Pair
 import kotlin.String
 import kotlin.Throws
+import kotlin.assert
+import kotlin.getValue
+import kotlin.lazy
+import kotlin.to
 
-internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
+internal class RekrutteringsbistandKafkaConsumerTest(
     @Autowired
-    var navCommonKafkaJsonTemplate: KafkaJsonTemplate<RekrutteringsbistandStatusoppdatering?>? = null
-
+    val navCommonKafkaJsonTemplate: KafkaJsonTemplate<RekrutteringsbistandStatusoppdatering?>,
     @Autowired
-    var kafkaStringTemplate: KafkaStringTemplate? = null
-
-    @Autowired
-    var sendBrukernotifikasjonCron: SendBrukernotifikasjonCron? = null
-
+    val kafkaStringTemplate: KafkaStringTemplate,
     @Value("\${topic.inn.rekrutteringsbistandStatusoppdatering}")
-    private val innRekrutteringsbistandStatusoppdatering: String? = null
-
+    private val innRekrutteringsbistandStatusoppdatering: String,
     @Autowired
-    var meterRegistry: MeterRegistry? = null
-
+    val meterRegistry: MeterRegistry,
     @Autowired
-    var brukernotifikasjonAssertsConfig: BrukernotifikasjonAssertsConfig? = null
-    var brukernotifikasjonAsserts: BrukernotifikasjonAsserts? = null
+    val brukernotifikasjonAssertsConfig: BrukernotifikasjonAssertsConfig
+) : SpringBootTestBase() {
+
+    val brukernotifikasjonAsserts: BrukernotifikasjonAsserts by lazy {
+        BrukernotifikasjonAsserts(brukernotifikasjonAssertsConfig)
+    }
+
     @BeforeEach
     fun setUp() {
-        brukernotifikasjonAsserts = BrukernotifikasjonAsserts(brukernotifikasjonAssertsConfig)
-        meterRegistry!!.find(StillingFraNavMetrikker.REKRUTTERINGSBISTANDSTATUSOPPDATERING).meters()
-            .forEach(Consumer { it: Meter? ->
-                meterRegistry!!.remove(
-                    it
-                )
-            })
-        aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker)
-        bestillingsId = aktivitetDTO?.getStillingFraNavData()?.bestillingsId ?: fail("aktivitetDto var null")
+        meterRegistry.find(StillingFraNavMetrikker.REKRUTTERINGSBISTANDSTATUSOPPDATERING).meters()
+            .forEach { it: Meter? ->
+                meterRegistry.remove(it)
+            }
+    }
+
+    private fun opprettstillingFraNav(): Pair<AktivitetDTO, String> {
+        val aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker)
+        val bestillingsId = aktivitetDTO.stillingFraNavData?.bestillingsId ?: fail("aktivitetDto var null")
+        return aktivitetDTO to bestillingsId
     }
 
     @AfterEach //må kjøres etter hver test for å ikke være static
@@ -81,8 +82,9 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
     @Test
     @Throws(Exception::class)
     fun behandle_CvDelt_Happy_Case_skal_oppdatere_soknadsstatus_og_lage_metrikk() {
+        val (aktivitetDTO, bestillingsId) = opprettstillingFraNav()
         aktivitetTestService.svarPaaDelingAvCv(true, mockBruker, veileder, aktivitetDTO, date)
-        val aktivitetData_for = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO!!.id)
+        val aktivitetData_for = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.id)
         aktivitetTestService.mottaOppdateringFraRekrutteringsbistand(
             bestillingsId,
             INGEN_DETALJER,
@@ -90,7 +92,7 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
             navIdent,
             tidspunkt
         )
-        val aktivitetData_etter = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO!!.id)
+        val aktivitetData_etter = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.id)
         SoftAssertions.assertSoftly { assertions: SoftAssertions ->
             assertions.assertThat(aktivitetData_etter.versjon.toInt()).isGreaterThan(aktivitetData_for.versjon.toInt())
             assertions.assertThat(aktivitetData_etter.endretAv).isEqualTo(navIdent)
@@ -104,20 +106,21 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
                 .isSameAs(aktivitetData_for.stillingFraNavData.getLivslopsStatus())
             assertions.assertAll()
         }
-        Assertions.assertThat(antallAvHverArsak()).containsExactlyInAnyOrderEntriesOf(
+        assertThat(antallAvHverArsak()).containsExactlyInAnyOrderEntriesOf(
             java.util.Map.of(
                 SUKSESS, 1.0
             )
         )
-        val etterCvDelt = brukernotifikasjonAsserts!!.assertBeskjedSendt(mockBruker.fnrAsFnr)
-        Assertions.assertThat(etterCvDelt.value().tekst)
+        val etterCvDelt = brukernotifikasjonAsserts.assertBeskjedSendt(mockBruker.fnrAsFnr)
+        assertThat(etterCvDelt.tekster.first().tekst)
             .isEqualTo(RekrutteringsbistandStatusoppdateringService.CV_DELT_DITT_NAV_TEKST)
     }
 
     @Test
     @Throws(Exception::class)
     fun behandle_ikke_fatt_jobben_uten_svar_om_deling_av_cv_skal_ikke_oppdatere_aktivitet_men_oppdatere_metrikk() {
-        val aktivitetData_for = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO!!.id)
+        val (aktivitetDTO, bestillingsId) = opprettstillingFraNav()
+        val aktivitetData_for = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.id)
         val detaljer = """
                 Vi har sett nærmere på CV-en din, dessverre passer ikke kompetansen din helt med behovene til arbeidsgiveren.
                 Derfor deler vi ikke CV-en din med arbeidsgiveren denne gangen. Lykke til videre med jobbsøkingen.
@@ -130,9 +133,9 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
             navIdent,
             tidspunkt
         )
-        Assertions.assertThat(aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO!!.id))
+        assertThat(aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.id))
             .isEqualTo(aktivitetData_for)
-        Assertions.assertThat(antallAvHverArsak())
+        assertThat(antallAvHverArsak())
             .containsExactlyInAnyOrderEntriesOf(
                 java.util.Map.of(
                     "Ikke svart", 1.0
@@ -142,8 +145,9 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
 
     @Test
     fun behandle_fatt_jobben_etter_cv_delt() {
+        val (aktivitetDTO, bestillingsId) = opprettstillingFraNav()
         aktivitetTestService.svarPaaDelingAvCv(true, mockBruker, veileder, aktivitetDTO, date)
-        val aktivitetData_for = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO!!.id)
+        val aktivitetData_for = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.id)
         // Rekrutterings bistand sender fatt-jobben
         val detaljer = """KANDIDATLISTE_LUKKET""".trimIndent()
         val nesteTidspunkt = tidspunkt.plusMinutes(2)
@@ -155,7 +159,7 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
             nesteTidspunkt
         )
         // Sjekk forventet tilstand
-        val aktivitetData_etter = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO!!.id)
+        val aktivitetData_etter = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.id)
         SoftAssertions.assertSoftly { assertions: SoftAssertions ->
           assertions.assertThat(aktivitetData_etter.versjon.toInt()).`as`("Forventer ny versjon av aktivitet")
                 .isGreaterThan(aktivitetData_for.versjon.toInt())
@@ -180,8 +184,9 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
     @Test
     @Throws(Exception::class)
     fun behandle_ikke_fatt_jobben_svart_men_cv_er_ikke_delt() {
+        val (aktivitetDTO, bestillingsId) = opprettstillingFraNav()
         aktivitetTestService.svarPaaDelingAvCv(true, mockBruker, veileder, aktivitetDTO, date)
-        val aktivitetData_for = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO!!.id)
+        val aktivitetData_for = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.id)
         val ikkeFattJobbenDetaljer = """
                     Vi har fått beskjed om at arbeidsgiveren har ansatt en person. Dessverre var det ikke deg denne gangen.
                     Ansettelsesprosessen er ferdig. Lykke til videre med jobbsøkingen.
@@ -194,8 +199,8 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
             navIdent,
             tidspunkt
         )
-        val aktivitetData_etter = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO!!.id)
-        Assertions.assertThat(antallAvHverArsak())
+        val aktivitetData_etter = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.id)
+        assertThat(antallAvHverArsak())
             .containsExactlyInAnyOrderEntriesOf(
                 java.util.Map.of(
                     SUKSESS, 1.0
@@ -227,6 +232,7 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
     @Test
     @Throws(Exception::class)
     fun behandle_ikke_fatt_jobben_nar_aktivitet_er_avbrutt() {
+        val (aktivitetDTO, bestillingsId) = opprettstillingFraNav()
         aktivitetTestService.svarPaaDelingAvCv(true, mockBruker, veileder, aktivitetDTO, date)
         aktivitetTestService.mottaOppdateringFraRekrutteringsbistand(
             bestillingsId,
@@ -235,20 +241,20 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
             navIdent,
             tidspunkt
         )
-        val etterCvDelt = brukernotifikasjonAsserts!!.assertBeskjedSendt(mockBruker.fnrAsFnr)
+        val etterCvDelt = brukernotifikasjonAsserts.assertBeskjedSendt(mockBruker.fnrAsFnr)
         Assertions.assertThat(antallAvHverArsak()).containsExactlyInAnyOrderEntriesOf(
             java.util.Map.of(
                 SUKSESS, 1.0
             )
         )
-        val aktivitetData_etterCvDelt = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO!!.id)
+        val aktivitetData_etterCvDelt = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.id)
         aktivitetTestService.oppdaterAktivitetStatus(
             mockBruker,
             veileder,
             aktivitetData_etterCvDelt,
             AktivitetStatus.AVBRUTT
         )
-        val aktivitetData_etterAvbrutt = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO!!.id)
+        val aktivitetData_etterAvbrutt = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.id)
         val ikkeFattJobbenDetaljer = """
                     Vi har fått beskjed om at arbeidsgiveren har ansatt en person. Dessverre var det ikke deg denne gangen.
                     Ansettelsesprosessen er ferdig. Lykke til videre med jobbsøkingen.
@@ -261,8 +267,8 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
             navIdent,
             tidspunkt
         )
-        val aktivitetData_etter = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO!!.id)
-        brukernotifikasjonAsserts!!.assertIngenNyeBeskjeder()
+        val aktivitetData_etter = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.id)
+        brukernotifikasjonAsserts.assertIngenNyeVarslerErIOutbox()
         SoftAssertions.assertSoftly { assertions: SoftAssertions ->
             assertions.assertThat(aktivitetData_etter.endretDato)
                 .`as`("Tidspunkt for endring settes til det tidspunktet aktiviteten ble oppdatert, ikke til tidspunktet i Kafka-meldingen")
@@ -281,21 +287,22 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
             assertions.assertThat(aktivitetData_etter.stillingFraNavData.getDetaljer()).isNull()
             assertions.assertAll()
         }
-        Assertions.assertThat(antallAvHverArsak()).containsExactlyInAnyOrderEntriesOf(
+        assertThat(antallAvHverArsak()).containsExactlyInAnyOrderEntriesOf(
             java.util.Map.of(
                 SUKSESS, 1.0,
                 "Aktivitet AVBRUTT", 1.0
             )
         )
-        Assertions.assertThat(etterCvDelt.value().tekst)
+        assertThat(etterCvDelt.tekster.first().tekst)
             .isEqualTo(RekrutteringsbistandStatusoppdateringService.CV_DELT_DITT_NAV_TEKST)
     }
 
     @Test
     @Throws(Exception::class)
     fun behandle_ikke_fatt_jobben_etter_cv_delt() {
+        val (aktivitetDTO, bestillingsId) = opprettstillingFraNav()
         aktivitetTestService.svarPaaDelingAvCv(true, mockBruker, veileder, aktivitetDTO, date)
-        val aktivitetData_for = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO!!.id)
+        val aktivitetData_for = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.id)
         aktivitetTestService.mottaOppdateringFraRekrutteringsbistand(
             bestillingsId,
             INGEN_DETALJER,
@@ -303,8 +310,8 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
             navIdent,
             tidspunkt
         )
-        val etterCvDelt = brukernotifikasjonAsserts!!.assertBeskjedSendt(mockBruker.fnrAsFnr)
-        Assertions.assertThat(antallAvHverArsak()).containsExactlyInAnyOrderEntriesOf(
+        val etterCvDelt = brukernotifikasjonAsserts.assertBeskjedSendt(mockBruker.fnrAsFnr)
+        assertThat(antallAvHverArsak()).containsExactlyInAnyOrderEntriesOf(
             java.util.Map.of(
                 SUKSESS, 1.0
             )
@@ -321,8 +328,8 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
             navIdent,
             tidspunkt
         )
-        val aktivitetData_etter = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO!!.id)
-        val etterIkkeFattJobben = brukernotifikasjonAsserts!!.assertBeskjedSendt(mockBruker.fnrAsFnr)
+        val aktivitetData_etter = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.id)
+        val etterIkkeFattJobben = brukernotifikasjonAsserts.assertBeskjedSendt(mockBruker.fnrAsFnr)
         SoftAssertions.assertSoftly { assertions: SoftAssertions ->
             assertions.assertThat(aktivitetData_etter.endretDato)
                 .`as`("Tidspunkt for endring settes til det tidspunktet aktiviteten ble oppdatert, ikke til tidspunktet i Kafka-meldingen")
@@ -341,22 +348,23 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
                 .isEqualTo(ikkeFattJobbenDetaljer)
             assertions.assertAll()
         }
-        Assertions.assertThat(antallAvHverArsak()).containsExactlyInAnyOrderEntriesOf(
+        assertThat(antallAvHverArsak()).containsExactlyInAnyOrderEntriesOf(
             java.util.Map.of(
                 SUKSESS, 2.0
             )
         )
-        Assertions.assertThat(etterCvDelt.value().tekst)
+        assertThat(etterCvDelt.tekster.first().tekst)
             .isEqualTo(RekrutteringsbistandStatusoppdateringService.CV_DELT_DITT_NAV_TEKST)
-        Assertions.assertThat(etterIkkeFattJobben.value().tekst)
+        assertThat(etterIkkeFattJobben.tekster.first().tekst)
             .isEqualTo(RekrutteringsbistandStatusoppdateringService.IKKE_FATT_JOBBEN_TEKST)
     }
 
     @Test
     @Throws(Exception::class)
     fun behandle_CvDelt_svart_nei_skal_oppdatere_soknadsstatus_og_lage_metrikk() {
+        val (aktivitetDTO, bestillingsId) = opprettstillingFraNav()
         aktivitetTestService.svarPaaDelingAvCv(Boolean.FALSE, mockBruker, veileder, aktivitetDTO, date)
-        val aktivitetData_for = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO!!.id)
+        val aktivitetData_for = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.id)
         aktivitetTestService.mottaOppdateringFraRekrutteringsbistand(
             bestillingsId,
             INGEN_DETALJER,
@@ -364,21 +372,22 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
             navIdent,
             tidspunkt
         )
-        val aktivitetData_etter = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO!!.id)
+        val aktivitetData_etter = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.id)
         Assertions.assertThat(aktivitetData_etter).isEqualTo(aktivitetData_for)
         Assertions.assertThat(antallAvHverArsak()).containsExactlyInAnyOrderEntriesOf(
             java.util.Map.of(
                 "Svart NEI", 1.0
             )
         )
-        brukernotifikasjonAsserts!!.assertIngenNyeBeskjeder()
+        brukernotifikasjonAsserts.assertIngenNyeVarslerErIOutbox()
     }
 
     @Test
     @Throws(Exception::class)
     fun duplikat_CvDelt_Skal_ikke_sende_duplikat_brukernotifikasjon() {
+        val (aktivitetDTO, bestillingsId) = opprettstillingFraNav()
         aktivitetTestService.svarPaaDelingAvCv(true, mockBruker, veileder, aktivitetDTO, date)
-        val aktivitetData_for = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO!!.id)
+        val aktivitetData_for = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.id)
         aktivitetTestService.mottaOppdateringFraRekrutteringsbistand(
             bestillingsId,
             INGEN_DETALJER,
@@ -386,7 +395,7 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
             navIdent,
             tidspunkt
         )
-        val aktivitetData_etter = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO!!.id)
+        val aktivitetData_etter = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.id)
         SoftAssertions.assertSoftly { assertions: SoftAssertions ->
             assertions.assertThat(aktivitetData_etter.versjon.toInt()).isGreaterThan(aktivitetData_for.versjon.toInt())
             assertions.assertThat(aktivitetData_etter.endretAv).isEqualTo(navIdent)
@@ -400,12 +409,12 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
                 .isSameAs(aktivitetData_for.stillingFraNavData.getLivslopsStatus())
             assertions.assertAll()
         }
-        Assertions.assertThat(antallAvHverArsak()).containsExactlyInAnyOrderEntriesOf(
+        assertThat(antallAvHverArsak()).containsExactlyInAnyOrderEntriesOf(
             java.util.Map.of(
                 SUKSESS, 1.0
             )
         )
-        brukernotifikasjonAsserts!!.assertBeskjedSendt(mockBruker.fnrAsFnr)
+        brukernotifikasjonAsserts.assertBeskjedSendt(mockBruker.fnrAsFnr)
         aktivitetTestService.mottaOppdateringFraRekrutteringsbistand(
             bestillingsId,
             INGEN_DETALJER,
@@ -413,15 +422,15 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
             navIdent,
             tidspunkt
         )
-        Assertions.assertThat(antallAvHverArsak()).containsExactlyInAnyOrderEntriesOf(
+        assertThat(antallAvHverArsak()).containsExactlyInAnyOrderEntriesOf(
             java.util.Map.of(
                 SUKSESS, 1.0,
                 "Allerede delt", 1.0
             )
         )
-        Assertions.assertThat(aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO!!.id))
+        assertThat(aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.id))
             .isEqualTo(aktivitetData_etter)
-        brukernotifikasjonAsserts!!.assertIngenNyeBeskjeder()
+        brukernotifikasjonAsserts.assertIngenNyeVarslerErIOutbox()
     }
 
     @Test
@@ -448,7 +457,7 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
                                 """
                 .trimIndent(), RekrutteringsbistandStatusoppdatering::class.java
         )
-        val sendResult = navCommonKafkaJsonTemplate!!.send(
+        val sendResult = navCommonKafkaJsonTemplate.send(
             innRekrutteringsbistandStatusoppdatering,
             bestillingsId,
             sendtStatusoppdatering
@@ -468,13 +477,13 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
                 .isSameAs(aktivitetData_for.stillingFraNavData.getLivslopsStatus())
             assertions.assertAll()
         }
-        Assertions.assertThat(antallAvHverArsak()).containsExactlyInAnyOrderEntriesOf(
+        assertThat(antallAvHverArsak()).containsExactlyInAnyOrderEntriesOf(
             java.util.Map.of(
                 SUKSESS, 1.0
             )
         )
-        val etterCvDelt = brukernotifikasjonAsserts!!.assertBeskjedSendt(mockBruker.fnrAsFnr)
-        Assertions.assertThat(etterCvDelt.value().tekst)
+        val etterCvDelt = brukernotifikasjonAsserts.assertBeskjedSendt(mockBruker.fnrAsFnr)
+        assertThat(etterCvDelt.tekster.first().tekst)
             .isEqualTo(RekrutteringsbistandStatusoppdateringService.CV_DELT_DITT_NAV_TEKST)
     }
 
@@ -485,8 +494,9 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
         TimeoutException::class
     )
     fun hvis_feil_i_json_skal_vi_ikke_endre_aktivitet_og_lage_metrikk() {
+        val (aktivitetDTO, bestillingsId) = opprettstillingFraNav()
         aktivitetTestService.svarPaaDelingAvCv(true, mockBruker, veileder, aktivitetDTO, date)
-        val aktivitetData_for = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO!!.id)
+        val aktivitetData_for = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.id)
         val sendtStatusoppdatering = """
                 {
                     "type":"CV_DELT",
@@ -496,20 +506,20 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
                 
                 """.trimIndent()
         val sendResult =
-            kafkaStringTemplate!!.send(
+            kafkaStringTemplate.send(
                 innRekrutteringsbistandStatusoppdatering,
                 bestillingsId,
                 sendtStatusoppdatering
             )[5, TimeUnit.SECONDS]
         kafkaTestService.assertErKonsumert(innRekrutteringsbistandStatusoppdatering, sendResult.recordMetadata.offset())
-        val aktivitetData_etter = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO!!.id)
-        Assertions.assertThat(antallAvHverArsak()).containsExactlyInAnyOrderEntriesOf(
+        val aktivitetData_etter = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.id)
+        assertThat(antallAvHverArsak()).containsExactlyInAnyOrderEntriesOf(
             java.util.Map.of(
                 "Ugyldig melding", 1.0
             )
         )
-        Assertions.assertThat(aktivitetData_etter).isEqualTo(aktivitetData_for)
-        brukernotifikasjonAsserts!!.assertIngenNyeBeskjeder()
+        assertThat(aktivitetData_etter).isEqualTo(aktivitetData_for)
+        brukernotifikasjonAsserts.assertIngenNyeVarslerErIOutbox()
     }
 
     @Test
@@ -519,7 +529,8 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
         TimeoutException::class
     )
     fun skal_ignorere_cvdelt_oppdatering_hvis_ikke_svart() {
-        val aktivitetData_for = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO!!.id)
+        val (aktivitetDTO, bestillingsId) = opprettstillingFraNav()
+        val aktivitetData_for = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.id)
         aktivitetTestService.mottaOppdateringFraRekrutteringsbistand(
             bestillingsId,
             DETALJER_TEKST,
@@ -527,15 +538,16 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
             navIdent,
             tidspunkt
         )
-        Assertions.assertThat(aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO!!.id))
+        assertThat(aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.id))
             .isEqualTo(aktivitetData_for)
-        Assertions.assertThat(antallAvHverArsak())
+        assertThat(antallAvHverArsak())
             .containsExactlyInAnyOrderEntriesOf(
                 java.util.Map.of(
                     "Ikke svart", 1.0
                 )
             )
-        brukernotifikasjonAsserts!!.assertIngenNyeBeskjeder()
+        brukernotifikasjonAsserts.assertOppgaveSendt(mockBruker.fnrAsFnr)
+        assert(brukernotifikasjonAsserts.brukervarselConsumer.harKonsumertAlleMeldinger()) { "Skal ha konsumert alle meldinger" }
     }
 
     @Test
@@ -552,13 +564,13 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
             navIdent,
             tidspunkt
         )
-        Assertions.assertThat(antallAvHverArsak())
+        assertThat(antallAvHverArsak())
             .containsExactlyInAnyOrderEntriesOf(
                 java.util.Map.of(
                     "Bestillingsid ikke funnet", 1.0
                 )
             )
-        brukernotifikasjonAsserts!!.assertIngenNyeBeskjeder()
+        brukernotifikasjonAsserts.assertIngenNyeVarslerErIOutbox()
     }
 
     @Test
@@ -568,6 +580,7 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
         TimeoutException::class
     )
     fun skal_ignorere_cvdelt_oppdatering_hvis_NEI_pa_deling_av_cv() {
+        val (aktivitetDTO, bestillingsId) = opprettstillingFraNav()
         aktivitetTestService.svarPaaDelingAvCv(
             NEI,
             mockBruker,
@@ -575,7 +588,7 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
             aktivitetDTO,
             Date.from(Instant.ofEpochSecond(1))
         )
-        val aktivitetData_for = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO!!.id)
+        val aktivitetData_for = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.id)
         aktivitetTestService.mottaOppdateringFraRekrutteringsbistand(
             bestillingsId,
             DETALJER_TEKST,
@@ -583,15 +596,15 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
             navIdent,
             tidspunkt
         )
-        Assertions.assertThat(aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO!!.id))
+        assertThat(aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.id))
             .isEqualTo(aktivitetData_for)
-        Assertions.assertThat(antallAvHverArsak())
+        assertThat(antallAvHverArsak())
             .containsExactlyInAnyOrderEntriesOf(
                 java.util.Map.of(
                     "Svart NEI", 1.0
                 )
             )
-        brukernotifikasjonAsserts!!.assertIngenNyeBeskjeder()
+        brukernotifikasjonAsserts.assertIngenNyeVarslerErIOutbox()
     }
 
     @Test
@@ -601,6 +614,7 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
         TimeoutException::class
     )
     fun skal_ignorere_cvdelt_oppdatering_hvis_aktivitet_er_i_status_FULLFORT() {
+        val (aktivitetDTO, bestillingsId) = opprettstillingFraNav()
         val aktivitetDTO_svartJA = aktivitetTestService.svarPaaDelingAvCv(
             JA, mockBruker, veileder, aktivitetDTO, Date.from(
                 Instant.ofEpochSecond(1)
@@ -612,7 +626,7 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
             aktivitetDTO_svartJA,
             AktivitetStatus.FULLFORT
         )
-        val aktivitetData_for = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO!!.id)
+        val aktivitetData_for = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.id)
         aktivitetTestService.mottaOppdateringFraRekrutteringsbistand(
             bestillingsId,
             DETALJER_TEKST,
@@ -620,7 +634,7 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
             navIdent,
             tidspunkt
         )
-        val aktivitetData_etter = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO!!.id)
+        val aktivitetData_etter = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.id)
         SoftAssertions.assertSoftly { assertions: SoftAssertions ->
             assertions.assertThat(aktivitetData_etter.endretDato)
                 .`as`("Tidspunkt for endring settes til det tidspunktet aktiviteten ble oppdatert, ikke til tidspunktet i Kafka-meldingen")
@@ -643,8 +657,8 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
                     SUKSESS, 1.0
                 )
             )
-        val etterCvDelt = brukernotifikasjonAsserts!!.assertBeskjedSendt(mockBruker.fnrAsFnr)
-        Assertions.assertThat(etterCvDelt.value().tekst)
+        val etterCvDelt = brukernotifikasjonAsserts.assertBeskjedSendt(mockBruker.fnrAsFnr)
+        Assertions.assertThat(etterCvDelt.tekster.first().tekst)
             .isEqualTo(RekrutteringsbistandStatusoppdateringService.CV_DELT_DITT_NAV_TEKST)
     }
 
@@ -655,6 +669,7 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
         TimeoutException::class
     )
     fun skal_ignorere_cvdelt_aktivitet_er_i_status_AVBRUTT() {
+        val (aktivitetDTO, bestillingsId) = opprettstillingFraNav()
         val aktivitetDTO_svartJA = aktivitetTestService.svarPaaDelingAvCv(
             JA, mockBruker, veileder, aktivitetDTO, Date.from(
                 Instant.ofEpochSecond(1)
@@ -666,7 +681,7 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
             aktivitetDTO_svartJA,
             AktivitetStatus.AVBRUTT
         )
-        val aktivitetData_for = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO!!.id)
+        val aktivitetData_for = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.id)
         aktivitetTestService.mottaOppdateringFraRekrutteringsbistand(
             bestillingsId,
             DETALJER_TEKST,
@@ -674,26 +689,26 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
             navIdent,
             tidspunkt
         )
-        val aktivitetData_etter = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO!!.id)
-        Assertions.assertThat(antallAvHverArsak())
+        val aktivitetData_etter = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.id)
+        assertThat(antallAvHverArsak())
             .containsExactlyInAnyOrderEntriesOf(
                 java.util.Map.of(
                     "Aktivitet AVBRUTT", 1.0
                 )
             )
-        Assertions.assertThat(aktivitetData_etter).isEqualTo(aktivitetData_for)
-        brukernotifikasjonAsserts!!.assertIngenNyeBeskjeder()
+        assertThat(aktivitetData_etter).isEqualTo(aktivitetData_for)
+        brukernotifikasjonAsserts.assertIngenNyeVarslerErIOutbox()
     }
 
     private fun antallAvHverArsak(): Map<String, Double> {
-        return meterRegistry!!.find(StillingFraNavMetrikker.REKRUTTERINGSBISTANDSTATUSOPPDATERING).counters().stream()
+        return meterRegistry.find(StillingFraNavMetrikker.REKRUTTERINGSBISTANDSTATUSOPPDATERING).counters().stream()
             .collect(
                 Collectors.toMap(
-                    Function { c: Counter ->
+                    { c: Counter ->
                         c.id.getTag("reason")
                     },
-                    Function { obj: Counter -> obj.count() },
-                    BinaryOperator { a: Double, b: Double -> java.lang.Double.sum(a, b) })
+                    { obj: Counter -> obj.count() },
+                    { a: Double, b: Double -> java.lang.Double.sum(a, b) })
             )
     }
 
@@ -707,6 +722,5 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
     private val date = Date.from(Instant.ofEpochSecond(1))
     private val SUKSESS = ""
     private val INGEN_DETALJER = ""
-    private var aktivitetDTO: AktivitetDTO? = null
-    private var bestillingsId: String? = null
+//    private var bestillingsId: String? = null
 }

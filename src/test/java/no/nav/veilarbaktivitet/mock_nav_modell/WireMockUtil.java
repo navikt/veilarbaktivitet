@@ -40,6 +40,7 @@ public class WireMockUtil {
         journalforing();
         hentSak(sakId, nyesteOppfølgingsperiode);
         hentMål(mål);
+        hentMålListe(mål);
     }
 
     private static void oppfolging(String fnr, Person.AktorId aktorId, boolean underOppfolging, boolean oppfolgingFeiler, Oppfolgingsperiode nyesteOppfølgingsperiode) {
@@ -263,5 +264,25 @@ public class WireMockUtil {
                                     "dato": "2024-03-18T14:22:17.442331+01:00"
                                 }
                                 """.formatted(mål))));
+    }
+
+    private static void hentMålListe(String mål) {
+        wireMock.stubFor(get(urlMatching("/veilarboppfolging/api/oppfolging/malListe\\?fnr=([0-9]*)"))
+                .willReturn(ok()
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("""
+                                [
+                                      {
+                                          "mal": "%s",
+                                          "endretAv": "BRUKER",
+                                          "dato": "2024-10-14T13:53:59.506815+02:00"
+                                      },
+                                      {
+                                          "mal": "Bli superstjerne",
+                                          "endretAv": "BRUKER",
+                                          "dato": "2024-10-14T13:53:37.953542+02:00"
+                                      }
+                                  ]
+                               """.formatted(mål))));
     }
 }
