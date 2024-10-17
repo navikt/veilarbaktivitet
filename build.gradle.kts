@@ -88,7 +88,6 @@ repositories {
 
 tasks.generateAvroJava {
     source(
-        "src/main/java/no/nav/veilarbaktivitet/brukernotifikasjon/kvittering",
         "src/main/java/no/nav/veilarbaktivitet/stilling_fra_nav"
     )
 }
@@ -162,7 +161,6 @@ dependencies {
     implementation("no.nav.common:util:$common_version")
     implementation("no.nav.common:types:$common_version")
     implementation("net.sourceforge.collections:collections-generic:4.01")
-    implementation("com.github.navikt:brukernotifikasjon-schemas:v2.5.2")
     implementation("no.nav.tms.varsel:kotlin-builder:1.0.0")
     implementation("no.nav.poao.dab:spring-auth:$dab_common_version")
     implementation("no.nav.poao.dab:spring-a2-annotations:$dab_common_version")
