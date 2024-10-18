@@ -5,9 +5,9 @@ import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.MinSideVarselId
 import java.util.*
 
 enum class VarselEventTypeDto {
-    opprettet,
-    inaktivert,
-    slettet,
+    oppgave,
+    beskjed,
+    innboks,
     eksternStatusOppdatert // Denne inneholder feltet status som har flere forskjellig statuser
 }
 
