@@ -34,7 +34,7 @@ open class VarselHendelseConsumer(
     }
 
     open fun behandleInternVarselHendelse(hendelse: InternVarselHendelseDTO) {
-        log.info("Minside varsel hendelse varselId {} type {}", hendelse.varselId, hendelse.varseltype.name)
+        log.info("Minside varsel av type {} er {} varselId {}", hendelse.varseltype.name, hendelse.eventName, hendelse.varselId, )
     }
 
     open fun behandleEksternVarselHendelse(hendelse: EksternVarsling) {
