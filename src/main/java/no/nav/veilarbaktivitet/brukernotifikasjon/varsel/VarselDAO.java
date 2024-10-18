@@ -31,7 +31,7 @@ public class VarselDAO {
     private static SkalSendes mapRow(ResultSet rs, int rowNum) {
         return SkalSendes.builder()
                 .fnr(Person.fnr(rs.getString("foedselsnummer")))
-                .brukernotifikasjonId(UUID.fromString(rs.getString("brukernotifikasjon_id")))
+                .varselId(UUID.fromString(rs.getString("brukernotifikasjon_id")))
                 .brukernotifikasjonLopeNummer(rs.getLong("id"))
                 .melding(rs.getString("melding"))
                 .varselType(VarselType.valueOf(rs.getString("type")))

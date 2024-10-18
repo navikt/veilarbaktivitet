@@ -12,7 +12,7 @@ import java.util.UUID;
 @Builder
 public class SkalSendes {
     private final long brukernotifikasjonLopeNummer;
-    private final UUID brukernotifikasjonId;
+    private final UUID varselId;
     private final VarselType varselType;
     private final String melding;
     private final String oppfolgingsperiode;

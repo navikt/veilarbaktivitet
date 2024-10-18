@@ -43,7 +43,7 @@ open class VarselHendelseConsumer(
         log.info(
             "Konsumerer Ekstern-varsel-hendelse varselId={}, varselType={}",
             varselId,
-            EksternVarsling::class.simpleName
+            hendelse.javaClass.simpleName
         )
 
         if (!brukerNotifikasjonDAO.finnesBrukernotifikasjon(varselId)) {

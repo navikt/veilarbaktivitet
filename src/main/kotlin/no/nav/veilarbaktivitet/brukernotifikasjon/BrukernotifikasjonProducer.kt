@@ -5,6 +5,7 @@ import no.nav.tms.varsel.builder.VarselActionBuilder
 import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SkalSendes
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringTemplate
 import org.apache.kafka.clients.producer.ProducerRecord
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.time.ZonedDateTime
@@ -21,6 +22,8 @@ class BrukernotifikasjonProducer(
     private val cluster: String,
     private val producer: KafkaStringTemplate
 ) {
+
+    private val log = LoggerFactory.getLogger(BrukernotifikasjonProducer::class.java)
 
     private fun toBrukerVarsel(skalSendes: SkalSendes, varselType: Varseltype): String {
         return VarselActionBuilder.opprett {
@@ -60,6 +63,7 @@ class BrukernotifikasjonProducer(
             BrukernotifikasjonsType.OPPGAVE -> Varseltype.Oppgave
             BrukernotifikasjonsType.BESKJED -> Varseltype.Beskjed
         }
+        log.info("Oppretter varsel med varselId {} og varselType {}", skalSendes.varselType, varselType)
         return publiserPåBrukernotifikasjonTopic(skalSendes, varselType)
     }
 
