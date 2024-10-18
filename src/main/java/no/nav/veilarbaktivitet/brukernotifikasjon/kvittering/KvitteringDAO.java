@@ -2,10 +2,12 @@ package no.nav.veilarbaktivitet.brukernotifikasjon.kvittering;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.doknotifikasjon.schemas.DoknotifikasjonStatus;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAktivitetIder;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselStatus;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
+import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.MinSideVarselId;
+import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.EksternVarselHendelseDTO;
+import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.Kvittering;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -28,9 +30,9 @@ public class KvitteringDAO {
                     .aktivitetId(rs.getLong("AKTIVITET_ID"))
                     .build();
 
-    public void setFeilet(String bestillingsId) {
+    public void setFeilet(MinSideVarselId varselId) {
         MapSqlParameterSource param = new MapSqlParameterSource()
-                .addValue("brukernotifikasjonId", bestillingsId)
+                .addValue("brukernotifikasjonId", varselId.getValue().toString())
                 .addValue("varselKvitteringStatus", VarselKvitteringStatus.FEILET.toString());
         jdbc.update("" +
                 " update BRUKERNOTIFIKASJON " +
@@ -38,9 +40,9 @@ public class KvitteringDAO {
                 " where BRUKERNOTIFIKASJON_ID = :brukernotifikasjonId ", param);
     }
 
-    public void setFullfortForGyldige(String bestillingsId) {
+    public void setEksternVarselStatusOK(MinSideVarselId varselId) {
         MapSqlParameterSource param = new MapSqlParameterSource()
-                .addValue("brukernotifikasjonId", bestillingsId)
+                .addValue("brukernotifikasjonId", varselId.getValue().toString())
                 .addValue("varselKvitteringStatus", VarselKvitteringStatus.OK.toString());
 
         jdbc.update("" +
@@ -48,8 +50,8 @@ public class KvitteringDAO {
                         " set" +
                         " BEKREFTET_SENDT = CURRENT_TIMESTAMP, " +
                         " VARSEL_KVITTERING_STATUS = :varselKvitteringStatus" +
-                        " where BRUKERNOTIFIKASJON.VARSEL_KVITTERING_STATUS != 'FEILET' " +
-                        " and STATUS != 'AVSLUTTET'" +
+//                        " where BRUKERNOTIFIKASJON.VARSEL_KVITTERING_STATUS != 'FEILET' " +
+                        " where STATUS != 'AVSLUTTET'" +
                         " and BRUKERNOTIFIKASJON_ID = :brukernotifikasjonId"
                 , param
         );
@@ -99,13 +101,13 @@ public class KvitteringDAO {
                 """, parameterSource, rowmapper);
     }
 
-    public void lagreKvitering(String bestillingsId, DoknotifikasjonStatus melding) {
+    public void lagreKvitering(String bestillingsId, Kvittering melding, EksternVarselHendelseDTO heleMeldingen) {
         SqlParameterSource parameterSource = new MapSqlParameterSource()
                 .addValue("BRUKERNOTIFIKASJON_ID", bestillingsId)
                 .addValue("STATUS", melding.getStatus())
                 .addValue("MELDING", melding.getMelding())
-                .addValue("distribusjonId", melding.getDistribusjonId())
-                .addValue("BESKJED",melding.toString());
+                .addValue("distribusjonId", null)
+                .addValue("BESKJED", heleMeldingen.toString());
         jdbc.update("""
                 insert into  BRUKERNOTIFIKAJSON_KVITERING_TABELL
                         (  BRUKERNOTIFIKASJON_ID,  STATUS,  MELDING,  distribusjonId,  BESKJED )

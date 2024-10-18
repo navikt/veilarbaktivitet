@@ -10,7 +10,7 @@ import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMapping
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDAO
 import no.nav.veilarbaktivitet.aktivitetskort.service.ArenaMigreringsStatus.*
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDAO
-import no.nav.veilarbaktivitet.brukernotifikasjon.BrukerNotifikasjonDAO
+import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.VarselDAO
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 
@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service
 @Service
 class ArenaAktivitetskortService (
     private val forhaandsorienteringDAO: ForhaandsorienteringDAO,
-    private val brukerNotifikasjonDAO: BrukerNotifikasjonDAO,
+    private val varselDAO: VarselDAO,
     private val idMappingDAO: IdMappingDAO,
     private val aktivitetService: AktivitetService,
     private val aktivitetIdMappingProducer: AktivitetIdMappingProducer,
@@ -56,7 +56,7 @@ class ArenaAktivitetskortService (
             ?.let { fho -> tiltakMigreringDAO.flyttFHOTilAktivitet(fho.id, opprettetAktivitet.id) }
 
         // oppdater alle brukernotifikasjoner med aktivitet arena-ider
-        brukerNotifikasjonDAO.updateAktivitetIdForArenaBrukernotifikasjon(
+        varselDAO.updateAktivitetIdForArenaBrukernotifikasjon(
             opprettetAktivitet.id,
             opprettetAktivitet.versjon,
             idMapping.arenaId

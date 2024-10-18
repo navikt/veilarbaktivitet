@@ -3,8 +3,8 @@ package no.nav.veilarbaktivitet.oppfolging.periode
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService
 import no.nav.veilarbaktivitet.oppfolging.client.MålDTO
-import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingClient
+import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO
 import no.nav.veilarbaktivitet.oppfolging.client.SakDTO
 import no.nav.veilarbaktivitet.person.Person.AktorId
 import no.nav.veilarbaktivitet.person.Person.Fnr

@@ -8,8 +8,8 @@ import java.util.UUID;
 
 @Data
 @RequiredArgsConstructor
-class SkalAvluttes {
-    private final String brukernotifikasjonId;
+public class SkalAvluttes {
+    private final String brukernotifikasjonId; // Samme som varselId
     private final Person.Fnr fnr;
     private final UUID oppfolgingsperiode;
 }
