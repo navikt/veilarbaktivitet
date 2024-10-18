@@ -1,0 +1,5 @@
+alter table veilarbaktivitet.brukernotifikasjon
+drop column aktivitet_id;
+
+alter table veilarbaktivitet.brukernotifikasjon
+drop column opprettet_paa_aktivitet_version;
