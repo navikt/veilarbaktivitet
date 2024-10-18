@@ -19,7 +19,6 @@ import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDAO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Type;
-import no.nav.veilarbaktivitet.brukernotifikasjon.BrukerNotifikasjonDAO;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonProducer;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
 import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.VarselDAO;
@@ -62,11 +61,10 @@ class ArenaControllerTest {
 
     private final JdbcTemplate jdbc = new JdbcTemplate(LocalDatabaseSingleton.INSTANCE.getPostgres());
     private final Database db = new Database(jdbc);
-    private final BrukerNotifikasjonDAO notifikasjonArenaDAO = new BrukerNotifikasjonDAO(new NamedParameterJdbcTemplate(jdbc));
     private final BrukernotifikasjonProducer brukernotifikasjonProducer = mock(BrukernotifikasjonProducer.class);
     private final VarselDAO varselDAO = mock(VarselDAO.class);
     private final BrukernotifikasjonService brukernotifikasjonArenaAktivitetService = new BrukernotifikasjonService(brukernotifikasjonProducer,
-            varselDAO, notifikasjonArenaDAO, aktivitetDAO, manuellStatusClient, personService, aktivitetsplanBasepath, sistePeriodeService);
+            varselDAO, aktivitetDAO, manuellStatusClient, personService, aktivitetsplanBasepath, sistePeriodeService);
     private final ForhaandsorienteringDAO fhoDao = new ForhaandsorienteringDAO(db.getNamedJdbcTemplate());
     private final IdMappingDAO idMappingDAO = new IdMappingDAO(new NamedParameterJdbcTemplate(jdbc));
     private final Unleash unleash = mock(Unleash.class);

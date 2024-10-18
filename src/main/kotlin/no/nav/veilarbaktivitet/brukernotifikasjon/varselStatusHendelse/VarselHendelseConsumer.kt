@@ -1,9 +1,9 @@
 package no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse
 
-import no.nav.veilarbaktivitet.brukernotifikasjon.BrukerNotifikasjonDAO
 import no.nav.veilarbaktivitet.brukernotifikasjon.kvittering.KvitteringDAO
 import no.nav.veilarbaktivitet.brukernotifikasjon.kvittering.VarselHendelseMetrikk
 import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.MinSideBrukernotifikasjonsId
+import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.VarselDAO
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
 import org.springframework.kafka.annotation.KafkaListener
@@ -12,8 +12,8 @@ import org.springframework.transaction.annotation.Transactional
 
 @Service
 open class VarselHendelseConsumer(
+    val varselDAO: VarselDAO,
     val kvitteringDAO: KvitteringDAO,
-    val brukerNotifikasjonDAO: BrukerNotifikasjonDAO,
     val varselHendelseMetrikk: VarselHendelseMetrikk,
 ) {
 
@@ -46,7 +46,7 @@ open class VarselHendelseConsumer(
             hendelse.javaClass.simpleName
         )
 
-        if (!brukerNotifikasjonDAO.finnesBrukernotifikasjon(varselId)) {
+        if (!varselDAO.finnesBrukernotifikasjon(varselId)) {
             log.warn(
                 "Mottok kvittering for brukernotifikasjon varselId={} som ikke finnes i våre systemer",
                 varselId

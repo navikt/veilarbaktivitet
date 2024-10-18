@@ -34,7 +34,7 @@ class BrukernotifikasjonProducer(
             )
             type = varselType
             sensitivitet = Sensitivitet.Substantial
-            varselId = skalSendes.brukernotifikasjonId.toString()
+            varselId = skalSendes.varselId.toString()
             aktivFremTil = ZonedDateTime.now().plusMonths(1)
             ident = skalSendes.fnr.get()
             tekst = Tekst(
@@ -54,7 +54,7 @@ class BrukernotifikasjonProducer(
 
     private fun publiserPåBrukernotifikasjonTopic(skalSendes: SkalSendes, varselType: Varseltype): Long {
         val opprettVarsel = toBrukerVarsel(skalSendes, varselType)
-        val record = ProducerRecord(brukervarselTopic, skalSendes.brukernotifikasjonId.toString(), opprettVarsel)
+        val record = ProducerRecord(brukervarselTopic, skalSendes.varselId.toString(), opprettVarsel)
         return producer.send(record).get().recordMetadata.offset()
     }
 

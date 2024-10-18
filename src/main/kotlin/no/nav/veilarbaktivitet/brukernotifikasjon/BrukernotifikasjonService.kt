@@ -22,7 +22,6 @@ import java.util.*
 open class BrukernotifikasjonService(
     val brukernotifikasjonProducer: BrukernotifikasjonProducer,
     val varselDAO: VarselDAO,
-    val brukerNotifikasjonDAO: BrukerNotifikasjonDAO,
     val aktivitetDao: AktivitetDAO,
     val manuellStatusClient: ManuellStatusV2Client,
     val personService: PersonService,
@@ -37,11 +36,11 @@ open class BrukernotifikasjonService(
     open fun avbrytIkkeSendteOppgaverForAvslutteteAktiviteter(): Int = varselDAO.avbrytIkkeSendteOppgaverForAvslutteteAktiviteter()
 
     open fun finnesBrukernotifikasjonMedVarselTypeForAktivitet(aktivitetsId: Long, varselType: VarselType): Boolean {
-        return brukerNotifikasjonDAO.finnesBrukernotifikasjonMedVarselTypeForAktivitet(aktivitetsId, varselType)
+        return varselDAO.finnesBrukernotifikasjonMedVarselTypeForAktivitet(aktivitetsId, varselType)
     }
-    open fun setDone(aktivitetId: Long, varseltype: VarselType) = brukerNotifikasjonDAO.setDone(aktivitetId, varseltype)
-    open fun setDone(aktivitetId: ArenaId, varseltype: VarselType) = brukerNotifikasjonDAO.setDone(aktivitetId, varseltype)
-    open fun setDoneGrupperingsID(uuid: UUID) = brukerNotifikasjonDAO.setDoneGrupperingsID(uuid)
+    open fun setDone(aktivitetId: Long, varseltype: VarselType) = varselDAO.setDone(aktivitetId, varseltype)
+    open fun setDone(aktivitetId: ArenaId, varseltype: VarselType) = varselDAO.setDone(aktivitetId, varseltype)
+    open fun setDoneGrupperingsID(uuid: UUID) = varselDAO.setDoneGrupperingsID(uuid)
 
     @Transactional
     @Timed(value = "brukernotifikasjon_opprett_oppgave_sendt")
@@ -56,7 +55,7 @@ open class BrukernotifikasjonService(
         val offset: Long = brukernotifikasjonProducer.send(skalSendes)
         log.debug(
             "Brukernotifikasjon {} med type {} publisert med offset {}",
-            skalSendes.brukernotifikasjonId.toString(),
+            skalSendes.varselId.toString(),
             skalSendes.varselType.brukernotifikasjonType.name,
             offset
         )
@@ -84,7 +83,7 @@ open class BrukernotifikasjonService(
         val uuid = UUID.randomUUID()
         val fnr = personService.getFnrForAktorId(varsel.aktorId)
         val gjeldendeOppfolgingsperiode = sistePeriodeService.hentGjeldendeOppfolgingsperiodeMedFallback(varsel.aktorId)
-        val brukernotifikasjonId = brukerNotifikasjonDAO.opprettBrukernotifikasjonIOutbox(
+        val brukernotifikasjonId = varselDAO.opprettBrukernotifikasjonIOutbox(
             varsel.toUgåendeVarsel(
                 uuid,
                 gjeldendeOppfolgingsperiode,
@@ -92,7 +91,7 @@ open class BrukernotifikasjonService(
                 fnr
             )
         )
-        brukerNotifikasjonDAO.kobleAktivitetIdTilBrukernotifikasjon(brukernotifikasjonId, varsel.aktivitetId, varsel.aktitetVersion)
+        varselDAO.kobleAktivitetIdTilBrukernotifikasjon(brukernotifikasjonId, varsel.aktivitetId, varsel.aktitetVersion)
         return uuid
     }
 
@@ -107,19 +106,19 @@ open class BrukernotifikasjonService(
         val gjeldendeOppfolgingsperiode = sistePeriodeService.hentGjeldendeOppfolgingsperiodeMedFallback(aktorId)
 
         // epostTittel, epostBody og smsTekst settes til standartekst av brukernotifiaksjoenr hvis ikke satt
-        val brukernotifikasjonId = brukerNotifikasjonDAO.opprettBrukernotifikasjonIOutbox(
+        val brukernotifikasjonId = varselDAO.opprettBrukernotifikasjonIOutbox(
             arenaAktivitetVarsel.toUgåendeVarsel(
                 uuid,
                 gjeldendeOppfolgingsperiode,
                 aktivitetsplanBasepath,
             )
         )
-        brukerNotifikasjonDAO.kobleArenaAktivitetIdTilBrukernotifikasjon(brukernotifikasjonId, arenaAktivitetVarsel.arenaAktivitetId)
+        varselDAO.kobleArenaAktivitetIdTilBrukernotifikasjon(brukernotifikasjonId, arenaAktivitetVarsel.arenaAktivitetId)
         // Populer brukernotifikasjon koblingstabell til vanlig aktivitet også
         arenaAktivitetVarsel.aktivitetId
             .flatMap { id -> aktivitetDao.hentMaybeAktivitet(id) }
             .ifPresent { aktivitet ->
-                brukerNotifikasjonDAO.kobleAktivitetIdTilBrukernotifikasjon(
+                varselDAO.kobleAktivitetIdTilBrukernotifikasjon(
                     brukernotifikasjonId,
                     aktivitet.id,
                     aktivitet.versjon
