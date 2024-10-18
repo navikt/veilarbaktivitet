@@ -1,6 +1,8 @@
 package no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse
 
 import no.nav.common.json.JsonUtils
+import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.MinSideVarselId
+import java.util.*
 
 enum class VarselEventTypeDto {
     opprettet,
@@ -27,6 +29,14 @@ fun String.deserialiserVarselHendelse(): VarselHendelse {
     if (appNavn != "veilarbaktivitet") return VarselFraAnnenApp
     return when (eventName == VarselEventTypeDto.eksternStatusOppdatert.name) {
         true -> jsonTree.deserialiserEksternVarselHendelse()
-        else -> JsonUtils.fromJson(this, InternVarselHendelseDTO::class.java)
+        else -> {
+            return InternVarselHendelseDTO(
+                namespace = jsonTree["namespace"].asText(),
+                varseltype = VarselEventTypeDto.valueOf(jsonTree["varseltype"].asText()),
+                appnavn = appNavn,
+                varselId = MinSideVarselId(UUID.fromString(jsonTree["varselId"].asText())),
+                eventName = InternVarselHendelseType.valueOf(eventName)
+            )
+        }
     }
 }
