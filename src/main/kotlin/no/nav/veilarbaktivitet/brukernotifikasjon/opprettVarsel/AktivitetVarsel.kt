@@ -35,7 +35,7 @@ data class AktivitetVarsel(
         fnr: Person.Fnr
     ): UtgåendeVarsel {
         return UtgåendeVarsel(
-            MinSideBrukernotifikasjonsId(brukernotifikasjonsId),
+            MinSideVarselId(brukernotifikasjonsId),
             fnr,
             ditNavTekst,
             gjeldendeOppfolgingsperiode,

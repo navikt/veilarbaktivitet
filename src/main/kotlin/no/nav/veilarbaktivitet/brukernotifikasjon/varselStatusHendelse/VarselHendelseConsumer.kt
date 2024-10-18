@@ -2,7 +2,6 @@ package no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse
 
 import no.nav.veilarbaktivitet.brukernotifikasjon.kvittering.KvitteringDAO
 import no.nav.veilarbaktivitet.brukernotifikasjon.kvittering.VarselHendelseMetrikk
-import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.MinSideBrukernotifikasjonsId
 import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.VarselDAO
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
@@ -39,7 +38,7 @@ open class VarselHendelseConsumer(
     }
 
     open fun behandleEksternVarselHendelse(hendelse: EksternVarsling) {
-        val varselId = MinSideBrukernotifikasjonsId(hendelse.varselId)
+        val varselId = hendelse.varselId
         log.info(
             "Konsumerer Ekstern-varsel-hendelse varselId={}, varselType={}",
             varselId,
@@ -64,10 +63,13 @@ open class VarselHendelseConsumer(
                 kvitteringDAO.setEksternVarselStatusOK(varselId)
                 log.info("Ekstern varsel sendt for varselId={}", varselId)
             }
+            is Bestilt -> {
+                log.info("Ekstern varsel besilt for varselId={}", varselId)
+            }
             is Renotifikasjon -> {}
             is Feilet -> {
                 log.warn(
-                    "varsel feilet for notifikasjon varselId={} med melding {}",
+                    "Ekstern varsel feilet for varselId={} med melding {}",
                     varselId,
                     hendelse.feilmelding
                 )

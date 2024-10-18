@@ -9,7 +9,7 @@ import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonsType;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselStatus;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
 import no.nav.veilarbaktivitet.brukernotifikasjon.kvittering.VarselKvitteringStatus;
-import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.MinSideBrukernotifikasjonsId;
+import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.MinSideVarselId;
 import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.UtgåendeVarsel;
 import no.nav.veilarbaktivitet.person.Person;
 import org.springframework.jdbc.core.RowMapper;
@@ -152,7 +152,7 @@ public class VarselDAO {
                 """, params);
     }
 
-    public boolean finnesBrukernotifikasjon(MinSideBrukernotifikasjonsId bestillingsId) {
+    public boolean finnesBrukernotifikasjon(MinSideVarselId bestillingsId) {
         SqlParameterSource params = new MapSqlParameterSource()
                 .addValue("brukernotifikasjon_id", bestillingsId.getValue().toString());
         String sql = """

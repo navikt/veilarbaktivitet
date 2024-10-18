@@ -4,7 +4,7 @@ import lombok.Getter
 import no.nav.common.json.JsonUtils
 import no.nav.veilarbaktivitet.brukernotifikasjon.avslutt.AvsluttBrukernotifikasjonCron
 import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.InaktiverVarselDto
-import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.MinSideBrukernotifikasjonsId
+import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.MinSideVarselId
 import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendBrukernotifikasjonCron
 import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.EksternVarselHendelseDTO
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringTemplate
@@ -82,7 +82,7 @@ class TestProducer(
     val brukernotifikasjonVarselHendelseProducer: KafkaStringTemplate,
     val topic: String) {
 
-    fun publiserBrukernotifikasjonVarselHendelse(varselId: MinSideBrukernotifikasjonsId, eksternVarselHendelseDTO: EksternVarselHendelseDTO): SendResult<String, String> {
+    fun publiserBrukernotifikasjonVarselHendelse(varselId: MinSideVarselId, eksternVarselHendelseDTO: EksternVarselHendelseDTO): SendResult<String, String> {
         return brukernotifikasjonVarselHendelseProducer.send(
             topic, varselId.value.toString(), JsonUtils.toJson(eksternVarselHendelseDTO)
         ).get()

@@ -18,7 +18,7 @@ data class ArenaAktivitetVarsel(
         aktivitetBasePath: String,
     ): UtgåendeVarsel {
         return UtgåendeVarsel(
-            MinSideBrukernotifikasjonsId(uuid),
+            MinSideVarselId(uuid),
             fnr,
             ditNavTekst,
             gjeldendeOppfolgingsperiode,

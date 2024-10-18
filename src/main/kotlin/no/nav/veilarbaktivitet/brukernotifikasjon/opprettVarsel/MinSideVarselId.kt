@@ -2,6 +2,6 @@ package no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel
 
 import java.util.*
 
-data class MinSideBrukernotifikasjonsId(
+data class MinSideVarselId(
     val value: UUID
 )

@@ -4,7 +4,7 @@ import junit.framework.TestCase.assertEquals
 import lombok.SneakyThrows
 import no.nav.tms.varsel.action.Varseltype
 import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.InaktiverVarselDto
-import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.MinSideBrukernotifikasjonsId
+import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.MinSideVarselId
 import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.EksternVarselHendelseDTO
 import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.EksternVarselStatus
 import no.nav.veilarbaktivitet.person.Person.Fnr
@@ -47,7 +47,7 @@ class BrukernotifikasjonAsserts(var config: BrukernotifikasjonAssertsConfig) {
 
     fun simulerEksternVarselStatusSendt(varsel: OpprettVarselDto) {
         simulerEksternVarselStatusHendelse(
-            MinSideBrukernotifikasjonsId(UUID.fromString(varsel.varselId)),
+            MinSideVarselId(UUID.fromString(varsel.varselId)),
             EksternVarselStatus.sendt,
             varsel.type
         )
@@ -55,14 +55,14 @@ class BrukernotifikasjonAsserts(var config: BrukernotifikasjonAssertsConfig) {
 
     fun simulerEksternVarselStatusFeilet(varsel: OpprettVarselDto) {
         simulerEksternVarselStatusHendelse(
-            MinSideBrukernotifikasjonsId(UUID.fromString(varsel.varselId)),
+            MinSideVarselId(UUID.fromString(varsel.varselId)),
             EksternVarselStatus.feilet,
             varsel.type
         )
     }
 
     @SneakyThrows
-    private fun simulerEksternVarselStatusHendelse(varselId: MinSideBrukernotifikasjonsId, status: EksternVarselStatus, varselType: Varseltype) {
+    private fun simulerEksternVarselStatusHendelse(varselId: MinSideVarselId, status: EksternVarselStatus, varselType: Varseltype) {
         val eksternVarsel = eksternVarselHendelse(varselId, status, varselType)
         val result = brukernotifikasjonVarselHendelseProducer.publiserBrukernotifikasjonVarselHendelse(
             varselId, eksternVarsel
@@ -76,7 +76,7 @@ class BrukernotifikasjonAsserts(var config: BrukernotifikasjonAssertsConfig) {
         kafkaTestService.harKonsumertAlleMeldinger(config.brukernotifikasjonBrukervarselTopic, brukervarselConsumer.consumer)
     }
 
-    private fun eksternVarselHendelse(varselId: MinSideBrukernotifikasjonsId, status: EksternVarselStatus, varselType: Varseltype): EksternVarselHendelseDTO {
+    private fun eksternVarselHendelse(varselId: MinSideVarselId, status: EksternVarselStatus, varselType: Varseltype): EksternVarselHendelseDTO {
         return EksternVarselHendelseDTO(
             namespace = config.namespace,
             appnavn = config.appname,
