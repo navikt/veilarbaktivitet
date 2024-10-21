@@ -54,7 +54,7 @@ import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecor
 
 class BrukernotifikasjonTest extends SpringBootTestBase {
     @Autowired
-    BrukernotifikasjonService brukernotifikasjonService;
+    MinsideVarselService brukernotifikasjonService;
 
     @Autowired
     AvsluttBrukernotifikasjonCron avsluttBrukernotifikasjonCron;

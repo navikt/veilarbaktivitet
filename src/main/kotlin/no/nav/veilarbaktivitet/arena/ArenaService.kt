@@ -15,7 +15,7 @@ import no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavService
 import no.nav.veilarbaktivitet.avtalt_med_nav.Forhaandsorientering
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDAO
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO
-import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService
+import no.nav.veilarbaktivitet.brukernotifikasjon.MinsideVarselService
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType
 import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.ArenaAktivitetVarsel
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeDAO
@@ -32,7 +32,7 @@ import java.util.*
 open class ArenaService(
     private val fhoDAO: ForhaandsorienteringDAO,
     private val meterRegistry: MeterRegistry,
-    private val brukernotifikasjonArenaAktivitetService: BrukernotifikasjonService,
+    private val brukernotifikasjonArenaAktivitetService: MinsideVarselService,
     private val veilarbarenaClient: VeilarbarenaClient,
     private val idMappingDAO: IdMappingDAO,
     private val personService: PersonService,

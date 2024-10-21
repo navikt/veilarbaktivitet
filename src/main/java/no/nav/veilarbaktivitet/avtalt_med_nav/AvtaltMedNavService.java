@@ -10,7 +10,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
-import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
+import no.nav.veilarbaktivitet.brukernotifikasjon.MinsideVarselService;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
 import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.AktivitetVarsel;
 import no.nav.veilarbaktivitet.person.Innsender;
@@ -31,7 +31,7 @@ public class AvtaltMedNavService {
     private final AktivitetDAO aktivitetDAO;
     private final ForhaandsorienteringDAO fhoDAO;
     private final MeterRegistry meterRegistry;
-    private final BrukernotifikasjonService brukernotifikasjonService;
+    private final MinsideVarselService brukernotifikasjonService;
 
     public static final String AVTALT_MED_NAV_COUNTER = "aktivitet.avtalt.med.nav";
     public static final String AKTIVITET_TYPE_LABEL = "AktivitetType";
@@ -44,7 +44,7 @@ public class AvtaltMedNavService {
                                AktivitetDAO aktivitetDAO,
                                ForhaandsorienteringDAO fhoDAO,
                                MeterRegistry meterRegistry,
-                               BrukernotifikasjonService brukernotifikasjonService) {
+                               MinsideVarselService brukernotifikasjonService) {
 
         this.metricService = metricService;
         this.aktivitetDAO = aktivitetDAO;

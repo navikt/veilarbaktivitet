@@ -3,7 +3,7 @@ package no.nav.veilarbaktivitet.brukernotifikasjon.varsel;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
-import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
+import no.nav.veilarbaktivitet.brukernotifikasjon.MinsideVarselService;
 import no.nav.veilarbaktivitet.util.ExcludeFromCoverageGenerated;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -17,7 +17,7 @@ import java.util.concurrent.ScheduledExecutorService;
 @EnableScheduling
 @RequiredArgsConstructor
 public class SendBrukernotifikasjonCron {
-    private final BrukernotifikasjonService brukernotifikasjonService;
+    private final MinsideVarselService brukernotifikasjonService;
     private final VarselDAO varselDao;
     private final VarselMetrikk varselMetrikk;
     private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);

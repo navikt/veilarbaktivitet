@@ -5,7 +5,7 @@ import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
-import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
+import no.nav.veilarbaktivitet.brukernotifikasjon.MinsideVarselService;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
 import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.AktivitetVarsel;
 import no.nav.veilarbaktivitet.util.ExcludeFromCoverageGenerated;
@@ -24,7 +24,7 @@ import static java.time.Duration.ofHours;
 @RequiredArgsConstructor
 public class MoteSMSService {
     private final MoteSmsDAO moteSmsDAO;
-    private final BrukernotifikasjonService brukernotifikasjonService;
+    private final MinsideVarselService brukernotifikasjonService;
     private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
 
     @Scheduled(

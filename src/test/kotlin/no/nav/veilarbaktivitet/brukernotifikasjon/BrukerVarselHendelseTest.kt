@@ -13,14 +13,16 @@ import no.nav.veilarbaktivitet.brukernotifikasjon.kvittering.VarselKvitteringSta
 import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.AktivitetVarsel
 import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendBrukernotifikasjonCron
 import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.VarselDAO
-import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.*
+import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.EksternVarselHendelseDTO
+import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.EksternVarselKanal
+import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.EksternVarselStatus
+import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.VarselEventTypeDto
 import no.nav.veilarbaktivitet.db.DbTestUtils
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker
 import no.nav.veilarbaktivitet.mock_nav_modell.NavMockService
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder
 import no.nav.veilarbaktivitet.util.KafkaTestService
 import org.apache.kafka.clients.consumer.Consumer
-import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
@@ -34,7 +36,7 @@ import java.util.*
 
 internal class BrukerVarselHendelseTest(
     @Autowired
-    val brukernotifikasjonService: BrukernotifikasjonService,
+    val minsideVarselService: MinsideVarselService,
     @Autowired
     val avsluttBrukernotifikasjonCron: AvsluttBrukernotifikasjonCron,
     @Autowired
@@ -191,7 +193,7 @@ internal class BrukerVarselHendelseTest(
 //    }
 
     private fun opprettOppgave(mockBruker: MockBruker, aktivitetDTO: AktivitetDTO): OpprettVarselDto {
-        brukernotifikasjonService.opprettVarselPaaAktivitet(
+        minsideVarselService.opprettVarselPaaAktivitet(
             AktivitetVarsel(
                 aktivitetDTO.id.toLong(),
                 aktivitetDTO.versjon.toLong(),

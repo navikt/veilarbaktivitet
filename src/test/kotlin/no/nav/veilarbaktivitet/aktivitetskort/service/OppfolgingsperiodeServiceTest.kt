@@ -1,7 +1,7 @@
 package no.nav.veilarbaktivitet.aktivitetskort.service
 
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService
-import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService
+import no.nav.veilarbaktivitet.brukernotifikasjon.MinsideVarselService
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingClient
 import no.nav.veilarbaktivitet.oppfolging.periode.*
 import no.nav.veilarbaktivitet.person.Person
@@ -16,7 +16,7 @@ import java.util.*
 class OppfolgingsperiodeServiceTest {
     private lateinit var oppfolgingClient: OppfolgingClient
     private lateinit var aktivitetService: AktivitetService
-    private lateinit var brukernotifikasjonService: BrukernotifikasjonService
+    private lateinit var minsideVarselService: MinsideVarselService
     private lateinit var sistePeriodeDAO: SistePeriodeDAO
     private lateinit var oppfolgingsperiodeDAO: OppfolgingsperiodeDAO
 
@@ -32,10 +32,10 @@ class OppfolgingsperiodeServiceTest {
     fun setup() {
         oppfolgingClient = Mockito.mock(OppfolgingClient::class.java)
         aktivitetService = Mockito.mock(AktivitetService::class.java)
-        brukernotifikasjonService = Mockito.mock(BrukernotifikasjonService::class.java)
+        minsideVarselService = Mockito.mock(MinsideVarselService::class.java)
         sistePeriodeDAO = Mockito.mock(SistePeriodeDAO::class.java)
         oppfolgingsperiodeDAO = Mockito.mock(OppfolgingsperiodeDAO::class.java)
-        oppfolgingsperiodeService = OppfolgingsperiodeService(aktivitetService, brukernotifikasjonService, sistePeriodeDAO, oppfolgingsperiodeDAO, oppfolgingClient)
+        oppfolgingsperiodeService = OppfolgingsperiodeService(aktivitetService, minsideVarselService, sistePeriodeDAO, oppfolgingsperiodeDAO, oppfolgingClient)
     }
 
     @Test

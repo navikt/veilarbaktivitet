@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service
 import java.time.ZonedDateTime
 
 @Service
-class BrukernotifikasjonProducer(
+class MinsideVarselProducer(
     @Value("\${topic.ut.brukernotifikasjon.brukervarsel}")
     private var brukervarselTopic: String,
     @Value("\${app.env.appname}")
@@ -23,7 +23,7 @@ class BrukernotifikasjonProducer(
     private val producer: KafkaStringTemplate
 ) {
 
-    private val log = LoggerFactory.getLogger(BrukernotifikasjonProducer::class.java)
+    private val log = LoggerFactory.getLogger(MinsideVarselProducer::class.java)
 
     private fun toBrukerVarsel(skalSendes: SkalSendes, varselType: Varseltype): String {
         return VarselActionBuilder.opprett {

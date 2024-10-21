@@ -8,7 +8,7 @@ import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
-import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
+import no.nav.veilarbaktivitet.brukernotifikasjon.MinsideVarselService;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
 import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.person.Person;
@@ -36,7 +36,7 @@ public class DelingAvCvService {
     private final IAuthService authService;
     private final AktivitetService aktivitetService;
     private final StillingFraNavProducerClient stillingFraNavProducerClient;
-    private final BrukernotifikasjonService brukernotifikasjonService;
+    private final MinsideVarselService brukernotifikasjonService;
     private final StillingFraNavMetrikker metrikker;
 
     public boolean aktivitetAlleredeOpprettetForBestillingsId(String bestillingsId) {

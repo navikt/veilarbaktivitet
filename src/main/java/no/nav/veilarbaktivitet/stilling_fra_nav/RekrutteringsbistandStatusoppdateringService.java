@@ -8,7 +8,7 @@ import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
-import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
+import no.nav.veilarbaktivitet.brukernotifikasjon.MinsideVarselService;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
 import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.AktivitetVarsel;
 import no.nav.veilarbaktivitet.person.Person;
@@ -24,7 +24,7 @@ public class RekrutteringsbistandStatusoppdateringService {
     public static final String IKKE_FATT_JOBBEN_TEKST = "NAV har gjort en oppdatering på denne stillingen";
     private final AktivitetDAO aktivitetDAO;
     private final StillingFraNavMetrikker stillingFraNavMetrikker;
-    private final BrukernotifikasjonService brukernotifikasjonService;
+    private final MinsideVarselService brukernotifikasjonService;
 
     private void maybeBestillBrukernotifikasjon(AktivitetData aktivitetData, VarselType varselType) {
         if (brukernotifikasjonService.finnesBrukernotifikasjonMedVarselTypeForAktivitet(aktivitetData.getId(), varselType)) {

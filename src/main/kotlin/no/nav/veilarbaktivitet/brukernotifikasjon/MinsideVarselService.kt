@@ -19,8 +19,8 @@ import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Service
-open class BrukernotifikasjonService(
-    val brukernotifikasjonProducer: BrukernotifikasjonProducer,
+open class MinsideVarselService(
+    val minsideVarselProducer: MinsideVarselProducer,
     val varselDAO: VarselDAO,
     val aktivitetDao: AktivitetDAO,
     val manuellStatusClient: ManuellStatusV2Client,
@@ -29,7 +29,7 @@ open class BrukernotifikasjonService(
     val aktivitetsplanBasepath: String,
     var sistePeriodeService: SistePeriodeService
 ) {
-    private val log = LoggerFactory.getLogger(BrukernotifikasjonService::class.java)
+    private val log = LoggerFactory.getLogger(MinsideVarselService::class.java)
     private val secureLogs: Logger = LoggerFactory.getLogger("SecureLog")
 
     open fun hentVarselSomSkalSendes(maxAntall: Int): List<SkalSendes> = varselDAO.hentVarselSomSkalSendes(maxAntall)
@@ -52,9 +52,9 @@ open class BrukernotifikasjonService(
     }
 
     private fun sendVarsel(skalSendes: SkalSendes) {
-        val offset: Long = brukernotifikasjonProducer.send(skalSendes)
+        val offset: Long = minsideVarselProducer.send(skalSendes)
         log.debug(
-            "Brukernotifikasjon {} med type {} publisert med offset {}",
+            "Minside varsel {} med type {} publisert med offset {}",
             skalSendes.varselId.toString(),
             skalSendes.varselType.brukernotifikasjonType.name,
             offset
