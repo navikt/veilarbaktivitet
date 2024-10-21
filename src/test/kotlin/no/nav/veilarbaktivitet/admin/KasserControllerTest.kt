@@ -25,7 +25,7 @@ internal class KasserControllerTest : SpringBootTestBase() {
     @BeforeAll
     fun beforeAll() {
         mockBruker = navMockService.createBruker(BrukerOptions.happyBruker())
-        veilederSomKanKassere = navMockService.createVeileder(mockBruker = mockBruker)
+        veilederSomKanKassere = navMockService.createVeileder(ident = "Z999999", mockBruker = mockBruker)
     }
 
     @Test
