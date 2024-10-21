@@ -39,15 +39,10 @@ open class VarselHendelseConsumer(
 
     open fun behandleEksternVarselHendelse(hendelse: EksternVarsling) {
         val varselId = hendelse.varselId
-        log.info(
-            "Oppdaterer status på ekstern varsel varselId={}, status={}",
-            varselId,
-            hendelse.javaClass.simpleName
-        )
 
         if (!varselDAO.finnesBrukernotifikasjon(varselId)) {
             log.warn(
-                "Mottok kvittering for brukernotifikasjon varselId={} som ikke finnes i våre systemer",
+                "Mottok ekstern-varsel-hendelse for varsel varselId={} som ikke finnes i våre systemer",
                 varselId
             )
             throw IllegalArgumentException("Ugyldig varselId.")
@@ -66,7 +61,9 @@ open class VarselHendelseConsumer(
             is Bestilt -> {
                 log.info("Ekstern varsel besilt for varselId={}", varselId)
             }
-            is Renotifikasjon -> {}
+            is Renotifikasjon -> {
+                log.info("Ekstern varsel renotifikasjon for varselId={}", varselId)
+            }
             is Feilet -> {
                 log.warn(
                     "Ekstern varsel feilet for varselId={} med melding {}",
