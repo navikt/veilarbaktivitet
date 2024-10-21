@@ -2,7 +2,6 @@ package no.nav.veilarbaktivitet.admin
 
 import no.nav.veilarbaktivitet.SpringBootTestBase
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
-import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType.KASSERT
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions
@@ -11,7 +10,6 @@ import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder
 import no.nav.veilarbaktivitet.person.Innsender
 import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -26,7 +24,7 @@ internal class KasserControllerTest : SpringBootTestBase() {
 
     @BeforeAll
     fun beforeAll() {
-        mockBruker = navMockService.createHappyBruker(BrukerOptions.happyBruker())
+        mockBruker = navMockService.createBruker(BrukerOptions.happyBruker())
         veilederSomKanKassere = navMockService.createVeileder(ident = "Z999999", mockBruker = mockBruker)
     }
 

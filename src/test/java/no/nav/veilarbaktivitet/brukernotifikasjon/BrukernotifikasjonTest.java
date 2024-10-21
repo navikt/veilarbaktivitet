@@ -27,7 +27,6 @@ import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendBrukernotifikasjonC
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
-import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import no.nav.veilarbaktivitet.util.AktivitetTestService;
 import no.nav.veilarbaktivitet.util.KafkaTestService;
@@ -122,7 +121,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
     @SneakyThrows
     @Test
     void happy_case_oppgave() {
-        MockBruker mockBruker = MockNavService.createHappyBruker();
+        MockBruker mockBruker = navMockService.createBruker(BrukerOptions.happyBruker());
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettAktivitet(mockBruker, skalOpprettes);
@@ -135,7 +134,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
     @SneakyThrows
     @Test
     void skalSendeOppgaveMedEgentTekst() {
-        MockBruker mockBruker = MockNavService.createHappyBruker();
+        MockBruker mockBruker = navMockService.createBruker(BrukerOptions.happyBruker());
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettAktivitet(mockBruker, skalOpprettes);
@@ -176,7 +175,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
     @SneakyThrows
     @Test
     void skalSendeBeskjedMedEgentTekst() {
-        MockBruker mockBruker = MockNavService.createHappyBruker();
+        MockBruker mockBruker = navMockService.createHappyBruker();
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettAktivitet(mockBruker, skalOpprettes);
@@ -211,7 +210,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
     @SneakyThrows
     @Test
     void skal_sendeBeskjed() {
-        MockBruker mockBruker = MockNavService.createHappyBruker();
+        MockBruker mockBruker = navMockService.createHappyBruker();
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettAktivitet(mockBruker, skalOpprettes);
@@ -237,7 +236,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
 
     @Test
     void skal_ikke_produsere_meldinger_for_avsluttet_oppgave() {
-        MockBruker mockBruker = MockNavService.createHappyBruker();
+        MockBruker mockBruker = navMockService.createHappyBruker();
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettAktivitet(mockBruker, skalOpprettes);
@@ -254,7 +253,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
 
     @Test
     void skal_ikke_sende_meldinger_for_avbrutte_aktiviteter() {
-        MockBruker mockBruker = MockNavService.createHappyBruker();
+        MockBruker mockBruker = navMockService.createHappyBruker();
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
 
@@ -293,7 +292,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
 
     @Test
     void skal_lukke_brukernotifikasjonsOppgave_nar_aktivitet_blir_avbrutt() {
-        MockBruker mockBruker = MockNavService.createHappyBruker();
+        MockBruker mockBruker = navMockService.createHappyBruker();
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettAktivitet(mockBruker, skalOpprettes);
@@ -343,8 +342,8 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
 
     @Test
     void skal_kunne_opprette_brukernotifikasjon_pa_fho_pa_arena_aktiviteter_som_ikke_er_migrert_og_ha_lenke_med_riktig_id() {
-        var mockBruker = navMockService.createHappyBruker(BrukerOptions.happyBruker());
-        var mockVeileder = MockNavService.createVeileder(mockBruker);
+        var mockBruker = navMockService.createBruker(BrukerOptions.happyBruker());
+        var mockVeileder = navMockService.createVeileder(mockBruker);
         var arenaId = new ArenaId("ARENATA123");
         aktivitetTestService.opprettFHOForArenaAktivitet(mockBruker, arenaId, mockVeileder);
 
@@ -357,8 +356,8 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
     @Test
     void skal_kunne_opprette_brukernotifications_pa_fho_pa_arena_aktiviteter_som_ER_migrert_og_ha_lenke_med_riktig_id() {
         when(unleash.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)).thenReturn(true);
-        var mockBruker = navMockService.createHappyBruker(BrukerOptions.happyBruker());
-        var mockVeileder = MockNavService.createVeileder(mockBruker);
+        var mockBruker = navMockService.createBruker(BrukerOptions.happyBruker());
+        var mockVeileder = navMockService.createVeileder(mockBruker);
         var arenaId = new ArenaId("ARENATA123");
         // Opprett ekstern aktivitet
         var aktivitetskortMelding = new KafkaAktivitetskortWrapperDTO(
@@ -387,8 +386,8 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
 
     @Test
     void skal_lukke_brukernotifikasjonsOppgave_nar_eksterne_lonnstilskudd_blir_avbrutt() {
-        var mockBruker = navMockService.createHappyBruker(BrukerOptions.happyBruker());
-        var mockVeileder = MockNavService.createVeileder(mockBruker);
+        var mockBruker = navMockService.createBruker(BrukerOptions.happyBruker());
+        var mockVeileder = navMockService.createVeileder(mockBruker);
         // Opprett ekstern aktivitet
         var serie = new AktivitetskortSerie(mockBruker, AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD);
         var aktivitetskortMelding = serie.ny(AktivitetskortStatus.GJENNOMFORES, ZonedDateTime.now());
@@ -410,8 +409,8 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
 
     @Test
     void skal_lukke_brukernotifikasjonsOppgave_nar_eksterne_arena_tiltak_blir_avbrutt() {
-        var mockBruker = navMockService.createHappyBruker(BrukerOptions.happyBruker());
-        var mockVeileder = MockNavService.createVeileder(mockBruker);
+        var mockBruker = navMockService.createBruker(BrukerOptions.happyBruker());
+        var mockVeileder = navMockService.createVeileder(mockBruker);
         var serie = ArenaAktivitetskortSerie.of(mockBruker, "MIDL");
         // Opprett FHO
         aktivitetTestService.opprettFHOForArenaAktivitet(mockBruker, serie.getArenaId(), mockVeileder);
@@ -427,8 +426,8 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
 
     @Test
     void skal_lukke_brukernotifikasjonsOppgave_nar_eksterne_arena_tiltak_blir_avbrutt_men_fho_opprettet_etter_migrering() {
-        var mockBruker = navMockService.createHappyBruker(BrukerOptions.happyBruker());
-        var mockVeileder = MockNavService.createVeileder(mockBruker);
+        var mockBruker = navMockService.createBruker(BrukerOptions.happyBruker());
+        var mockVeileder = navMockService.createVeileder(mockBruker);
         // Opprett ekstern aktivitet og avbryter den
         var serie = ArenaAktivitetskortSerie.of(mockBruker, "MIDL");
         var aktivitetskortMelding = serie.ny(AktivitetskortStatus.GJENNOMFORES, ZonedDateTime.now());

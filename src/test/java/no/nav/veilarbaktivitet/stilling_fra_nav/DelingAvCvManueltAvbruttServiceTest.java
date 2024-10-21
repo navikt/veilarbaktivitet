@@ -57,7 +57,7 @@ class DelingAvCvManueltAvbruttServiceTest extends SpringBootTestBase {
 
     @Test
     void happy_case() {
-        MockBruker mockBruker = navMockService.createHappyBruker(BrukerOptions.happyBruker());
+        MockBruker mockBruker = navMockService.createBruker(BrukerOptions.happyBruker());
         AktivitetDTO skalBehandles = aktivitetTestService.opprettStillingFraNav(mockBruker);
         AktivitetDTO skalIkkeBehandles = aktivitetTestService.opprettStillingFraNav(mockBruker);
 
