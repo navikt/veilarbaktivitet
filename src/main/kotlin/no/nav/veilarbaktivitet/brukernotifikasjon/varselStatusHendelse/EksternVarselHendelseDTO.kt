@@ -33,6 +33,7 @@ class Renotifikasjon(
 class Sendt(
     val varseltype: Varseltype,
     varselId: MinSideVarselId,
+    val kanal: EksternVarselKanal
 ): EksternVarsling(varselId, VarselHendelseEventType.sendt_ekstern)
 class Bestilt(
     val varseltype: Varseltype,
@@ -50,10 +51,11 @@ fun JsonNode.deserialiserEksternVarselHendelse(): EksternVarsling {
     val varseltype = Varseltype.valueOf(this["varseltype"].asText().replaceFirstChar { it.titlecase()})
     return when (eksternStatus) {
         EksternVarselStatus.sendt -> {
+            val kanal = EksternVarselKanal.valueOf(this["kanal"].asText())
             when (this["renotifikasjon"].asBoolean()) {
                 true -> Renotifikasjon(varseltype, varselId)
                 else -> {
-                    Sendt(varseltype, varselId)
+                    Sendt(varseltype, varselId, kanal)
                 }
             }
         }

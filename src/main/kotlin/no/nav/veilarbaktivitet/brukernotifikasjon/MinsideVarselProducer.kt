@@ -63,7 +63,7 @@ class MinsideVarselProducer(
             BrukernotifikasjonsType.OPPGAVE -> Varseltype.Oppgave
             BrukernotifikasjonsType.BESKJED -> Varseltype.Beskjed
         }
-        log.info("Oppretter varsel med varselId {} og varselType {}", skalSendes.varselId, varselType)
+        log.info("Minside varsel opprettet i outbox med varselId {} og varselType {}", skalSendes.varselId, varselType)
         return publiserPåBrukernotifikasjonTopic(skalSendes, varselType)
     }
 

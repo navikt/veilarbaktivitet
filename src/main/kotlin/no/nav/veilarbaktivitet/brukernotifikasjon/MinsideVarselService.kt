@@ -54,10 +54,10 @@ open class MinsideVarselService(
     private fun sendVarsel(skalSendes: SkalSendes) {
         val offset: Long = minsideVarselProducer.send(skalSendes)
         log.debug(
-            "Minside varsel {} med type {} publisert med offset {}",
-            skalSendes.varselId.toString(),
+            "Minside varsel publisert på kafka med offset={} med type={} varselId={}",
+            offset,
             skalSendes.varselType.brukernotifikasjonType.name,
-            offset
+            skalSendes.varselId.toString(),
         )
     }
 

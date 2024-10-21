@@ -56,10 +56,10 @@ open class VarselHendelseConsumer(
         when (hendelse) {
             is Sendt -> {
                 kvitteringDAO.setEksternVarselStatusOK(varselId)
-                log.info("Ekstern varsel sendt for varselId={}", varselId)
+                log.info("Ekstern varsel sendt for varselId={} kanal={}", varselId, hendelse.kanal)
             }
             is Bestilt -> {
-                log.info("Ekstern varsel besilt for varselId={}", varselId)
+                log.info("Ekstern varsel bestilt for varselId={}", varselId)
             }
             is Renotifikasjon -> {
                 log.info("Ekstern varsel renotifikasjon for varselId={}", varselId)
