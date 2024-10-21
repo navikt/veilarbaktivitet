@@ -21,7 +21,6 @@ import no.nav.veilarbaktivitet.avtalt_med_nav.Type;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
-import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -74,9 +73,9 @@ class AktivitetsplanRSTest extends SpringBootTestBase {
 
     @BeforeEach
     void moreSettup() {
-        mockBruker = navMockService.createHappyBruker(BrukerOptions.happyBruker());
-        mockBrukersVeileder = MockNavService.createVeileder(mockBruker);
-        annenMockVeilederMedNasjonalTilgang = MockNavService.createVeilederMedNasjonalTilgang();
+        mockBruker = navMockService.createBruker(BrukerOptions.happyBruker());
+        mockBrukersVeileder = navMockService.createVeileder(mockBruker);
+        annenMockVeilederMedNasjonalTilgang = navMockService.createVeilederMedNasjonalTilgang();
         aktivVeileder = mockBrukersVeileder;
     }
 
@@ -235,13 +234,13 @@ class AktivitetsplanRSTest extends SpringBootTestBase {
 
     private void gitt_at_jeg_har_aktiviteter_med_kontorsperre() {
         var enableKvp = mockBruker.getBrukerOptions().toBuilder().erUnderKvp(true).build();
-        MockNavService.updateBruker(mockBruker, enableKvp);
+        navMockService.updateBruker(mockBruker, enableKvp);
         gitt_at_jeg_har_folgende_aktiviteter(List.of(
                 nyttStillingssok(),
                 nyttStillingssok()
         ));
         var removeKvp = mockBruker.getBrukerOptions().toBuilder().erUnderKvp(false).build();
-        MockNavService.updateBruker(mockBruker, removeKvp);
+        navMockService.updateBruker(mockBruker, removeKvp);
         gitt_at_jeg_har_folgende_aktiviteter(List.of(
                 nyttStillingssok(),
                 nyttStillingssok()
@@ -250,10 +249,10 @@ class AktivitetsplanRSTest extends SpringBootTestBase {
 
     private void gitt_at_jeg_har_en_aktivitet_med_kontorsperre() {
         var enableKvp = mockBruker.getBrukerOptions().toBuilder().erUnderKvp(true).build();
-        MockNavService.updateBruker(mockBruker, enableKvp);
+        navMockService.updateBruker(mockBruker, enableKvp);
         gitt_at_jeg_har_folgende_aktiviteter(List.of(nyttStillingssok()));
         var removeKvp = mockBruker.getBrukerOptions().toBuilder().erUnderKvp(false).build();
-        MockNavService.updateBruker(mockBruker, removeKvp);
+        navMockService.updateBruker(mockBruker, removeKvp);
     }
 
     private void gitt_at_jeg_har_folgende_aktiviteter(List<AktivitetData> aktiviteter) {

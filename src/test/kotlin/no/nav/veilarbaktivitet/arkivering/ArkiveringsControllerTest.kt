@@ -29,7 +29,6 @@ import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.Test
 import org.springframework.http.HttpStatus
 import java.net.URI
-import java.net.URL
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -800,7 +799,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
 
     @Test
     fun `Kall mot arkiveringsendepunkt kaster 403 når oppfølgingsperiodeId mangler`() {
-        val bruker = navMockService.createHappyBruker()
+        val bruker = navMockService.createBruker()
         val veileder = navMockService.createVeileder(mockBruker = bruker)
 
         val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering/forhaandsvisning"
@@ -975,7 +974,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
     private fun hentBrukerOgVeileder(brukerFornavn: String, brukerEtternavn: String): Pair<MockBruker, MockVeileder> {
         val navn = Navn(brukerFornavn, null, brukerEtternavn)
         val brukerOptions = BrukerOptions.happyBruker().toBuilder().navn(navn).build()
-        val bruker = navMockService.createHappyBruker(brukerOptions)
+        val bruker = navMockService.createBruker(brukerOptions)
         val veileder = navMockService.createVeileder(mockBruker = bruker)
         return Pair(bruker, veileder)
     }
@@ -986,7 +985,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
     ): Pair<MockBruker, MockVeileder> {
         val navn = Navn(brukerFornavn, null, brukerEtternavn)
         val brukerOptions = BrukerOptions.happyBruker().toBuilder().erUnderKvp(true).navn(navn).build()
-        val bruker = navMockService.createHappyBruker(brukerOptions)
+        val bruker = navMockService.createBruker(brukerOptions)
         val veileder = navMockService.createVeileder(mockBruker = bruker)
         return Pair(bruker, veileder)
     }

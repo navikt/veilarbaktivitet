@@ -7,9 +7,6 @@ import no.nav.brukernotifikasjon.schemas.input.NokkelInput;
 import no.nav.brukernotifikasjon.schemas.input.OppgaveInput;
 import no.nav.doknotifikasjon.schemas.DoknotifikasjonStatus;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringAvroTemplate;
-import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions;
-import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
-import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.util.KafkaTestService;
 import org.apache.avro.specific.SpecificRecord;
@@ -33,10 +30,6 @@ public class BrukernotifikasjonAsserts {
 
     BrukernotifikasjonAssertsConfig config;
     KafkaTestService kafkaTestService;
-
-    public static MockBruker getBrukerSomIkkeKanVarsles() {
-        return MockNavService.createBruker(BrukerOptions.happyBrukerBuilder().erManuell(true).build());
-    }
 
     public BrukernotifikasjonAsserts(BrukernotifikasjonAssertsConfig config) {
         oppgaveConsumer = config.createOppgaveConsumer();
