@@ -72,7 +72,8 @@ class NavMockService(
     }
 
     fun getBrukerSomIkkeKanVarsles(): MockBruker {
-        val brukerOptions = BrukerOptions.happyBrukerBuilder().kanVarsles(false).build()
+        val brukerOptions = BrukerOptions.happyBruker()
+            .withKanVarsles(false)
 
         return this.createBruker(brukerOptions)
     }
