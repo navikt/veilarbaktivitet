@@ -40,7 +40,7 @@ open class VarselHendelseConsumer(
     open fun behandleEksternVarselHendelse(hendelse: EksternVarsling) {
         val varselId = hendelse.varselId
         log.info(
-            "Konsumerer Ekstern-varsel-hendelse varselId={}, varselType={}",
+            "Oppdaterer status på ekstern varsel varselId={}, varselType={}",
             varselId,
             hendelse.javaClass.simpleName
         )

@@ -63,7 +63,7 @@ class BrukernotifikasjonProducer(
             BrukernotifikasjonsType.OPPGAVE -> Varseltype.Oppgave
             BrukernotifikasjonsType.BESKJED -> Varseltype.Beskjed
         }
-        log.info("Oppretter varsel med varselId {} og varselType {}", skalSendes.varselType, varselType)
+        log.info("Oppretter varsel med varselId {} og varselType {}", skalSendes.varselId, varselType)
         return publiserPåBrukernotifikasjonTopic(skalSendes, varselType)
     }
 
