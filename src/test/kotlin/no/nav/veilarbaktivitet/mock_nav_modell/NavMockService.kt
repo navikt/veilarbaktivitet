@@ -13,7 +13,7 @@ class NavMockService(
     val oppfolgingsperiodeService: OppfolgingsperiodeService,
 ) {
 
-    fun createHappyBruker(brukerOptions: BrukerOptions = BrukerOptions.happyBruker(), fnr: Fnr? = null): MockBruker {
+    fun createBruker(brukerOptions: BrukerOptions = BrukerOptions.happyBruker(), fnr: Fnr? = null): MockBruker {
         val bruker = MockNavService.createBruker(brukerOptions, fnr)
         val oppfolgingsperiode = bruker.oppfolgingsperioder.first()
         oppfolgingsperiodeService.upsertOppfolgingsperiode(
@@ -26,8 +26,12 @@ class NavMockService(
         return bruker
     }
 
-    fun createHappyBruker(brukerOptions: BrukerOptions = BrukerOptions.happyBruker()): MockBruker {
-        return createHappyBruker(brukerOptions, null)
+    fun createBruker(brukerOptions: BrukerOptions = BrukerOptions.happyBruker()): MockBruker {
+        return createBruker(brukerOptions, null)
+    }
+
+    fun createHappyBruker(): MockBruker {
+        return createBruker(BrukerOptions.happyBruker())
     }
 
     fun updateBruker(mockBruker: MockBruker, brukerOptions: BrukerOptions) {
@@ -35,19 +39,42 @@ class NavMockService(
         WireMockUtil.stubBruker(mockBruker)
     }
 
-    fun createVeileder(ident: String? = null, mockBruker: MockBruker): MockVeileder {
-        val navAnsatt = if(ident != null) {
-            MockNavService.NAV_CONTEXT.navAnsatt.get(ident)?.let {  MockVeileder(it) }
-            NavAnsatt(ident)
-        } else {
-            NavAnsatt()
-        }
+    fun createVeileder(ident: String, mockBruker: MockBruker): MockVeileder {
+        val navAnsatt = MockNavService.NAV_CONTEXT.navAnsatt.get(ident)?: NavAnsatt(ident)
+        MockNavService.NAV_CONTEXT.navAnsatt.add(navAnsatt)
+        navAnsatt.adGrupper.add(tilgjengligeAdGrupper.modiaOppfolging)
+        val veileder = MockVeileder(navAnsatt)
+        veileder.addBruker(mockBruker)
+        return veileder
+    }
+
+    fun createVeileder(mockBruker: MockBruker): MockVeileder {
+        val navAnsatt = NavAnsatt()
         MockNavService.NAV_CONTEXT.navAnsatt.add(navAnsatt)
         navAnsatt.adGrupper.add(tilgjengligeAdGrupper.modiaOppfolging)
 
         val veileder = MockVeileder(navAnsatt)
         veileder.addBruker(mockBruker)
-
         return veileder
+    }
+
+    fun createVeileder() :MockVeileder {
+        val navAnsatt = NavAnsatt()
+        MockNavService.NAV_CONTEXT.navAnsatt.add(navAnsatt)
+        navAnsatt.adGrupper.add(tilgjengligeAdGrupper.modiaOppfolging)
+        return MockVeileder(navAnsatt)
+    }
+
+    fun createVeilederMedNasjonalTilgang(): MockVeileder {
+        val navAnsatt = MockNavService.NAV_CONTEXT.navAnsatt.nyNksAnsatt()
+
+        return MockVeileder(navAnsatt)
+    }
+
+    fun getBrukerSomIkkeKanVarsles(): MockBruker {
+        val brukerOptions = BrukerOptions.happyBruker()
+            .withErManuell(true)
+
+        return this.createBruker(brukerOptions)
     }
 }

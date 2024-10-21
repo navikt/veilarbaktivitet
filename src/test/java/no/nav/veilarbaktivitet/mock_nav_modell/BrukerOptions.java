@@ -2,10 +2,12 @@ package no.nav.veilarbaktivitet.mock_nav_modell;
 
 import lombok.Builder;
 import lombok.Getter;
+import lombok.With;
 import no.nav.veilarbaktivitet.person.Navn;
 
 @Builder(toBuilder = true)
 @Getter
+@With
 public class BrukerOptions {
     private boolean underOppfolging;
     private boolean erManuell;

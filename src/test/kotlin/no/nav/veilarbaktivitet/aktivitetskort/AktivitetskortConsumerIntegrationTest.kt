@@ -1054,7 +1054,7 @@ open class AktivitetskortConsumerIntegrationTest(
     }
 
     private val brukerUtenOppfolging = MockNavService.createBruker(BrukerOptions.happyBruker().toBuilder().underOppfolging(false).build())
-    private val mockBruker by lazy { navMockService.createHappyBruker() }
+    private val mockBruker by lazy { navMockService.createBruker() }
     private val veileder by lazy { MockNavService.createVeileder(mockBruker) }
     private val endretDato = ZonedDateTime.now()
 }

@@ -5,7 +5,6 @@ import no.nav.veilarbaktivitet.SpringBootTestBase
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions
-import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder
 import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder
 import no.nav.veilarbaktivitet.util.DateUtils
@@ -15,8 +14,8 @@ import java.util.*
 
 class AktivitetskortControllerTest: SpringBootTestBase() {
 
-    private val mockBruker by lazy { navMockService.createHappyBruker() }
-    private val mockVeileder: MockVeileder by lazy { MockNavService.createVeileder(mockBruker) }
+    private val mockBruker by lazy { navMockService.createBruker() }
+    private val mockVeileder: MockVeileder by lazy { navMockService.createVeileder(mockBruker) }
 
     @Test
     fun `skal gruppere pa oppfolgingsperiode (bruker)`() {
@@ -70,7 +69,7 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
 
     @Test
     fun `veileder skal ikke ha tilgang til aktiviteter hvis ikke tilgang på bruker`() {
-        val bruker = MockNavService.createHappyBruker()
+        val bruker = navMockService.createHappyBruker()
         // Escaping $ does not work in multiline strings so use variable instead
         val fnrParam = "\$fnr"
         val query = """
@@ -90,12 +89,12 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
 
     @Test
     fun `veileder skal ikke ha tilgang på kvp aktiviteter hvis ikke tilgang på enhet`() {
-        val kvpBruker = MockNavService.createBruker(
+        val kvpBruker = navMockService.createBruker(
             BrukerOptions.happyBruker().toBuilder()
                 .erUnderKvp(true)
                 .build()
         )
-        val veileder = MockNavService.createVeilederMedNasjonalTilgang()
+        val veileder = navMockService.createVeilederMedNasjonalTilgang()
         // Escaping $ does not work in multiline strings so use variable instead
         val fnrParam = "\$fnr"
         val query = """

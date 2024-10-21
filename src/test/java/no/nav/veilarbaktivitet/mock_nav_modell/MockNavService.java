@@ -54,10 +54,5 @@ public class MockNavService {
         return new MockVeileder(navAnsatt);
     }
 
-    public static MockVeileder createVeilederMedNasjonalTilgang() {
-        NavAnsatt navAnsatt = NAV_CONTEXT.getNavAnsatt().nyNksAnsatt();
-
-        return new MockVeileder(navAnsatt);
-    }
 
 }

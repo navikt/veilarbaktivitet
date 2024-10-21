@@ -84,7 +84,7 @@ class AktiviteterTilKafkaAivenServiceTest extends SpringBootTestBase {
 
     @Test
     void skal_sende_meldinger_til_portefolje() {
-        MockBruker mockBruker = navMockService.createHappyBruker(BrukerOptions.happyBruker());
+        MockBruker mockBruker = navMockService.createBruker(BrukerOptions.happyBruker());
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO skalSendes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
 
@@ -153,7 +153,7 @@ class AktiviteterTilKafkaAivenServiceTest extends SpringBootTestBase {
 
     @Test
     void skal_committe_hver_melding() {
-        MockBruker mockBruker = navMockService.createHappyBruker(BrukerOptions.happyBruker());
+        MockBruker mockBruker = navMockService.createBruker(BrukerOptions.happyBruker());
         AktivitetData aktivitetData1 = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetData aktivitetData2 = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO skalSendes1 = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData1, false);

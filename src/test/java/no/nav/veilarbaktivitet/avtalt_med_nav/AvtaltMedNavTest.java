@@ -5,8 +5,10 @@ import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAsserts;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAssertsConfig;
-import no.nav.veilarbaktivitet.mock_nav_modell.*;
-import no.nav.veilarbaktivitet.person.Navn;
+import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
+import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
+import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
+import no.nav.veilarbaktivitet.mock_nav_modell.NavMockService;
 import no.nav.veilarbaktivitet.testutils.AktivitetAssertUtils;
 import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,7 +38,7 @@ class AvtaltMedNavTest extends SpringBootTestBase {
 
     @Test
     void IkkeSendeFhoForBrukerSomIkkeKanVarsles() {
-        MockBruker brukerSomIkkeKanVarsles = navMockService.createHappyBruker(BrukerOptions.happyBrukerBuilder().erManuell(true).build());
+        MockBruker brukerSomIkkeKanVarsles = navMockService.getBrukerSomIkkeKanVarsles();
         MockVeileder veileder = MockNavService.createVeileder(brukerSomIkkeKanVarsles);
         ForhaandsorienteringDTO fho = testFho(Type.SEND_FORHAANDSORIENTERING);
 
@@ -103,7 +105,7 @@ class AvtaltMedNavTest extends SpringBootTestBase {
 
     @Test
     void setteAvtaltUtenFHOForBrukerSomIkkeKanVarsles() {
-        MockBruker brukerSomIkkeKanVarsles =  navMockService.createHappyBruker(BrukerOptions.happyBrukerBuilder().erManuell(true).build());;
+        MockBruker brukerSomIkkeKanVarsles = navMockService.getBrukerSomIkkeKanVarsles();
         MockVeileder veileder = MockNavService.createVeileder(brukerSomIkkeKanVarsles);
         ForhaandsorienteringDTO fho = testFho(Type.IKKE_SEND_FORHAANDSORIENTERING);
 
