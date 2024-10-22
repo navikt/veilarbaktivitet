@@ -31,8 +31,13 @@ public class VarselHendelseMetrikk {
     public VarselHendelseMetrikk(MeterRegistry meterRegistry) {
         this.meterRegistry = meterRegistry;
 
-        statuser.forEach(s -> meterRegistry
-                .counter(VARSEL_HENDELSE, VarselHendelseMetrikk.HENDELSE_TYPE, s.name(), FEILMELDING, ""));
+        statuser.forEach(hendelseType -> {
+            if (hendelseType == VarselHendelseEventType.feilet_ekstern) {
+                meterRegistry.counter(VARSEL_HENDELSE, VarselHendelseMetrikk.HENDELSE_TYPE, hendelseType.name(), FEILMELDING, "");
+            } else {
+                meterRegistry.counter(VARSEL_HENDELSE, VarselHendelseMetrikk.HENDELSE_TYPE, hendelseType.name());
+            }
+        });
     }
 
     public void incrementInternVarselMetrikk(InternVarselHendelseDTO event) {
