@@ -88,7 +88,7 @@ open class MinsideVarselService(
         val fnr = personService.getFnrForAktorId(varsel.aktorId)
         val gjeldendeOppfolgingsperiode = sistePeriodeService.hentGjeldendeOppfolgingsperiodeMedFallback(varsel.aktorId)
         val (varselId, lopeNr) = lagreIOutbox(varsel, gjeldendeOppfolgingsperiode, fnr)
-        log.info("Minside varsel lagret i outbox varselId={} type={} aktivitetid={}", varsel, varsel.varseltype, varsel.aktivitetId)
+        log.info("Minside varsel lagret i outbox varselId={} type={} aktivitetid={}", varselId, varsel.varseltype, varsel.aktivitetId)
         varselDAO.kobleAktivitetIdTilBrukernotifikasjon(lopeNr, varsel.aktivitetId, varsel.aktitetVersion)
         return varselId
     }
@@ -104,7 +104,7 @@ open class MinsideVarselService(
 
         // epostTittel, epostBody og smsTekst settes til standartekst av brukernotifiaksjoenr hvis ikke satt
         val (varselId, lopeNr) = lagreIOutbox(varsel, gjeldendeOppfolgingsperiode)
-        log.info("Minside varsel lagret i outbox varselId={} type={} aktivitetId={} arenaAktivitetid={}", varsel, VarselType.FORHAANDSORENTERING, varsel.aktivitetId.getOrNull(), varsel.arenaAktivitetId)
+        log.info("Minside varsel lagret i outbox varselId={} type={} aktivitetId={} arenaAktivitetid={}", varselId, VarselType.FORHAANDSORENTERING, varsel.aktivitetId.getOrNull(), varsel.arenaAktivitetId)
 
         varselDAO.kobleArenaAktivitetIdTilBrukernotifikasjon(lopeNr, varsel.arenaAktivitetId)
         // Populer brukernotifikasjon koblingstabell til vanlig aktivitet også
