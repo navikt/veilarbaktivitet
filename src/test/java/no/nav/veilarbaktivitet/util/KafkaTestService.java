@@ -117,9 +117,7 @@ public class KafkaTestService {
     }
 
     public void seekToEnd(String topic, Consumer newConsumer) {
-        List<PartitionInfo> partitionInfos = newConsumer.partitionsFor(topic);
-        List<TopicPartition> topics = partitionInfos.stream().map(f -> new TopicPartition(topic, f.partition())).collect(Collectors.toList());
-
+        List<TopicPartition> topics = List.of(new TopicPartition(topic, 0));
         newConsumer.assign(topics);
         newConsumer.seekToEnd(topics);
 
