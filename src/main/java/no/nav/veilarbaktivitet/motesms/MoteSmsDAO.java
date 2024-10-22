@@ -87,7 +87,7 @@ public class MoteSmsDAO {
     }
 
     void insertGjeldendeSms(MoteNotifikasjon moteNotifikasjon, MinSideVarselId varselId) {
-        var varselIdParam = varselId != null ? varselId.getValue().toString() : null;
+        var varselIdParam = varselId != null ? varselId.getValue() : null;
         SqlParameterSource params = new VeilarbAktivitetSqlParameterSource()
                 .addValue("aktivit_id", moteNotifikasjon.aktivitetId())
                 .addValue("kanal", moteNotifikasjon.kanalDTO().name())
