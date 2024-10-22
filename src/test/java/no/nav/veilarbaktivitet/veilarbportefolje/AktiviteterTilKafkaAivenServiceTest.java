@@ -20,7 +20,6 @@ import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringTemplate;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
-import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import no.nav.veilarbaktivitet.util.KafkaTestService;
 import no.nav.veilarbaktivitet.veilarbportefolje.dto.AktivitetTypeDTO;
@@ -88,7 +87,7 @@ class AktiviteterTilKafkaAivenServiceTest extends SpringBootTestBase {
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO skalSendes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
 
-        AktivitetDTO opprettetAktivitet = aktivitetTestService.opprettAktivitet(mockBruker, MockNavService.createVeileder(mockBruker), skalSendes);
+        AktivitetDTO opprettetAktivitet = aktivitetTestService.opprettAktivitet(mockBruker, navMockService.createVeileder(mockBruker), skalSendes);
         cronService.sendOppTil5000AktiviterTilPortefolje();
 
         ConsumerRecord<String, String> portefojeRecord = getSingleRecord(portefoljeConsumer, portefoljeTopic, DEFAULT_WAIT_TIMEOUT_DURATION);
@@ -108,7 +107,7 @@ class AktiviteterTilKafkaAivenServiceTest extends SpringBootTestBase {
 
     @Test
     void skal_ikke_sende_arena_tiltak_til_portefolje() {
-        MockBruker mockBruker = MockNavService.createHappyBruker();
+        MockBruker mockBruker = navMockService.createHappyBruker();
         Aktivitetskort actual = AktivitetskortUtil.ny(UUID.randomUUID(), AktivitetskortStatus.PLANLAGT, ZonedDateTime.now(), mockBruker);
         KafkaAktivitetskortWrapperDTO wrapperDTO = new KafkaAktivitetskortWrapperDTO(
                 AktivitetskortType.ARENA_TILTAK,
@@ -123,7 +122,7 @@ class AktiviteterTilKafkaAivenServiceTest extends SpringBootTestBase {
 
     @Test
     void skal_sende_nye_lonnstilskudd_til_portefolje() {
-        MockBruker mockBruker = MockNavService.createHappyBruker();
+        MockBruker mockBruker = navMockService.createHappyBruker();
         Aktivitetskort aktivitetskort = AktivitetskortUtil.ny(UUID.randomUUID(), AktivitetskortStatus.PLANLAGT, ZonedDateTime.now(), mockBruker);
         KafkaAktivitetskortWrapperDTO wrapper = new KafkaAktivitetskortWrapperDTO(aktivitetskort, UUID.randomUUID(), MIDLERTIDIG_LONNSTILSKUDD, MessageSource.TEAM_TILTAK);
         aktivitetTestService.opprettEksterntAktivitetsKort(List.of(wrapper));
@@ -138,7 +137,7 @@ class AktiviteterTilKafkaAivenServiceTest extends SpringBootTestBase {
 
     @Test
     void skal_ikke_sende_tiltak_opprettet_som_historisk() {
-        MockBruker mockBruker = MockNavService.createHappyBruker();
+        MockBruker mockBruker = navMockService.createHappyBruker();
         // Happy bruker har en gammel periode startDato nå-100 dager, sluttDato nå-50 dager
         UUID funksjonellId = UUID.randomUUID();
         Aktivitetskort aktivitetskort = AktivitetskortUtil.ny(funksjonellId, AktivitetskortStatus.PLANLAGT, ZonedDateTime.now().minusDays(75), mockBruker);
@@ -159,8 +158,8 @@ class AktiviteterTilKafkaAivenServiceTest extends SpringBootTestBase {
         AktivitetDTO skalSendes1 = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData1, false);
         AktivitetDTO skalSendes2 = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData2, false);
 
-        aktivitetTestService.opprettAktivitet(mockBruker, MockNavService.createVeileder(mockBruker), skalSendes1);
-        aktivitetTestService.opprettAktivitet(mockBruker, MockNavService.createVeileder(mockBruker), skalSendes2);
+        aktivitetTestService.opprettAktivitet(mockBruker, navMockService.createVeileder(mockBruker), skalSendes1);
+        aktivitetTestService.opprettAktivitet(mockBruker, navMockService.createVeileder(mockBruker), skalSendes2);
 
         Mockito
                 .doCallRealMethod()

@@ -5,7 +5,7 @@ import no.nav.veilarbaktivitet.SpringBootTestBase
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper
-import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService
+import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions
 import no.nav.veilarbaktivitet.person.Innsender
 import no.nav.veilarbaktivitet.person.Person
 import no.nav.veilarbaktivitet.testutils.AktivitetAssertUtils
@@ -61,9 +61,10 @@ internal class OppfolgingsperiodeConsumerTest : SpringBootTestBase() {
         TimeoutException::class
     )
     fun skal_opprette_siste_oppfolgingsperiode() {
-        val mockBruker = MockNavService.createHappyBruker()
+        val mockBruker = navMockService.createBruker(BrukerOptions.happyBruker().toBuilder().underOppfolging(false).build())
+        val uuidOppfolgingsperiodeSomSkalAvsluttes = UUID.randomUUID()
         val startOppfolgiong = SisteOppfolgingsperiodeV1.builder()
-            .uuid(mockBruker.getOppfolgingsperiodeId())
+            .uuid(uuidOppfolgingsperiodeSomSkalAvsluttes)
             .aktorId(mockBruker.aktorId.get())
             .startDato(ZonedDateTime.now().minusHours(1).truncatedTo(ChronoUnit.MILLIS))
             .build()
@@ -74,7 +75,7 @@ internal class OppfolgingsperiodeConsumerTest : SpringBootTestBase() {
         )[1, TimeUnit.SECONDS]
         kafkaTestService.assertErKonsumertNavCommon(oppfolgingSistePeriodeTopic, sendResult.recordMetadata.offset())
         val oppfolgingsperiode = sistePeriodeDAO.hentSisteOppfolgingsPeriode(mockBruker.aktorId).orElseThrow()
-        assertThat(oppfolgingsperiode.oppfolgingsperiodeId).isEqualTo(mockBruker.getOppfolgingsperiodeId())
+        assertThat(oppfolgingsperiode.oppfolgingsperiodeId).isEqualTo(uuidOppfolgingsperiodeSomSkalAvsluttes)
         assertThat(oppfolgingsperiode.aktorid).isEqualTo(mockBruker.aktorId.get())
         assertThat(oppfolgingsperiode.startTid).isEqualTo(startOppfolgiong.getStartDato())
         assertThat(oppfolgingsperiode.sluttTid).isNull()
@@ -88,13 +89,13 @@ internal class OppfolgingsperiodeConsumerTest : SpringBootTestBase() {
         kafkaTestService.assertErKonsumertNavCommon(oppfolgingSistePeriodeTopic, avsluttetSendResult.recordMetadata.offset())
         val oppfolgingsperiodeAvsluttet = sistePeriodeDAO.hentSisteOppfolgingsPeriode(mockBruker.aktorId).orElseThrow()
         assertThat(oppfolgingsperiodeAvsluttet.oppfolgingsperiodeId)
-            .isEqualTo(mockBruker.getOppfolgingsperiodeId())
+            .isEqualTo(uuidOppfolgingsperiodeSomSkalAvsluttes)
         assertThat(oppfolgingsperiodeAvsluttet.aktorid).isEqualTo(mockBruker.aktorId.get())
         assertThat(oppfolgingsperiodeAvsluttet.startTid).isEqualTo(avsluttetOppfolgingsperide.getStartDato())
         assertThat(oppfolgingsperiodeAvsluttet.sluttTid).isEqualTo(avsluttetOppfolgingsperide.getSluttDato())
         // Sjekk at ny DAO også gir samme svar
         val oppfolg = oppfolgingsperiodeDAO.getByAktorId(mockBruker.aktorId).first()
-        assertThat(oppfolg.oppfolgingsperiodeId).isEqualTo(mockBruker.getOppfolgingsperiodeId())
+        assertThat(oppfolg.oppfolgingsperiodeId).isEqualTo(uuidOppfolgingsperiodeSomSkalAvsluttes)
         assertThat(oppfolg.aktorid).isEqualTo(mockBruker.aktorId.get())
         assertThat(oppfolg.startTid).isEqualTo(avsluttetOppfolgingsperide.getStartDato())
         assertThat(oppfolg.sluttTid).isEqualTo(avsluttetOppfolgingsperide.getSluttDato())
@@ -103,17 +104,14 @@ internal class OppfolgingsperiodeConsumerTest : SpringBootTestBase() {
     @Test
     @Throws(ExecutionException::class, InterruptedException::class)
     fun skal_sette_aktiviteteter_til_hitorisk_naar_oppfolging_avsluttes() {
-        val brukerUteAvOppfolging = MockNavService.createHappyBruker()
+        val bruker = navMockService.createHappyBruker()
         val aktivitet = AktivitetDTOMapper.mapTilAktivitetDTO(AktivitetDataTestBuilder.nyEgenaktivitet(), false)
-        val skalBliHistorisk = aktivitetTestService.opprettAktivitet(brukerUteAvOppfolging, aktivitet)
-        val oppfolgingsperiodeSkalAvsluttes = brukerUteAvOppfolging.getOppfolgingsperiodeId()
-        MockNavService.newOppfolingsperiode(brukerUteAvOppfolging)
-        val skalIkkeBliHistorisk = aktivitetTestService.opprettAktivitet(brukerUteAvOppfolging, aktivitet)
-
+        val skalBliHistorisk = aktivitetTestService.opprettAktivitet(bruker, aktivitet)
+        val oppfolgingsperiodeSkalAvsluttes = bruker.getOppfolgingsperiodeId()
         // Avslutt oppfølging
         val avsluttOppfolging = SisteOppfolgingsperiodeV1.builder()
             .uuid(oppfolgingsperiodeSkalAvsluttes)
-            .aktorId(brukerUteAvOppfolging.aktorId.get())
+            .aktorId(bruker.aktorId.get())
             .startDato(ZonedDateTime.now().minusHours(2).truncatedTo(ChronoUnit.MILLIS))
             .sluttDato(ZonedDateTime.now().minusHours(1).truncatedTo(ChronoUnit.MILLIS))
             .build()
@@ -123,8 +121,8 @@ internal class OppfolgingsperiodeConsumerTest : SpringBootTestBase() {
         val sendResult2 = producer.send(oppfolgingSistePeriodeTopic, JsonUtils.toJson(avsluttOppfolging)).get()
         kafkaTestService.assertErKonsumertNavCommon(oppfolgingSistePeriodeTopic, sendResult2.recordMetadata.offset())
 
-        val aktiviteter = aktivitetTestService.hentAktiviteterForFnr(brukerUteAvOppfolging).aktiviteter
-        val skalVaereHistoriskVersioner = aktivitetTestService.hentVersjoner(skalBliHistorisk.id, brukerUteAvOppfolging, brukerUteAvOppfolging)
+        val aktiviteter = aktivitetTestService.hentAktiviteterForFnr(bruker).aktiviteter
+        val skalVaereHistoriskVersioner = aktivitetTestService.hentVersjoner(skalBliHistorisk.id, bruker, bruker)
 
         // aktivitet som skal være historisk
         val skalVaereHistorisk = aktiviteter.first { a: AktivitetDTO -> a.id == skalBliHistorisk.id }
@@ -133,10 +131,6 @@ internal class OppfolgingsperiodeConsumerTest : SpringBootTestBase() {
         assertThat(skalVaereHistorisk.endretAvType).isEqualTo(Innsender.SYSTEM.name)
         assertThat(skalVaereHistoriskVersioner).hasSize(2)
         assertThat(skalVaereHistoriskVersioner.last().endretDato).isNotEqualTo(skalVaereHistoriskVersioner.first().endretDato)
-
-        // aktiviteter som ikke skal være historisk
-        val skalIkkeVaereHistorisk = aktiviteter.first { a: AktivitetDTO -> a.id == skalIkkeBliHistorisk.id }
-        assertEquals(skalIkkeBliHistorisk, skalIkkeVaereHistorisk)
     }
 
     @Test

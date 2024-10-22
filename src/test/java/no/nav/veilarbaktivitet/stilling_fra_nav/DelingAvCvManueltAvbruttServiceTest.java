@@ -6,7 +6,6 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
 import no.nav.veilarbaktivitet.avro.TilstandEnum;
-import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -57,7 +56,7 @@ class DelingAvCvManueltAvbruttServiceTest extends SpringBootTestBase {
 
     @Test
     void happy_case() {
-        MockBruker mockBruker = navMockService.createBruker(BrukerOptions.happyBruker());
+        MockBruker mockBruker = navMockService.createHappyBruker();
         AktivitetDTO skalBehandles = aktivitetTestService.opprettStillingFraNav(mockBruker);
         AktivitetDTO skalIkkeBehandles = aktivitetTestService.opprettStillingFraNav(mockBruker);
 

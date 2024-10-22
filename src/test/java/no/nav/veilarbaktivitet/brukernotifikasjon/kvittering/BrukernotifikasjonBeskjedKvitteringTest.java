@@ -19,10 +19,8 @@ import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
 import no.nav.veilarbaktivitet.brukernotifikasjon.avslutt.AvsluttBrukernotifikasjonCron;
 import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendBrukernotifikasjonCron;
 import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.VarselDAO;
-import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringAvroTemplate;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
-import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -66,12 +64,6 @@ class BrukernotifikasjonBeskjedKvitteringTest extends SpringBootTestBase {
     @Autowired
     NamedParameterJdbcTemplate jdbc;
 
-    @Value("${topic.inn.eksternVarselKvittering}")
-    String kviteringsToppic;
-
-    @Autowired
-    KafkaStringAvroTemplate<DoknotifikasjonStatus> kvitteringsTopic;
-
     @Autowired
     EksternVarslingKvitteringConsumer eksternVarslingKvitteringConsumer;
 
@@ -102,7 +94,7 @@ class BrukernotifikasjonBeskjedKvitteringTest extends SpringBootTestBase {
     @SneakyThrows
     @Test
     void notifikasjonsstatus_tester() {
-        MockBruker mockBruker = MockNavService.createHappyBruker();
+        MockBruker mockBruker = navMockService.createHappyBruker();
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettAktivitet(mockBruker, skalOpprettes);
