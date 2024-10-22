@@ -9,7 +9,15 @@ data class InternVarselHendelseDTO(
     val appnavn: String,
     val varseltype: VarselEventTypeDto,
     val varselId: MinSideVarselId,
-): VarselHendelse()
+): VarselHendelse() {
+    fun getHendelseType(): VarselHendelseEventType {
+        return when (eventName) {
+            InternVarselHendelseType.opprettet -> VarselHendelseEventType.opprettet
+            InternVarselHendelseType.inaktivert -> VarselHendelseEventType.inaktivert
+            InternVarselHendelseType.slettet -> VarselHendelseEventType.slettet
+        }
+    }
+}
 
 enum class InternVarselHendelseType {
     opprettet,

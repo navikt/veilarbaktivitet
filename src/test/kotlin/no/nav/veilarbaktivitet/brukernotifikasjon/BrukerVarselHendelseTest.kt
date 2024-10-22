@@ -9,6 +9,7 @@ import no.nav.veilarbaktivitet.SpringBootTestBase
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper
 import no.nav.veilarbaktivitet.brukernotifikasjon.avslutt.AvsluttBrukernotifikasjonCron
+import no.nav.veilarbaktivitet.brukernotifikasjon.kvittering.VarselHendelseMetrikk
 import no.nav.veilarbaktivitet.brukernotifikasjon.kvittering.VarselKvitteringStatus
 import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.AktivitetVarsel
 import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendMinsideVarselFraOutboxCron
@@ -135,6 +136,10 @@ internal class BrukerVarselHendelseTest(
         brukernotifikasjonAsserts.simulerEksternVarselStatusSendt(oppgaveVarsel)
 
         assertEksternVarselKvitteringStatus(varselId, VarselKvitteringStatus.OK)
+
+        val counter = meterRegistry.find(VarselHendelseMetrikk.EKSTERN_VARSEL_HENDELSE)
+            .counter()
+        Assertions.assertEquals(1.0, counter?.count())
     }
 
 

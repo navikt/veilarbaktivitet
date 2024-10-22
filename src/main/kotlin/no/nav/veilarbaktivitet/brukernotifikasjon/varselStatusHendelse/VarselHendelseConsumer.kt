@@ -34,6 +34,7 @@ open class VarselHendelseConsumer(
     }
 
     open fun behandleInternVarselHendelse(hendelse: InternVarselHendelseDTO) {
+        varselHendelseMetrikk.incrementInternVarselMetrikk(hendelse)
         log.info("Minside varsel (hendelse) av type {} er {} varselId {}", hendelse.varseltype.name, hendelse.eventName, hendelse.varselId, )
     }
 
@@ -75,7 +76,7 @@ open class VarselHendelseConsumer(
             else -> {}
         }
 
-        varselHendelseMetrikk.incrementBrukernotifikasjonKvitteringMottatt(hendelse)
+        varselHendelseMetrikk.incrementVarselKvitteringMottatt(hendelse)
     }
 
 }
