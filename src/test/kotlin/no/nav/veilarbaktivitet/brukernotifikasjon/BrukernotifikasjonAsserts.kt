@@ -19,7 +19,7 @@ class BrukernotifikasjonAsserts(var config: BrukernotifikasjonAssertsConfig) {
     var kafkaTestService: KafkaTestService = config.testService
 
     private fun assertVarselSendt(fnr: Fnr, varselType: Varseltype): OpprettVarselDto {
-        config.sendBrukernotifikasjonCron.sendBrukernotifikasjoner()
+        config.sendMinsideVarselFraOutboxCron.sendBrukernotifikasjoner()
         val varsel = brukervarselConsumer.waitForOpprettVarsel()
         assertEquals(fnr.get(), varsel.ident)
         assertEquals(varselType, varsel.type)
@@ -31,7 +31,7 @@ class BrukernotifikasjonAsserts(var config: BrukernotifikasjonAssertsConfig) {
     fun assertBeskjedSendt(fnr: Fnr) = assertVarselSendt(fnr, Varseltype.Beskjed)
 
     fun assertIngenNyeVarslerErIOutbox() {
-        assertThat(config.sendBrukernotifikasjonCron.sendAlle(500))
+        assertThat(config.sendMinsideVarselFraOutboxCron.sendAlle(500))
             .isEqualTo(0);
     }
 
@@ -72,7 +72,7 @@ class BrukernotifikasjonAsserts(var config: BrukernotifikasjonAssertsConfig) {
 
     fun assertSkalIkkeHaProdusertFlereMeldinger() {
         config.avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner()
-        config.sendBrukernotifikasjonCron.sendBrukernotifikasjoner()
+        config.sendMinsideVarselFraOutboxCron.sendBrukernotifikasjoner()
         kafkaTestService.harKonsumertAlleMeldinger(config.brukernotifikasjonBrukervarselTopic, brukervarselConsumer.consumer)
     }
 

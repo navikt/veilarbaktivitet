@@ -6,7 +6,7 @@ import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
 import no.nav.veilarbaktivitet.avro.TilstandEnum;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAsserts;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAssertsConfig;
-import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendBrukernotifikasjonCron;
+import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendMinsideVarselFraOutboxCron;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
@@ -33,7 +33,7 @@ class BehandleNotifikasjonForDelingAvCvTest extends SpringBootTestBase {
     BehandleNotifikasjonForDelingAvCvCronService behandleNotifikasjonForDelingAvCvCronService;
 
     @Autowired
-    SendBrukernotifikasjonCron sendBrukernotifikasjonCron;
+    SendMinsideVarselFraOutboxCron sendMinsideVarselFraOutboxCron;
 
     @Autowired
     KafkaTestService kafkaTestService;
@@ -115,7 +115,7 @@ class BehandleNotifikasjonForDelingAvCvTest extends SpringBootTestBase {
         var medSvarOppgave = brukernotifikasjonAsserts.assertOppgaveSendt(mockBruker.getFnrAsFnr());
 
         // trigger utsendelse av oppgave-notifikasjoner
-        sendBrukernotifikasjonCron.sendBrukernotifikasjoner();
+        sendMinsideVarselFraOutboxCron.sendBrukernotifikasjoner();
 
         AktivitetDTO medSvar = aktivitetTestService.svarPaaDelingAvCv(true, mockBruker, veileder, skalFaaSvar, new Date());
 

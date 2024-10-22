@@ -13,12 +13,12 @@ data class ArenaAktivitetVarsel(
     val ditNavTekst: String,
 ) {
     fun toUgåendeVarsel(
-        uuid: UUID,
+        uuid: MinSideVarselId,
         gjeldendeOppfolgingsperiode: UUID,
         aktivitetBasePath: String,
     ): UtgåendeVarsel {
         return UtgåendeVarsel(
-            MinSideVarselId(uuid),
+            uuid,
             fnr,
             ditNavTekst,
             gjeldendeOppfolgingsperiode,

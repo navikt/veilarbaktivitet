@@ -29,13 +29,13 @@ data class AktivitetVarsel(
                 )
 
     fun toUgåendeVarsel(
-        brukernotifikasjonsId: UUID,
+        varselId: MinSideVarselId,
         gjeldendeOppfolgingsperiode: UUID,
         aktivitetBasePath: String,
         fnr: Person.Fnr
     ): UtgåendeVarsel {
         return UtgåendeVarsel(
-            MinSideVarselId(brukernotifikasjonsId),
+            varselId,
             fnr,
             ditNavTekst,
             gjeldendeOppfolgingsperiode,

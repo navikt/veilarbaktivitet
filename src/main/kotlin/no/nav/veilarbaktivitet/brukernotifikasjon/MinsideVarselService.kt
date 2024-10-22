@@ -5,11 +5,14 @@ import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO
 import no.nav.veilarbaktivitet.arena.model.ArenaId
 import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.AktivitetVarsel
 import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.ArenaAktivitetVarsel
+import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.MinSideVarselId
+import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.UtgåendeVarsel
 import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SkalSendes
 import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.VarselDAO
 import no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV2Client
 import no.nav.veilarbaktivitet.oppfolging.periode.SistePeriodeService
 import no.nav.veilarbaktivitet.person.Person
+import no.nav.veilarbaktivitet.person.Person.Fnr
 import no.nav.veilarbaktivitet.person.PersonService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -83,14 +86,7 @@ open class MinsideVarselService(
         val uuid = UUID.randomUUID()
         val fnr = personService.getFnrForAktorId(varsel.aktorId)
         val gjeldendeOppfolgingsperiode = sistePeriodeService.hentGjeldendeOppfolgingsperiodeMedFallback(varsel.aktorId)
-        val brukernotifikasjonId = varselDAO.opprettBrukernotifikasjonIOutbox(
-            varsel.toUgåendeVarsel(
-                uuid,
-                gjeldendeOppfolgingsperiode,
-                aktivitetsplanBasepath,
-                fnr
-            )
-        )
+        val brukernotifikasjonId = lagreIOutbox(varsel, gjeldendeOppfolgingsperiode, fnr)
         varselDAO.kobleAktivitetIdTilBrukernotifikasjon(brukernotifikasjonId, varsel.aktivitetId, varsel.aktitetVersion)
         return uuid
     }
@@ -106,13 +102,8 @@ open class MinsideVarselService(
         val gjeldendeOppfolgingsperiode = sistePeriodeService.hentGjeldendeOppfolgingsperiodeMedFallback(aktorId)
 
         // epostTittel, epostBody og smsTekst settes til standartekst av brukernotifiaksjoenr hvis ikke satt
-        val brukernotifikasjonId = varselDAO.opprettBrukernotifikasjonIOutbox(
-            arenaAktivitetVarsel.toUgåendeVarsel(
-                uuid,
-                gjeldendeOppfolgingsperiode,
-                aktivitetsplanBasepath,
-            )
-        )
+        val brukernotifikasjonId = lagreIOutbox(arenaAktivitetVarsel, gjeldendeOppfolgingsperiode)
+
         varselDAO.kobleArenaAktivitetIdTilBrukernotifikasjon(brukernotifikasjonId, arenaAktivitetVarsel.arenaAktivitetId)
         // Populer brukernotifikasjon koblingstabell til vanlig aktivitet også
         arenaAktivitetVarsel.aktivitetId
@@ -126,5 +117,33 @@ open class MinsideVarselService(
             }
 
         return uuid
+    }
+
+    private fun nyMinsideVarselId(): MinSideVarselId {
+        return MinSideVarselId(UUID.randomUUID())
+    }
+
+    private fun lagreIOutbox(arenaAktivitetVarsel: ArenaAktivitetVarsel, oppfolgingsPeriode: UUID): Long {
+        return lagreIOutbox(arenaAktivitetVarsel.toUgåendeVarsel(
+            nyMinsideVarselId(),
+            oppfolgingsPeriode,
+            aktivitetsplanBasepath
+        ))
+    }
+
+    private fun lagreIOutbox(aktivitetVarsel: AktivitetVarsel, oppfolgingsPeriode: UUID, fnr: Fnr): Long {
+        return lagreIOutbox(aktivitetVarsel.toUgåendeVarsel(
+            nyMinsideVarselId(),
+            oppfolgingsPeriode,
+            aktivitetsplanBasepath,
+            fnr
+        ))
+    }
+
+    private fun lagreIOutbox(utgåendeVarsel: UtgåendeVarsel): Long {
+        // epostTittel, epostBody og smsTekst settes til standartekst av brukernotifiaksjoenr hvis ikke satt
+        val brukernotifikasjonId = varselDAO.opprettBrukernotifikasjonIOutbox(utgåendeVarsel)
+        log.info("Minside varsel lagret i outbox varselId={} type={}", utgåendeVarsel, utgåendeVarsel.type)
+        return brukernotifikasjonId
     }
 }

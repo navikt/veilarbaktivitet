@@ -5,7 +5,7 @@ import no.nav.common.json.JsonUtils
 import no.nav.veilarbaktivitet.brukernotifikasjon.avslutt.AvsluttBrukernotifikasjonCron
 import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.InaktiverVarselDto
 import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.MinSideVarselId
-import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendBrukernotifikasjonCron
+import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendMinsideVarselFraOutboxCron
 import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.EksternVarselHendelseDTO
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringTemplate
 import no.nav.veilarbaktivitet.util.KafkaTestService
@@ -33,7 +33,7 @@ class BrukernotifikasjonAssertsConfig(
     @Autowired
     val avsluttBrukernotifikasjonCron: AvsluttBrukernotifikasjonCron,
     @Autowired
-    val sendBrukernotifikasjonCron: SendBrukernotifikasjonCron
+    val sendMinsideVarselFraOutboxCron: SendMinsideVarselFraOutboxCron
 ) {
 
     fun createBrukerVarselConsumer(kafkaTestService: KafkaTestService): TestConsumer {

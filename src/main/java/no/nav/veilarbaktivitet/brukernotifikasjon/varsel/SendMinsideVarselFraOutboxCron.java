@@ -16,8 +16,8 @@ import java.util.concurrent.ScheduledExecutorService;
 @Service
 @EnableScheduling
 @RequiredArgsConstructor
-public class SendBrukernotifikasjonCron {
-    private final MinsideVarselService brukernotifikasjonService;
+public class SendMinsideVarselFraOutboxCron {
+    private final MinsideVarselService minsideVarselService;
     private final VarselDAO varselDao;
     private final VarselMetrikk varselMetrikk;
     private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
@@ -34,7 +34,7 @@ public class SendBrukernotifikasjonCron {
 
     /* Public fordi den er brukt direkte i noen tester for å hoppe over scheduler lock  */
     public int sendAlle(int maxBatchSize) {
-        brukernotifikasjonService.avbrytIkkeSendteOppgaverForAvslutteteAktiviteter();
+        minsideVarselService.avbrytIkkeSendteOppgaverForAvslutteteAktiviteter();
         var total = 0;
         var currentBatch = 0;
         do {
@@ -45,8 +45,8 @@ public class SendBrukernotifikasjonCron {
     }
 
     private int sendOpptil(int maxAntall) {
-        List<SkalSendes> skalSendes = brukernotifikasjonService.hentVarselSomSkalSendes(maxAntall);
-        skalSendes.forEach(brukernotifikasjonService::send);
+        List<SkalSendes> skalSendes = minsideVarselService.hentVarselSomSkalSendes(maxAntall);
+        skalSendes.forEach(minsideVarselService::send);
         return skalSendes.size();
     }
 

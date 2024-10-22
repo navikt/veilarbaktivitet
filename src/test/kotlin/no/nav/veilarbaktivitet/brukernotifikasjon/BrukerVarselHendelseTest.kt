@@ -11,7 +11,7 @@ import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper
 import no.nav.veilarbaktivitet.brukernotifikasjon.avslutt.AvsluttBrukernotifikasjonCron
 import no.nav.veilarbaktivitet.brukernotifikasjon.kvittering.VarselKvitteringStatus
 import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.AktivitetVarsel
-import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendBrukernotifikasjonCron
+import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendMinsideVarselFraOutboxCron
 import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.VarselDAO
 import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.EksternVarselHendelseDTO
 import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.EksternVarselKanal
@@ -40,7 +40,7 @@ internal class BrukerVarselHendelseTest(
     @Autowired
     val avsluttBrukernotifikasjonCron: AvsluttBrukernotifikasjonCron,
     @Autowired
-    val sendBrukernotifikasjonCron: SendBrukernotifikasjonCron,
+    val sendMinsideVarselFraOutboxCron: SendMinsideVarselFraOutboxCron,
     @Autowired
     val kafkaTestService: KafkaTestService,
     @Autowired
@@ -112,7 +112,7 @@ internal class BrukerVarselHendelseTest(
 
         assertEksternVarselKvitteringStatus(eventId, VarselKvitteringStatus.OK)
 
-        sendBrukernotifikasjonCron.countForsinkedeVarslerSisteDognet()
+        sendMinsideVarselFraOutboxCron.countForsinkedeVarslerSisteDognet()
         val gauge = meterRegistry.find("brukernotifikasjon_mangler_kvittering").gauge()
         Assertions.assertEquals(0.0, gauge?.value())
     }
@@ -203,7 +203,7 @@ internal class BrukerVarselHendelseTest(
             )
         )
 
-        sendBrukernotifikasjonCron.sendBrukernotifikasjoner()
+        sendMinsideVarselFraOutboxCron.sendBrukernotifikasjoner()
         avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner()
 
         //        assertTrue(kafkaTestService.harKonsumertAlleMeldinger(doneTopic, doneConsumer), "Skal ikke produsert done meldinger");

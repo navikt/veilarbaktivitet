@@ -21,7 +21,7 @@ import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Type;
 import no.nav.veilarbaktivitet.brukernotifikasjon.avslutt.AvsluttBrukernotifikasjonCron;
 import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.AktivitetVarsel;
-import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendBrukernotifikasjonCron;
+import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendMinsideVarselFraOutboxCron;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
@@ -60,7 +60,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
     AvsluttBrukernotifikasjonCron avsluttBrukernotifikasjonCron;
 
     @Autowired
-    SendBrukernotifikasjonCron sendBrukernotifikasjonCron;
+    SendMinsideVarselFraOutboxCron sendMinsideVarselFraOutboxCron;
 
     @Autowired
     KafkaTestService kafkaTestService;
@@ -149,7 +149,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
                 SMSTekst
             )
         );
-        sendBrukernotifikasjonCron.sendBrukernotifikasjoner();
+        sendMinsideVarselFraOutboxCron.sendBrukernotifikasjoner();
         var oppgave = brukernotifikasjonAsserts.assertOppgaveSendt(Person.fnr(mockBruker.getFnr()));
 
         avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner();
@@ -186,7 +186,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
                 SMSTekst)
         );
 
-        sendBrukernotifikasjonCron.sendBrukernotifikasjoner();
+        sendMinsideVarselFraOutboxCron.sendBrukernotifikasjoner();
         avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner();
 
         assertTrue(kafkaTestService.harKonsumertAlleMeldinger(brukervarselHendelseTopic, brukerVarselHendelseConsumer), "Skal ikke produsert done meldinger");
@@ -212,7 +212,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
                 VarselType.MOTE_SMS, null, null, null)
         );
 
-        sendBrukernotifikasjonCron.sendBrukernotifikasjoner();
+        sendMinsideVarselFraOutboxCron.sendBrukernotifikasjoner();
 
         OpprettVarselDto beskjed = brukernotifikasjonAsserts.assertBeskjedSendt(Person.fnr(mockBruker.getFnr()));
 
@@ -230,7 +230,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
         brukernotifikasjonService.opprettVarselPaaAktivitet(new AktivitetVarsel(Long.parseLong(aktivitetDTO.getId()), Long.parseLong(aktivitetDTO.getVersjon()), mockBruker.getAktorId(), "Testvarsel", VarselType.STILLING_FRA_NAV, null, null, null));
         brukernotifikasjonService.setDone(Long.parseLong(aktivitetDTO.getId()), VarselType.STILLING_FRA_NAV);
 
-        sendBrukernotifikasjonCron.sendBrukernotifikasjoner();
+        sendMinsideVarselFraOutboxCron.sendBrukernotifikasjoner();
         avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner();
 
         assertTrue(kafkaTestService.harKonsumertAlleMeldinger(brukervarselTopic, brukerVarselConsumer), "Skal ikke produsert oppgave eller inaktivering meldinger");
@@ -264,7 +264,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
 
         AktivitetDTO avbruttAktivitet = response.as(AktivitetDTO.class);
 
-        sendBrukernotifikasjonCron.sendBrukernotifikasjoner();
+        sendMinsideVarselFraOutboxCron.sendBrukernotifikasjoner();
         avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner();
 
         assertTrue(kafkaTestService.harKonsumertAlleMeldinger(brukervarselTopic, brukerVarselConsumer), "Skal ikke produsert oppgave meldinger");
@@ -296,7 +296,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
                 .then()
                 .assertThat().statusCode(HttpStatus.OK.value())
                 .extract().response();
-        sendBrukernotifikasjonCron.sendBrukernotifikasjoner();
+        sendMinsideVarselFraOutboxCron.sendBrukernotifikasjoner();
         avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner();
 
         // Then
@@ -320,7 +320,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
         var arenaId = new ArenaId("ARENATA123");
         aktivitetTestService.opprettFHOForArenaAktivitet(mockBruker, arenaId, mockVeileder);
 
-        sendBrukernotifikasjonCron.sendBrukernotifikasjoner();
+        sendMinsideVarselFraOutboxCron.sendBrukernotifikasjoner();
         final ConsumerRecord<String, String> oppgaveRecord = getSingleRecord(brukerVarselConsumer, brukervarselTopic, DEFAULT_WAIT_TIMEOUT_DURATION);
         var lenke = JsonUtils.fromJson(oppgaveRecord.value(), OpprettVarselDto.class).getLink();
         assertEquals(lenke, String.format("http://localhost:3000/aktivitet/vis/%s", arenaId.id()));
@@ -429,7 +429,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
                 VarselType.STILLING_FRA_NAV, null, null, null)
         );
 
-        sendBrukernotifikasjonCron.sendBrukernotifikasjoner();
+        sendMinsideVarselFraOutboxCron.sendBrukernotifikasjoner();
         avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner();
 
         OpprettVarselDto oppgave = brukernotifikasjonAsserts.assertOppgaveSendt(Person.fnr(mockBruker.getFnr()));
@@ -440,7 +440,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
 
     private void avsluttOppgave(AktivitetDTO aktivitetDTO, OpprettVarselDto oppgave) {
         brukernotifikasjonService.setDone(Long.parseLong(aktivitetDTO.getId()), VarselType.STILLING_FRA_NAV);
-        sendBrukernotifikasjonCron.sendBrukernotifikasjoner();
+        sendMinsideVarselFraOutboxCron.sendBrukernotifikasjoner();
         avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner();
 
         brukernotifikasjonAsserts.assertInaktivertMeldingErSendt(oppgave.getVarselId());
