@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class VarselHendelseMetrikk {
     private final MeterRegistry meterRegistry;
-    public static final String EKSTERN_VARSEL_HENDELSE = "ekstern_varsel_hendelse";
+    public static final String VARSEL_HENDELSE = "varsel_hendelse";
     private static final String HENDELSE_TYPE = "hendelse_type";
     private static final String FEILMELDING = "feilmelding";
     private static final EnumEntries<VarselHendelseEventType> statuser = VarselHendelseEventType.getEntries();
@@ -32,18 +32,18 @@ public class VarselHendelseMetrikk {
         this.meterRegistry = meterRegistry;
 
         statuser.forEach(s -> meterRegistry
-                .counter(EKSTERN_VARSEL_HENDELSE, VarselHendelseMetrikk.HENDELSE_TYPE, s.name(), FEILMELDING, ""));
+                .counter(VARSEL_HENDELSE, VarselHendelseMetrikk.HENDELSE_TYPE, s.name(), FEILMELDING, ""));
     }
 
     public void incrementInternVarselMetrikk(InternVarselHendelseDTO event) {
-        Counter.builder(EKSTERN_VARSEL_HENDELSE)
+        Counter.builder(VARSEL_HENDELSE)
                 .tag(VarselHendelseMetrikk.HENDELSE_TYPE, event.getHendelseType().name())
                 .register(meterRegistry)
                 .increment();
     }
 
     public void incrementVarselKvitteringMottatt(EksternVarsling event) {
-        var counterBuilder = Counter.builder(EKSTERN_VARSEL_HENDELSE);
+        var counterBuilder = Counter.builder(VARSEL_HENDELSE);
         if(event.getHendelseType() == VarselHendelseEventType.feilet_ekstern) {
             counterBuilder.tag(FEILMELDING, ((Feilet) event).getFeilmelding() );
         }

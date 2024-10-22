@@ -137,9 +137,10 @@ internal class BrukerVarselHendelseTest(
 
         assertEksternVarselKvitteringStatus(varselId, VarselKvitteringStatus.OK)
 
-        val counter = meterRegistry.find(VarselHendelseMetrikk.EKSTERN_VARSEL_HENDELSE)
-            .counter()
-        Assertions.assertEquals(1.0, counter?.count())
+        val totalVarselHendelser = meterRegistry.find(VarselHendelseMetrikk.VARSEL_HENDELSE)
+            .counters()
+            .sumOf { it.count() }
+        Assertions.assertEquals(1.0, totalVarselHendelser)
     }
 
 
@@ -177,26 +178,6 @@ internal class BrukerVarselHendelseTest(
         )
     }
 
-    private fun bestiltStatus(bestillingsId: UUID): EksternVarselHendelseDTO {
-        return status(bestillingsId, EksternVarselStatus.sendt)
-    }
-
-    private fun sendtStatus(bestillingsId: UUID): EksternVarselHendelseDTO {
-        return status(bestillingsId, EksternVarselStatus.sendt)
-    }
-
-    private fun feiletStatus(bestillingsId: UUID): EksternVarselHendelseDTO {
-        return status(bestillingsId, EksternVarselStatus.feilet)
-    }
-
-//    private fun infoStatus(bestillingsId: UUID): VarselHendelse {
-//        return status(bestillingsId, INFO)
-//    }
-
-//    private fun oversendtStatus(eventId: String): VarselHendelse {
-//        return status(eventId, OVERSENDT)
-//    }
-
     private fun opprettOppgave(mockBruker: MockBruker, aktivitetDTO: AktivitetDTO): OpprettVarselDto {
         minsideVarselService.opprettVarselPaaAktivitet(
             AktivitetVarsel(
@@ -226,9 +207,5 @@ internal class BrukerVarselHendelseTest(
         Assertions.assertEquals(mockBruker.fnr, oppgave.ident)
         Assertions.assertEquals(basepath + "/aktivitet/vis/" + aktivitetDTO.id, oppgave.link)
         return oppgave
-    }
-
-    companion object {
-        private const val OPPGAVE_KVITERINGS_PREFIX = "O-veilarbaktivitet-"
     }
 }
