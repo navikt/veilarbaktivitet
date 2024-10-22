@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.brukernotifikasjon
 
 import com.github.tomakehurst.wiremock.client.WireMock
 import io.micrometer.core.instrument.MeterRegistry
+import io.micrometer.core.instrument.cumulative.CumulativeCounter
 import lombok.SneakyThrows
 import no.nav.common.json.JsonUtils
 import no.nav.tms.varsel.action.Varseltype
@@ -9,7 +10,7 @@ import no.nav.veilarbaktivitet.SpringBootTestBase
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper
 import no.nav.veilarbaktivitet.brukernotifikasjon.avslutt.AvsluttBrukernotifikasjonCron
-import no.nav.veilarbaktivitet.brukernotifikasjon.kvittering.VarselHendelseMetrikk
+import no.nav.veilarbaktivitet.brukernotifikasjon.kvittering.VarselHendelseMetrikk.VARSEL_HENDELSE
 import no.nav.veilarbaktivitet.brukernotifikasjon.kvittering.VarselKvitteringStatus
 import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.AktivitetVarsel
 import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendMinsideVarselFraOutboxCron
@@ -67,6 +68,8 @@ internal class BrukerVarselHendelseTest(
         DbTestUtils.cleanupTestDb(jdbc.jdbcTemplate)
         brukerVarselConsumer = kafkaTestService.createStringStringConsumer(brukervarselTopic)
         brukernotifikasjonAsserts = BrukernotifikasjonAsserts(brukernotifikasjonAssertsConfig!!)
+        meterRegistry.find(VARSEL_HENDELSE).meters()
+            .forEach { meterRegistry.remove(it) }
     }
 
     @AfterEach
@@ -137,8 +140,9 @@ internal class BrukerVarselHendelseTest(
 
         assertEksternVarselKvitteringStatus(varselId, VarselKvitteringStatus.OK)
 
-        val totalVarselHendelser = meterRegistry.find(VarselHendelseMetrikk.VARSEL_HENDELSE)
+        val totalVarselHendelser = meterRegistry.find(VARSEL_HENDELSE)
             .counters()
+            .filter { (it as CumulativeCounter).id.tags.any { tag -> tag.value == "sendt_ekstern" } }
             .sumOf { it.count() }
         Assertions.assertEquals(1.0, totalVarselHendelser)
     }
