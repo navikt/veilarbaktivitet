@@ -5,7 +5,6 @@ import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.cumulative.CumulativeCounter
 import lombok.SneakyThrows
 import no.nav.common.json.JsonUtils
-import no.nav.tms.varsel.action.Varseltype
 import no.nav.veilarbaktivitet.SpringBootTestBase
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper
@@ -15,10 +14,6 @@ import no.nav.veilarbaktivitet.brukernotifikasjon.kvittering.VarselKvitteringSta
 import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.AktivitetVarsel
 import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendMinsideVarselFraOutboxCron
 import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.VarselDAO
-import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.EksternVarselHendelseDTO
-import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.EksternVarselKanal
-import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.EksternVarselStatus
-import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.VarselEventTypeDto
 import no.nav.veilarbaktivitet.db.DbTestUtils
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker
 import no.nav.veilarbaktivitet.mock_nav_modell.NavMockService
@@ -166,20 +161,6 @@ internal class BrukerVarselHendelseTest(
             String::class.java
         ) //TODO fiks denne når vi eksponerer det ut til apiet
         Assertions.assertEquals(expectedVarselStatus.name, status)
-    }
-
-    private fun status(varselId: UUID, status: EksternVarselStatus): EksternVarselHendelseDTO {
-        return EksternVarselHendelseDTO(
-            namespace = "dab",
-            appnavn = "veilarbaktivitet",
-            varseltype = Varseltype.Oppgave,
-            eventName = VarselEventTypeDto.eksternStatusOppdatert.name,
-            varselId = varselId,
-            status = status,
-            renotifikasjon = false,
-            feilmelding = null,
-            kanal = EksternVarselKanal.SMS,
-        )
     }
 
     private fun opprettOppgave(mockBruker: MockBruker, aktivitetDTO: AktivitetDTO): OpprettVarselDto {

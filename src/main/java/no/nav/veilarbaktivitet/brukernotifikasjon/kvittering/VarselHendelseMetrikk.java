@@ -14,6 +14,7 @@ public class VarselHendelseMetrikk {
     private final MeterRegistry meterRegistry;
     public static final String VARSEL_HENDELSE = "varsel_hendelse";
     private static final String HENDELSE_TYPE = "hendelse_type";
+    private static final String VARSEL_TYPE = "varsel_type";
     private static final String FEILMELDING = "feilmelding";
     private static final EnumEntries<VarselHendelseEventType> statuser = VarselHendelseEventType.getEntries();
             /*
@@ -33,9 +34,9 @@ public class VarselHendelseMetrikk {
 
         statuser.forEach(hendelseType -> {
             if (hendelseType == VarselHendelseEventType.feilet_ekstern) {
-                meterRegistry.counter(VARSEL_HENDELSE, VarselHendelseMetrikk.HENDELSE_TYPE, hendelseType.name(), FEILMELDING, "");
+                meterRegistry.counter(VARSEL_HENDELSE, HENDELSE_TYPE, hendelseType.name(), VARSEL_TYPE, "",  FEILMELDING, "");
             } else {
-                meterRegistry.counter(VARSEL_HENDELSE, VarselHendelseMetrikk.HENDELSE_TYPE, hendelseType.name());
+                meterRegistry.counter(VARSEL_HENDELSE, HENDELSE_TYPE, hendelseType.name(), VARSEL_TYPE, "");
             }
         });
     }
@@ -43,6 +44,7 @@ public class VarselHendelseMetrikk {
     public void incrementInternVarselMetrikk(InternVarselHendelseDTO event) {
         Counter.builder(VARSEL_HENDELSE)
                 .tag(VarselHendelseMetrikk.HENDELSE_TYPE, event.getHendelseType().name())
+                .tag(VarselHendelseMetrikk.VARSEL_TYPE, event.getVarseltype().name())
                 .register(meterRegistry)
                 .increment();
     }
@@ -54,6 +56,7 @@ public class VarselHendelseMetrikk {
         }
         counterBuilder
                 .tag(VarselHendelseMetrikk.HENDELSE_TYPE, event.getHendelseType().name())
+                .tag(VarselHendelseMetrikk.VARSEL_TYPE, event.getVarseltype().name())
                 .register(meterRegistry)
                 .increment();
     }

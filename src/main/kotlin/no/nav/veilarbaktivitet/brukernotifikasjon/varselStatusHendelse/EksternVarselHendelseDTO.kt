@@ -24,26 +24,27 @@ object VarselFraAnnenApp: VarselHendelse()
 sealed class EksternVarsling(
     val varselId: MinSideVarselId,
     val hendelseType: VarselHendelseEventType,
+    val varseltype: Varseltype
 ): VarselHendelse()
 
 class Renotifikasjon(
-    val varseltype: Varseltype,
+    varseltype: Varseltype,
     varselId: MinSideVarselId,
-): EksternVarsling(varselId, VarselHendelseEventType.renotifikasjon_ekstern)
+): EksternVarsling(varselId, VarselHendelseEventType.renotifikasjon_ekstern, varseltype)
 class Sendt(
-    val varseltype: Varseltype,
+    varseltype: Varseltype,
     varselId: MinSideVarselId,
     val kanal: EksternVarselKanal
-): EksternVarsling(varselId, VarselHendelseEventType.sendt_ekstern)
+): EksternVarsling(varselId, VarselHendelseEventType.sendt_ekstern, varseltype)
 class Bestilt(
-    val varseltype: Varseltype,
+    varseltype: Varseltype,
     varselId: MinSideVarselId,
-): EksternVarsling(varselId, VarselHendelseEventType.bestilt_ekstern)
+): EksternVarsling(varselId, VarselHendelseEventType.bestilt_ekstern, varseltype)
 class Feilet(
-    val varseltype: Varseltype,
+    varseltype: Varseltype,
     varselId: MinSideVarselId,
     val feilmelding: String
-): EksternVarsling(varselId, VarselHendelseEventType.feilet_ekstern)
+): EksternVarsling(varselId, VarselHendelseEventType.feilet_ekstern, varseltype)
 
 fun JsonNode.deserialiserEksternVarselHendelse(): EksternVarsling {
     val eksternStatus = EksternVarselStatus.valueOf(this["status"].asText())
