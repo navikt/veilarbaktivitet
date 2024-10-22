@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
+import kotlin.jvm.optionals.getOrNull
 
 @Service
 open class MinsideVarselService(
@@ -86,25 +87,27 @@ open class MinsideVarselService(
         val fnr = personService.getFnrForAktorId(varsel.aktorId)
         val gjeldendeOppfolgingsperiode = sistePeriodeService.hentGjeldendeOppfolgingsperiodeMedFallback(varsel.aktorId)
         val (varselId, lopeNr) = lagreIOutbox(varsel, gjeldendeOppfolgingsperiode, fnr)
+        log.info("Minside varsel lagret i outbox varselId={} type={} aktivitetid={}", varsel, varsel.varseltype, varsel.aktivitetId)
         varselDAO.kobleAktivitetIdTilBrukernotifikasjon(lopeNr, varsel.aktivitetId, varsel.aktitetVersion)
         return varselId
     }
 
     @Transactional
     open fun opprettVarselPaaArenaAktivitet(
-        arenaAktivitetVarsel: ArenaAktivitetVarsel
+        varsel: ArenaAktivitetVarsel
     ): MinSideVarselId {
         val aktorId = personService
-            .getAktorIdForPersonBruker(arenaAktivitetVarsel.fnr)
+            .getAktorIdForPersonBruker(varsel.fnr)
             .orElseThrow()
         val gjeldendeOppfolgingsperiode = sistePeriodeService.hentGjeldendeOppfolgingsperiodeMedFallback(aktorId)
 
         // epostTittel, epostBody og smsTekst settes til standartekst av brukernotifiaksjoenr hvis ikke satt
-        val (varselId, lopeNr) = lagreIOutbox(arenaAktivitetVarsel, gjeldendeOppfolgingsperiode)
+        val (varselId, lopeNr) = lagreIOutbox(varsel, gjeldendeOppfolgingsperiode)
+        log.info("Minside varsel lagret i outbox varselId={} type={} aktivitetId={} arenaAktivitetid={}", varsel, VarselType.FORHAANDSORENTERING, varsel.aktivitetId.getOrNull(), varsel.arenaAktivitetId)
 
-        varselDAO.kobleArenaAktivitetIdTilBrukernotifikasjon(lopeNr, arenaAktivitetVarsel.arenaAktivitetId)
+        varselDAO.kobleArenaAktivitetIdTilBrukernotifikasjon(lopeNr, varsel.arenaAktivitetId)
         // Populer brukernotifikasjon koblingstabell til vanlig aktivitet også
-        arenaAktivitetVarsel.aktivitetId
+        varsel.aktivitetId
             .flatMap { id -> aktivitetDao.hentMaybeAktivitet(id) }
             .ifPresent { aktivitet ->
                 varselDAO.kobleAktivitetIdTilBrukernotifikasjon(
@@ -141,7 +144,6 @@ open class MinsideVarselService(
     private fun lagreIOutbox(utgåendeVarsel: UtgåendeVarsel): VarselIdOgLopeNr {
         // epostTittel, epostBody og smsTekst settes til standartekst av brukernotifiaksjoenr hvis ikke satt
         val brukernotifikasjonId = varselDAO.opprettBrukernotifikasjonIOutbox(utgåendeVarsel)
-        log.info("Minside varsel lagret i outbox varselId={} type={}", utgåendeVarsel, utgåendeVarsel.type)
         return  VarselIdOgLopeNr(utgåendeVarsel.varselId, brukernotifikasjonId)
     }
 }

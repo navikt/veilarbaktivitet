@@ -64,7 +64,6 @@ class MinsideVarselProducer(
             BrukernotifikasjonsType.BESKJED -> Varseltype.Beskjed
         }
         val offset = publiserPåBrukernotifikasjonTopic(skalSendes, varselType)
-        log.info("Minside varsel opprettet med varselId {} og varselType {}", skalSendes.varselId, varselType)
         return offset
     }
 

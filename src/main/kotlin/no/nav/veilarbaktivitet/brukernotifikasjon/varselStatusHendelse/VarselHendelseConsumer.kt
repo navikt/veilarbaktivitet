@@ -34,7 +34,7 @@ open class VarselHendelseConsumer(
     }
 
     open fun behandleInternVarselHendelse(hendelse: InternVarselHendelseDTO) {
-        log.info("Minside varsel av type {} er {} varselId {}", hendelse.varseltype.name, hendelse.eventName, hendelse.varselId, )
+        log.info("Minside varsel (hendelse) av type {} er {} varselId {}", hendelse.varseltype.name, hendelse.eventName, hendelse.varselId, )
     }
 
     open fun behandleEksternVarselHendelse(hendelse: EksternVarsling) {
@@ -56,17 +56,17 @@ open class VarselHendelseConsumer(
         when (hendelse) {
             is Sendt -> {
                 kvitteringDAO.setEksternVarselStatusOK(varselId)
-                log.info("Ekstern varsel sendt for varselId={} kanal={}", varselId, hendelse.kanal)
+                log.info("Minside varsel (ekstern) varsel sendt for varselId={} kanal={}", varselId, hendelse.kanal)
             }
             is Bestilt -> {
-                log.info("Ekstern varsel bestilt for varselId={}", varselId)
+                log.info("Minside varsel (ekstern) bestilt for varselId={}", varselId)
             }
             is Renotifikasjon -> {
-                log.info("Ekstern varsel renotifikasjon for varselId={}", varselId)
+                log.info("Minside varsel (ekstern) renotifikasjon for varselId={}", varselId)
             }
             is Feilet -> {
                 log.warn(
-                    "Ekstern varsel feilet for varselId={} med melding {}",
+                    "Minside varsel (ekstern) feilet for varselId={} med melding {}",
                     varselId,
                     hendelse.feilmelding
                 )
