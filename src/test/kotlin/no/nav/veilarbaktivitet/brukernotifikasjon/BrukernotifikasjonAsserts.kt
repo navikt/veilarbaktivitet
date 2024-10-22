@@ -6,6 +6,7 @@ import no.nav.tms.varsel.action.Varseltype
 import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.InaktiverVarselDto
 import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.MinSideVarselId
 import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.EksternVarselHendelseDTO
+import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.EksternVarselKanal
 import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.EksternVarselStatus
 import no.nav.veilarbaktivitet.person.Person.Fnr
 import no.nav.veilarbaktivitet.util.KafkaTestService
@@ -49,7 +50,8 @@ class BrukernotifikasjonAsserts(var config: BrukernotifikasjonAssertsConfig) {
         simulerEksternVarselStatusHendelse(
             MinSideVarselId(UUID.fromString(varsel.varselId)),
             EksternVarselStatus.sendt,
-            varsel.type
+            varsel.type,
+            kanal = EksternVarselKanal.SMS
         )
     }
 
@@ -57,13 +59,14 @@ class BrukernotifikasjonAsserts(var config: BrukernotifikasjonAssertsConfig) {
         simulerEksternVarselStatusHendelse(
             MinSideVarselId(UUID.fromString(varsel.varselId)),
             EksternVarselStatus.feilet,
-            varsel.type
+            varsel.type,
+            null
         )
     }
 
     @SneakyThrows
-    private fun simulerEksternVarselStatusHendelse(varselId: MinSideVarselId, status: EksternVarselStatus, varselType: Varseltype) {
-        val eksternVarsel = eksternVarselHendelse(varselId, status, varselType)
+    private fun simulerEksternVarselStatusHendelse(varselId: MinSideVarselId, status: EksternVarselStatus, varselType: Varseltype, kanal: EksternVarselKanal?) {
+        val eksternVarsel = eksternVarselHendelse(varselId, status, varselType, kanal)
         val result = brukernotifikasjonVarselHendelseProducer.publiserBrukernotifikasjonVarselHendelse(
             varselId, eksternVarsel
         )
@@ -76,14 +79,15 @@ class BrukernotifikasjonAsserts(var config: BrukernotifikasjonAssertsConfig) {
         kafkaTestService.harKonsumertAlleMeldinger(config.brukernotifikasjonBrukervarselTopic, brukervarselConsumer.consumer)
     }
 
-    private fun eksternVarselHendelse(varselId: MinSideVarselId, status: EksternVarselStatus, varselType: Varseltype): EksternVarselHendelseDTO {
+    private fun eksternVarselHendelse(varselId: MinSideVarselId, status: EksternVarselStatus, varselType: Varseltype, kanal: EksternVarselKanal?): EksternVarselHendelseDTO {
         return EksternVarselHendelseDTO(
             namespace = config.namespace,
             appnavn = config.appname,
             eventName = "eksternStatusOppdatert",
             status = status,
             varselId = varselId.value,
-            varseltype = varselType
+            varseltype = varselType,
+            kanal = kanal
         )
     }
 }
