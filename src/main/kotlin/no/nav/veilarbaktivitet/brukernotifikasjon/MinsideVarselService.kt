@@ -18,6 +18,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
 import kotlin.jvm.optionals.getOrNull
@@ -46,7 +47,7 @@ open class MinsideVarselService(
     open fun setDone(aktivitetId: ArenaId, varseltype: VarselType) = varselDAO.setDone(aktivitetId, varseltype)
     open fun setDoneGrupperingsID(uuid: UUID) = varselDAO.setDoneGrupperingsID(uuid)
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Timed(value = "brukernotifikasjon_opprett_oppgave_sendt")
     open fun send(skalSendes: SkalSendes) {
         val oppdatertOk = varselDAO.setSendt(skalSendes.brukernotifikasjonLopeNummer)
@@ -57,7 +58,7 @@ open class MinsideVarselService(
 
     private fun sendVarsel(skalSendes: SkalSendes) {
         val offset: Long = minsideVarselProducer.send(skalSendes)
-        log.debug(
+        log.info(
             "Minside varsel publisert på kafka med offset={} med type={} varselId={}",
             offset,
             skalSendes.varselType.brukernotifikasjonType.name,
