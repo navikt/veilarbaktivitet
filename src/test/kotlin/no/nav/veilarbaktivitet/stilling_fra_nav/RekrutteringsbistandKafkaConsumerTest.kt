@@ -9,22 +9,19 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAsserts
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAssertsConfig
-import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendBrukernotifikasjonCron
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaJsonTemplate
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringTemplate
-import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService
+import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker
+import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder
 import no.nav.veilarbaktivitet.person.Innsender
 import no.nav.veilarbaktivitet.util.DateUtils
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.fail
 import org.assertj.core.api.SoftAssertions
 import org.assertj.core.api.ThrowingConsumer
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
-import java.lang.Boolean
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -36,20 +33,14 @@ import java.util.function.BinaryOperator
 import java.util.function.Consumer
 import java.util.function.Function
 import java.util.stream.Collectors
-import kotlin.Double
-import kotlin.Exception
-import kotlin.String
-import kotlin.Throws
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
     @Autowired
     var navCommonKafkaJsonTemplate: KafkaJsonTemplate<RekrutteringsbistandStatusoppdatering?>? = null
 
     @Autowired
     var kafkaStringTemplate: KafkaStringTemplate? = null
-
-    @Autowired
-    var sendBrukernotifikasjonCron: SendBrukernotifikasjonCron? = null
 
     @Value("\${topic.inn.rekrutteringsbistandStatusoppdatering}")
     private val innRekrutteringsbistandStatusoppdatering: String? = null
@@ -60,6 +51,13 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
     @Autowired
     var brukernotifikasjonAssertsConfig: BrukernotifikasjonAssertsConfig? = null
     var brukernotifikasjonAsserts: BrukernotifikasjonAsserts? = null
+
+    @BeforeAll
+    fun beforeAll() {
+        mockBruker = navMockService.createHappyBruker()
+        veileder =  navMockService.createVeileder(mockBruker)
+    }
+
     @BeforeEach
     fun setUp() {
         brukernotifikasjonAsserts = BrukernotifikasjonAsserts(brukernotifikasjonAssertsConfig)
@@ -355,7 +353,7 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
     @Test
     @Throws(Exception::class)
     fun behandle_CvDelt_svart_nei_skal_oppdatere_soknadsstatus_og_lage_metrikk() {
-        aktivitetTestService.svarPaaDelingAvCv(Boolean.FALSE, mockBruker, veileder, aktivitetDTO, date)
+        aktivitetTestService.svarPaaDelingAvCv(false, mockBruker, veileder, aktivitetDTO, date)
         val aktivitetData_for = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO!!.id)
         aktivitetTestService.mottaOppdateringFraRekrutteringsbistand(
             bestillingsId,
@@ -698,12 +696,12 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
     }
 
     private val DETALJER_TEKST = ""
-    private val JA = Boolean.TRUE
-    private val NEI = Boolean.FALSE
+    private val JA = true
+    private val NEI = false
     private val tidspunkt = ZonedDateTime.of(2020, 4, 5, 16, 17, 0, 0, ZoneId.systemDefault())
     private val navIdent = "E271828"
-    private val mockBruker = MockNavService.createHappyBruker()
-    private val veileder = MockNavService.createVeileder(mockBruker)
+    private lateinit var mockBruker: MockBruker
+    private lateinit var veileder: MockVeileder
     private val date = Date.from(Instant.ofEpochSecond(1))
     private val SUKSESS = ""
     private val INGEN_DETALJER = ""

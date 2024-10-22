@@ -9,7 +9,6 @@ import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringAvroTemplate;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
-import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
 import no.nav.veilarbaktivitet.util.AktivitetTestService;
 import org.apache.kafka.clients.consumer.Consumer;
@@ -20,7 +19,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.Instant;
@@ -36,20 +34,8 @@ class DelingAvCvFristUtloptServiceTest extends SpringBootTestBase {
     @Autowired
     JdbcTemplate jdbc;
 
-    @LocalServerPort
-    private int port;
-
-    @Value("${topic.inn.stillingFraNav}")
-    private String innTopic;
-
     @Value("${topic.ut.stillingFraNav}")
     private String utTopic;
-
-    @Value("${spring.kafka.consumer.group-id}")
-    String groupId;
-
-    @Autowired
-    KafkaStringAvroTemplate<ForesporselOmDelingAvCv> producer;
 
     Consumer<String, DelingAvCvRespons> consumer;
 
@@ -80,7 +66,7 @@ class DelingAvCvFristUtloptServiceTest extends SpringBootTestBase {
 
     @Test
     void utlopte_aktiviteter_skal_avsluttes_automatisk() {
-        MockBruker mockBruker = MockNavService.createHappyBruker();
+        MockBruker mockBruker = navMockService.createHappyBruker();
         String uuid = UUID.randomUUID().toString();
 
         ForesporselOmDelingAvCv melding = AktivitetTestService.createForesporselOmDelingAvCv(uuid, mockBruker);
@@ -106,7 +92,7 @@ class DelingAvCvFristUtloptServiceTest extends SpringBootTestBase {
 
     @Test
     void skal_ikke_oppdare_aktivitet_naar_producer_feiler() {
-        MockBruker mockBruker = MockNavService.createHappyBruker();
+        MockBruker mockBruker = navMockService.createHappyBruker();
 
         ForesporselOmDelingAvCv melding = AktivitetTestService.createForesporselOmDelingAvCv(UUID.randomUUID().toString(), mockBruker);
         melding.setSvarfrist(Instant.now().minus(2, ChronoUnit.DAYS));

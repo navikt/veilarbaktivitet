@@ -15,7 +15,6 @@ import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendBrukernotifikasjonC
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
-import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
 import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -58,7 +57,7 @@ class MoteSmsTest extends SpringBootTestBase {
     @Test
     void skalSendeServiceMelding() {
         MockBruker happyBruker = navMockService.createBruker(BrukerOptions.happyBruker());
-        MockVeileder veileder = MockNavService.createVeileder(happyBruker);
+        MockVeileder veileder = navMockService.createVeileder(happyBruker);
         AktivitetDTO aktivitetDTO = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE);
         ZonedDateTime startTid = ZonedDateTime.now().plusHours(2);
         aktivitetDTO.setFraDato(new Date(startTid.toInstant().toEpochMilli()));
@@ -94,7 +93,7 @@ class MoteSmsTest extends SpringBootTestBase {
     @Test
     void skalSendeForAlleMoteTyper() {
         MockBruker happyBruker = navMockService.createBruker(BrukerOptions.happyBruker());
-        MockVeileder veileder = MockNavService.createVeileder(happyBruker);
+        MockVeileder veileder = navMockService.createVeileder(happyBruker);
         AktivitetDTO aktivitetDTO = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE);
         ZonedDateTime fraDato = ZonedDateTime.now().plusHours(4);
         aktivitetDTO.setFraDato(new Date(fraDato.toInstant().toEpochMilli()));
@@ -112,7 +111,7 @@ class MoteSmsTest extends SpringBootTestBase {
     @Test
     void bareSendeForMote() {
         MockBruker happyBruker = navMockService.createBruker(BrukerOptions.happyBruker());
-        MockVeileder veileder = MockNavService.createVeileder(happyBruker);
+        MockVeileder veileder = navMockService.createVeileder(happyBruker);
         for (AktivitetTypeDTO type :
                 AktivitetTypeDTO.values()) {
             if (type == AktivitetTypeDTO.STILLING_FRA_NAV) {
@@ -134,7 +133,7 @@ class MoteSmsTest extends SpringBootTestBase {
     @Test
     void skalFjereneGamleMoter() {
         MockBruker happyBruker = navMockService.createBruker(BrukerOptions.happyBruker());
-        MockVeileder veileder = MockNavService.createVeileder(happyBruker);
+        MockVeileder veileder = navMockService.createVeileder(happyBruker);
         AktivitetDTO aktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE);
         ZonedDateTime startTid = ZonedDateTime.now().minusDays(10);
         aktivitet.setFraDato(new Date(startTid.toInstant().toEpochMilli()));
@@ -153,7 +152,7 @@ class MoteSmsTest extends SpringBootTestBase {
     @Test
     void skalIkkeOppreteVarsleHistorisk() {
         MockBruker happyBruker = navMockService.createBruker(BrukerOptions.happyBruker());
-        MockVeileder veileder = MockNavService.createVeileder(happyBruker);
+        MockVeileder veileder = navMockService.createVeileder(happyBruker);
         AktivitetDTO aktivitetDTO = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE);
         ZonedDateTime startTid = ZonedDateTime.now().plusHours(2);
         aktivitetDTO.setFraDato(new Date(startTid.toInstant().toEpochMilli()));
@@ -172,7 +171,7 @@ class MoteSmsTest extends SpringBootTestBase {
     @Test
     void skalIkkeOppreteVarsleFulfort() {
         MockBruker happyBruker = navMockService.createBruker(BrukerOptions.happyBruker());
-        MockVeileder veileder = MockNavService.createVeileder(happyBruker);
+        MockVeileder veileder = navMockService.createVeileder(happyBruker);
         AktivitetDTO aktivitetDTO = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE);
         ZonedDateTime startTid = ZonedDateTime.now().plusHours(2);
         aktivitetDTO.setFraDato(new Date(startTid.toInstant().toEpochMilli()));
@@ -189,7 +188,7 @@ class MoteSmsTest extends SpringBootTestBase {
     @Test
     void skalIkkeOppreteVarsleAvbrutt() {
         MockBruker happyBruker = navMockService.createBruker(BrukerOptions.happyBruker());
-        MockVeileder veileder = MockNavService.createVeileder(happyBruker);
+        MockVeileder veileder = navMockService.createVeileder(happyBruker);
         AktivitetDTO aktivitetDTO = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE);
         ZonedDateTime startTid = ZonedDateTime.now().plusHours(2);
         aktivitetDTO.setFraDato(new Date(startTid.toInstant().toEpochMilli()));
