@@ -7,7 +7,7 @@ import java.net.URL
 import java.util.*
 
 data class UtgåendeVarsel (
-    val brukernotifikasjonId: MinSideVarselId,
+    val varselId: MinSideVarselId,
     val foedselsnummer: Person.Fnr,
     val melding: String,
     val oppfolgingsperiode: UUID,

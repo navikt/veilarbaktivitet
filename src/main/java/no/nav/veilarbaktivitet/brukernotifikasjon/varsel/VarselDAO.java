@@ -178,7 +178,7 @@ public class VarselDAO {
 
     public long opprettBrukernotifikasjonIOutbox(UtgåendeVarsel utgåendeVarsel) {
         SqlParameterSource params = new MapSqlParameterSource()
-                .addValue("brukernotifikasjon_id", utgåendeVarsel.getBrukernotifikasjonId().getValue().toString())
+                .addValue("brukernotifikasjon_id", utgåendeVarsel.getVarselId().getValue().toString())
                 .addValue("foedselsnummer", utgåendeVarsel.getFoedselsnummer().get())
                 .addValue("oppfolgingsperiode", utgåendeVarsel.getOppfolgingsperiode().toString())
                 .addValue("type", utgåendeVarsel.getType().name())

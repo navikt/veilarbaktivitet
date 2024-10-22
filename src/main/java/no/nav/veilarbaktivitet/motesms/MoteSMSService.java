@@ -42,10 +42,8 @@ public class MoteSMSService {
     protected void sendServicemeldinger(Duration fra, Duration til) {
         moteSmsDAO.hentMoterUtenVarsel(fra, til, 5000)
                 .forEach(it -> {
-                    moteSmsDAO.insertGjeldendeSms(it);
                     if (brukernotifikasjonService.kanVarsles(it.aktorId())) {
-                        brukernotifikasjonService.opprettVarselPaaAktivitet(
-                            new AktivitetVarsel(
+                        var varsel = new AktivitetVarsel(
                                 it.aktivitetId(),
                                 it.aktitetVersion(),
                                 it.aktorId(),
@@ -54,10 +52,15 @@ public class MoteSMSService {
                                 it.getEpostTitel(),
                                 it.getEpostBody(),
                                 it.getSmsTekst()
-                            )
                         );
+                        var varselId = brukernotifikasjonService.opprettVarselPaaAktivitet(varsel);
+                        moteSmsDAO.insertGjeldendeSms(it, varselId);
+                        log.info("Minside varsel (møte sms) klar for outbox varselId={} aktivitetId={}", varselId, it.aktivitetId());
                     } else {
-                        log.info("bruker kan ikke varsles {}", it.aktorId());
+                        // Usikker på hvorfor man inserter i gjeldende sms når bruker ikke kan
+                        // varsles men det var gjort slik tidligere
+                        moteSmsDAO.insertGjeldendeSms(it, null);
+                        log.info("Minside varsel ikke sendt (møte sms), bruker kan ikke varsles {}", it.aktorId());
                     }
                 });
     }

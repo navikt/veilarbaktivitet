@@ -82,48 +82,46 @@ open class MinsideVarselService(
     }
 
     @Transactional
-    open fun opprettVarselPaaAktivitet(varsel: AktivitetVarsel): UUID {
-        val uuid = UUID.randomUUID()
+    open fun opprettVarselPaaAktivitet(varsel: AktivitetVarsel): MinSideVarselId {
         val fnr = personService.getFnrForAktorId(varsel.aktorId)
         val gjeldendeOppfolgingsperiode = sistePeriodeService.hentGjeldendeOppfolgingsperiodeMedFallback(varsel.aktorId)
-        val brukernotifikasjonId = lagreIOutbox(varsel, gjeldendeOppfolgingsperiode, fnr)
-        varselDAO.kobleAktivitetIdTilBrukernotifikasjon(brukernotifikasjonId, varsel.aktivitetId, varsel.aktitetVersion)
-        return uuid
+        val (varselId, lopeNr) = lagreIOutbox(varsel, gjeldendeOppfolgingsperiode, fnr)
+        varselDAO.kobleAktivitetIdTilBrukernotifikasjon(lopeNr, varsel.aktivitetId, varsel.aktitetVersion)
+        return varselId
     }
 
     @Transactional
     open fun opprettVarselPaaArenaAktivitet(
         arenaAktivitetVarsel: ArenaAktivitetVarsel
-    ): UUID {
-        val uuid = UUID.randomUUID()
+    ): MinSideVarselId {
         val aktorId = personService
             .getAktorIdForPersonBruker(arenaAktivitetVarsel.fnr)
             .orElseThrow()
         val gjeldendeOppfolgingsperiode = sistePeriodeService.hentGjeldendeOppfolgingsperiodeMedFallback(aktorId)
 
         // epostTittel, epostBody og smsTekst settes til standartekst av brukernotifiaksjoenr hvis ikke satt
-        val brukernotifikasjonId = lagreIOutbox(arenaAktivitetVarsel, gjeldendeOppfolgingsperiode)
+        val (varselId, lopeNr) = lagreIOutbox(arenaAktivitetVarsel, gjeldendeOppfolgingsperiode)
 
-        varselDAO.kobleArenaAktivitetIdTilBrukernotifikasjon(brukernotifikasjonId, arenaAktivitetVarsel.arenaAktivitetId)
+        varselDAO.kobleArenaAktivitetIdTilBrukernotifikasjon(lopeNr, arenaAktivitetVarsel.arenaAktivitetId)
         // Populer brukernotifikasjon koblingstabell til vanlig aktivitet også
         arenaAktivitetVarsel.aktivitetId
             .flatMap { id -> aktivitetDao.hentMaybeAktivitet(id) }
             .ifPresent { aktivitet ->
                 varselDAO.kobleAktivitetIdTilBrukernotifikasjon(
-                    brukernotifikasjonId,
+                    lopeNr,
                     aktivitet.id,
                     aktivitet.versjon
                 )
             }
 
-        return uuid
+        return varselId
     }
 
     private fun nyMinsideVarselId(): MinSideVarselId {
         return MinSideVarselId(UUID.randomUUID())
     }
 
-    private fun lagreIOutbox(arenaAktivitetVarsel: ArenaAktivitetVarsel, oppfolgingsPeriode: UUID): Long {
+    private fun lagreIOutbox(arenaAktivitetVarsel: ArenaAktivitetVarsel, oppfolgingsPeriode: UUID): VarselIdOgLopeNr {
         return lagreIOutbox(arenaAktivitetVarsel.toUgåendeVarsel(
             nyMinsideVarselId(),
             oppfolgingsPeriode,
@@ -131,7 +129,7 @@ open class MinsideVarselService(
         ))
     }
 
-    private fun lagreIOutbox(aktivitetVarsel: AktivitetVarsel, oppfolgingsPeriode: UUID, fnr: Fnr): Long {
+    private fun lagreIOutbox(aktivitetVarsel: AktivitetVarsel, oppfolgingsPeriode: UUID, fnr: Fnr): VarselIdOgLopeNr {
         return lagreIOutbox(aktivitetVarsel.toUgåendeVarsel(
             nyMinsideVarselId(),
             oppfolgingsPeriode,
@@ -140,10 +138,15 @@ open class MinsideVarselService(
         ))
     }
 
-    private fun lagreIOutbox(utgåendeVarsel: UtgåendeVarsel): Long {
+    private fun lagreIOutbox(utgåendeVarsel: UtgåendeVarsel): VarselIdOgLopeNr {
         // epostTittel, epostBody og smsTekst settes til standartekst av brukernotifiaksjoenr hvis ikke satt
         val brukernotifikasjonId = varselDAO.opprettBrukernotifikasjonIOutbox(utgåendeVarsel)
         log.info("Minside varsel lagret i outbox varselId={} type={}", utgåendeVarsel, utgåendeVarsel.type)
-        return brukernotifikasjonId
+        return  VarselIdOgLopeNr(utgåendeVarsel.varselId, brukernotifikasjonId)
     }
 }
+
+data class VarselIdOgLopeNr(
+    val varselId: MinSideVarselId,
+    val lopeNr: Long
+)
