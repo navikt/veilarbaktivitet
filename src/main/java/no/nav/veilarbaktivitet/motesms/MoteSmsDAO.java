@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.dto.KanalDTO;
+import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.MinSideVarselId;
 import no.nav.veilarbaktivitet.config.database.Database;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.veilarbdbutil.VeilarbAktivitetSqlParameterSource;
@@ -85,17 +86,19 @@ public class MoteSmsDAO {
         jdbc.update("delete from  GJELDENDE_MOTE_SMS where AKTIVITET_ID = :aktivit_id", params);
     }
 
-    void insertGjeldendeSms(MoteNotifikasjon moteNotifikasjon) {
+    void insertGjeldendeSms(MoteNotifikasjon moteNotifikasjon, MinSideVarselId varselId) {
+        var varselIdParam = varselId != null ? varselId.getValue() : null;
         SqlParameterSource params = new VeilarbAktivitetSqlParameterSource()
                 .addValue("aktivit_id", moteNotifikasjon.aktivitetId())
                 .addValue("kanal", moteNotifikasjon.kanalDTO().name())
-                .addValue("moteTid", moteNotifikasjon.startTid());
+                .addValue("moteTid", moteNotifikasjon.startTid())
+                .addValue("varselId", varselIdParam);
 
         jdbc.update(
                 """
                         insert into GJELDENDE_MOTE_SMS
-                                (AKTIVITET_ID, MOTETID,  KANAL, BRUKERNOTIFIKASJON)
-                         values (:aktivit_id,  :moteTid, :kanal, 1)
+                                (AKTIVITET_ID, MOTETID,  KANAL, BRUKERNOTIFIKASJON, VARSEL_ID)
+                         values (:aktivit_id,  :moteTid, :kanal, 1, :varselId)
                         """
                 , params
         );

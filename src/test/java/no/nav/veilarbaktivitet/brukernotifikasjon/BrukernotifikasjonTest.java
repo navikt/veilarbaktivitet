@@ -3,10 +3,7 @@ package no.nav.veilarbaktivitet.brukernotifikasjon;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import io.restassured.response.Response;
 import lombok.SneakyThrows;
-import no.nav.brukernotifikasjon.schemas.input.BeskjedInput;
-import no.nav.brukernotifikasjon.schemas.input.DoneInput;
-import no.nav.brukernotifikasjon.schemas.input.NokkelInput;
-import no.nav.brukernotifikasjon.schemas.input.OppgaveInput;
+import no.nav.common.json.JsonUtils;
 import no.nav.veilarbaktivitet.SpringBootTestBase;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
@@ -23,10 +20,13 @@ import no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavDTO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Type;
 import no.nav.veilarbaktivitet.brukernotifikasjon.avslutt.AvsluttBrukernotifikasjonCron;
-import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendBrukernotifikasjonCron;
+import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.AktivitetVarsel;
+import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendMinsideVarselFraOutboxCron;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
+import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
+import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import no.nav.veilarbaktivitet.util.AktivitetTestService;
 import no.nav.veilarbaktivitet.util.KafkaTestService;
@@ -53,38 +53,26 @@ import static org.mockito.Mockito.when;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
 class BrukernotifikasjonTest extends SpringBootTestBase {
-
-    @Value("${app.env.appname}")
-    private String appname;
-    @Value("${app.env.namespace}")
-    private String namespace;
-
     @Autowired
-    BrukernotifikasjonService brukernotifikasjonService;
+    MinsideVarselService brukernotifikasjonService;
 
     @Autowired
     AvsluttBrukernotifikasjonCron avsluttBrukernotifikasjonCron;
 
     @Autowired
-    SendBrukernotifikasjonCron sendBrukernotifikasjonCron;
+    SendMinsideVarselFraOutboxCron sendMinsideVarselFraOutboxCron;
 
     @Autowired
     KafkaTestService kafkaTestService;
 
-    @Value("${topic.ut.brukernotifikasjon.oppgave}")
-    String oppgaveTopic;
+    @Value("${topic.ut.brukernotifikasjon.brukervarsel}")
+    String brukervarselTopic;
 
-    @Value("${topic.ut.brukernotifikasjon.beskjed}")
-    String beskjedTopic;
+    @Value("${topic.inn.brukernotifikasjon.brukervarselHendelse}")
+    String brukervarselHendelseTopic;
 
-    @Value("${topic.ut.brukernotifikasjon.done}")
-    String doneTopic;
-
-    Consumer<NokkelInput, DoneInput> doneConsumer;
-
-    Consumer<NokkelInput, OppgaveInput> oppgaveConsumer;
-
-    Consumer<NokkelInput, BeskjedInput> beskjedConsumer;
+    Consumer<String, String> brukerVarselHendelseConsumer;
+    Consumer<String, String> brukerVarselConsumer;
 
     @Autowired
     NamedParameterJdbcTemplate jdbc;
@@ -99,21 +87,28 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
     BrukernotifikasjonAssertsConfig brukernotifikasjonAssertsConfig;
     BrukernotifikasjonAsserts brukernotifikasjonAsserts;
 
+    BrukernotifikasjonAsserts getOrCreateBrukernotifikasjonAsserts() {
+        if (brukernotifikasjonAsserts != null) {
+            return brukernotifikasjonAsserts;
+        }
+        brukernotifikasjonAsserts = new BrukernotifikasjonAsserts(brukernotifikasjonAssertsConfig);
+        return brukernotifikasjonAsserts;
+    }
+
     @BeforeEach
     void setUp() {
-        brukernotifikasjonAsserts = new BrukernotifikasjonAsserts(brukernotifikasjonAssertsConfig);
+        brukernotifikasjonAsserts = getOrCreateBrukernotifikasjonAsserts();
+        brukerVarselConsumer = brukernotifikasjonAsserts.getBrukervarselConsumer().getConsumer();
+        brukerVarselHendelseConsumer = kafkaTestService.createStringStringConsumer(brukervarselHendelseTopic);
         DbTestUtils.cleanupTestDb(jdbc.getJdbcTemplate());
 
-        oppgaveConsumer = kafkaTestService.createAvroAvroConsumer(oppgaveTopic);
-        beskjedConsumer = kafkaTestService.createAvroAvroConsumer(beskjedTopic);
-        doneConsumer = kafkaTestService.createAvroAvroConsumer(doneTopic);
         when(unleash.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)).thenReturn(true);
     }
 
     @AfterEach
     void assertNoUnkowns() {
-        oppgaveConsumer.unsubscribe();
-        doneConsumer.unsubscribe();
+        brukerVarselConsumer.unsubscribe();
+        brukerVarselHendelseConsumer.unsubscribe();
 
         assertTrue(WireMock.findUnmatchedRequests().isEmpty());
     }
@@ -126,9 +121,9 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
         AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettAktivitet(mockBruker, skalOpprettes);
 
-        final ConsumerRecord<NokkelInput, OppgaveInput> oppgaveRecord = opprettOppgave(mockBruker, aktivitetDTO);
-        oppgaveSendtOk(oppgaveRecord);
-        avsluttOppgave(mockBruker, aktivitetDTO, oppgaveRecord);
+        final OpprettVarselDto oppgaveRecord = opprettOppgave(mockBruker, aktivitetDTO);
+        oppgaveErIOutbox(oppgaveRecord);
+        avsluttOppgave(aktivitetDTO, oppgaveRecord);
     }
 
     @SneakyThrows
@@ -143,7 +138,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
         String epostTekst = "EpostTekst";
         String SMSTekst = "SMSTekst";
 
-        brukernotifikasjonService.opprettVarselPaaAktivitet(
+        brukernotifikasjonService.opprettVarselPaaAktivitet(new AktivitetVarsel(
                 Long.parseLong(aktivitetDTO.getId()),
                 Long.parseLong(aktivitetDTO.getVersjon()),
                 mockBruker.getAktorId(),
@@ -152,24 +147,20 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
                 epostTitel,
                 epostTekst,
                 SMSTekst
+            )
         );
-        sendBrukernotifikasjonCron.sendBrukernotifikasjoner();
-        ConsumerRecord<NokkelInput, OppgaveInput> oppgaveSendt = getSingleRecord(oppgaveConsumer, oppgaveTopic, DEFAULT_WAIT_TIMEOUT_DURATION);
+        sendMinsideVarselFraOutboxCron.sendBrukernotifikasjoner();
+        var oppgave = brukernotifikasjonAsserts.assertOppgaveSendt(Person.fnr(mockBruker.getFnr()));
 
-        NokkelInput key = oppgaveSendt.key();
-        assertEquals(mockBruker.getFnr(), key.getFodselsnummer());
-        assertEquals(appname, key.getAppnavn());
-        assertEquals(namespace, key.getNamespace());
         avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner();
 
-        assertTrue(kafkaTestService.harKonsumertAlleMeldinger(doneTopic, doneConsumer), "Skal ikke produsert done meldinger");
-        OppgaveInput oppgave = oppgaveSendt.value();
-
-        assertEquals(epostTitel, oppgave.getEpostVarslingstittel());
-        assertEquals(epostTekst, oppgave.getEpostVarslingstekst());
-        assertEquals(SMSTekst, oppgave.getSmsVarslingstekst());
-        oppgaveSendtOk(oppgaveSendt);
-        avsluttOppgave(mockBruker, aktivitetDTO, oppgaveSendt);
+        assertTrue(kafkaTestService.harKonsumertAlleMeldinger(brukervarselHendelseTopic, brukerVarselHendelseConsumer), "Skal ikke produsert done meldinger");
+        assertEquals(mockBruker.getFnr(), oppgave.getIdent());
+        assertEquals(epostTitel, oppgave.getEksternVarsling().getEpostVarslingstittel());
+        assertEquals(epostTekst, oppgave.getEksternVarsling().getEpostVarslingstekst());
+        assertEquals(SMSTekst, oppgave.getEksternVarsling().getSmsVarslingstekst());
+        oppgaveErIOutbox(oppgave);
+        avsluttOppgave(aktivitetDTO, oppgave);
     }
 
     @SneakyThrows
@@ -184,7 +175,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
         String epostTekst = "EpostTekst";
         String SMSTekst = "SMSTekst";
 
-        brukernotifikasjonService.opprettVarselPaaAktivitet(
+        brukernotifikasjonService.opprettVarselPaaAktivitet(new AktivitetVarsel(
                 Long.parseLong(aktivitetDTO.getId()),
                 Long.parseLong(aktivitetDTO.getVersjon()),
                 mockBruker.getAktorId(),
@@ -192,19 +183,17 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
                 VarselType.MOTE_SMS,
                 epostTitel,
                 epostTekst,
-                SMSTekst
+                SMSTekst)
         );
 
-        sendBrukernotifikasjonCron.sendBrukernotifikasjoner();
+        sendMinsideVarselFraOutboxCron.sendBrukernotifikasjoner();
         avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner();
 
-        assertTrue(kafkaTestService.harKonsumertAlleMeldinger(doneTopic, doneConsumer), "Skal ikke produsert done meldinger");
-        final ConsumerRecord<NokkelInput, BeskjedInput> oppgaveRecord = getSingleRecord(beskjedConsumer, beskjedTopic, DEFAULT_WAIT_TIMEOUT_DURATION);
-        BeskjedInput oppgave = oppgaveRecord.value();
-
-        assertEquals(epostTitel, oppgave.getEpostVarslingstittel());
-        assertEquals(epostTekst, oppgave.getEpostVarslingstekst());
-        assertEquals(SMSTekst, oppgave.getSmsVarslingstekst());
+        assertTrue(kafkaTestService.harKonsumertAlleMeldinger(brukervarselHendelseTopic, brukerVarselHendelseConsumer), "Skal ikke produsert done meldinger");
+        var oppgave = brukernotifikasjonAsserts.assertBeskjedSendt(Person.fnr(mockBruker.getFnr()));
+        assertEquals(epostTitel, oppgave.getEksternVarsling().getEpostVarslingstittel());
+        assertEquals(epostTekst, oppgave.getEksternVarsling().getEpostVarslingstekst());
+        assertEquals(SMSTekst, oppgave.getEksternVarsling().getSmsVarslingstekst());
     }
 
     @SneakyThrows
@@ -215,22 +204,19 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
         AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettAktivitet(mockBruker, skalOpprettes);
 
-        brukernotifikasjonService.opprettVarselPaaAktivitet(
+        brukernotifikasjonService.opprettVarselPaaAktivitet(new AktivitetVarsel(
                 Long.parseLong(aktivitetDTO.getId()),
                 Long.parseLong(aktivitetDTO.getVersjon()),
                 mockBruker.getAktorId(),
                 "Testvarsel",
-                VarselType.MOTE_SMS
+                VarselType.MOTE_SMS, null, null, null)
         );
 
-        sendBrukernotifikasjonCron.sendBrukernotifikasjoner();
+        sendMinsideVarselFraOutboxCron.sendBrukernotifikasjoner();
 
-        final ConsumerRecord<NokkelInput, BeskjedInput> oppgaveRecord = getSingleRecord(beskjedConsumer, beskjedTopic, DEFAULT_WAIT_TIMEOUT_DURATION);
-        NokkelInput nokkel = oppgaveRecord.key();
-        BeskjedInput beskjed = oppgaveRecord.value();
+        OpprettVarselDto beskjed = brukernotifikasjonAsserts.assertBeskjedSendt(Person.fnr(mockBruker.getFnr()));
 
-        assertEquals(mockBruker.getOppfolgingsperiodeId().toString(), nokkel.getGrupperingsId());
-        assertEquals(mockBruker.getFnr(), nokkel.getFodselsnummer());
+        assertEquals(mockBruker.getFnr(), beskjed.getIdent());
         assertEquals(basepath + "/aktivitet/vis/" + aktivitetDTO.getId(), beskjed.getLink());
     }
 
@@ -241,14 +227,14 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
         AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettAktivitet(mockBruker, skalOpprettes);
 
-        brukernotifikasjonService.opprettVarselPaaAktivitet(Long.parseLong(aktivitetDTO.getId()), Long.parseLong(aktivitetDTO.getVersjon()), mockBruker.getAktorId(), "Testvarsel", VarselType.STILLING_FRA_NAV);
+        brukernotifikasjonService.opprettVarselPaaAktivitet(new AktivitetVarsel(Long.parseLong(aktivitetDTO.getId()), Long.parseLong(aktivitetDTO.getVersjon()), mockBruker.getAktorId(), "Testvarsel", VarselType.STILLING_FRA_NAV, null, null, null));
         brukernotifikasjonService.setDone(Long.parseLong(aktivitetDTO.getId()), VarselType.STILLING_FRA_NAV);
 
-        sendBrukernotifikasjonCron.sendBrukernotifikasjoner();
+        sendMinsideVarselFraOutboxCron.sendBrukernotifikasjoner();
         avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner();
 
-        assertTrue(kafkaTestService.harKonsumertAlleMeldinger(oppgaveTopic, oppgaveConsumer), "Skal ikke produsert oppgave meldinger");
-        assertTrue(kafkaTestService.harKonsumertAlleMeldinger(doneTopic, doneConsumer), "Skal ikke produsert done meldinger");
+        assertTrue(kafkaTestService.harKonsumertAlleMeldinger(brukervarselTopic, brukerVarselConsumer), "Skal ikke produsert oppgave eller inaktivering meldinger");
+//        assertTrue(kafkaTestService.harKonsumertAlleMeldinger(brukervarselHendelseTopic, brukerVarselHendelseConsumer), "Skal ikke produsert done meldinger");
     }
 
     @Test
@@ -258,13 +244,13 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
         AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
 
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettAktivitet(mockBruker, skalOpprettes);
-        brukernotifikasjonService.opprettVarselPaaAktivitet(
+        brukernotifikasjonService.opprettVarselPaaAktivitet(new AktivitetVarsel(
                 Long.parseLong(aktivitetDTO.getId()),
                 Long.parseLong(aktivitetDTO.getVersjon()),
                 mockBruker.getAktorId(),
                 "Testvarsel",
-                VarselType.STILLING_FRA_NAV
-        );
+                VarselType.STILLING_FRA_NAV, null, null, null
+        ));
 
         Response response = mockBruker
                 .createRequest()
@@ -278,11 +264,11 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
 
         AktivitetDTO avbruttAktivitet = response.as(AktivitetDTO.class);
 
-        sendBrukernotifikasjonCron.sendBrukernotifikasjoner();
+        sendMinsideVarselFraOutboxCron.sendBrukernotifikasjoner();
         avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner();
 
-        assertTrue(kafkaTestService.harKonsumertAlleMeldinger(oppgaveTopic, oppgaveConsumer), "Skal ikke produsert oppgave meldinger");
-        assertTrue(kafkaTestService.harKonsumertAlleMeldinger(doneTopic, doneConsumer), "Skal ikke produsert done meldinger");
+        assertTrue(kafkaTestService.harKonsumertAlleMeldinger(brukervarselTopic, brukerVarselConsumer), "Skal ikke produsert oppgave meldinger");
+        assertTrue(kafkaTestService.harKonsumertAlleMeldinger(brukervarselHendelseTopic, brukerVarselHendelseConsumer), "Skal ikke produsert done meldinger");
 
         AktivitetsplanDTO aktivitetsplanDTO = aktivitetTestService.hentAktiviteterForFnr(mockBruker);
         AktivitetDTO skalIkkeVaereOppdatert = AktivitetTestService.finnAktivitet(aktivitetsplanDTO, avbruttAktivitet.getId());
@@ -292,14 +278,15 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
 
     @Test
     void skal_lukke_brukernotifikasjonsOppgave_nar_aktivitet_blir_avbrutt() {
-        MockBruker mockBruker = navMockService.createHappyBruker();
+        // Given
+        MockBruker mockBruker = MockNavService.createHappyBruker();
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettAktivitet(mockBruker, skalOpprettes);
 
-        final ConsumerRecord<NokkelInput, OppgaveInput> oppgaveRecord = opprettOppgave(mockBruker, aktivitetDTO);
-        oppgaveSendtOk(oppgaveRecord);
-
+        // When
+        var oppgave = opprettOppgave(mockBruker, aktivitetDTO);
+        oppgaveErIOutbox(oppgave);
         mockBruker
                 .createRequest()
                 .and()
@@ -309,32 +296,18 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
                 .then()
                 .assertThat().statusCode(HttpStatus.OK.value())
                 .extract().response();
-
-
-        sendBrukernotifikasjonCron.sendBrukernotifikasjoner();
+        sendMinsideVarselFraOutboxCron.sendBrukernotifikasjoner();
         avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner();
 
-        assertTrue(kafkaTestService.harKonsumertAlleMeldinger(oppgaveTopic, oppgaveConsumer), "Skal ikke produsert oppgave meldinger");
-
-        final ConsumerRecord<NokkelInput, DoneInput> doneRecord = getSingleRecord(doneConsumer, doneTopic, DEFAULT_WAIT_TIMEOUT_DURATION);
-
-        NokkelInput oppgaveNokkel = oppgaveRecord.key();
-        NokkelInput doneNokkel = doneRecord.key();
-
-        assertEquals(oppgaveNokkel.getAppnavn(), doneNokkel.getAppnavn());
-        assertEquals(oppgaveNokkel.getNamespace(), doneNokkel.getNamespace());
-        assertEquals(oppgaveNokkel.getEventId(), doneNokkel.getEventId());
-
-        assertEquals(mockBruker.getOppfolgingsperiodeId().toString(), doneNokkel.getGrupperingsId());
-        assertEquals(mockBruker.getFnr(), doneNokkel.getFodselsnummer());
+        // Then
+//        assertTrue(kafkaTestService.harKonsumertAlleMeldinger(brukervarselTopic, brukerVarselConsumer), "Skal ikke produsert oppgave meldinger");
+        brukernotifikasjonAsserts.assertInaktivertMeldingErSendt(oppgave.getVarselId());
     }
 
 
-    private void oppgaveSendtOk(ConsumerRecord<NokkelInput, OppgaveInput> oppgaveRecord) {
-        String eventId = oppgaveRecord.key().getEventId();
-
+    private void oppgaveErIOutbox(OpprettVarselDto varselDto) {
         MapSqlParameterSource param = new MapSqlParameterSource()
-                .addValue("eventId", eventId);
+                .addValue("eventId", varselDto.getVarselId());
         String forsoktSendt = jdbc.queryForObject("SELECT STATUS from BRUKERNOTIFIKASJON where BRUKERNOTIFIKASJON_ID = :eventId", param, String.class);//TODO fiks denne når vi eksponerer det ut til apiet
         assertEquals(VarselStatus.SENDT.name(), forsoktSendt);
     }
@@ -347,9 +320,9 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
         var arenaId = new ArenaId("ARENATA123");
         aktivitetTestService.opprettFHOForArenaAktivitet(mockBruker, arenaId, mockVeileder);
 
-        sendBrukernotifikasjonCron.sendBrukernotifikasjoner();
-        final ConsumerRecord<NokkelInput, OppgaveInput> oppgaveRecord = getSingleRecord(oppgaveConsumer, oppgaveTopic, DEFAULT_WAIT_TIMEOUT_DURATION);
-        var lenke = oppgaveRecord.value().getLink();
+        sendMinsideVarselFraOutboxCron.sendBrukernotifikasjoner();
+        final ConsumerRecord<String, String> oppgaveRecord = getSingleRecord(brukerVarselConsumer, brukervarselTopic, DEFAULT_WAIT_TIMEOUT_DURATION);
+        var lenke = JsonUtils.fromJson(oppgaveRecord.value(), OpprettVarselDto.class).getLink();
         assertEquals(lenke, String.format("http://localhost:3000/aktivitet/vis/%s", arenaId.id()));
     }
 
@@ -379,8 +352,8 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
         var aktivitet = aktivitetTestService.hentAktivitetByFunksjonellId(mockBruker, mockVeileder, funksjonellId);
         var tekniskId = aktivitet.getId();
 
-        final ConsumerRecord<NokkelInput, OppgaveInput> oppgaveRecord = brukernotifikasjonAsserts.assertOppgaveSendt(mockBruker.getFnrAsFnr());
-        var lenke = oppgaveRecord.value().getLink();
+        var oppgaveRecord = brukernotifikasjonAsserts.assertOppgaveSendt(mockBruker.getFnrAsFnr());
+        var lenke = oppgaveRecord.getLink();
         assertEquals(lenke, String.format("http://localhost:3000/aktivitet/vis/%s", tekniskId));
     }
 
@@ -404,7 +377,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
         // Sett til avbrutt
         var avbruttAktivitet = serie.ny(AktivitetskortStatus.AVBRUTT, ZonedDateTime.now());
         aktivitetTestService.opprettEksterntAktivitetsKort(List.of(avbruttAktivitet));
-        brukernotifikasjonAsserts.assertDone(oppgave.key());
+        brukernotifikasjonAsserts.assertInaktivertMeldingErSendt(oppgave.getVarselId());
     }
 
     @Test
@@ -421,7 +394,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
         // Avbryt aktivitet
         var avbruttAktivitet = serie.ny(AktivitetskortStatus.AVBRUTT, ZonedDateTime.now());
         aktivitetTestService.opprettEksterntArenaKort(List.of(avbruttAktivitet));
-        brukernotifikasjonAsserts.assertDone(oppgave.key());
+        brukernotifikasjonAsserts.assertInaktivertMeldingErSendt(oppgave.getVarselId());
     }
 
     @Test
@@ -444,44 +417,33 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
         // Avbryt aktivitet
         var avbruttAktivitet = serie.ny(AktivitetskortStatus.AVBRUTT, ZonedDateTime.now());
         aktivitetTestService.opprettEksterntArenaKort(List.of(avbruttAktivitet));
-        brukernotifikasjonAsserts.assertDone(oppgave.key());
+        brukernotifikasjonAsserts.assertInaktivertMeldingErSendt(oppgave.getVarselId());
     }
 
-    private ConsumerRecord<NokkelInput, OppgaveInput> opprettOppgave(MockBruker mockBruker, AktivitetDTO aktivitetDTO) {
-        brukernotifikasjonService.opprettVarselPaaAktivitet(
+    private OpprettVarselDto opprettOppgave(MockBruker mockBruker, AktivitetDTO aktivitetDTO) {
+        brukernotifikasjonService.opprettVarselPaaAktivitet(new AktivitetVarsel(
                 Long.parseLong(aktivitetDTO.getId()),
                 Long.parseLong(aktivitetDTO.getVersjon()),
                 mockBruker.getAktorId(),
                 "Testvarsel",
-                VarselType.STILLING_FRA_NAV
+                VarselType.STILLING_FRA_NAV, null, null, null)
         );
 
-        sendBrukernotifikasjonCron.sendBrukernotifikasjoner();
+        sendMinsideVarselFraOutboxCron.sendBrukernotifikasjoner();
         avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner();
 
-        assertTrue(kafkaTestService.harKonsumertAlleMeldinger(doneTopic, doneConsumer), "Skal ikke produsert done meldinger");
-        final ConsumerRecord<NokkelInput, OppgaveInput> oppgaveRecord = getSingleRecord(oppgaveConsumer, oppgaveTopic, DEFAULT_WAIT_TIMEOUT_DURATION);
-        OppgaveInput oppgave = oppgaveRecord.value();
+        OpprettVarselDto oppgave = brukernotifikasjonAsserts.assertOppgaveSendt(Person.fnr(mockBruker.getFnr()));
 
-        assertEquals(mockBruker.getOppfolgingsperiodeId().toString(), oppgaveRecord.key().getGrupperingsId());
-        assertEquals(mockBruker.getFnr(), oppgaveRecord.key().getFodselsnummer());
         assertEquals(basepath + "/aktivitet/vis/" + aktivitetDTO.getId(), oppgave.getLink());
-        return oppgaveRecord;
+        return oppgave;
     }
 
-    private void avsluttOppgave(MockBruker mockBruker, AktivitetDTO aktivitetDTO, ConsumerRecord<NokkelInput, OppgaveInput> oppgaveRecord) {
+    private void avsluttOppgave(AktivitetDTO aktivitetDTO, OpprettVarselDto oppgave) {
         brukernotifikasjonService.setDone(Long.parseLong(aktivitetDTO.getId()), VarselType.STILLING_FRA_NAV);
-        sendBrukernotifikasjonCron.sendBrukernotifikasjoner();
+        sendMinsideVarselFraOutboxCron.sendBrukernotifikasjoner();
         avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner();
 
-        assertTrue(kafkaTestService.harKonsumertAlleMeldinger(oppgaveTopic, oppgaveConsumer), "Skal ikke produsere oppgave");
-        final ConsumerRecord<NokkelInput, DoneInput> doneRecord = getSingleRecord(doneConsumer, doneTopic, DEFAULT_WAIT_TIMEOUT_DURATION);
-
-        assertEquals(oppgaveRecord.key().getAppnavn(), doneRecord.key().getAppnavn());
-        assertEquals(oppgaveRecord.key().getEventId(), doneRecord.key().getEventId());
-
-        assertEquals(mockBruker.getOppfolgingsperiodeId().toString(), doneRecord.key().getGrupperingsId());
-        assertEquals(mockBruker.getFnr(), doneRecord.key().getFodselsnummer());
+        brukernotifikasjonAsserts.assertInaktivertMeldingErSendt(oppgave.getVarselId());
     }
 
 }

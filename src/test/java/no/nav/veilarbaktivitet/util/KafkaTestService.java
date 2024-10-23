@@ -18,7 +18,10 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static org.awaitility.Awaitility.await;
@@ -58,11 +61,14 @@ public class KafkaTestService {
     private final ConcurrentKafkaListenerContainerFactory<String, String> stringStringKafkaListenerContainerFactory;
     private final Admin kafkaAdminClient;
 
-    @Value("${app.kafka.consumer-group-id}")
-    String onPremConsumerGroup;
-
     @Value("${spring.kafka.consumer.group-id}")
     String aivenGroupId;
+
+    private Properties kafkaTestConfig() {
+        Properties modifisertConfig = new Properties();
+        modifisertConfig.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
+        return modifisertConfig;
+    }
 
     /**
      * Lager en ny kafka consumer med random groupid på topic som leser fra slutten av topic.
@@ -74,57 +80,38 @@ public class KafkaTestService {
      */
     public Consumer createStringAvroConsumer(String topic) {
         String randomGroup = UUID.randomUUID().toString();
-        Properties modifisertConfig = new Properties();
-        modifisertConfig.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
-
-        Consumer newConsumer = stringAvroConsumerFactory.createConsumer(randomGroup, null, null, modifisertConfig);
+        Consumer newConsumer = stringAvroConsumerFactory.createConsumer(randomGroup, null, null, kafkaTestConfig());
         seekToEnd(topic, newConsumer);
-
         return newConsumer;
     }
 
     public Consumer createAvroAvroConsumer(String topic) {
         String randomGroup = UUID.randomUUID().toString();
-        Properties modifisertConfig = new Properties();
-        modifisertConfig.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
-
-        Consumer newConsumer = avroAvroConsumerFactory.createConsumer(randomGroup, null, null, modifisertConfig);
+        Consumer newConsumer = avroAvroConsumerFactory.createConsumer(randomGroup, null, null, kafkaTestConfig());
         seekToEnd(topic, newConsumer);
-
         return newConsumer;
     }
 
     public Consumer<String, String> createStringStringConsumer(String topic) {
-        String randomGroup = UUID.randomUUID().toString();
-        Properties modifisertConfig = new Properties();
-        modifisertConfig.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
-
-        Consumer<String, String> newConsumer = stringStringConsumerFactory.createConsumer(randomGroup, null, null, modifisertConfig);
+        var randomGroup = UUID.randomUUID().toString();
+        var newConsumer = stringStringConsumerFactory.createConsumer("testConsumer" + randomGroup, null, null, kafkaTestConfig());
         seekToEnd(topic, newConsumer);
-
         return newConsumer;
     }
 
     public Consumer createStringJsonConsumer(String topic) {
         String randomGroup = UUID.randomUUID().toString();
-        Properties modifisertConfig = new Properties();
-        modifisertConfig.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
-
-        Consumer newConsumer = stringJsonConsumerFactory.createConsumer(randomGroup, null, null, modifisertConfig);
+        Consumer newConsumer = stringJsonConsumerFactory.createConsumer(randomGroup, null, null, kafkaTestConfig());
         seekToEnd(topic, newConsumer);
-
         return newConsumer;
     }
 
     public void seekToEnd(String topic, Consumer newConsumer) {
-        List<PartitionInfo> partitionInfos = newConsumer.partitionsFor(topic);
-        List<TopicPartition> topics = partitionInfos.stream().map(f -> new TopicPartition(topic, f.partition())).collect(Collectors.toList());
-
+        // In tests there always just 1 partition
+        List<TopicPartition> topics = List.of(new TopicPartition(topic, 0));
         newConsumer.assign(topics);
         newConsumer.seekToEnd(topics);
-
         topics.forEach(a -> newConsumer.position(a, Duration.ofSeconds(10)));
-
         newConsumer.commitSync(DEFAULT_WAIT_TIMEOUT_DURATION);
     }
 
@@ -164,17 +151,12 @@ public class KafkaTestService {
     }
 
     @SneakyThrows
-    public Optional<Long> hentOffset(String topic, String groupId) {
-        var offsetAndMetadata = kafkaAdminClient.listConsumerGroupOffsets(groupId).partitionsToOffsetAndMetadata().get()
-                .get(new TopicPartition(topic, 0));
-        return Optional.ofNullable(offsetAndMetadata == null ? null : offsetAndMetadata.offset());
-    }
-
-    @SneakyThrows
     public boolean harKonsumertAlleMeldinger(String topic, Consumer consumer) {
         consumer.commitSync();
         String groupId = consumer.groupMetadata().groupId();
-        Map<TopicPartition, OffsetAndMetadata> topicPartitionOffsetAndMetadataMap = kafkaAdminClient.listConsumerGroupOffsets(groupId).partitionsToOffsetAndMetadata().get();
+        Map<TopicPartition, OffsetAndMetadata> topicPartitionOffsetAndMetadataMap = kafkaAdminClient
+                .listConsumerGroupOffsets(groupId)
+                .partitionsToOffsetAndMetadata().get();
         OffsetAndMetadata offsetAndMetadata = topicPartitionOffsetAndMetadataMap.get(new TopicPartition(topic, 0));
 
         if (offsetAndMetadata == null) {
@@ -189,9 +171,5 @@ public class KafkaTestService {
         Long endOffset = map.get(collect.get(0));
 
         return offsetAndMetadata.offset() == endOffset;
-    }
-
-    public String getAivenConsumerGroup() {
-        return aivenGroupId;
     }
 }
