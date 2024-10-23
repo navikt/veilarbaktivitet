@@ -5,6 +5,7 @@ import lombok.SneakyThrows
 import no.nav.tms.varsel.action.Varseltype
 import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.InaktiverVarselDto
 import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.MinSideVarselId
+import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.EksternStatusOppdatertEventName
 import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.EksternVarselHendelseDTO
 import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.EksternVarselKanal
 import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.EksternVarselStatus
@@ -83,7 +84,7 @@ class BrukernotifikasjonAsserts(var config: BrukernotifikasjonAssertsConfig) {
         return EksternVarselHendelseDTO(
             namespace = config.namespace,
             appnavn = config.appname,
-            eventName = "eksternStatusOppdatert",
+            eventName = EksternStatusOppdatertEventName,
             status = status,
             varselId = varselId.value,
             varseltype = varselType,

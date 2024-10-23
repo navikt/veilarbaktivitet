@@ -24,7 +24,7 @@ fun String.deserialiserVarselHendelse(): VarselHendelse {
     val appNavn = jsonTree["appnavn"].asText()
     val varseltype = Varseltype.valueOf(jsonTree["varseltype"].asText().replaceFirstChar { it.titlecase()})
     if (appNavn != "veilarbaktivitet") return VarselFraAnnenApp
-    return when (eventName == "eksternStatusOppdatert") {
+    return when (eventName == EksternStatusOppdatertEventName) {
         true -> jsonTree.deserialiserEksternVarselHendelse()
         else -> {
             return InternVarselHendelseDTO(
