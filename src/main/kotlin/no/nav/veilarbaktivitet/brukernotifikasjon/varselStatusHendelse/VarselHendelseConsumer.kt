@@ -8,6 +8,8 @@ import org.slf4j.LoggerFactory
 import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.Duration
+import java.time.LocalDateTime
 
 @Service
 open class VarselHendelseConsumer(
@@ -35,7 +37,17 @@ open class VarselHendelseConsumer(
 
     open fun behandleInternVarselHendelse(hendelse: InternVarselHendelseDTO) {
         varselHendelseMetrikk.incrementInternVarselMetrikk(hendelse)
-        log.info("Minside varsel (hendelse) av type {} er {} varselId {}", hendelse.varseltype.name, hendelse.eventName, hendelse.varselId, )
+        log.info("Minside varsel (hendelse) av type {} er {} varselId {}", hendelse.varseltype.name, hendelse.eventName, hendelse.varselId)
+        when (hendelse.eventName) {
+            InternVarselHendelseType.opprettet -> {}
+            InternVarselHendelseType.inaktivert -> {
+                val opprettet = varselDAO.hentOpprettetTidspunkt(hendelse.varselId)
+                if (opprettet.isEmpty) return;
+                val tidTilInaktivering = Duration.between(opprettet.get(), LocalDateTime.now())
+                varselHendelseMetrikk.recordTidTilInaktivering(tidTilInaktivering)
+            }
+            InternVarselHendelseType.slettet -> {}
+        }
     }
 
     open fun behandleEksternVarselHendelse(hendelse: EksternVarsling) {

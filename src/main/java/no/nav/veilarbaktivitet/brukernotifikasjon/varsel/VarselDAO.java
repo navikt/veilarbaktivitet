@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import java.net.URL;
 import java.sql.ResultSet;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -161,6 +162,16 @@ public class VarselDAO {
         """;
         int antall = jdbcTemplate.queryForObject(sql, params, int.class);
         return antall > 0;
+    }
+
+    public Optional<LocalDateTime> hentOpprettetTidspunkt(MinSideVarselId varselId) {
+        SqlParameterSource params = new MapSqlParameterSource()
+                .addValue("varselId", varselId.getValue().toString());
+        var sql = """
+            SELECT opprettet FROM BRUKERNOTIFIKASJON where brukernotifikasjon_id=:varselId
+        """;
+        RowMapper<LocalDateTime> rowMapper = (row, index) -> row.getTimestamp("opprettet").toLocalDateTime();
+        return jdbcTemplate.query(sql, params, rowMapper).stream().findFirst();
     }
 
     public boolean finnesBrukernotifikasjonMedVarselTypeForAktivitet(long aktivitetsId, VarselType varselType) {
