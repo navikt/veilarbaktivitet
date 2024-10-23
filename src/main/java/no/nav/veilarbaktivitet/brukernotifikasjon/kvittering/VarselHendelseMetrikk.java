@@ -46,6 +46,7 @@ public class VarselHendelseMetrikk {
         });
         tidTilInaktiveringTimer = Timer.builder(TID_TIL_INAKTIVERT)
                 .description("Tid fra varsel opprettet til inaktivering")
+                .publishPercentiles(0.25, 0.5, 0.75, 0.95)
                 .register(meterRegistry);
     }
 
