@@ -5,6 +5,7 @@ import com.google.cloud.bigquery.InsertAllRequest
 import com.google.cloud.bigquery.TableId
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
 import no.nav.veilarbaktivitet.util.DateUtils
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 
 enum class EventType {
@@ -12,14 +13,18 @@ enum class EventType {
     SAMTALEREFERAT_DELT_MED_BRUKER,
 }
 
+interface BigQueryClient {
+    fun logEvent(aktivitetData: AktivitetData, eventType: EventType)
+}
+
 @Service
-class BigQueryClient {
+class BigQueryClientImplementation(@Value("\${gcp.projectId}") val projectId: String) {
     val SAMTALEREFERAT_EVENTS = "SAMTALEREFERAT_EVENTS"
-    val DATASET_NAME = "DATASET_NAME" // TODO: Lag og bruk ekte dataset i bigquery
+    val DATASET_NAME = "aktivitet_metrikker"
     val moteEventsTable = TableId.of(SAMTALEREFERAT_EVENTS, DATASET_NAME)
 
     fun logEvent(aktivitetData: AktivitetData, eventType: EventType) {
-        val bigQuery = BigQueryOptions.getDefaultInstance().service
+        val bigQuery = BigQueryOptions.newBuilder().setProjectId(projectId).build().service
         val moteRow = mapOf(
             "id" to aktivitetData.id,
             "event" to eventType.name,
