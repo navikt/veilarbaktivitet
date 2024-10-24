@@ -5,6 +5,7 @@ import com.google.cloud.bigquery.InsertAllRequest
 import com.google.cloud.bigquery.TableId
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
 import no.nav.veilarbaktivitet.util.DateUtils
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 
@@ -23,6 +24,8 @@ class BigQueryClientImplementation(@Value("\${gcp.projectId}") val projectId: St
     val DATASET_NAME = "aktivitet_metrikker"
     val moteEventsTable = TableId.of(DATASET_NAME, SAMTALEREFERAT_EVENTS)
 
+    val log = LoggerFactory.getLogger(BigQueryClient::class.java)
+
     override fun logEvent(aktivitetData: AktivitetData, eventType: EventType) {
         val bigQuery = BigQueryOptions.newBuilder().setProjectId(projectId).build().service
         val moteRow = mapOf(
@@ -33,6 +36,10 @@ class BigQueryClientImplementation(@Value("\${gcp.projectId}") val projectId: St
         )
         val moteEvent = InsertAllRequest.newBuilder(moteEventsTable)
             .addRow(moteRow).build()
-        bigQuery.insertAll(moteEvent)
+        val response = bigQuery.insertAll(moteEvent)
+        val errors = response.insertErrors
+        if (errors.isNotEmpty()) {
+            log.error(errors.toString())
+        }
     }
 }
