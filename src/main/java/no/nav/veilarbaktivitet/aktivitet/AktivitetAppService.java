@@ -8,6 +8,8 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
 import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvFerdigAktivitetException;
 import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvHistoriskAktivitetException;
+import no.nav.veilarbaktivitet.eventsLogger.BigQueryClient;
+import no.nav.veilarbaktivitet.eventsLogger.EventType;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
 import org.slf4j.Logger;
@@ -29,6 +31,7 @@ public class AktivitetAppService {
     private final AktivitetService aktivitetService;
     private final MetricService metricService;
     private final PersonService personService;
+    private final BigQueryClient bigQueryClient;
 
     private static final Set<AktivitetTypeData> TYPER_SOM_KAN_ENDRES_EKSTERNT = new HashSet<>(Arrays.asList(
             AktivitetTypeData.EGENAKTIVITET,
@@ -108,6 +111,10 @@ public class AktivitetAppService {
         }
         if (authService.erEksternBruker() && !TYPER_SOM_KAN_OPPRETTES_EKSTERNT.contains(aktivitetData.getAktivitetType())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Eksternbruker kan ikke opprette denne aktivitetstypen. Fikk: " + aktivitetData.getAktivitetType());
+        }
+
+        if (aktivitetData.getAktivitetType() == AktivitetTypeData.SAMTALEREFERAT || aktivitetData.getAktivitetType() == AktivitetTypeData.MOTE) {
+            bigQueryClient.logEvent(aktivitetData, EventType.SAMTALEREFERAT_OPPRETTET);
         }
 
         AktivitetData nyAktivitet = aktivitetService.opprettAktivitet(aktivitetData);

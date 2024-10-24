@@ -10,6 +10,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.domain.BehandlingAktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvFerdigAktivitetException;
 import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvHistoriskAktivitetException;
+import no.nav.veilarbaktivitet.eventsLogger.BigQueryClient;
 import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
@@ -54,6 +55,9 @@ public class AktivitetAppServiceTest {
 
     @InjectMocks
     private AktivitetAppService appService;
+
+    @Mock
+    BigQueryClient bigQueryClient;
 
     @Mock
     @SuppressWarnings("unused") // Blir faktisk brukt

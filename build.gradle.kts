@@ -189,6 +189,10 @@ dependencies {
     // Hvis det ønskes swagger doc, foreslås å bruke springdoc (springdoc-openapi-starter-webmvc-ui - se no.nav.fo.veilarbdialog.rest.SwaggerConfig for eksempelconfig)
     implementation("io.swagger.core.v3:swagger-annotations:2.2.8")
 
+    // BigQuery
+    implementation(platform("com.google.cloud:libraries-bom:26.45.0"))
+    implementation("com.google.cloud:google-cloud-bigquery")
+
     implementation("io.getunleash:unleash-client-java:8.2.1")
 
     runtimeOnly("org.springframework.boot:spring-boot-devtools")

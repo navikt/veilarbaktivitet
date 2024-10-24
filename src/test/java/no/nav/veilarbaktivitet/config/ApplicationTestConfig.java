@@ -12,6 +12,7 @@ import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.common.token_client.client.TokenXOnBehalfOfTokenClient;
 import no.nav.common.utils.Credentials;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
+import no.nav.veilarbaktivitet.eventsLogger.BigQueryClient;
 import no.nav.veilarbaktivitet.mock.MetricsClientMock;
 import okhttp3.EventListener;
 import org.mockito.Mockito;
@@ -29,6 +30,11 @@ import static org.mockito.Mockito.mock;
 @Configuration
 @EnableConfigurationProperties({EnvironmentProperties.class})
 public class ApplicationTestConfig {
+
+    @Bean
+    public BigQueryClient bigQueryClient() {
+        return mock(BigQueryClient.class);
+    }
 
     @Bean
     public AzureAdMachineToMachineTokenClient tokenClient() {

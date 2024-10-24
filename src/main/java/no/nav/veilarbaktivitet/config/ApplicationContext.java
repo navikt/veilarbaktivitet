@@ -6,6 +6,8 @@ import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
+import no.nav.veilarbaktivitet.eventsLogger.BigQueryClient;
+import no.nav.veilarbaktivitet.eventsLogger.BigQueryClientImplementation;
 import no.nav.veilarbaktivitet.unleash.UnleashConfig;
 import no.nav.veilarbaktivitet.unleash.strategies.ByEnhetStrategy;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -29,6 +31,11 @@ public class ApplicationContext {
     @Bean
     public AuthContextHolder authContextHolder() {
         return AuthContextHolderThreadLocal.instance();
+    }
+
+    @Bean
+    public BigQueryClient bigQueryClient(BigQueryClientImplementation bigQueryClient) {
+        return bigQueryClient;
     }
 
     @Bean

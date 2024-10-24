@@ -56,6 +56,7 @@ spec:
     autoInstrumentation:
       enabled: true
       runtime: java
+
   accessPolicy:
     inbound:
       rules:
@@ -107,6 +108,10 @@ spec:
             envVarPrefix: DB
             users:
               - name: datastream
+    bigQueryDatasets:
+      - description: Contains big data, supporting big queries, for use in big ideas.
+        name: aktivitet_metrikker
+        permission: READWRITE
   env:
     - name: POAO_TILGANG_SCOPE
       value: api://dev-gcp.poao.poao-tilgang/.default
