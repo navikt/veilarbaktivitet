@@ -21,7 +21,7 @@ interface BigQueryClient {
 class BigQueryClientImplementation(@Value("\${gcp.projectId}") val projectId: String): BigQueryClient {
     val SAMTALEREFERAT_EVENTS = "SAMTALEREFERAT_EVENTS"
     val DATASET_NAME = "aktivitet_metrikker"
-    val moteEventsTable = TableId.of(SAMTALEREFERAT_EVENTS, DATASET_NAME)
+    val moteEventsTable = TableId.of(DATASET_NAME, SAMTALEREFERAT_EVENTS)
 
     override fun logEvent(aktivitetData: AktivitetData, eventType: EventType) {
         val bigQuery = BigQueryOptions.newBuilder().setProjectId(projectId).build().service
