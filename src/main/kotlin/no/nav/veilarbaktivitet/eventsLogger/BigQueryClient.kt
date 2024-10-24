@@ -32,14 +32,14 @@ class BigQueryClientImplementation(@Value("\${gcp.projectId}") val projectId: St
             "id" to aktivitetData.id,
             "event" to eventType.name,
             "erPublisert" to aktivitetData.moteData.isReferatPublisert,
-            "opprettet" to DateUtils.dateToZonedDateTime(aktivitetData.opprettetDato).toString(),
+            "opprettet" to DateUtils.dateToLocalDateTime(aktivitetData.opprettetDato).toString(),
         )
         val moteEvent = InsertAllRequest.newBuilder(moteEventsTable)
             .addRow(moteRow).build()
         val response = bigQuery.insertAll(moteEvent)
         val errors = response.insertErrors
         if (errors.isNotEmpty()) {
-            log.error(errors.toString())
+            log.error("Error inserting bigquery rows", errors)
         }
     }
 }
