@@ -15,6 +15,7 @@ import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDataMapperService
 import no.nav.veilarbaktivitet.aktivitetskort.MigreringService
 import no.nav.veilarbaktivitet.config.AktivitetResource
 import no.nav.veilarbaktivitet.config.OppfolgingsperiodeResource
+import no.nav.veilarbaktivitet.eventsLogger.BigQueryClient
 import no.nav.veilarbaktivitet.person.UserInContext
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
@@ -29,7 +30,8 @@ class AktivitetsplanController(
     private val appService: AktivitetAppService,
     private val aktivitetDataMapperService: AktivitetDataMapperService,
     private val userInContext: UserInContext,
-    private val migreringService: MigreringService
+    private val migreringService: MigreringService,
+    private val bigQueryClient: BigQueryClient
 ) {
     @Deprecated("Bruk graphql endepunkt")
     @GetMapping

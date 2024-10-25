@@ -29,8 +29,10 @@ class BigQueryClientImplementation(@Value("\${gcp.projectId}") val projectId: St
     override fun logEvent(aktivitetData: AktivitetData, eventType: EventType) {
         val bigQuery = BigQueryOptions.newBuilder().setProjectId(projectId).build().service
         val moteRow = mapOf(
-            "aktivitet_id" to aktivitetData.id,
+            "aktivitetId" to aktivitetData.id,
             "event" to eventType.name,
+            "versjon" to aktivitetData.versjon,
+            "endretDato" to DateUtils.dateToLocalDateTime(aktivitetData.endretDato).toString(),
             "erPublisert" to aktivitetData.moteData.isReferatPublisert,
             "opprettet" to DateUtils.dateToLocalDateTime(aktivitetData.opprettetDato).toString(),
         )
