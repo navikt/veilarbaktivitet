@@ -113,11 +113,10 @@ public class AktivitetAppService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Eksternbruker kan ikke opprette denne aktivitetstypen. Fikk: " + aktivitetData.getAktivitetType());
         }
 
-        if (aktivitetData.getAktivitetType() == AktivitetTypeData.SAMTALEREFERAT || aktivitetData.getAktivitetType() == AktivitetTypeData.MOTE) {
-            bigQueryClient.logEvent(aktivitetData, EventType.SAMTALEREFERAT_OPPRETTET);
-        }
-
         AktivitetData nyAktivitet = aktivitetService.opprettAktivitet(aktivitetData);
+        if (nyAktivitet.getAktivitetType() == AktivitetTypeData.SAMTALEREFERAT || nyAktivitet.getAktivitetType() == AktivitetTypeData.MOTE) {
+            bigQueryClient.logEvent(nyAktivitet, EventType.SAMTALEREFERAT_OPPRETTET);
+        }
 
         // dette er gjort på grunn av KVP
         return authService.erSystemBruker() ? nyAktivitet.withKontorsperreEnhetId(null) : nyAktivitet;
