@@ -230,16 +230,18 @@ public class AktivitetAppService {
         val originalAktivitet = hentAktivitet(aktivitet.getId());
         kanEndreAktivitetGuard(originalAktivitet, aktivitet.getVersjon(), aktivitet.getAktorId());
 
-        if(!originalAktivitet.getMoteData().isReferatPublisert() && aktivitet.getMoteData().isReferatPublisert()) {
-            bigQueryClient.logEvent(aktivitet, EventType.SAMTALEREFERAT_DELT_MED_BRUKER);
-        }
 
-        aktivitetService.oppdaterReferat(
+
+        var oppdatertAktivtiet = aktivitetService.oppdaterReferat(
                 originalAktivitet,
                 aktivitet
         );
 
-        return hentAktivitet(aktivitet.getId());
+        if(!originalAktivitet.getMoteData().isReferatPublisert() && oppdatertAktivtiet.getMoteData().isReferatPublisert()) {
+            bigQueryClient.logEvent(oppdatertAktivtiet, EventType.SAMTALEREFERAT_DELT_MED_BRUKER);
+        }
+
+        return oppdatertAktivtiet;
     }
 
 }
