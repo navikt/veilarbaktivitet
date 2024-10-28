@@ -4,10 +4,10 @@ import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Repository
 
 @Repository
-class IsPublisertDAO(
+open class IsPublisertDAO(
     val template: JdbcTemplate
 ) {
-    fun hentIsPublisertFordeling(): SamtalereferatPublisertFordeling {
+    open fun hentIsPublisertFordeling(): SamtalereferatPublisertFordeling {
         val sql = """
             select count(*) as antall, mote.referat_publisert as erPublisert from mote
                 join veilarbaktivitet.aktivitet a

@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service
 
 @Service
 @EnableScheduling
-class ScheduledMetrikker(
+class BigQueryMetrikk(
     val bigQueryClient: BigQueryClient,
     val isPublisertDAO: IsPublisertDAO
 ) {
