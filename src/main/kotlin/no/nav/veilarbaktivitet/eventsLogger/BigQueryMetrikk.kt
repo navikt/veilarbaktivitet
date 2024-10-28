@@ -12,8 +12,7 @@ open class BigQueryMetrikk(
     val isPublisertDAO: IsPublisertDAO
 ) {
 
-//    @Scheduled(cron = "@midnight")
-    @Scheduled(cron = "0 */5 * * * *")
+    @Scheduled(cron = "@midnight")
     @SchedulerLock(name = "aktiviteter_bigquery_metrikker", lockAtMostFor = "PT2M")
     open fun hentPublisertCron() {
         val fordeling = isPublisertDAO.hentIsPublisertFordeling()
