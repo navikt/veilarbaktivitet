@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service
 
 @Service
 @EnableScheduling
-class BigQueryMetrikk(
+open class BigQueryMetrikk(
     val bigQueryClient: BigQueryClient,
     val isPublisertDAO: IsPublisertDAO
 ) {
@@ -15,7 +15,7 @@ class BigQueryMetrikk(
 //    @Scheduled(cron = "@midnight")
     @Scheduled(cron = "0 */5 * * * *")
     @SchedulerLock(name = "aktiviteter_bigquery_metrikker", lockAtMostFor = "PT2M")
-    fun hentPublisertCron() {
+    open fun hentPublisertCron() {
         val fordeling = isPublisertDAO.hentIsPublisertFordeling()
         bigQueryClient.logSamtalereferatFordeling(fordeling)
     }
