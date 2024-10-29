@@ -12,6 +12,7 @@ import java.time.ZonedDateTime
 
 enum class EventType {
     SAMTALEREFERAT_OPPRETTET,
+    SAMTALEREFERAT_FIKK_INNHOLD,
     SAMTALEREFERAT_DELT_MED_BRUKER,
 }
 
@@ -48,6 +49,8 @@ class BigQueryClientImplementation(@Value("\${gcp.projectId}") val projectId: St
             "endretDato" to ZonedDateTime.ofInstant(aktivitetData.endretDato.toInstant(), ZoneOffset.systemDefault()).toOffsetDateTime().toString(),
             "erPublisert" to aktivitetData.moteData.isReferatPublisert,
             "opprettet" to ZonedDateTime.ofInstant(aktivitetData.opprettetDato.toInstant(), ZoneOffset.systemDefault()).toOffsetDateTime().toString(),
+            "aktivitetsType" to aktivitetData.aktivitetType.name,
+            "referatLengde" to aktivitetData.moteData.referat.length
         )
         val moteEvent = moteEventsTable.insertRequest(moteRow)
         insertWhileToleratingErrors(moteEvent)
