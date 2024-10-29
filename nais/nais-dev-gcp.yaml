@@ -109,7 +109,7 @@ spec:
             users:
               - name: datastream
     bigQueryDatasets:
-      - description: Contains big data, supporting big queries, for use in big ideas.
+      - description: Funksjonelle metrikker for aktivitetsplan
         name: aktivitet_metrikker
         permission: READWRITE
   env:
