@@ -17,7 +17,7 @@ public class EnumUtils {
                 .findAny()
                 .orElse(null);
         if (enumValue == null) {
-            log.warn("Kunne ikke deserialisere arena-status {}", name);
+            log.warn("Kunne ikke deserialisere til enum-klasse {}, verdi: {}", enumClass.getName(), name);
         }
         return enumValue;
     }
