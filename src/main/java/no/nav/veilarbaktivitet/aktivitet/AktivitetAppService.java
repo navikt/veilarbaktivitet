@@ -238,8 +238,8 @@ public class AktivitetAppService {
         if(!originalAktivitet.getMoteData().isReferatPublisert() && oppdatertAktivtiet.getMoteData().isReferatPublisert()) {
             bigQueryClient.logEvent(oppdatertAktivtiet, EventType.SAMTALEREFERAT_DELT_MED_BRUKER);
         }
-        var forrigeReferat = originalAktivitet.getMoteData().getReferat();
-        var nesteReferat = oppdatertAktivtiet.getMoteData().getReferat();
+        var forrigeReferat = Optional.ofNullable(originalAktivitet.getMoteData()).map(it -> it.getReferat()).orElse("");
+        var nesteReferat = Optional.ofNullable(oppdatertAktivtiet.getMoteData()).map(it -> it.getReferat()).orElse("");
         if (forrigeReferat.isEmpty() && !nesteReferat.isEmpty() && oppdatertAktivtiet.getAktivitetType() == AktivitetTypeData.MOTE ) {
             bigQueryClient.logEvent(oppdatertAktivtiet, EventType.SAMTALEREFERAT_FIKK_INNHOLD);
         }
