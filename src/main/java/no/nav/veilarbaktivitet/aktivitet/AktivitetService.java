@@ -165,14 +165,14 @@ public class AktivitetService {
         aktivitetDAO.oppdaterAktivitet(oppdatertAktivitetMedNyFrist);
     }
 
-    public void oppdaterReferat(
+    public AktivitetData oppdaterReferat(
             AktivitetData originalAktivitet,
             AktivitetData aktivitetData
     ) {
         val transaksjon = getReferatTransakjsonType(originalAktivitet, aktivitetData);
 
         val merger = MappingUtils.merge(originalAktivitet, aktivitetData);
-        aktivitetDAO.oppdaterAktivitet(originalAktivitet
+        return aktivitetDAO.oppdaterAktivitet(originalAktivitet
                 .withEndretDato(aktivitetData.getEndretDato())
                 .withEndretAv(aktivitetData.getEndretAv())
                 .withEndretAvType(Innsender.NAV) // Bare NAV kan endre referat
