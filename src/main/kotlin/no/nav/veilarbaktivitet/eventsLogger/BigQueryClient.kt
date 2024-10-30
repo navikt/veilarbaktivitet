@@ -50,7 +50,7 @@ class BigQueryClientImplementation(@Value("\${gcp.projectId}") val projectId: St
             "erPublisert" to aktivitetData.moteData.isReferatPublisert,
             "opprettet" to ZonedDateTime.ofInstant(aktivitetData.opprettetDato.toInstant(), ZoneOffset.systemDefault()).toOffsetDateTime().toString(),
             "aktivitetsType" to aktivitetData.aktivitetType.name,
-            "referatLengde" to aktivitetData.moteData.referat.length
+            "referatLengde" to (aktivitetData.moteData?.referat?.length ?: -1)
         )
         val moteEvent = moteEventsTable.insertRequest(moteRow)
         insertWhileToleratingErrors(moteEvent)
