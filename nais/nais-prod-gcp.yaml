@@ -105,10 +105,10 @@ spec:
             envVarPrefix: DB
             users:
               - name: datastream
-  bigQueryDatasets:
-    - description: Funksjonelle metrikker for aktivitetsplan
-      name: aktivitet_metrikker
-      permission: READWRITE
+    bigQueryDatasets:
+      - description: Funksjonelle metrikker for aktivitetsplan
+        name: aktivitet_metrikker
+        permission: READWRITE
   env:
     - name: POAO_TILGANG_SCOPE
       value: api://prod-gcp.poao.poao-tilgang/.default
