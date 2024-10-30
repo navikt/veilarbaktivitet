@@ -78,5 +78,4 @@ class BigQueryClientImplementation(@Value("\${gcp.projectId}") val projectId: St
         }
     }
 
-
 }

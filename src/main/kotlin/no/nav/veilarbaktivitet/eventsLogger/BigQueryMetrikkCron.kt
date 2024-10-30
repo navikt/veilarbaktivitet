@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service
 
 @Service
 @EnableScheduling
-open class BigQueryMetrikk(
+open class BigQueryMetrikkCron(
     val bigQueryClient: BigQueryClient,
     val isPublisertDAO: IsPublisertDAO
 ) {
