@@ -27,7 +27,7 @@ public class ArenaAktivitetDTO {
     Date opprettetDato;
     boolean avtalt;
     ForhaandsorienteringDTO forhaandsorientering;
-    ArenaStatusDTO etikett;
+    ArenaStatusEtikettDTO etikett;
     long versjon;
     UUID oppfolgingsperiodeId;
 
