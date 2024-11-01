@@ -3,7 +3,10 @@ package no.nav.veilarbaktivitet.arena;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
-import no.nav.veilarbaktivitet.arena.model.*;
+import no.nav.veilarbaktivitet.arena.model.AktiviteterDTO;
+import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
+import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetTypeDTO;
+import no.nav.veilarbaktivitet.arena.model.MoteplanDTO;
 import no.nav.veilarbaktivitet.oppfolging.periode.Oppfolgingsperiode;
 import no.nav.veilarbaktivitet.util.DateUtils;
 import no.nav.veilarbaktivitet.util.EnumUtils;
@@ -119,7 +122,7 @@ public class VeilarbarenaMapper {
 
         val arenaAktivitetDTO = new ArenaAktivitetDTO()
                 .setId(tiltaksaktivitet.getAktivitetId().id())
-                .setStatus(EnumUtils.valueOf(ArenaStatus.class, tiltaksaktivitet.getDeltakerStatus()).getStatus())
+                .setStatus(EnumUtils.valueOf(ArenaStatusDTO.class, tiltaksaktivitet.getDeltakerStatus()).getStatus())
                 .setType(ArenaAktivitetTypeDTO.TILTAKSAKTIVITET)
                 .setFraDato(mapPeriodeToDate(tiltaksaktivitet.getDeltakelsePeriode(), AktiviteterDTO.Tiltaksaktivitet.DeltakelsesPeriode::getFom))
                 .setTilDato(tilDatoDate)
@@ -244,7 +247,7 @@ public class VeilarbarenaMapper {
         return Optional.ofNullable(localdate).map(DateUtils::toDate).orElse(null);
     }
 
-    public enum ArenaStatus {
+    public enum ArenaStatusDTO {
         AKTUELL(PLANLAGT),
         AVSLAG(AVBRUTT),
         DELAVB(AVBRUTT),
@@ -260,7 +263,7 @@ public class VeilarbarenaMapper {
         TILBUD(PLANLAGT),
         VENTELISTE(PLANLAGT);
 
-        ArenaStatus(AktivitetStatus status) {
+        ArenaStatusDTO(AktivitetStatus status) {
             this.status = status;
         }
 

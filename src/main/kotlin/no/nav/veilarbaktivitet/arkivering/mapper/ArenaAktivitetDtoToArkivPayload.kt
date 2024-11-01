@@ -1,8 +1,8 @@
 package no.nav.veilarbaktivitet.arkivering.mapper
 
+import no.nav.veilarbaktivitet.arena.VeilarbarenaMapper.ArenaStatusDTO
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetTypeDTO
-import no.nav.veilarbaktivitet.arena.model.ArenaStatusDTO
 import no.nav.veilarbaktivitet.arkivering.*
 import no.nav.veilarbaktivitet.arkivering.etiketter.ArkivEtikett
 import no.nav.veilarbaktivitet.arkivering.etiketter.ArkivEtikettStil

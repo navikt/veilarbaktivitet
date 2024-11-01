@@ -1,9 +1,7 @@
 package no.nav.veilarbaktivitet.arkivering.mapper
 
-import no.nav.veilarbaktivitet.arena.model.AktiviteterDTO
+import no.nav.veilarbaktivitet.arena.VeilarbarenaMapper.ArenaStatusDTO.*
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO
-import no.nav.veilarbaktivitet.arena.model.ArenaStatusDTO
-import no.nav.veilarbaktivitet.arena.model.ArenaStatusDTO.*
 import no.nav.veilarbaktivitet.arena.model.MoteplanDTO
 import no.nav.veilarbaktivitet.arkivering.Detalj
 import no.nav.veilarbaktivitet.arkivering.Stil
@@ -12,10 +10,8 @@ import no.nav.veilarbaktivitet.arkivering.etiketter.ArkivEtikettStil
 import no.nav.veilarbaktivitet.util.DateUtils.localDateTimeToDate
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.Month
-import java.util.*
 
 class ArenaAktivitetDtoToArkivPayloadTest {
 

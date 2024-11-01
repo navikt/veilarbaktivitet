@@ -15,7 +15,7 @@ public class ArenaAktivitetUtils {
 
     public static AktiviteterDTO.Tiltaksaktivitet createTiltaksaktivitet(LocalDate startDatoOppfølging) {
         return new AktiviteterDTO.Tiltaksaktivitet()
-                .setDeltakerStatus(VeilarbarenaMapper.ArenaStatus.GJENN.name())
+                .setDeltakerStatus(VeilarbarenaMapper.ArenaStatusDTO.GJENN.name())
                 .setTiltaksnavn(VeilarbarenaMapper.VANLIG_AMO_NAVN)
                 .setStatusSistEndret(startDatoOppfølging.plusDays(1))
                 .setDeltakelsePeriode(
