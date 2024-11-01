@@ -16,7 +16,7 @@ public class EnumUtils {
                 .filter(e -> e.name().equals(name))
                 .findAny()
                 .orElse(null);
-        if (enumValue == null) {
+        if (enumValue == null && name != null) {
             log.warn("Kunne ikke deserialisere til enum-klasse {}, verdi: {}", enumClass.getName(), name);
         }
         return enumValue;
