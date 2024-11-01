@@ -2,7 +2,7 @@ package no.nav.veilarbaktivitet.arkivering.mapper
 
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetTypeDTO
-import no.nav.veilarbaktivitet.arena.model.ArenaStatusDTO
+import no.nav.veilarbaktivitet.arena.model.ArenaStatusEtikettDTO
 import no.nav.veilarbaktivitet.arkivering.*
 import no.nav.veilarbaktivitet.arkivering.etiketter.ArkivEtikett
 import no.nav.veilarbaktivitet.arkivering.etiketter.ArkivEtikettStil
@@ -66,15 +66,15 @@ fun ArenaAktivitetDTO.toGruppeaktivitetDetaljer(): List<Detalj> {
 fun ArenaAktivitetDTO.toArkivEtikett(): List<ArkivEtikett> {
     val avtaltEtikett = if(this.isAvtalt) ArkivEtikett(ArkivEtikettStil.AVTALT, "Avtalt med NAV") else null
     val statusEtikett = when (this.etikett) {
-        ArenaStatusDTO.AKTUELL -> ArkivEtikett(ArkivEtikettStil.POSITIVE, "Søkt inn på tiltaket")
-        ArenaStatusDTO.AVSLAG -> ArkivEtikett(ArkivEtikettStil.NEGATIVE, "Fått avslag")
-        ArenaStatusDTO.IKKAKTUELL -> ArkivEtikett(ArkivEtikettStil.NEUTRAL, "Ikke aktuell for tiltaket")
-        ArenaStatusDTO.IKKEM -> ArkivEtikett(ArkivEtikettStil.NEGATIVE, "Ikke møtt på tiltaket")
-        ArenaStatusDTO.INFOMOETE -> ArkivEtikett(ArkivEtikettStil.POSITIVE, "Infomøte før tiltaket")
-        ArenaStatusDTO.JATAKK -> ArkivEtikett(ArkivEtikettStil.POSITIVE, "Takket ja til tilbud")
-        ArenaStatusDTO.NEITAKK -> ArkivEtikett(ArkivEtikettStil.NEUTRAL, "Takket nei til tilbud")
-        ArenaStatusDTO.TILBUD -> ArkivEtikett(ArkivEtikettStil.POSITIVE, "Fått plass på tiltaket")
-        ArenaStatusDTO.VENTELISTE -> ArkivEtikett(ArkivEtikettStil.POSITIVE, "På venteliste")
+        ArenaStatusEtikettDTO.AKTUELL -> ArkivEtikett(ArkivEtikettStil.POSITIVE, "Søkt inn på tiltaket")
+        ArenaStatusEtikettDTO.AVSLAG -> ArkivEtikett(ArkivEtikettStil.NEGATIVE, "Fått avslag")
+        ArenaStatusEtikettDTO.IKKAKTUELL -> ArkivEtikett(ArkivEtikettStil.NEUTRAL, "Ikke aktuell for tiltaket")
+        ArenaStatusEtikettDTO.IKKEM -> ArkivEtikett(ArkivEtikettStil.NEGATIVE, "Ikke møtt på tiltaket")
+        ArenaStatusEtikettDTO.INFOMOETE -> ArkivEtikett(ArkivEtikettStil.POSITIVE, "Infomøte før tiltaket")
+        ArenaStatusEtikettDTO.JATAKK -> ArkivEtikett(ArkivEtikettStil.POSITIVE, "Takket ja til tilbud")
+        ArenaStatusEtikettDTO.NEITAKK -> ArkivEtikett(ArkivEtikettStil.NEUTRAL, "Takket nei til tilbud")
+        ArenaStatusEtikettDTO.TILBUD -> ArkivEtikett(ArkivEtikettStil.POSITIVE, "Fått plass på tiltaket")
+        ArenaStatusEtikettDTO.VENTELISTE -> ArkivEtikett(ArkivEtikettStil.POSITIVE, "På venteliste")
         else -> null
     }
     return listOfNotNull(avtaltEtikett, statusEtikett)
