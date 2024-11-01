@@ -9,5 +9,10 @@ public enum ArenaStatusDTO {
     JATAKK,
     NEITAKK,
     TILBUD,
-    VENTELISTE
+    VENTELISTE,
+    // Hvorfor får vi disse kodene nå? Blir de sendt til frontend?
+    GJENN, // ??
+    GJENN_AVB, // ??
+    FULLF, // ??
+    DELAVB // ??
 }
