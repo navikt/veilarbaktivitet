@@ -38,7 +38,7 @@ class AvtaltMedNavTest extends SpringBootTestBase {
     @Test
     void IkkeSendeFhoForBrukerSomIkkeKanVarsles() {
         MockBruker brukerSomIkkeKanVarsles = navMockService.getBrukerSomIkkeKanVarsles();
-        MockVeileder veileder = MockNavService.createVeileder(brukerSomIkkeKanVarsles);
+        MockVeileder veileder = navMockService.createVeileder(brukerSomIkkeKanVarsles);
         ForhaandsorienteringDTO fho = testFho(Type.SEND_FORHAANDSORIENTERING);
 
         AvtaltMedNavDTO avtaltDTO = new AvtaltMedNavDTO();
@@ -59,8 +59,8 @@ class AvtaltMedNavTest extends SpringBootTestBase {
 
     @Test
     void IkkeOppretteFHOUtenAktivitet() {
-        MockBruker happyBruker = MockNavService.createHappyBruker();
-        MockVeileder veileder = MockNavService.createVeileder(happyBruker);
+        MockBruker happyBruker = navMockService.createHappyBruker();
+        MockVeileder veileder = navMockService.createVeileder(happyBruker);
         ForhaandsorienteringDTO fho = testFho(Type.IKKE_SEND_FORHAANDSORIENTERING);
 
         AvtaltMedNavDTO avtaltDTO = new AvtaltMedNavDTO();
