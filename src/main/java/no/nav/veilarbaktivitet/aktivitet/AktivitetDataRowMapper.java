@@ -92,12 +92,13 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
     }
 
     private static StillingsoekAktivitetData mapStillingsAktivitet(ResultSet rs) throws SQLException {
+        var etikett = rs.getString("etikett");
         return StillingsoekAktivitetData.builder()
                 .stillingsTittel(rs.getString("stillingstittel"))
                 .arbeidsgiver(rs.getString("STILLINGSSOK.ARBEIDSGIVER"))
                 .arbeidssted(rs.getString("STILLINGSSOK.ARBEIDSSTED"))
                 .kontaktPerson(rs.getString("kontaktperson"))
-                .stillingsoekEtikett(EnumUtils.valueOf(StillingsoekEtikettData.class, rs.getString("etikett")))
+                .stillingsoekEtikett(etikett == null ? null : EnumUtils.valueOf(StillingsoekEtikettData.class, etikett))
                 .build();
     }
 
@@ -150,6 +151,7 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
                 .mobil(rs.getString("kontaktperson_mobil"))
                 .build();
 
+        var soknadStatus = rs.getString("soknadsstatus");
         return StillingFraNavData.builder()
                 .cvKanDelesData(cvKanDelesData.getKanDeles() == null ? null : cvKanDelesData)
                 .soknadsfrist(rs.getString("soknadsfrist"))
@@ -160,7 +162,7 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
                 .arbeidssted(rs.getString("STILLING_FRA_NAV.ARBEIDSSTED"))
                 .varselId(rs.getString("varselid"))
                 .kontaktpersonData(kontaktpersonData)
-                .soknadsstatus(EnumUtils.valueOf(Soknadsstatus.class, rs.getString("soknadsstatus")))
+                .soknadsstatus(soknadStatus == null ? null : EnumUtils.valueOf(Soknadsstatus.class, soknadStatus))
                 .livslopsStatus(EnumUtils.valueOf(LivslopsStatus.class, rs.getString("livslopsstatus")))
                 .detaljer(rs.getString("STILLING_FRA_NAV.DETALJER"))
                 .build();

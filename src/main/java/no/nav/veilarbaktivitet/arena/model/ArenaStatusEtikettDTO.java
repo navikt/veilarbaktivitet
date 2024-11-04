@@ -1,6 +1,6 @@
 package no.nav.veilarbaktivitet.arena.model;
 
-public enum ArenaStatusDTO {
+public enum ArenaStatusEtikettDTO {
     AKTUELL,
     AVSLAG,
     IKKAKTUELL,

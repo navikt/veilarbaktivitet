@@ -13,7 +13,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
-import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
+import no.nav.veilarbaktivitet.brukernotifikasjon.MinsideVarselService;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.person.Person;
@@ -59,7 +59,7 @@ class ForhaandsorienteringDTOControllerTest {
     private IAuthService authService;
 
     @Mock
-    private BrukernotifikasjonService brukernotifikasjonService;
+    private MinsideVarselService brukernotifikasjonService;
 
     private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
 

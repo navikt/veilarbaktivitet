@@ -8,7 +8,7 @@ import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDAO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Type;
-import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
+import no.nav.veilarbaktivitet.brukernotifikasjon.MinsideVarselService;
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeDAO;
 import no.nav.veilarbaktivitet.person.PersonService;
 import org.junit.jupiter.api.Test;
@@ -18,7 +18,7 @@ import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 
 class ArenaServiceTest {
@@ -28,7 +28,7 @@ class ArenaServiceTest {
         var arenaService = new ArenaService(
                 mock(ForhaandsorienteringDAO.class),
                 mock(MeterRegistry.class),
-                mock(BrukernotifikasjonService.class),
+                mock(MinsideVarselService.class),
                 mock(VeilarbarenaClient.class),
                 mock(IdMappingDAO.class),
                 mock(PersonService.class),

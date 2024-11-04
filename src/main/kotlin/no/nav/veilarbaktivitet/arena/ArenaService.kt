@@ -15,8 +15,9 @@ import no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavService
 import no.nav.veilarbaktivitet.avtalt_med_nav.Forhaandsorientering
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDAO
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO
-import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService
+import no.nav.veilarbaktivitet.brukernotifikasjon.MinsideVarselService
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType
+import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.ArenaAktivitetVarsel
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeDAO
 import no.nav.veilarbaktivitet.person.Person
 import no.nav.veilarbaktivitet.person.PersonService
@@ -31,7 +32,7 @@ import java.util.*
 open class ArenaService(
     private val fhoDAO: ForhaandsorienteringDAO,
     private val meterRegistry: MeterRegistry,
-    private val brukernotifikasjonArenaAktivitetService: BrukernotifikasjonService,
+    private val brukernotifikasjonArenaAktivitetService: MinsideVarselService,
     private val veilarbarenaClient: VeilarbarenaClient,
     private val idMappingDAO: IdMappingDAO,
     private val personService: PersonService,
@@ -95,9 +96,9 @@ open class ArenaService(
     @Throws(ResponseStatusException::class)
     open fun opprettFHO(
         arenaaktivitetId: ArenaId,
-        fnr: Person.Fnr?,
-        forhaandsorientering: ForhaandsorienteringDTO?,
-        opprettetAv: String?
+        fnr: Person.Fnr,
+        forhaandsorientering: ForhaandsorienteringDTO,
+        opprettetAv: String
     ): ArenaAktivitetDTO {
         val arenaAktivitetDTO = hentAktivitet(fnr, arenaaktivitetId)
             .orElseThrow {
@@ -130,11 +131,12 @@ open class ArenaService(
 
         val aktivitetId = idMappingDAO.getLatestAktivitetsId(arenaaktivitetId)
         brukernotifikasjonArenaAktivitetService.opprettVarselPaaArenaAktivitet(
-            arenaaktivitetId,
-            aktivitetId,
-            fnr,
-            AvtaltMedNavService.FORHAANDSORIENTERING_DITT_NAV_TEKST,
-            VarselType.FORHAANDSORENTERING
+            ArenaAktivitetVarsel(
+                arenaaktivitetId,
+                aktivitetId,
+                fnr,
+                AvtaltMedNavService.FORHAANDSORIENTERING_DITT_NAV_TEKST
+            )
         )
 
         val nyForhaandsorientering = fhoDAO.insertForArenaAktivitet(
@@ -148,7 +150,7 @@ open class ArenaService(
         meterRegistry.counter(
             AVTALT_MED_NAV_COUNTER,
             FORHAANDSORIENTERING_TYPE_LABEL,
-            forhaandsorientering?.type?.name,
+            forhaandsorientering.type.name,
             AKTIVITET_TYPE_LABEL,
             arenaAktivitetDTO.type.name
         ).increment()

@@ -1,8 +1,6 @@
 package no.nav.veilarbaktivitet.motesms;
 
 
-import no.nav.brukernotifikasjon.schemas.input.BeskjedInput;
-import no.nav.brukernotifikasjon.schemas.input.NokkelInput;
 import no.nav.veilarbaktivitet.SpringBootTestBase;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
@@ -11,13 +9,13 @@ import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.KanalDTO;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAsserts;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAssertsConfig;
-import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendBrukernotifikasjonCron;
+import no.nav.veilarbaktivitet.brukernotifikasjon.OpprettVarselDto;
+import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendMinsideVarselFraOutboxCron;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
 import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,8 +25,7 @@ import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.Date;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class MoteSmsTest extends SpringBootTestBase {
 
@@ -40,7 +37,7 @@ class MoteSmsTest extends SpringBootTestBase {
     BrukernotifikasjonAsserts brukernotifikasjonAsserts;
 
     @Autowired
-    SendBrukernotifikasjonCron sendBrukernotifikasjonCron;
+    SendMinsideVarselFraOutboxCron sendMinsideVarselFraOutboxCron;
 
     @Autowired
     AktivitetService aktivitetService;
@@ -65,7 +62,7 @@ class MoteSmsTest extends SpringBootTestBase {
         AktivitetDTO mote = aktivitetTestService.opprettAktivitet(happyBruker, veileder, aktivitetDTO);
 
         moteSmsCronjobber();
-        ConsumerRecord<NokkelInput, BeskjedInput> orginalMelding = assertForventetMeldingSendt("Varsel skal ha innhold", happyBruker, KanalDTO.OPPMOTE, startTid, mote);
+        OpprettVarselDto orginalMelding = assertForventetMeldingSendt("Varsel skal ha innhold", happyBruker, KanalDTO.OPPMOTE, startTid, mote);
         brukernotifikasjonAsserts.assertSkalIkkeHaProdusertFlereMeldinger();
 
         moteSmsCronjobber();
@@ -74,7 +71,7 @@ class MoteSmsTest extends SpringBootTestBase {
         AktivitetDTO nyKanal = aktivitetTestService.oppdaterAktivitetOk(happyBruker, veileder, mote.setKanal(KanalDTO.TELEFON));
         moteSmsCronjobber();
         harAvsluttetVarsel(orginalMelding);
-        ConsumerRecord<NokkelInput, BeskjedInput> ny_kanal_varsel = assertForventetMeldingSendt("Varsel skal ha nyKanal", happyBruker, KanalDTO.TELEFON, startTid, mote);
+        OpprettVarselDto ny_kanal_varsel = assertForventetMeldingSendt("Varsel skal ha nyKanal", happyBruker, KanalDTO.TELEFON, startTid, mote);
 
 
         ZonedDateTime ny_startTid = startTid.plusHours(2);
@@ -126,6 +123,9 @@ class MoteSmsTest extends SpringBootTestBase {
         }
 
         moteSmsCronjobber();
+        // Blir først sendt en oppgave på stilling-fra-nav
+        brukernotifikasjonAsserts.assertOppgaveSendt(happyBruker.getFnrAsFnr());
+        // Blir sendt en beskjed på mote
         brukernotifikasjonAsserts.assertBeskjedSendt(happyBruker.getFnrAsFnr());
         brukernotifikasjonAsserts.assertSkalIkkeHaProdusertFlereMeldinger();
     }
@@ -140,8 +140,8 @@ class MoteSmsTest extends SpringBootTestBase {
         AktivitetDTO response = aktivitetTestService.opprettAktivitet(happyBruker, veileder, aktivitet);
 
         moteSMSService.sendServicemeldinger(Duration.ofDays(-15), Duration.ofDays(0));
-        sendBrukernotifikasjonCron.sendBrukernotifikasjoner();
-        ConsumerRecord<NokkelInput, BeskjedInput> varsel = assertForventetMeldingSendt("skall ha opprettet gamelt varsel", happyBruker, KanalDTO.OPPMOTE, startTid, response);
+        sendMinsideVarselFraOutboxCron.sendBrukernotifikasjoner();
+        OpprettVarselDto varsel = assertForventetMeldingSendt("skall ha opprettet gamelt varsel", happyBruker, KanalDTO.OPPMOTE, startTid, response);
 
         moteSmsCronjobber();
 
@@ -202,8 +202,8 @@ class MoteSmsTest extends SpringBootTestBase {
     }
 
 
-    private void harAvsluttetVarsel(ConsumerRecord<NokkelInput, BeskjedInput> varsel) {
-        brukernotifikasjonAsserts.assertDone(varsel.key());
+    private void harAvsluttetVarsel(OpprettVarselDto varsel) {
+        brukernotifikasjonAsserts.assertInaktivertMeldingErSendt(varsel.getVarselId());
     }
 
     private void moteSmsCronjobber() {
@@ -211,18 +211,17 @@ class MoteSmsTest extends SpringBootTestBase {
         moteSMSService.sendMoteSms();
     }
 
-    private ConsumerRecord<NokkelInput, BeskjedInput> assertForventetMeldingSendt(String melding, MockBruker happyBruker, KanalDTO oppmote, ZonedDateTime startTid, AktivitetDTO mote) {
-        ConsumerRecord<NokkelInput, BeskjedInput> oppgaveRecord = brukernotifikasjonAsserts.assertBeskjedSendt(happyBruker.getFnrAsFnr());
-        BeskjedInput value = oppgaveRecord.value();
+    private OpprettVarselDto assertForventetMeldingSendt(String melding, MockBruker happyBruker, KanalDTO oppmote, ZonedDateTime startTid, AktivitetDTO mote) {
+        var oppgave = brukernotifikasjonAsserts.assertBeskjedSendt(happyBruker.getFnrAsFnr());
 
         MoteNotifikasjon expected = new MoteNotifikasjon(0L, 0L, happyBruker.getAktorIdAsAktorId(), oppmote, startTid);
-        assertEquals(happyBruker.getFnr(), oppgaveRecord.key().getFodselsnummer(), melding + " fnr");
-        assertTrue(value.getEksternVarsling(), melding + " eksternvarsling");
-        assertEquals(expected.getSmsTekst(), value.getSmsVarslingstekst(), melding + " sms tekst");
-        assertEquals(expected.getDitNavTekst(), value.getTekst(), melding + " ditnav tekst");
-        assertEquals(expected.getEpostTitel(), value.getEpostVarslingstittel(), melding + " epost tittel tekst");
-        assertEquals(expected.getEpostBody(), value.getEpostVarslingstekst(), melding + " epost body tekst");
-        assertTrue(value.getLink().contains(mote.getId()), melding + " mote link tekst"); //TODO burde lage en test metode for aktivitets linker
-        return oppgaveRecord;
+        assertEquals(happyBruker.getFnr(), oppgave.getIdent(), melding + " fnr");
+        assertNotNull(oppgave.getEksternVarsling(), melding + " eksternvarsling");
+        assertEquals(expected.getSmsTekst(), oppgave.getEksternVarsling().getSmsVarslingstekst(), melding + " sms tekst");
+        assertEquals(expected.getDitNavTekst(), oppgave.getTekster().getFirst().getTekst(), melding + " ditnav tekst");
+        assertEquals(expected.getEpostTitel(), oppgave.getEksternVarsling().getEpostVarslingstittel(), melding + " epost tittel tekst");
+        assertEquals(expected.getEpostBody(), oppgave.getEksternVarsling().getEpostVarslingstekst(), melding + " epost body tekst");
+        assertTrue(oppgave.getLink().contains(mote.getId()), melding + " mote link tekst"); //TODO burde lage en test metode for aktivitets linker
+        return oppgave;
     }
 }

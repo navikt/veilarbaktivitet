@@ -88,7 +88,6 @@ repositories {
 
 tasks.generateAvroJava {
     source(
-        "src/main/java/no/nav/veilarbaktivitet/brukernotifikasjon/kvittering",
         "src/main/java/no/nav/veilarbaktivitet/stilling_fra_nav"
     )
 }
@@ -162,7 +161,7 @@ dependencies {
     implementation("no.nav.common:util:$common_version")
     implementation("no.nav.common:types:$common_version")
     implementation("net.sourceforge.collections:collections-generic:4.01")
-    implementation("com.github.navikt:brukernotifikasjon-schemas:v2.5.2")
+    implementation("no.nav.tms.varsel:kotlin-builder:1.0.0")
     implementation("no.nav.poao.dab:spring-auth:$dab_common_version")
     implementation("no.nav.poao.dab:spring-a2-annotations:$dab_common_version")
 
@@ -189,6 +188,10 @@ dependencies {
 
     // Hvis det ønskes swagger doc, foreslås å bruke springdoc (springdoc-openapi-starter-webmvc-ui - se no.nav.fo.veilarbdialog.rest.SwaggerConfig for eksempelconfig)
     implementation("io.swagger.core.v3:swagger-annotations:2.2.8")
+
+    // BigQuery
+    implementation(platform("com.google.cloud:libraries-bom:26.45.0"))
+    implementation("com.google.cloud:google-cloud-bigquery")
 
     implementation("io.getunleash:unleash-client-java:8.2.1")
 

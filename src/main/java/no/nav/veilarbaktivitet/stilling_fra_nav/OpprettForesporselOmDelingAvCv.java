@@ -9,8 +9,9 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
-import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
+import no.nav.veilarbaktivitet.brukernotifikasjon.MinsideVarselService;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
+import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.AktivitetVarsel;
 import no.nav.veilarbaktivitet.kvp.KvpService;
 import no.nav.veilarbaktivitet.oppfolging.periode.IngenGjeldendePeriodeException;
 import no.nav.veilarbaktivitet.oppfolging.periode.SistePeriodeService;
@@ -40,7 +41,7 @@ public class OpprettForesporselOmDelingAvCv {
     private final DelingAvCvService delingAvCvService;
     private final KvpService kvpService;
     private final SistePeriodeService sistePeriodeService;
-    private final BrukernotifikasjonService brukernotifikasjonService;
+    private final MinsideVarselService brukernotifikasjonService;
     private final StillingFraNavProducerClient producerClient;
     private final StillingFraNavMetrikker metrikker;
 
@@ -87,7 +88,9 @@ public class OpprettForesporselOmDelingAvCv {
         AktivitetData aktivitet = aktivitetService.opprettAktivitet(aktivitetData);
         MDC.clear();
         if (kanVarsle) {
-            brukernotifikasjonService.opprettVarselPaaAktivitet(aktivitet.getId(), aktivitet.getVersjon(), aktorId, BRUKERNOTIFIKASJON_TEKST, VarselType.STILLING_FRA_NAV);
+            brukernotifikasjonService.opprettVarselPaaAktivitet(new AktivitetVarsel(
+                aktivitet.getId(), aktivitet.getVersjon(), aktorId, BRUKERNOTIFIKASJON_TEKST, VarselType.STILLING_FRA_NAV, null, null, null
+            ));
             producerClient.sendOpprettet(aktivitet);
         } else {
             producerClient.sendOpprettetIkkeVarslet(aktivitet);
