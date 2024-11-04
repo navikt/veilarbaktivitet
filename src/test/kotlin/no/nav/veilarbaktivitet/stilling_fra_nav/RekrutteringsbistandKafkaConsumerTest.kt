@@ -11,7 +11,7 @@ import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAsserts
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAssertsConfig
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaJsonTemplate
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringTemplate
-import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService
+import no.nav.veilarbaktivitet.mock_nav_modell.NavMockService
 import no.nav.veilarbaktivitet.person.Innsender
 import no.nav.veilarbaktivitet.util.DateUtils
 import org.assertj.core.api.Assertions
@@ -53,8 +53,23 @@ internal class RekrutteringsbistandKafkaConsumerTest(
     @Autowired
     val meterRegistry: MeterRegistry,
     @Autowired
-    val brukernotifikasjonAssertsConfig: BrukernotifikasjonAssertsConfig
+    val brukernotifikasjonAssertsConfig: BrukernotifikasjonAssertsConfig,
+    @Autowired
+    val navMockService: NavMockService
 ) : SpringBootTestBase() {
+
+
+    private val DETALJER_TEKST = ""
+    private val JA = Boolean.TRUE
+    private val NEI = Boolean.FALSE
+    private val tidspunkt = ZonedDateTime.of(2020, 4, 5, 16, 17, 0, 0, ZoneId.systemDefault())
+    private val navIdent = "E271828"
+    private val mockBruker = navMockService.createHappyBruker()
+    private val veileder = navMockService.createVeileder(mockBruker)
+    private val date = Date.from(Instant.ofEpochSecond(1))
+    private val SUKSESS = ""
+    private val INGEN_DETALJER = ""
+//    private var bestillingsId: String? = null
 
     val brukernotifikasjonAsserts: BrukernotifikasjonAsserts by lazy {
         BrukernotifikasjonAsserts(brukernotifikasjonAssertsConfig)
@@ -712,15 +727,4 @@ internal class RekrutteringsbistandKafkaConsumerTest(
             )
     }
 
-    private val DETALJER_TEKST = ""
-    private val JA = Boolean.TRUE
-    private val NEI = Boolean.FALSE
-    private val tidspunkt = ZonedDateTime.of(2020, 4, 5, 16, 17, 0, 0, ZoneId.systemDefault())
-    private val navIdent = "E271828"
-    private val mockBruker = navMockService.createHappyBruker()
-    private val veileder = navMockService.createVeileder(mockBruker)
-    private val date = Date.from(Instant.ofEpochSecond(1))
-    private val SUKSESS = ""
-    private val INGEN_DETALJER = ""
-//    private var bestillingsId: String? = null
 }
