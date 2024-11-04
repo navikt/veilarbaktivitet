@@ -14,10 +14,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 
 import static java.time.ZoneId.systemDefault;
@@ -146,12 +143,14 @@ public class VeilarbarenaMapper {
             arenaAktivitetDTO.setBeskrivelse(tiltaksaktivitet.getTiltakLokaltNavn());
         }
 
-        val arenaEtikett = EnumUtils.valueOf(ArenaStatusDTO.class,
-                tiltaksaktivitet.getDeltakerStatus());
+        val arenaEtikett = Arrays.stream(ArenaStatusEtikettDTO.values())
+                .filter(value -> value.name().equals(tiltaksaktivitet.getDeltakerStatus()))
+                .findFirst()
+                .orElse(null);
 
-        if (ArenaStatusDTO.TILBUD.equals(arenaEtikett)) {
+        if (ArenaStatusEtikettDTO.TILBUD.equals(arenaEtikett)) {
             if (erJobbKlubb || erVanligAmo) {
-                arenaAktivitetDTO.setEtikett(ArenaStatusDTO.TILBUD);
+                arenaAktivitetDTO.setEtikett(ArenaStatusEtikettDTO.TILBUD);
             }
         } else {
             arenaAktivitetDTO.setEtikett(arenaEtikett);

@@ -6,7 +6,7 @@ import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
 import no.nav.veilarbaktivitet.avro.TilstandEnum;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAsserts;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAssertsConfig;
-import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendBrukernotifikasjonCron;
+import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendMinsideVarselFraOutboxCron;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
@@ -32,7 +32,7 @@ class BehandleNotifikasjonForDelingAvCvTest extends SpringBootTestBase {
     BehandleNotifikasjonForDelingAvCvCronService behandleNotifikasjonForDelingAvCvCronService;
 
     @Autowired
-    SendBrukernotifikasjonCron sendBrukernotifikasjonCron;
+    SendMinsideVarselFraOutboxCron sendMinsideVarselFraOutboxCron;
 
     @Autowired
     KafkaTestService kafkaTestService;
@@ -72,8 +72,8 @@ class BehandleNotifikasjonForDelingAvCvTest extends SpringBootTestBase {
         AktivitetDTO medSvar = aktivitetTestService.svarPaaDelingAvCv(true, mockBruker, veileder, skalFaaSvar, new Date());
 
         //kviteringer på varsel
-        brukernotifikasjonAsserts.sendEksternVarseltOk(utenSvarOppgave);
-        brukernotifikasjonAsserts.sendEksternVarseltOk(medSvarOppgave);
+        brukernotifikasjonAsserts.simulerEksternVarselStatusSendt(utenSvarOppgave);
+        brukernotifikasjonAsserts.simulerEksternVarselStatusSendt(medSvarOppgave);
 
 
         //Send meldinger til rekruteringsbistand
@@ -114,15 +114,15 @@ class BehandleNotifikasjonForDelingAvCvTest extends SpringBootTestBase {
         var medSvarOppgave = brukernotifikasjonAsserts.assertOppgaveSendt(mockBruker.getFnrAsFnr());
 
         // trigger utsendelse av oppgave-notifikasjoner
-        sendBrukernotifikasjonCron.sendBrukernotifikasjoner();
+        sendMinsideVarselFraOutboxCron.sendBrukernotifikasjoner();
 
         AktivitetDTO medSvar = aktivitetTestService.svarPaaDelingAvCv(true, mockBruker, veileder, skalFaaSvar, new Date());
 
         // simuler kvittering fra brukernotifikasjoner
 
         // les oppgave-notifikasjon
-        brukernotifikasjonAsserts.sendEksternVarseletFeilet(utenSvarOppgave);
-        brukernotifikasjonAsserts.sendEksternVarseletFeilet(medSvarOppgave);
+        brukernotifikasjonAsserts.simulerEksternVarselStatusFeilet(utenSvarOppgave);
+        brukernotifikasjonAsserts.simulerEksternVarselStatusFeilet(medSvarOppgave);
 
         rekrutteringsbistandConsumer = kafkaTestService.createStringAvroConsumer(utTopic);
         int behandlede = behandleNotifikasjonForDelingAvCvCronService.behandleFeiledeNotifikasjoner(500);

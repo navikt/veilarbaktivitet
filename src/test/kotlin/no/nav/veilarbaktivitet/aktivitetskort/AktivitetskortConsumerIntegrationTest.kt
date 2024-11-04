@@ -71,13 +71,12 @@ open class AktivitetskortConsumerIntegrationTest(
     @Autowired
     var tiltakMigreringCronService: TiltakMigreringCronService,
     @Autowired
-    var meterRegistry: MeterRegistry
+    var meterRegistry: MeterRegistry,
+    @Autowired
+    var brukernotifikasjonAssertsConfig: BrukernotifikasjonAssertsConfig
 ) : SpringBootTestBase() {
     @Autowired
     lateinit var aktivitetskortService: AktivitetskortService
-
-    @Autowired
-    var brukernotifikasjonAssertsConfig: BrukernotifikasjonAssertsConfig? = null
 
     private lateinit var brukernotifikasjonAsserts: BrukernotifikasjonAsserts
     private lateinit var mockBruker: MockBruker
@@ -830,7 +829,7 @@ open class AktivitetskortConsumerIntegrationTest(
         val arenaaktivitetId = ArenaId("ARENATA123")
         // Opprett FHO på aktivitet
         aktivitetTestService.opprettFHOForArenaAktivitet(mockBruker, arenaaktivitetId, veileder)
-        val record = brukernotifikasjonAsserts!!.assertOppgaveSendt(mockBruker.fnrAsFnr)
+        val varsel = brukernotifikasjonAsserts!!.assertOppgaveSendt(mockBruker.fnrAsFnr)
         // Migrer arenaaktivitet via topic
         val funksjonellId = UUID.randomUUID()
         val tiltaksaktivitet = aktivitetskort(funksjonellId, AktivitetskortStatus.PLANLAGT)
@@ -841,7 +840,7 @@ open class AktivitetskortConsumerIntegrationTest(
         val aktivitet = hentAktivitet(funksjonellId)
         aktivitetTestService.lesFHO(mockBruker, aktivitet.id.toLong(), aktivitet.versjon.toLong())
         // Skal dukke opp Done melding på brukernotifikasjons-topic
-        brukernotifikasjonAsserts!!.assertDone(record.key())
+        brukernotifikasjonAsserts!!.assertInaktivertMeldingErSendt(varsel.varselId)
     }
 
     @Test

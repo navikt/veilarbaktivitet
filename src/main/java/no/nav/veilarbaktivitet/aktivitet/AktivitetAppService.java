@@ -8,6 +8,8 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
 import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvFerdigAktivitetException;
 import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvHistoriskAktivitetException;
+import no.nav.veilarbaktivitet.eventsLogger.BigQueryClient;
+import no.nav.veilarbaktivitet.eventsLogger.EventType;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
 import org.slf4j.Logger;
@@ -29,6 +31,7 @@ public class AktivitetAppService {
     private final AktivitetService aktivitetService;
     private final MetricService metricService;
     private final PersonService personService;
+    private final BigQueryClient bigQueryClient;
 
     private static final Set<AktivitetTypeData> TYPER_SOM_KAN_ENDRES_EKSTERNT = new HashSet<>(Arrays.asList(
             AktivitetTypeData.EGENAKTIVITET,
@@ -111,6 +114,9 @@ public class AktivitetAppService {
         }
 
         AktivitetData nyAktivitet = aktivitetService.opprettAktivitet(aktivitetData);
+        if (nyAktivitet.getAktivitetType() == AktivitetTypeData.SAMTALEREFERAT || nyAktivitet.getAktivitetType() == AktivitetTypeData.MOTE) {
+            bigQueryClient.logEvent(nyAktivitet, EventType.SAMTALEREFERAT_OPPRETTET);
+        }
 
         // dette er gjort på grunn av KVP
         return authService.erSystemBruker() ? nyAktivitet.withKontorsperreEnhetId(null) : nyAktivitet;
@@ -224,12 +230,21 @@ public class AktivitetAppService {
         val originalAktivitet = hentAktivitet(aktivitet.getId());
         kanEndreAktivitetGuard(originalAktivitet, aktivitet.getVersjon(), aktivitet.getAktorId());
 
-        aktivitetService.oppdaterReferat(
+        var oppdatertAktivtiet = aktivitetService.oppdaterReferat(
                 originalAktivitet,
                 aktivitet
         );
 
-        return hentAktivitet(aktivitet.getId());
+        if(!originalAktivitet.getMoteData().isReferatPublisert() && oppdatertAktivtiet.getMoteData().isReferatPublisert()) {
+            bigQueryClient.logEvent(oppdatertAktivtiet, EventType.SAMTALEREFERAT_DELT_MED_BRUKER);
+        }
+        var forrigeReferat = Optional.ofNullable(originalAktivitet.getMoteData()).map(it -> it.getReferat()).orElse("");
+        var nesteReferat = Optional.ofNullable(oppdatertAktivtiet.getMoteData()).map(it -> it.getReferat()).orElse("");
+        if (forrigeReferat.isEmpty() && !nesteReferat.isEmpty() && oppdatertAktivtiet.getAktivitetType() == AktivitetTypeData.MOTE ) {
+            bigQueryClient.logEvent(oppdatertAktivtiet, EventType.SAMTALEREFERAT_FIKK_INNHOLD);
+        }
+
+        return oppdatertAktivtiet;
     }
 
 }

@@ -1,7 +1,10 @@
 package no.nav.veilarbaktivitet.util;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.Arrays;
 
+@Slf4j
 public class EnumUtils {
 
     public static String getName(Enum<?> anEnum){
@@ -9,10 +12,14 @@ public class EnumUtils {
     }
 
     public static <T extends Enum> T valueOf(Class<T> enumClass, String name) {
-        return Arrays.stream(enumClass.getEnumConstants())
+        var enumValue = Arrays.stream(enumClass.getEnumConstants())
                 .filter(e -> e.name().equals(name))
                 .findAny()
                 .orElse(null);
+        if (enumValue == null && name != null) {
+            log.warn("Kunne ikke deserialisere til enum-klasse {}, verdi: {}", enumClass.getName(), name);
+        }
+        return enumValue;
     }
 
 }

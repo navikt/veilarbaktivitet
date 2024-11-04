@@ -5,8 +5,9 @@ import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
-import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
+import no.nav.veilarbaktivitet.brukernotifikasjon.MinsideVarselService;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
+import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.AktivitetVarsel;
 import no.nav.veilarbaktivitet.util.ExcludeFromCoverageGenerated;
 import org.slf4j.MDC;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -23,7 +24,7 @@ import static java.time.Duration.ofHours;
 @RequiredArgsConstructor
 public class MoteSMSService {
     private final MoteSmsDAO moteSmsDAO;
-    private final BrukernotifikasjonService brukernotifikasjonService;
+    private final MinsideVarselService brukernotifikasjonService;
     private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
 
     @Scheduled(
@@ -41,9 +42,8 @@ public class MoteSMSService {
     protected void sendServicemeldinger(Duration fra, Duration til) {
         moteSmsDAO.hentMoterUtenVarsel(fra, til, 5000)
                 .forEach(it -> {
-                    moteSmsDAO.insertGjeldendeSms(it);
                     if (brukernotifikasjonService.kanVarsles(it.aktorId())) {
-                        brukernotifikasjonService.opprettVarselPaaAktivitet(
+                        var varsel = new AktivitetVarsel(
                                 it.aktivitetId(),
                                 it.aktitetVersion(),
                                 it.aktorId(),
@@ -53,8 +53,13 @@ public class MoteSMSService {
                                 it.getEpostBody(),
                                 it.getSmsTekst()
                         );
+                        var varselId = brukernotifikasjonService.opprettVarselPaaAktivitet(varsel);
+                        moteSmsDAO.insertGjeldendeSms(it, varselId);
                     } else {
-                        log.info("bruker kan ikke varsles {}", it.aktorId());
+                        // Usikker på hvorfor man inserter i gjeldende sms når bruker ikke kan
+                        // varsles men det var gjort slik tidligere
+                        moteSmsDAO.insertGjeldendeSms(it, null);
+                        log.info("Minside varsel ikke sendt (møte sms), bruker kan ikke varsles {}", it.aktorId());
                     }
                 });
     }
