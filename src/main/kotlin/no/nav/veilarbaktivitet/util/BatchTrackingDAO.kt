@@ -6,7 +6,8 @@ import org.springframework.stereotype.Repository
 
 enum class BatchJob {
     Deling_av_cv_avbrutt_eller_fuulfort_uten_svar,
-    Aktiviteter_til_portefolje
+    Aktiviteter_til_portefolje,
+    StoppMoteSms
 }
 
 @Repository
@@ -35,7 +36,7 @@ open class BatchTrackingDAO(
         return results.first()
     }
 
-    public fun withOffset(batch: BatchJob, processBatch: (sisteProsesserteVersjon: Long) -> List<BatchResult>): List<BatchResult> {
+    fun withOffset(batch: BatchJob, processBatch: (sisteProsesserteVersjon: Long) -> List<BatchResult>): List<BatchResult> {
         val siste = hentSisteProsseserteVersjon(batch)
         val batchResults = processBatch(siste)
         setSisteProsesserteVersjon(batch, batchResults.sisteProsesserteVersjon(siste))

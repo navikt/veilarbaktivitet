@@ -1,227 +1,251 @@
-package no.nav.veilarbaktivitet.motesms;
+package no.nav.veilarbaktivitet.motesms
+
+import no.nav.veilarbaktivitet.SpringBootTestBase
+import no.nav.veilarbaktivitet.aktivitet.AktivitetService
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
+import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO
+import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO
+import no.nav.veilarbaktivitet.aktivitet.dto.KanalDTO
+import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAsserts
+import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAssertsConfig
+import no.nav.veilarbaktivitet.brukernotifikasjon.OpprettVarselDto
+import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendMinsideVarselFraOutboxCron
+import no.nav.veilarbaktivitet.db.DbTestUtils
+import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions
+import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker
+import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
+import java.time.Duration
+import java.time.ZonedDateTime
+import java.util.Date
 
 
-import no.nav.veilarbaktivitet.SpringBootTestBase;
-import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
-import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
-import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
-import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO;
-import no.nav.veilarbaktivitet.aktivitet.dto.KanalDTO;
-import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAsserts;
-import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAssertsConfig;
-import no.nav.veilarbaktivitet.brukernotifikasjon.OpprettVarselDto;
-import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendMinsideVarselFraOutboxCron;
-import no.nav.veilarbaktivitet.db.DbTestUtils;
-import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions;
-import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
-import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
-import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.web.server.LocalServerPort;
-
-import java.time.Duration;
-import java.time.ZonedDateTime;
-import java.util.Date;
-
-import static org.junit.jupiter.api.Assertions.*;
-
-class MoteSmsTest extends SpringBootTestBase {
-
+internal class MoteSmsTest(
     @Autowired
-    MoteSMSService moteSMSService;
-
+    val moteSMSService: MoteSMSService,
     @Autowired
-    BrukernotifikasjonAssertsConfig brukernotifikasjonAssertsConfig;
-    BrukernotifikasjonAsserts brukernotifikasjonAsserts;
-
+    val brukernotifikasjonAssertsConfig: BrukernotifikasjonAssertsConfig,
     @Autowired
-    SendMinsideVarselFraOutboxCron sendMinsideVarselFraOutboxCron;
-
+    val sendMinsideVarselFraOutboxCron: SendMinsideVarselFraOutboxCron,
     @Autowired
-    AktivitetService aktivitetService;
-
-    @LocalServerPort
-    protected int port;
-
+    val aktivitetService: AktivitetService
+) : SpringBootTestBase() {
+    var brukernotifikasjonAsserts: BrukernotifikasjonAsserts? = null
     @BeforeEach
-    void setUp() {
-        DbTestUtils.cleanupTestDb(jdbcTemplate);
-        brukernotifikasjonAsserts = new BrukernotifikasjonAsserts(brukernotifikasjonAssertsConfig);
+    fun setUp() {
+        DbTestUtils.cleanupTestDb(jdbcTemplate)
+        brukernotifikasjonAsserts = BrukernotifikasjonAsserts(brukernotifikasjonAssertsConfig)
     }
 
     @Test
-    void skalSendeServiceMelding() {
-        MockBruker happyBruker = navMockService.createBruker(BrukerOptions.happyBruker());
-        MockVeileder veileder = navMockService.createVeileder(happyBruker);
-        AktivitetDTO aktivitetDTO = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE);
-        ZonedDateTime startTid = ZonedDateTime.now().plusHours(2);
-        aktivitetDTO.setFraDato(new Date(startTid.toInstant().toEpochMilli()));
-        aktivitetDTO.setKanal(KanalDTO.OPPMOTE);
-        AktivitetDTO mote = aktivitetTestService.opprettAktivitet(happyBruker, veileder, aktivitetDTO);
+    fun skalSendeServiceMelding() {
+        val happyBruker = navMockService.createBruker(BrukerOptions.happyBruker())
+        val veileder = navMockService.createVeileder(happyBruker)
+        val aktivitetDTO = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE)
+        val startTid = ZonedDateTime.now().plusHours(2)
+        aktivitetDTO.setFraDato(Date(startTid.toInstant().toEpochMilli()))
+        aktivitetDTO.setKanal(KanalDTO.OPPMOTE)
+        val mote = aktivitetTestService.opprettAktivitet(happyBruker, veileder, aktivitetDTO)
 
-        moteSmsCronjobber();
-        OpprettVarselDto orginalMelding = assertForventetMeldingSendt("Varsel skal ha innhold", happyBruker, KanalDTO.OPPMOTE, startTid, mote);
-        brukernotifikasjonAsserts.assertSkalIkkeHaProdusertFlereMeldinger();
+        moteSmsCronjobber()
+        val orginalMelding =
+            assertForventetMeldingSendt("Varsel skal ha innhold", happyBruker, KanalDTO.OPPMOTE, startTid, mote)
+        brukernotifikasjonAsserts!!.assertSkalIkkeHaProdusertFlereMeldinger()
 
-        moteSmsCronjobber();
-        brukernotifikasjonAsserts.assertSkalIkkeHaProdusertFlereMeldinger();
+        moteSmsCronjobber()
+        brukernotifikasjonAsserts!!.assertSkalIkkeHaProdusertFlereMeldinger()
 
-        AktivitetDTO nyKanal = aktivitetTestService.oppdaterAktivitetOk(happyBruker, veileder, mote.setKanal(KanalDTO.TELEFON));
-        moteSmsCronjobber();
-        harAvsluttetVarsel(orginalMelding);
-        OpprettVarselDto ny_kanal_varsel = assertForventetMeldingSendt("Varsel skal ha nyKanal", happyBruker, KanalDTO.TELEFON, startTid, mote);
+        val nyKanal = aktivitetTestService.oppdaterAktivitetOk(happyBruker, veileder, mote.setKanal(KanalDTO.TELEFON))
+        moteSmsCronjobber()
+        harAvsluttetVarsel(orginalMelding)
+        val ny_kanal_varsel =
+            assertForventetMeldingSendt("Varsel skal ha nyKanal", happyBruker, KanalDTO.TELEFON, startTid, mote)
 
 
-        ZonedDateTime ny_startTid = startTid.plusHours(2);
-        AktivitetDTO nyTid = aktivitetTestService.oppdaterAktivitetOk(happyBruker, veileder, nyKanal.setFraDato(new Date(ny_startTid.toInstant().toEpochMilli())));
+        val ny_startTid = startTid.plusHours(2)
+        val nyTid = aktivitetTestService.oppdaterAktivitetOk(
+            happyBruker,
+            veileder,
+            nyKanal.setFraDato(Date(ny_startTid.toInstant().toEpochMilli()))
+        )
 
-        moteSmsCronjobber();
-        harAvsluttetVarsel(ny_kanal_varsel);
-        assertForventetMeldingSendt("Varsel skal ha tid", happyBruker, KanalDTO.TELEFON, ny_startTid, mote);
+        moteSmsCronjobber()
+        harAvsluttetVarsel(ny_kanal_varsel)
+        assertForventetMeldingSendt("Varsel skal ha tid", happyBruker, KanalDTO.TELEFON, ny_startTid, mote)
 
-        aktivitetTestService.oppdaterAktivitetOk(happyBruker, veileder, nyTid.setTittel("ny test tittel skal ikke oppdatere varsel"));
-        moteSmsCronjobber();
-        brukernotifikasjonAsserts.assertSkalIkkeHaProdusertFlereMeldinger(); //"skal ikke sende på nytt for andre oppdateringer"
-
+        aktivitetTestService.oppdaterAktivitetOk(
+            happyBruker,
+            veileder,
+            nyTid.setTittel("ny test tittel skal ikke oppdatere varsel")
+        )
+        moteSmsCronjobber()
+        brukernotifikasjonAsserts!!.assertSkalIkkeHaProdusertFlereMeldinger() //"skal ikke sende på nytt for andre oppdateringer"
     }
 
     @Test
-    void skalSendeForAlleMoteTyper() {
-        MockBruker happyBruker = navMockService.createBruker(BrukerOptions.happyBruker());
-        MockVeileder veileder = navMockService.createVeileder(happyBruker);
-        AktivitetDTO aktivitetDTO = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE);
-        ZonedDateTime fraDato = ZonedDateTime.now().plusHours(4);
-        aktivitetDTO.setFraDato(new Date(fraDato.toInstant().toEpochMilli()));
+    fun skalSendeForAlleMoteTyper() {
+        val happyBruker = navMockService.createBruker(BrukerOptions.happyBruker())
+        val veileder = navMockService.createVeileder(happyBruker)
+        var aktivitetDTO = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE)
+        val fraDato = ZonedDateTime.now().plusHours(4)
+        aktivitetDTO.setFraDato(Date(fraDato.toInstant().toEpochMilli()))
 
-        for (KanalDTO kanal : KanalDTO.values()) {
-            AktivitetDTO aktivitet = aktivitetDTO.toBuilder().kanal(kanal).build();
-            AktivitetDTO response = aktivitetTestService.opprettAktivitet(happyBruker, veileder, aktivitet);
+        for (kanal in KanalDTO.entries) {
+            val aktivitet: AktivitetDTO = aktivitetDTO.setKanal(kanal)
+            val response = aktivitetTestService.opprettAktivitet(happyBruker, veileder, aktivitet)
 
-            moteSmsCronjobber();
-            assertForventetMeldingSendt(kanal.name() + "skal ha riktig melding", happyBruker, kanal, fraDato, response);
-            brukernotifikasjonAsserts.assertSkalIkkeHaProdusertFlereMeldinger();
+            moteSmsCronjobber()
+            assertForventetMeldingSendt(kanal.name + "skal ha riktig melding", happyBruker, kanal, fraDato, response)
+            brukernotifikasjonAsserts!!.assertSkalIkkeHaProdusertFlereMeldinger()
         }
     }
 
     @Test
-    void bareSendeForMote() {
-        MockBruker happyBruker = navMockService.createBruker(BrukerOptions.happyBruker());
-        MockVeileder veileder = navMockService.createVeileder(happyBruker);
-        for (AktivitetTypeDTO type :
-                AktivitetTypeDTO.values()) {
+    fun bareSendeForMote() {
+        val happyBruker = navMockService.createBruker(BrukerOptions.happyBruker())
+        val veileder = navMockService.createVeileder(happyBruker)
+        for (type in AktivitetTypeDTO.entries) {
             if (type == AktivitetTypeDTO.STILLING_FRA_NAV) {
-                aktivitetTestService.opprettStillingFraNav(happyBruker);
+                aktivitetTestService.opprettStillingFraNav(happyBruker)
             } else if (type == AktivitetTypeDTO.EKSTERNAKTIVITET) {
                 // TODO aktivitetTestService.opprettEksternAktivitet(happyBruker)
             } else {
-                AktivitetDTO aktivitet = AktivitetDtoTestBuilder.nyAktivitet(type);
-                aktivitet.setFraDato(new Date(ZonedDateTime.now().plusHours(4).toInstant().toEpochMilli()));
-                aktivitetTestService.opprettAktivitet(happyBruker, veileder, aktivitet);
+                val aktivitet = AktivitetDtoTestBuilder.nyAktivitet(type)
+                aktivitet.setFraDato(Date(ZonedDateTime.now().plusHours(4).toInstant().toEpochMilli()))
+                aktivitetTestService.opprettAktivitet(happyBruker, veileder, aktivitet)
             }
         }
 
-        moteSmsCronjobber();
+        moteSmsCronjobber()
         // Blir først sendt en oppgave på stilling-fra-nav
-        brukernotifikasjonAsserts.assertOppgaveSendt(happyBruker.getFnrAsFnr());
+        brukernotifikasjonAsserts!!.assertOppgaveSendt(happyBruker.getFnrAsFnr())
         // Blir sendt en beskjed på mote
-        brukernotifikasjonAsserts.assertBeskjedSendt(happyBruker.getFnrAsFnr());
-        brukernotifikasjonAsserts.assertSkalIkkeHaProdusertFlereMeldinger();
+        brukernotifikasjonAsserts!!.assertBeskjedSendt(happyBruker.getFnrAsFnr())
+        brukernotifikasjonAsserts!!.assertSkalIkkeHaProdusertFlereMeldinger()
+        val antall = jdbcTemplate.queryForObject<Int>("Select count(*) from GJELDENDE_MOTE_SMS", Int::class.java)
+        Assertions.assertEquals(1, antall)
     }
 
     @Test
-    void skalFjereneGamleMoter() {
-        MockBruker happyBruker = navMockService.createBruker(BrukerOptions.happyBruker());
-        MockVeileder veileder = navMockService.createVeileder(happyBruker);
-        AktivitetDTO aktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE);
-        ZonedDateTime startTid = ZonedDateTime.now().minusDays(10);
-        aktivitet.setFraDato(new Date(startTid.toInstant().toEpochMilli()));
-        AktivitetDTO response = aktivitetTestService.opprettAktivitet(happyBruker, veileder, aktivitet);
+    fun skalFjereneGamleMoter() {
+        val happyBruker = navMockService.createBruker(BrukerOptions.happyBruker())
+        val veileder = navMockService.createVeileder(happyBruker)
+        val aktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE)
+        val startTid = ZonedDateTime.now().minusDays(10)
+        aktivitet.setFraDato(Date(startTid.toInstant().toEpochMilli()))
+        val response = aktivitetTestService.opprettAktivitet(happyBruker, veileder, aktivitet)
 
-        moteSMSService.sendServicemeldinger(Duration.ofDays(-15), Duration.ofDays(0));
-        sendMinsideVarselFraOutboxCron.sendBrukernotifikasjoner();
-        OpprettVarselDto varsel = assertForventetMeldingSendt("skall ha opprettet gamelt varsel", happyBruker, KanalDTO.OPPMOTE, startTid, response);
+        moteSMSService!!.sendServicemeldinger(Duration.ofDays(-15), Duration.ofDays(0))
+        sendMinsideVarselFraOutboxCron!!.sendBrukernotifikasjoner()
+        val varsel = assertForventetMeldingSendt(
+            "skall ha opprettet gamelt varsel",
+            happyBruker,
+            KanalDTO.OPPMOTE,
+            startTid,
+            response
+        )
 
-        moteSmsCronjobber();
+        moteSmsCronjobber()
 
-        harAvsluttetVarsel(varsel);
-        brukernotifikasjonAsserts.assertSkalIkkeHaProdusertFlereMeldinger();
+        harAvsluttetVarsel(varsel)
+        brukernotifikasjonAsserts!!.assertSkalIkkeHaProdusertFlereMeldinger()
     }
 
     @Test
-    void skalIkkeOppreteVarsleHistorisk() {
-        MockBruker happyBruker = navMockService.createBruker(BrukerOptions.happyBruker());
-        MockVeileder veileder = navMockService.createVeileder(happyBruker);
-        AktivitetDTO aktivitetDTO = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE);
-        ZonedDateTime startTid = ZonedDateTime.now().plusHours(2);
-        aktivitetDTO.setFraDato(new Date(startTid.toInstant().toEpochMilli()));
-        aktivitetDTO.setKanal(KanalDTO.OPPMOTE);
-        aktivitetTestService.opprettAktivitet(happyBruker, veileder, aktivitetDTO);
-        aktivitetService.settAktiviteterTilHistoriske(happyBruker.getOppfolgingsperiodeId(), ZonedDateTime.now());
+    fun skalIkkeOppreteVarsleHistorisk() {
+        val happyBruker = navMockService.createBruker(BrukerOptions.happyBruker())
+        val veileder = navMockService.createVeileder(happyBruker)
+        val aktivitetDTO = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE)
+        val startTid = ZonedDateTime.now().plusHours(2)
+        aktivitetDTO.setFraDato(Date(startTid.toInstant().toEpochMilli()))
+        aktivitetDTO.setKanal(KanalDTO.OPPMOTE)
+        aktivitetTestService.opprettAktivitet(happyBruker, veileder, aktivitetDTO)
+        aktivitetService!!.settAktiviteterTilHistoriske(happyBruker.getOppfolgingsperiodeId(), ZonedDateTime.now())
 
 
-        moteSmsCronjobber();
-        int antall = jdbcTemplate.queryForObject("Select count(*) from GJELDENDE_MOTE_SMS", Integer.class);
-        assertEquals(0, antall);
-        brukernotifikasjonAsserts.assertSkalIkkeHaProdusertFlereMeldinger();
-
+        moteSmsCronjobber()
+        val antall = jdbcTemplate.queryForObject<Int>("Select count(*) from GJELDENDE_MOTE_SMS", Int::class.java)
+        Assertions.assertEquals(0, antall)
+        brukernotifikasjonAsserts!!.assertSkalIkkeHaProdusertFlereMeldinger()
     }
 
     @Test
-    void skalIkkeOppreteVarsleFulfort() {
-        MockBruker happyBruker = navMockService.createBruker(BrukerOptions.happyBruker());
-        MockVeileder veileder = navMockService.createVeileder(happyBruker);
-        AktivitetDTO aktivitetDTO = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE);
-        ZonedDateTime startTid = ZonedDateTime.now().plusHours(2);
-        aktivitetDTO.setFraDato(new Date(startTid.toInstant().toEpochMilli()));
-        AktivitetDTO mote = aktivitetTestService.opprettAktivitet(happyBruker, veileder, aktivitetDTO);
-        aktivitetTestService.oppdaterAktivitetStatus(happyBruker, veileder, mote, AktivitetStatus.FULLFORT);
+    fun skalIkkeOppreteVarsleFulfort() {
+        val happyBruker = navMockService.createBruker(BrukerOptions.happyBruker())
+        val veileder = navMockService.createVeileder(happyBruker)
+        val aktivitetDTO = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE)
+        val startTid = ZonedDateTime.now().plusHours(2)
+        aktivitetDTO.setFraDato(Date(startTid.toInstant().toEpochMilli()))
+        val mote = aktivitetTestService.opprettAktivitet(happyBruker, veileder, aktivitetDTO)
+        aktivitetTestService.oppdaterAktivitetStatus(happyBruker, veileder, mote, AktivitetStatus.FULLFORT)
 
-        moteSmsCronjobber();
-        int antall = jdbcTemplate.queryForObject("Select count(*) from GJELDENDE_MOTE_SMS", Integer.class);
-        assertEquals(0, antall);
-        brukernotifikasjonAsserts.assertSkalIkkeHaProdusertFlereMeldinger();
-
+        moteSmsCronjobber()
+        val antall = jdbcTemplate.queryForObject<Int>("Select count(*) from GJELDENDE_MOTE_SMS", Int::class.java)
+        Assertions.assertEquals(0, antall)
+        brukernotifikasjonAsserts!!.assertSkalIkkeHaProdusertFlereMeldinger()
     }
 
     @Test
-    void skalIkkeOppreteVarsleAvbrutt() {
-        MockBruker happyBruker = navMockService.createBruker(BrukerOptions.happyBruker());
-        MockVeileder veileder = navMockService.createVeileder(happyBruker);
-        AktivitetDTO aktivitetDTO = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE);
-        ZonedDateTime startTid = ZonedDateTime.now().plusHours(2);
-        aktivitetDTO.setFraDato(new Date(startTid.toInstant().toEpochMilli()));
-        AktivitetDTO mote = aktivitetTestService.opprettAktivitet(happyBruker, veileder, aktivitetDTO);
-        aktivitetTestService.oppdaterAktivitetStatus(happyBruker, veileder, mote, AktivitetStatus.AVBRUTT);
+    fun skalIkkeOppreteVarsleAvbrutt() {
+        val happyBruker = navMockService.createBruker(BrukerOptions.happyBruker())
+        val veileder = navMockService.createVeileder(happyBruker)
+        val aktivitetDTO = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE)
+        val startTid = ZonedDateTime.now().plusHours(2)
+        aktivitetDTO.setFraDato(Date(startTid.toInstant().toEpochMilli()))
+        val mote = aktivitetTestService.opprettAktivitet(happyBruker, veileder, aktivitetDTO)
+        aktivitetTestService.oppdaterAktivitetStatus(happyBruker, veileder, mote, AktivitetStatus.AVBRUTT)
 
-        moteSmsCronjobber();
-        int antall = jdbcTemplate.queryForObject("Select count(*) from GJELDENDE_MOTE_SMS", Integer.class);
-        assertEquals(0, antall);
-        brukernotifikasjonAsserts.assertSkalIkkeHaProdusertFlereMeldinger();
+        moteSmsCronjobber()
+        val antall = jdbcTemplate.queryForObject<Int>("Select count(*) from GJELDENDE_MOTE_SMS", Int::class.java)
+        Assertions.assertEquals(0, antall)
+        brukernotifikasjonAsserts!!.assertSkalIkkeHaProdusertFlereMeldinger()
     }
 
 
-    private void harAvsluttetVarsel(OpprettVarselDto varsel) {
-        brukernotifikasjonAsserts.assertInaktivertMeldingErSendt(varsel.getVarselId());
+    private fun harAvsluttetVarsel(varsel: OpprettVarselDto) {
+        brukernotifikasjonAsserts!!.assertInaktivertMeldingErSendt(varsel.varselId)
     }
 
-    private void moteSmsCronjobber() {
-        moteSMSService.stopMoteSms();
-        moteSMSService.sendMoteSms();
+    private fun moteSmsCronjobber() {
+        moteSMSService.stopMoteSms()
+        moteSMSService.sendMoteSms()
     }
 
-    private OpprettVarselDto assertForventetMeldingSendt(String melding, MockBruker happyBruker, KanalDTO oppmote, ZonedDateTime startTid, AktivitetDTO mote) {
-        var oppgave = brukernotifikasjonAsserts.assertBeskjedSendt(happyBruker.getFnrAsFnr());
+    private fun assertForventetMeldingSendt(
+        melding: String?,
+        happyBruker: MockBruker,
+        oppmote: KanalDTO?,
+        startTid: ZonedDateTime?,
+        mote: AktivitetDTO
+    ): OpprettVarselDto {
+        val oppgave = brukernotifikasjonAsserts!!.assertBeskjedSendt(happyBruker.getFnrAsFnr())
 
-        MoteNotifikasjon expected = new MoteNotifikasjon(0L, 0L, happyBruker.getAktorIdAsAktorId(), oppmote, startTid);
-        assertEquals(happyBruker.getFnr(), oppgave.getIdent(), melding + " fnr");
-        assertNotNull(oppgave.getEksternVarsling(), melding + " eksternvarsling");
-        assertEquals(expected.getSmsTekst(), oppgave.getEksternVarsling().getSmsVarslingstekst(), melding + " sms tekst");
-        assertEquals(expected.getDitNavTekst(), oppgave.getTekster().getFirst().getTekst(), melding + " ditnav tekst");
-        assertEquals(expected.getEpostTitel(), oppgave.getEksternVarsling().getEpostVarslingstittel(), melding + " epost tittel tekst");
-        assertEquals(expected.getEpostBody(), oppgave.getEksternVarsling().getEpostVarslingstekst(), melding + " epost body tekst");
-        assertTrue(oppgave.getLink().contains(mote.getId()), melding + " mote link tekst"); //TODO burde lage en test metode for aktivitets linker
-        return oppgave;
+        val expected = MoteNotifikasjon(0L, 0L, happyBruker.getAktorIdAsAktorId(), oppmote, startTid)
+        Assertions.assertEquals(happyBruker.getFnr(), oppgave.ident, melding + " fnr")
+        Assertions.assertNotNull(oppgave.eksternVarsling, melding + " eksternvarsling")
+        Assertions.assertEquals(
+            expected.getSmsTekst(),
+            oppgave.eksternVarsling.smsVarslingstekst,
+            melding + " sms tekst"
+        )
+        Assertions.assertEquals(expected.getDitNavTekst(), oppgave.tekster[0].tekst, melding + " ditnav tekst")
+        Assertions.assertEquals(
+            expected.getEpostTitel(),
+            oppgave.eksternVarsling.epostVarslingstittel,
+            melding + " epost tittel tekst"
+        )
+        Assertions.assertEquals(
+            expected.getEpostBody(),
+            oppgave.eksternVarsling.epostVarslingstekst,
+            melding + " epost body tekst"
+        )
+        Assertions.assertTrue(
+            oppgave.link.contains(mote.getId()),
+            melding + " mote link tekst"
+        ) //TODO burde lage en test metode for aktivitets linker
+        return oppgave
     }
 }
