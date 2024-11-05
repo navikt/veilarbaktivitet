@@ -5,12 +5,8 @@ import no.nav.veilarbaktivitet.SpringBootTestBase;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
-import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAssertsConfig;
-import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringAvroTemplate;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
-import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
-import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import no.nav.veilarbaktivitet.veilarbportefolje.dto.KafkaAktivitetMeldingV4;
 import org.apache.kafka.clients.consumer.Consumer;
@@ -27,22 +23,9 @@ import static no.nav.veilarbaktivitet.util.KafkaTestService.DEFAULT_WAIT_TIMEOUT
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
 class StillingFraNavTilVeilarbportefoljeTest extends SpringBootTestBase {
-    private final MockBruker mockBruker = MockNavService.createHappyBruker();
-    private final MockVeileder mockVeileder = MockNavService.createVeileder(mockBruker);
     @Value("${topic.ut.portefolje}")
     private String portefoljetopic;
-
-    @Value("${spring.kafka.consumer.group-id}")
-    String groupId;
-
-    @Autowired
-    KafkaStringAvroTemplate<ForesporselOmDelingAvCv> producer;
-
     Consumer<String, String> portefoljeConsumer;
-
-    @Autowired
-    BrukernotifikasjonAssertsConfig brukernotifikasjonAssertsConfig;
-
     @Autowired
     AktiviteterTilKafkaService aktiviteterTilKafkaService;
 
@@ -59,6 +42,7 @@ class StillingFraNavTilVeilarbportefoljeTest extends SpringBootTestBase {
 
     @Test
     void harIkkeSvart() {
+        MockBruker mockBruker = navMockService.createHappyBruker();
         aktivitetTestService.opprettStillingFraNav(mockBruker);
         clearKafkaTopic();
         aktiviteterTilKafkaService.sendOppTil5000AktiviterTilPortefolje();
@@ -71,9 +55,11 @@ class StillingFraNavTilVeilarbportefoljeTest extends SpringBootTestBase {
 
     @Test
     void harSvartNei() {
+        MockBruker mockBruker = navMockService.createHappyBruker();
+        MockVeileder mockVeileder =  navMockService.createVeileder(mockBruker);
         var stillingFraNav = aktivitetTestService.opprettStillingFraNav(mockBruker);
         aktiviteterTilKafkaService.sendOppTil5000AktiviterTilPortefolje();
-        svarPaDelingAvCv(Boolean.FALSE, stillingFraNav);
+        svarPaDelingAvCv(Boolean.FALSE, stillingFraNav, mockBruker, mockVeileder);
 
         clearKafkaTopic();
         aktiviteterTilKafkaService.sendOppTil5000AktiviterTilPortefolje();
@@ -84,9 +70,11 @@ class StillingFraNavTilVeilarbportefoljeTest extends SpringBootTestBase {
 
     @Test
     void harSvartJa() {
+        MockBruker mockBruker = navMockService.createHappyBruker();
+        MockVeileder mockVeileder =  navMockService.createVeileder(mockBruker);
         var stillingFraNav = aktivitetTestService.opprettStillingFraNav(mockBruker);
         aktiviteterTilKafkaService.sendOppTil5000AktiviterTilPortefolje();
-        svarPaDelingAvCv(Boolean.TRUE, stillingFraNav);
+        svarPaDelingAvCv(Boolean.TRUE, stillingFraNav, mockBruker, mockVeileder);
 
         clearKafkaTopic();
         aktiviteterTilKafkaService.sendOppTil5000AktiviterTilPortefolje();
@@ -97,6 +85,7 @@ class StillingFraNavTilVeilarbportefoljeTest extends SpringBootTestBase {
 
     @Test
     void annenAktivitet() {
+        MockBruker mockBruker = navMockService.createHappyBruker();
         AktivitetData annenAktivitet = AktivitetDataTestBuilder.nyEgenaktivitet().withId(1337L);
         AktivitetDTO aktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(annenAktivitet, false);
         aktivitetTestService.opprettAktivitet(mockBruker, aktivitetDTO);
@@ -118,7 +107,7 @@ class StillingFraNavTilVeilarbportefoljeTest extends SpringBootTestBase {
         portefoljeConsumer = kafkaTestService.createStringStringConsumer(portefoljetopic);
     }
 
-    private void svarPaDelingAvCv(Boolean kanDeleCv, AktivitetDTO stillingFraNav) {
+    private void svarPaDelingAvCv(Boolean kanDeleCv, AktivitetDTO stillingFraNav, MockBruker mockBruker, MockVeileder mockVeileder) {
         Calendar cal = Calendar.getInstance();
         cal.set(Calendar.YEAR, 1988);
         cal.set(Calendar.MONTH, Calendar.JANUARY);

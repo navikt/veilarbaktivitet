@@ -6,7 +6,6 @@ import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAsserts;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAssertsConfig;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
-import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
 import no.nav.veilarbaktivitet.mock_nav_modell.NavMockService;
 import no.nav.veilarbaktivitet.testutils.AktivitetAssertUtils;
@@ -39,7 +38,7 @@ class AvtaltMedNavTest extends SpringBootTestBase {
     @Test
     void IkkeSendeFhoForBrukerSomIkkeKanVarsles() {
         MockBruker brukerSomIkkeKanVarsles = navMockService.getBrukerSomIkkeKanVarsles();
-        MockVeileder veileder = MockNavService.createVeileder(brukerSomIkkeKanVarsles);
+        MockVeileder veileder = navMockService.createVeileder(brukerSomIkkeKanVarsles);
         ForhaandsorienteringDTO fho = testFho(Type.SEND_FORHAANDSORIENTERING);
 
         AvtaltMedNavDTO avtaltDTO = new AvtaltMedNavDTO();
@@ -60,8 +59,8 @@ class AvtaltMedNavTest extends SpringBootTestBase {
 
     @Test
     void IkkeOppretteFHOUtenAktivitet() {
-        MockBruker happyBruker = MockNavService.createHappyBruker();
-        MockVeileder veileder = MockNavService.createVeileder(happyBruker);
+        MockBruker happyBruker = navMockService.createHappyBruker();
+        MockVeileder veileder = navMockService.createVeileder(happyBruker);
         ForhaandsorienteringDTO fho = testFho(Type.IKKE_SEND_FORHAANDSORIENTERING);
 
         AvtaltMedNavDTO avtaltDTO = new AvtaltMedNavDTO();
@@ -82,8 +81,8 @@ class AvtaltMedNavTest extends SpringBootTestBase {
 
     @Test
     void IkkeOppretteFHOFEilAktivitetVersion() {
-        MockBruker happyBruker = MockNavService.createHappyBruker();
-        MockVeileder veileder = MockNavService.createVeileder(happyBruker);
+        MockBruker happyBruker = navMockService.createHappyBruker();
+        MockVeileder veileder = navMockService.createVeileder(happyBruker);
         AktivitetDTO utenFHO = aktivitetTestService.opprettAktivitet(happyBruker, AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.EGEN));
         ForhaandsorienteringDTO fho = testFho(Type.IKKE_SEND_FORHAANDSORIENTERING);
 
@@ -106,7 +105,7 @@ class AvtaltMedNavTest extends SpringBootTestBase {
     @Test
     void setteAvtaltUtenFHOForBrukerSomIkkeKanVarsles() {
         MockBruker brukerSomIkkeKanVarsles = navMockService.getBrukerSomIkkeKanVarsles();
-        MockVeileder veileder = MockNavService.createVeileder(brukerSomIkkeKanVarsles);
+        MockVeileder veileder = navMockService.createVeileder(brukerSomIkkeKanVarsles);
         ForhaandsorienteringDTO fho = testFho(Type.IKKE_SEND_FORHAANDSORIENTERING);
 
         oppretFHO(fho, veileder, brukerSomIkkeKanVarsles);
@@ -116,8 +115,8 @@ class AvtaltMedNavTest extends SpringBootTestBase {
 
     @Test
     void sendeForhondsorentering() {
-        MockBruker happyBruker = MockNavService.createHappyBruker();
-        MockVeileder veileder = MockNavService.createVeileder(happyBruker);
+        MockBruker happyBruker = navMockService.createHappyBruker();
+        MockVeileder veileder = navMockService.createVeileder(happyBruker);
         ForhaandsorienteringDTO fho = testFho(Type.SEND_FORHAANDSORIENTERING);
 
         oppretFHO(fho, veileder, happyBruker);
@@ -127,8 +126,8 @@ class AvtaltMedNavTest extends SpringBootTestBase {
 
     @Test
     void sendeForhondsorenteringFor11_9() {
-        MockBruker happyBruker = MockNavService.createHappyBruker();
-        MockVeileder veileder = MockNavService.createVeileder(happyBruker);
+        MockBruker happyBruker = navMockService.createHappyBruker();
+        MockVeileder veileder = navMockService.createVeileder(happyBruker);
         ForhaandsorienteringDTO fho = testFho(Type.SEND_PARAGRAF_11_9);
 
         oppretFHO(fho, veileder, happyBruker);
@@ -138,8 +137,8 @@ class AvtaltMedNavTest extends SpringBootTestBase {
 
     @Test
     void skalIkkeSendeVarselForIkkeSend() {
-        MockBruker happyBruker = MockNavService.createHappyBruker();
-        MockVeileder veileder = MockNavService.createVeileder(happyBruker);
+        MockBruker happyBruker = navMockService.createHappyBruker();
+        MockVeileder veileder = navMockService.createVeileder(happyBruker);
         ForhaandsorienteringDTO fho = testFho(Type.IKKE_SEND_FORHAANDSORIENTERING);
 
         oppretFHO(fho, veileder, happyBruker);
