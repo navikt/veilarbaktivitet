@@ -25,7 +25,6 @@ import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendMinsideVarselFraOut
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
-import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import no.nav.veilarbaktivitet.util.AktivitetTestService;
@@ -279,7 +278,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
     @Test
     void skal_lukke_brukernotifikasjonsOppgave_nar_aktivitet_blir_avbrutt() {
         // Given
-        MockBruker mockBruker = MockNavService.createHappyBruker();
+        MockBruker mockBruker = navMockService.createHappyBruker();
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettAktivitet(mockBruker, skalOpprettes);
