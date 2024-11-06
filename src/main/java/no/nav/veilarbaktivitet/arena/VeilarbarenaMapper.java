@@ -257,7 +257,8 @@ public class VeilarbarenaMapper {
         JATAKK(PLANLAGT),
         NEITAKK(AVBRUTT),
         TILBUD(PLANLAGT),
-        VENTELISTE(PLANLAGT);
+        VENTELISTE(PLANLAGT),
+        FEILREG(AVBRUTT);
 
         ArenaStatus(AktivitetStatus status) {
             this.status = status;
