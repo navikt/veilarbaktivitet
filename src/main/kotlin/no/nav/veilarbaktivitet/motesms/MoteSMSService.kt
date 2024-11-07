@@ -103,7 +103,7 @@ open class MoteSMSService(
         }
         if (batchResult.size > 0) log.info("Behandlet stoppMøteSms for {} møter som har oppdatert tid eller kanal", batchResult.size)
         moteSmsDAO.hentMoteSmsSomFantStedForMerEnd(Duration.ofDays(7)) //TODO Trenger vi denne? Holder det at bruker kan fjerne den og den forsvinner når aktiviteter er fulført/avbrut eller blir historisk
-            .forEach(Consumer { it: Long ->
+            .forEach {
                 brukernotifikasjonService.setDone(it, VarselType.MOTE_SMS)
                 moteSmsDAO.slettGjeldende(it)
             })
