@@ -106,7 +106,7 @@ open class MoteSMSService(
             .forEach {
                 brukernotifikasjonService.setDone(it, VarselType.MOTE_SMS)
                 moteSmsDAO.slettGjeldende(it)
-            })
+            }
     }
 
     @PreDestroy
