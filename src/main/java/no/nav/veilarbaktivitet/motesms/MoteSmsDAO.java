@@ -38,18 +38,23 @@ public class MoteSmsDAO {
                 long.class);
     }
 
-    List<Long> hentMoterMedOppdatertTidEllerKanal(int max) {
-        MapSqlParameterSource params = new MapSqlParameterSource("limit", max);
-        return jdbc.queryForList(
+    record AktivitetVersjon(long aktivitetId, long versjon) {
+    }
+    List<AktivitetVersjon> hentMoterMedOppdatertTidEllerKanal(int max, long versjonOffset) {
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("limit", max)
+                .addValue("versjonOffset", versjonOffset);
+        return jdbc.query(
                 """
-                        select AKTIVITET.AKTIVITET_ID from AKTIVITET
+                        select AKTIVITET.AKTIVITET_ID, AKTIVITET.VERSJON from AKTIVITET
                         inner join MOTE on AKTIVITET.AKTIVITET_ID = MOTE.AKTIVITET_ID and AKTIVITET.VERSJON = MOTE.VERSJON
                         inner join GJELDENDE_MOTE_SMS SMS on AKTIVITET.AKTIVITET_ID = SMS.AKTIVITET_ID
                         where GJELDENDE = 1
+                        and AKTIVITET.VERSJON > :versjonOffset
                         and (SMS.MOTETID != AKTIVITET.FRA_DATO or SMS.KANAL != MOTE.KANAL)
                         limit :limit
                         """
-                , params, long.class);
+                , params, (rs, rowNum) -> new AktivitetVersjon(rs.getLong("AKTIVITET_ID"), rs.getLong("VERSJON")));
     }
 
     List<MoteNotifikasjon> hentMoterUtenVarsel(Duration fra, Duration til, int max) {
