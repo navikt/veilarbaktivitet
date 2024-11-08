@@ -29,7 +29,7 @@ open class ArenaController(
 ) {
 
     @PutMapping("/{oppfolgingsperiodeId}/forhaandsorientering")
-    @AuthorizeFnr(auditlogMessage = "Opprett forhåndsorientering", resourceIdParamName = "oppfolgingsperiodeId", resourceType = OppfolgingsperiodeResource::class, tilgangsType = TilgangsType.SKRIVE)
+    @AuthorizeFnr(auditlogMessage = "Opprett forhåndsorientering", resourceIdParamName = "oppfolgingsperiodeId", resourceType = OppfolgingsperiodeResource::class)
     open fun opprettFHO(
         @RequestBody forhaandsorientering: ForhaandsorienteringDTO?,
         @RequestParam arenaaktivitetId: ArenaId,
@@ -65,7 +65,7 @@ open class ArenaController(
     }
 
     @PutMapping("/forhaandsorientering/lest")
-    @AuthorizeFnr(auditlogMessage = "leste forhåndsorientering", resourceType = ForhaandsorienteringResource::class, resourceIdParamName = "aktivitetId", tilgangsType = TilgangsType.SKRIVE)
+    @AuthorizeFnr(auditlogMessage = "leste forhåndsorientering", resourceType = ForhaandsorienteringResource::class, resourceIdParamName = "aktivitetId")
     open fun lest(@RequestParam aktivitetId: ArenaId): ArenaAktivitetDTO {
         if (!authService.erEksternBruker()) throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Bare eksterne-brukere kan lese FHO")
         val fnr = authService.getLoggedInnUser() as? Fnr ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Fant ikke innlogget ekstern-bruker")

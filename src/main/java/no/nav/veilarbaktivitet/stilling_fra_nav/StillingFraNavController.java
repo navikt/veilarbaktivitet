@@ -28,7 +28,7 @@ public class StillingFraNavController {
     private final DelingAvCvService service;
 
     @PutMapping("/kanDeleCV")
-    @AuthorizeFnr(auditlogMessage = "oppdater kan dele CV", resourceIdParamName = "aktivitetId", resourceType = AktivitetResource.class, tilgangsType = TilgangsType.SKRIVE)
+    @AuthorizeFnr(auditlogMessage = "oppdater kan dele CV", resourceIdParamName = "aktivitetId", resourceType = AktivitetResource.class)
     public AktivitetDTO oppdaterKanCvDeles(@RequestParam("aktivitetId") String aktivitetId, @RequestBody DelingAvCvDTO delingAvCvDTO) {
         boolean erEksternBruker = authService.erEksternBruker();
         var aktivitet = aktivitetAppService.hentAktivitet(Long.parseLong(aktivitetId));
@@ -52,7 +52,7 @@ public class StillingFraNavController {
     }
 
     @PutMapping("/soknadStatus")
-    @AuthorizeFnr(auditlogMessage = "oppdater soknadStatus", resourceIdParamName = "aktivitetId", resourceType = AktivitetResource.class, tilgangsType = TilgangsType.SKRIVE)
+    @AuthorizeFnr(auditlogMessage = "oppdater soknadStatus", resourceIdParamName = "aktivitetId", resourceType = AktivitetResource.class)
     public AktivitetDTO oppdaterSoknadstatus(@RequestParam("aktivitetId") String aktivitetId, @RequestBody SoknadsstatusDTO soknadsstatusDTO) {
         boolean erEksternBruker = authService.erEksternBruker();
         var aktivitet = aktivitetAppService.hentAktivitet(Long.parseLong(aktivitetId));

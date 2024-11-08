@@ -75,7 +75,7 @@ class AktivitetsplanController(
     }
 
     @PostMapping("/{oppfolgingsperiodeId}/ny")
-    @AuthorizeFnr(auditlogMessage = "opprett aktivitet", allowlist = ["pto:veilarbdirigent"], resourceIdParamName = "oppfolgingsperiodeId", resourceType = OppfolgingsperiodeResource::class, tilgangsType = TilgangsType.SKRIVE)
+    @AuthorizeFnr(auditlogMessage = "opprett aktivitet", allowlist = ["pto:veilarbdirigent"], resourceIdParamName = "oppfolgingsperiodeId", resourceType = OppfolgingsperiodeResource::class)
     fun opprettNyAktivitetPaOppfolgingsPeriode(
         @RequestBody aktivitet: AktivitetDTO,
         @RequestParam(required = false, defaultValue = "false") automatisk: Boolean
@@ -91,7 +91,7 @@ class AktivitetsplanController(
     }
 
     @PutMapping("/{id}")
-    @AuthorizeFnr(auditlogMessage = "oppdater aktivitet", resourceIdParamName = "id", resourceType = AktivitetResource::class, tilgangsType = TilgangsType.SKRIVE)
+    @AuthorizeFnr(auditlogMessage = "oppdater aktivitet", resourceIdParamName = "id", resourceType = AktivitetResource::class)
     fun oppdaterAktivitet(@RequestBody aktivitet: AktivitetDTO): AktivitetDTO {
         val erEksternBruker = authService.erEksternBruker()
         return Optional.of(aktivitet)
@@ -102,7 +102,7 @@ class AktivitetsplanController(
     }
 
     @PutMapping("/{id}/etikett")
-    @AuthorizeFnr(auditlogMessage = "oppdater aktivitet etikett", resourceIdParamName = "id", resourceType = AktivitetResource::class, tilgangsType = TilgangsType.SKRIVE)
+    @AuthorizeFnr(auditlogMessage = "oppdater aktivitet etikett", resourceIdParamName = "id", resourceType = AktivitetResource::class)
     fun oppdaterEtikett(@RequestBody aktivitet: AktivitetDTO): AktivitetDTO {
         val erEksternBruker = authService.erEksternBruker()
         return Optional.of(aktivitet)
@@ -113,7 +113,7 @@ class AktivitetsplanController(
     }
 
     @PutMapping("/{id}/status")
-    @AuthorizeFnr(auditlogMessage = "oppdater aktivitet status", resourceIdParamName = "id", resourceType = AktivitetResource::class, tilgangsType = TilgangsType.SKRIVE)
+    @AuthorizeFnr(auditlogMessage = "oppdater aktivitet status", resourceIdParamName = "id", resourceType = AktivitetResource::class)
     fun oppdaterStatus(@RequestBody aktivitet: AktivitetDTO): AktivitetDTO {
         val erEksternBruker = authService.erEksternBruker()
         return Optional.of(aktivitet)
@@ -124,7 +124,7 @@ class AktivitetsplanController(
     }
 
     @PutMapping("/{aktivitetId}/referat")
-    @AuthorizeFnr(auditlogMessage = "oppdater referat", resourceIdParamName = "aktivitetId", resourceType = AktivitetResource::class, tilgangsType = TilgangsType.SKRIVE)
+    @AuthorizeFnr(auditlogMessage = "oppdater referat", resourceIdParamName = "aktivitetId", resourceType = AktivitetResource::class)
     @OnlyInternBruker
     fun oppdaterReferat(@RequestBody aktivitetDTO: AktivitetDTO): AktivitetDTO {
         return Optional.of(aktivitetDTO)
@@ -134,7 +134,7 @@ class AktivitetsplanController(
             .orElseThrow { RuntimeException() }
     }
 
-    @AuthorizeFnr(auditlogMessage = "publiser referat", resourceIdParamName = "aktivitetId", resourceType = AktivitetResource::class, tilgangsType = TilgangsType.SKRIVE)
+    @AuthorizeFnr(auditlogMessage = "publiser referat", resourceIdParamName = "aktivitetId", resourceType = AktivitetResource::class)
     @OnlyInternBruker
     @PutMapping("/{aktivitetId}/referat/publiser")
     fun publiserReferat(@RequestBody aktivitetDTO: AktivitetDTO): AktivitetDTO {

@@ -24,7 +24,7 @@ public class AvtaltMedNavController {
     private final AvtaltMedNavService avtaltMedNavService;
 
     @PutMapping
-    @AuthorizeFnr(auditlogMessage = "Opprett forhaandsorientering", resourceIdParamName = "aktivitetId", resourceType = AktivitetResource.class, tilgangsType = TilgangsType.SKRIVE)
+    @AuthorizeFnr(auditlogMessage = "Opprett forhaandsorientering", resourceIdParamName = "aktivitetId", resourceType = AktivitetResource.class)
     public AktivitetDTO opprettFHO(@RequestBody AvtaltMedNavDTO avtaltMedNavDTO, @RequestParam("aktivitetId") String aktivitetId) {
         if (!authService.erInternBruker()) throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bare interne brukere kan opprettte FHO");
         var forhaandsorientering = avtaltMedNavDTO.getForhaandsorientering();
