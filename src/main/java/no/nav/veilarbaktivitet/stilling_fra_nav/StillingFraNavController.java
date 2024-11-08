@@ -3,6 +3,7 @@ package no.nav.veilarbaktivitet.stilling_fra_nav;
 import lombok.RequiredArgsConstructor;
 import no.nav.poao.dab.spring_a2_annotations.auth.AuthorizeFnr;
 import no.nav.poao.dab.spring_auth.IAuthService;
+import no.nav.poao.dab.spring_auth.TilgangsType;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetAppService;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
@@ -27,7 +28,7 @@ public class StillingFraNavController {
     private final DelingAvCvService service;
 
     @PutMapping("/kanDeleCV")
-    @AuthorizeFnr(auditlogMessage = "oppdater kan dele CV", resourceIdParamName = "aktivitetId", resourceType = AktivitetResource.class)
+    @AuthorizeFnr(auditlogMessage = "oppdater kan dele CV", resourceIdParamName = "aktivitetId", resourceType = AktivitetResource.class, tilgangsType = TilgangsType.SKRIVE)
     public AktivitetDTO oppdaterKanCvDeles(@RequestParam("aktivitetId") String aktivitetId, @RequestBody DelingAvCvDTO delingAvCvDTO) {
         boolean erEksternBruker = authService.erEksternBruker();
         var aktivitet = aktivitetAppService.hentAktivitet(Long.parseLong(aktivitetId));
@@ -51,11 +52,11 @@ public class StillingFraNavController {
     }
 
     @PutMapping("/soknadStatus")
-    @AuthorizeFnr(auditlogMessage = "oppdater soknadStatus", resourceIdParamName = "aktivitetId", resourceType = AktivitetResource.class)
+    @AuthorizeFnr(auditlogMessage = "oppdater soknadStatus", resourceIdParamName = "aktivitetId", resourceType = AktivitetResource.class, tilgangsType = TilgangsType.SKRIVE)
     public AktivitetDTO oppdaterSoknadstatus(@RequestParam("aktivitetId") String aktivitetId, @RequestBody SoknadsstatusDTO soknadsstatusDTO) {
         boolean erEksternBruker = authService.erEksternBruker();
         var aktivitet = aktivitetAppService.hentAktivitet(Long.parseLong(aktivitetId));
-        authService.sjekkTilgangTilPerson(aktivitet.getAktorId().eksternBrukerId());
+        authService.sjekkTilgangTilPerson(aktivitet.getAktorId().eksternBrukerId(), TilgangsType.SKRIVE);
         kanEndreAktivitetSoknadsstatusGuard(aktivitet, soknadsstatusDTO.getAktivitetVersjon());
         return Optional.of(aktivitet)
                 .map(a -> service.oppdaterSoknadsstatus(a, soknadsstatusDTO.getSoknadsstatus(), Person.of(authService.getLoggedInnUser())))

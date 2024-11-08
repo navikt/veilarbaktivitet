@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j
 import no.nav.common.types.identer.Fnr
 import no.nav.poao.dab.spring_a2_annotations.auth.AuthorizeFnr
 import no.nav.poao.dab.spring_auth.IAuthService
+import no.nav.poao.dab.spring_auth.TilgangsType
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO
 import no.nav.veilarbaktivitet.arena.model.ArenaId
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO
@@ -28,7 +29,7 @@ open class ArenaController(
 ) {
 
     @PutMapping("/{oppfolgingsperiodeId}/forhaandsorientering")
-    @AuthorizeFnr(auditlogMessage = "Opprett forhåndsorientering", resourceIdParamName = "oppfolgingsperiodeId", resourceType = OppfolgingsperiodeResource::class)
+    @AuthorizeFnr(auditlogMessage = "Opprett forhåndsorientering", resourceIdParamName = "oppfolgingsperiodeId", resourceType = OppfolgingsperiodeResource::class, tilgangsType = TilgangsType.SKRIVE)
     open fun opprettFHO(
         @RequestBody forhaandsorientering: ForhaandsorienteringDTO?,
         @RequestParam arenaaktivitetId: ArenaId,
@@ -59,12 +60,12 @@ open class ArenaController(
             if (fnrDto.fnr == null) throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Fnr kan ikke være null")
             Fnr.of(fnrDto.fnr)
         }
-        authService.sjekkTilgangTilPerson(fnr)
+        authService.sjekkTilgangTilPerson(fnr, TilgangsType.LESE)
         return arenaService.hentArenaAktiviteter(Person.fnr(fnr.get()))
     }
 
     @PutMapping("/forhaandsorientering/lest")
-    @AuthorizeFnr(auditlogMessage = "leste forhåndsorientering", resourceType = ForhaandsorienteringResource::class, resourceIdParamName = "aktivitetId")
+    @AuthorizeFnr(auditlogMessage = "leste forhåndsorientering", resourceType = ForhaandsorienteringResource::class, resourceIdParamName = "aktivitetId", tilgangsType = TilgangsType.SKRIVE)
     open fun lest(@RequestParam aktivitetId: ArenaId): ArenaAktivitetDTO {
         if (!authService.erEksternBruker()) throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Bare eksterne-brukere kan lese FHO")
         val fnr = authService.getLoggedInnUser() as? Fnr ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Fant ikke innlogget ekstern-bruker")

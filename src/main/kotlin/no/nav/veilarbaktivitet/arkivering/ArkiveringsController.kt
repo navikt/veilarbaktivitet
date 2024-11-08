@@ -5,6 +5,7 @@ import no.nav.common.auth.context.AuthContext
 import no.nav.common.auth.context.AuthContextHolder
 import no.nav.common.auth.context.AuthContextHolderThreadLocal
 import no.nav.poao.dab.spring_a2_annotations.auth.AuthorizeFnr
+import no.nav.poao.dab.spring_auth.TilgangsType
 import no.nav.veilarbaktivitet.aktivitet.AktivitetAppService
 import no.nav.veilarbaktivitet.aktivitet.Historikk
 import no.nav.veilarbaktivitet.aktivitet.HistorikkService
@@ -68,7 +69,7 @@ class ArkiveringsController(
     }
 
     @PostMapping("/journalfor")
-    @AuthorizeFnr(auditlogMessage = "journalføre aktivitetsplan og dialog", resourceType = OppfolgingsperiodeResource::class, resourceIdParamName = "oppfolgingsperiodeId")
+    @AuthorizeFnr(auditlogMessage = "journalføre aktivitetsplan og dialog", resourceType = OppfolgingsperiodeResource::class, resourceIdParamName = "oppfolgingsperiodeId", tilgangsType = TilgangsType.SKRIVE)
     fun arkiverAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID, @RequestBody arkiverInboundDTO: ArkiverInboundDTO): JournalførtOutboundDTO {
         val arkiveringsdata = hentArkiveringsData(oppfølgingsperiodeId)
 
