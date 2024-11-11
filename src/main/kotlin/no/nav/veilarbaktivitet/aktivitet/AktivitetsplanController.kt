@@ -5,6 +5,7 @@ import no.nav.common.types.identer.EnhetId
 import no.nav.poao.dab.spring_a2_annotations.auth.AuthorizeFnr
 import no.nav.poao.dab.spring_a2_annotations.auth.OnlyInternBruker
 import no.nav.poao.dab.spring_auth.IAuthService
+import no.nav.poao.dab.spring_auth.TilgangsType
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetsplanDTO
@@ -50,12 +51,12 @@ class AktivitetsplanController(
     }
 
     @GetMapping("/{id}") //kan ikke bruke anotasjonen pga kasserings endepunktet
-    @AuthorizeFnr(auditlogMessage = "hent aktivitet", resourceIdParamName = "id", resourceType = AktivitetResource::class)
+    @AuthorizeFnr(auditlogMessage = "hent aktivitet", resourceIdParamName = "id", resourceType = AktivitetResource::class, tilgangsType = TilgangsType.LESE)
     fun hentAktivitet(@PathVariable("id") aktivitetId: Long): AktivitetDTO {
         val erEksternBruker = authService.erEksternBruker()
         return Optional.of(appService.hentAktivitet(aktivitetId))
             .filter {
-                authService.sjekkTilgangTilPerson(it.aktorId.eksternBrukerId())
+                authService.sjekkTilgangTilPerson(it.aktorId.eksternBrukerId(), TilgangsType.LESE)
                 true
             }
             .map { a -> AktivitetDTOMapper.mapTilAktivitetDTO(a, erEksternBruker) }

@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.foresatteinnsynsrett
 
 import no.nav.common.types.identer.Fnr
 import no.nav.poao.dab.spring_auth.IAuthService
+import no.nav.poao.dab.spring_auth.TilgangsType
 import no.nav.veilarbaktivitet.person.tilOrdinærtFødselsnummerFormat
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
@@ -20,7 +21,7 @@ class InnsynrettController(private val authService: IAuthService) {
             authService.getLoggedInnUser().get()
         } else {
             val fnr = input.fnr ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST)
-            authService.sjekkTilgangTilPerson(Fnr(fnr))
+            authService.sjekkTilgangTilPerson(Fnr(fnr), TilgangsType.LESE)
             fnr
         }
 

@@ -3,6 +3,7 @@ package no.nav.veilarbaktivitet.aktivitetskort.graphql
 import no.nav.common.types.identer.EnhetId
 import no.nav.common.types.identer.Fnr
 import no.nav.poao.dab.spring_auth.IAuthService
+import no.nav.poao.dab.spring_auth.TilgangsType
 import no.nav.veilarbaktivitet.aktivitet.AktivitetAppService
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService
 import no.nav.veilarbaktivitet.aktivitet.Historikk
@@ -36,7 +37,7 @@ class AktivitetskortController(
     fun perioder(@Argument fnr: String): List<OppfolgingsPeriode> {
         val fnr = getContextUserIdent(fnr)
         val eksternBrukerId = Fnr.of(fnr.get())
-        authService.sjekkTilgangTilPerson(eksternBrukerId)
+        authService.sjekkTilgangTilPerson(eksternBrukerId, TilgangsType.LESE)
         val aktiviteter = getAktiviteter(fnr)
             .groupBy { it.oppfolgingsperiodeId }
             .toList()
@@ -58,7 +59,7 @@ class AktivitetskortController(
         val erEksternBruker = authService.erEksternBruker()
         val eksternBrukerId = ownerProvider.getOwner(aktivitetId.toString())
             ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "No owner found for aktivitetId")
-        authService.sjekkTilgangTilPerson(eksternBrukerId)
+        authService.sjekkTilgangTilPerson(eksternBrukerId, TilgangsType.LESE)
         return aktivitetAppService.hentAktivitet(aktivitetId)
             .let { AktivitetDTOMapper.mapTilAktivitetDTO(it, erEksternBruker) }
     }

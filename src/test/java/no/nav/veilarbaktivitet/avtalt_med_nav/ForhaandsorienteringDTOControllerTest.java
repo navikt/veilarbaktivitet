@@ -5,6 +5,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.poao.dab.spring_auth.IAuthService;
+import no.nav.poao.dab.spring_auth.TilgangsType;
 import no.nav.veilarbaktivitet.LocalDatabaseSingleton;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.aktivitet.MetricService;
@@ -204,7 +205,7 @@ class ForhaandsorienteringDTOControllerTest {
         when(authService.erInternBruker()).thenReturn(true);
         doNothing()
                 .when(authService)
-                .sjekkTilgangTilPerson(aktorid.otherAktorId());
+                .sjekkTilgangTilPerson(aktorid.otherAktorId(), TilgangsType.LESE); // TODO SKRIVE
         doReturn(Person.navIdent(navident).otherNavIdent())
                 .when(authService).getLoggedInnUser();
         when(brukernotifikasjonService.kanVarsles(aktorid)).thenReturn(true);

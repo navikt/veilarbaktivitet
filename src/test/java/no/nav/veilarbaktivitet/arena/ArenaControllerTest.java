@@ -7,6 +7,7 @@ import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.poao.dab.spring_auth.AuthService;
 import no.nav.poao.dab.spring_auth.IAuthService;
+import no.nav.poao.dab.spring_auth.TilgangsType;
 import no.nav.veilarbaktivitet.LocalDatabaseSingleton;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMetrikker;
@@ -93,25 +94,23 @@ class ArenaControllerTest {
         doThrow(new ResponseStatusException(HttpStatus.FORBIDDEN))
                 .when(authService)
                 .sjekkTilgangTilEnhet(any());
-        doThrow(new ResponseStatusException(HttpStatus.FORBIDDEN))
-                .when(authService)
-                .sjekkTilgangTilPerson(any());
 
         doNothing()
                 .when(authService)
                 .sjekkTilgangTilEnhet(null);
         doNothing()
                 .when(authService)
-                .sjekkTilgangTilPerson(Person.aktorId(aktorid.get()).eksternBrukerId());
-
-
-        doThrow(new ResponseStatusException(HttpStatus.FORBIDDEN))
-                .when(authService)
-                .sjekkTilgangTilPerson(any());
-
+                .sjekkTilgangTilPerson(Person.aktorId(aktorid.get()).eksternBrukerId(), TilgangsType.LESE);
         doNothing()
                 .when(authService)
-                .sjekkTilgangTilPerson(fnr.eksternBrukerId());
+                .sjekkTilgangTilPerson(fnr.eksternBrukerId(), TilgangsType.LESE);
+        doThrow(new ResponseStatusException(HttpStatus.FORBIDDEN))
+                .when(authService)
+                .sjekkTilgangTilPerson(ikkeTilgangFnr.eksternBrukerId(), TilgangsType.LESE);
+        doThrow(new ResponseStatusException(HttpStatus.FORBIDDEN))
+                .when(authService)
+                .sjekkTilgangTilPerson(ikkeTilgangAktorid.eksternBrukerId(), TilgangsType.LESE);
+
 
         when(authService.erInternBruker()).thenReturn(true);
         when(personService.getAktorIdForPersonBruker(fnr)).thenReturn(Optional.of(aktorid));
