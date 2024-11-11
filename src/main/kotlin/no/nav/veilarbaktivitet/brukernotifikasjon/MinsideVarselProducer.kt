@@ -43,12 +43,12 @@ class MinsideVarselProducer(
                 default = true
             )
             link = skalSendes.url.toString()
-            eksternVarsling = EksternVarslingBestilling(
-                prefererteKanaler = listOf(EksternKanal.SMS),
-                smsVarslingstekst = skalSendes.smsTekst,
-                epostVarslingstittel = skalSendes.epostTitel,
+            eksternVarsling {
+                preferertKanal = EksternKanal.SMS
+                smsVarslingstekst = skalSendes.smsTekst
+                epostVarslingstittel = skalSendes.epostTitel
                 epostVarslingstekst = skalSendes.epostBody
-            )
+            }
         }
     }
 
@@ -58,7 +58,7 @@ class MinsideVarselProducer(
         return producer.send(record).get().recordMetadata.offset()
     }
 
-    open fun send(skalSendes: SkalSendes): Long {
+    fun send(skalSendes: SkalSendes): Long {
         val varselType = when (skalSendes.varselType.brukernotifikasjonType) {
             BrukernotifikasjonsType.OPPGAVE -> Varseltype.Oppgave
             BrukernotifikasjonsType.BESKJED -> Varseltype.Beskjed
