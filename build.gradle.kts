@@ -1,24 +1,24 @@
 
-val spring_boot_version = "3.3.1"
+val spring_boot_version = "3.3.5"
 val common_version = "3.2024.10.25_13.44-9db48a0dbe67"
 val dab_common_version = "2024.08.12-09.31.acb34e4804a0"
-val poao_tilgang_version = "2024.10.07_13.05-55704fdf971a"
-val shedlock_version = "5.9.0"
+val poao_tilgang_version = "2024.11.08_14.51-f6a9a0795785"
+val shedlock_version = "5.16.0"
 val _version: String by project
 
 plugins {
     id("java")
     id("application")
     id("maven-publish")
-    kotlin("jvm") version "2.0.20"
-    id("org.openapi.generator") version "6.4.0"
-    id("com.github.davidmc24.gradle.plugin.avro") version "1.3.0"
+    kotlin("jvm") version "2.0.21"
+    id("org.openapi.generator") version "7.9.0"
+    id("com.github.davidmc24.gradle.plugin.avro") version "1.9.1"
     id("project-report")
     id("jacoco")
-    id("org.sonarqube") version "4.4.1.3373"
-    id("org.springframework.boot") version "3.0.2"
+    id("org.sonarqube") version "5.1.0.4882"
+    id("org.springframework.boot") version "3.3.5"
     kotlin("plugin.lombok") version "2.0.21"
-    id("io.freefair.lombok") version "8.10"
+    id("io.freefair.lombok") version "8.10.2"
 }
 
 java {
@@ -138,13 +138,13 @@ if (hasProperty("buildScan")) {
 }
 
 dependencies {
-    annotationProcessor("org.projectlombok:lombok:1.18.32")
-    testAnnotationProcessor("org.projectlombok:lombok:1.18.32")
+    annotationProcessor("org.projectlombok:lombok:1.18.34")
+    testAnnotationProcessor("org.projectlombok:lombok:1.18.34")
 
     implementation(enforcedPlatform("org.springframework.boot:spring-boot-dependencies:$spring_boot_version"))
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:$spring_boot_version")
 
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
 
     implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:$shedlock_version")
     implementation("net.javacrumbs.shedlock:shedlock-spring:$shedlock_version")
@@ -179,39 +179,39 @@ dependencies {
     implementation("org.springframework.kafka:spring-kafka")
     implementation("com.squareup.okhttp3:okhttp")
     implementation("io.micrometer:micrometer-registry-prometheus-simpleclient")
-    implementation("org.flywaydb:flyway-database-postgresql:10.15.2")
-    implementation("org.postgresql:postgresql:42.7.3")
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.17.1")
+    implementation("org.flywaydb:flyway-database-postgresql:10.21.0")
+    implementation("org.postgresql:postgresql:42.7.4")
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.18.1")
 //    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.0")
 
-    implementation("org.springframework.cloud:spring-cloud-starter-gateway-mvc:4.1.4")
+    implementation("org.springframework.cloud:spring-cloud-starter-gateway-mvc:4.1.5")
 
     // Hvis det ønskes swagger doc, foreslås å bruke springdoc (springdoc-openapi-starter-webmvc-ui - se no.nav.fo.veilarbdialog.rest.SwaggerConfig for eksempelconfig)
-    implementation("io.swagger.core.v3:swagger-annotations:2.2.8")
+    implementation("io.swagger.core.v3:swagger-annotations:2.2.25")
 
     // BigQuery
-    implementation(platform("com.google.cloud:libraries-bom:26.45.0"))
+    implementation(platform("com.google.cloud:libraries-bom:26.50.0"))
     implementation("com.google.cloud:google-cloud-bigquery")
 
-    implementation("io.getunleash:unleash-client-java:8.2.1")
+    implementation("io.getunleash:unleash-client-java:9.2.4")
 
     runtimeOnly("org.springframework.boot:spring-boot-devtools")
 
 //test dependencies
     testImplementation("no.nav.poao-tilgang:poao-tilgang-test-wiremock:$poao_tilgang_version")
 
-    testImplementation("org.awaitility:awaitility:4.1.0")
+    testImplementation("org.awaitility:awaitility:4.2.2")
 //    testImplementation("com.github.tomakehurst:wiremock:3.0.0-beta-2")
 //    testImplementation("org.springframework.cloud:spring-cloud-starter-contract-stub-runner:4.0.1")
     
 //    testImplementation("org.springframework.cloud:spring-cloud-contract-wiremock:4.1.3")
 
-    testImplementation("com.networknt:json-schema-validator:1.5.0")
+    testImplementation("com.networknt:json-schema-validator:1.5.3")
 
 //    testImplementation("de.mkammerer.wiremock-junit5:wiremock-junit5:1.1.0")
 //    testImplementation("io.github.ricall.junit5-wiremock:junit5-wiremock:2.0.0")
 
-    testImplementation("org.mockito.kotlin:mockito-kotlin:3.2.0")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
 
 //spring managed test dependencies
     testImplementation("io.rest-assured:rest-assured")
