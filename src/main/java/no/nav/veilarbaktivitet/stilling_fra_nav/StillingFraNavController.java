@@ -56,7 +56,7 @@ public class StillingFraNavController {
     public AktivitetDTO oppdaterSoknadstatus(@RequestParam("aktivitetId") String aktivitetId, @RequestBody SoknadsstatusDTO soknadsstatusDTO) {
         boolean erEksternBruker = authService.erEksternBruker();
         var aktivitet = aktivitetAppService.hentAktivitet(Long.parseLong(aktivitetId));
-        authService.sjekkTilgangTilPerson(aktivitet.getAktorId().eksternBrukerId(), TilgangsType.SKRIVE);
+        authService.sjekkTilgangTilPerson(aktivitet.getAktorId().eksternBrukerId(), TilgangsType.LESE); // TODO SKRIVE
         kanEndreAktivitetSoknadsstatusGuard(aktivitet, soknadsstatusDTO.getAktivitetVersjon());
         return Optional.of(aktivitet)
                 .map(a -> service.oppdaterSoknadsstatus(a, soknadsstatusDTO.getSoknadsstatus(), Person.of(authService.getLoggedInnUser())))

@@ -63,7 +63,7 @@ public class AvtaltMedNavController {
         Forhaandsorientering fho = avtaltMedNavService.hentFhoForAktivitet(lestDTO.aktivitetId);
         if (fho == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "FHO på aktivitet eksisterer ikke");
         if (fho.getLestDato() != null) throw new ResponseStatusException(HttpStatus.CONFLICT, "Allerede lest");
-        authService.sjekkTilgangTilPerson(fho.getAktorId(), TilgangsType.SKRIVE);
+        authService.sjekkTilgangTilPerson(fho.getAktorId(), TilgangsType.LESE); //TODO SKRIVE
         Person innloggetBruker = Person.of(authService.getLoggedInnUser());
         return avtaltMedNavService.markerSomLest(fho, innloggetBruker, lestDTO.aktivitetVersion);
     }

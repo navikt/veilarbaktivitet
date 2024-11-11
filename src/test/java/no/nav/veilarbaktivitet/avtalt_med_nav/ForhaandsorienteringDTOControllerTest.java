@@ -205,7 +205,7 @@ class ForhaandsorienteringDTOControllerTest {
         when(authService.erInternBruker()).thenReturn(true);
         doNothing()
                 .when(authService)
-                .sjekkTilgangTilPerson(aktorid.otherAktorId(), TilgangsType.SKRIVE);
+                .sjekkTilgangTilPerson(aktorid.otherAktorId(), TilgangsType.LESE); // TODO SKRIVE
         doReturn(Person.navIdent(navident).otherNavIdent())
                 .when(authService).getLoggedInnUser();
         when(brukernotifikasjonService.kanVarsles(aktorid)).thenReturn(true);
