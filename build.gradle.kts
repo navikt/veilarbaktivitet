@@ -8,6 +8,7 @@ val _version: String by project
 
 plugins {
     id("java")
+    id("org.jetbrains.kotlin.plugin.spring") version "2.0.21"
     id("application")
     id("maven-publish")
     kotlin("jvm") version "2.0.20"
