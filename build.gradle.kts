@@ -11,13 +11,13 @@ plugins {
     id("org.jetbrains.kotlin.plugin.spring") version "2.0.21"
     id("application")
     id("maven-publish")
-    kotlin("jvm") version "2.0.20"
+    kotlin("jvm") version "2.0.21"
     id("org.openapi.generator") version "6.4.0"
     id("com.github.davidmc24.gradle.plugin.avro") version "1.3.0"
     id("project-report")
     id("jacoco")
     id("org.sonarqube") version "4.4.1.3373"
-    id("org.springframework.boot") version "3.3.1"
+    id("org.springframework.boot") version "3.0.2"
     kotlin("plugin.lombok") version "2.0.21"
     id("io.freefair.lombok") version "8.10"
 }
@@ -139,7 +139,6 @@ if (hasProperty("buildScan")) {
 }
 
 dependencies {
-//    rewrite("org.openrewrite.recipe:rewrite-spring:5.22.0")
     annotationProcessor("org.projectlombok:lombok:1.18.32")
     testAnnotationProcessor("org.projectlombok:lombok:1.18.32")
 
