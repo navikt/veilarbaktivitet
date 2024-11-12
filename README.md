@@ -10,4 +10,3 @@ Backend applikasjon for aktivitetsplanen. Tilbyr REST tjenester for å hente/opp
 ## Kontakt og spørsmål
 Opprett en issue i GitHub for eventuelle spørsmål.
 
-Test
