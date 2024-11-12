@@ -43,7 +43,7 @@ public class ArenaId extends JsonSerializable.Base {
             this.id = ARENA_PREFIX + id.trim();
         }
         else {
-            throw new  IllegalArgumentException(String.format("Argument: %s is not a valid ArenaId", id));
+            throw new  IllegalArgumentException("Argument: %s is not a valid ArenaId".formatted(id));
         }
     }
 

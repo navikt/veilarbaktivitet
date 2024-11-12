@@ -2,7 +2,6 @@ package no.nav.veilarbaktivitet.controller;
 
 import io.restassured.response.Response;
 import io.restassured.response.ValidatableResponse;
-import lombok.val;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.veilarbaktivitet.SpringBootTestBase;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
@@ -300,12 +299,12 @@ class AktivitetsplanRSTest extends SpringBootTestBase {
     }
 
     private void nar_jeg_flytter_en_aktivitet_til_en_annen_status() {
-        val aktivitet = aktivitetTestService.hentAktiviteterForFnr(mockBruker, mockBrukersVeileder).getAktiviteter().getFirst();
+        final var aktivitet = aktivitetTestService.hentAktiviteterForFnr(mockBruker, mockBrukersVeileder).getAktiviteter().getFirst();
         this.aktivitet = aktivitetTestService.oppdaterAktivitetStatus(mockBruker, mockBrukersVeileder,aktivitet, nyAktivitetStatus);
     }
 
     private void nar_jeg_oppdaterer_etiketten_pa_en_aktivitet() {
-        val aktivitet = aktivitetTestService.hentAktiviteterForFnr(mockBruker, mockBrukersVeileder).getAktiviteter().getFirst();
+        final var aktivitet = aktivitetTestService.hentAktiviteterForFnr(mockBruker, mockBrukersVeileder).getAktiviteter().getFirst();
         this.aktivitet = aktivitetTestService.oppdaterAktivitetEtikett(mockBruker, mockBrukersVeileder,aktivitet, nyAktivitetEtikett);
     }
 
@@ -320,12 +319,12 @@ class AktivitetsplanRSTest extends SpringBootTestBase {
     private Date oldOpprettetDato;
 
     private void nar_jeg_oppdaterer_en_av_aktiviten() {
-        val originalAktivitet = aktivitetService.hentAktivitetMedForhaandsorientering(lagredeAktivitetsIder.getFirst());
+        final var originalAktivitet = aktivitetService.hentAktivitetMedForhaandsorientering(lagredeAktivitetsIder.getFirst());
         oldOpprettetDato = originalAktivitet.getOpprettetDato();
         nyLenke = "itsOver9000.com";
         nyAvsluttetKommentar = "The more I talk, the more i understand why i'm single";
 
-        val nyAktivitet = originalAktivitet
+        final var nyAktivitet = originalAktivitet
                 .toBuilder()
                 .lenke(nyLenke)
                 .avsluttetKommentar(nyAvsluttetKommentar)

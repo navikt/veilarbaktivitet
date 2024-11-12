@@ -2,7 +2,6 @@ package no.nav.veilarbaktivitet.stilling_fra_nav;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import lombok.SneakyThrows;
-import lombok.val;
 import no.nav.veilarbaktivitet.SpringBootTestBase;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
@@ -81,7 +80,7 @@ class StillingFraNavControllerITest extends SpringBootTestBase {
 
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker);
         //Trigger scheduld jobb manuelt da schedule er disabled i test.
-        val brukernotifikajonOppgave = brukernotifikasjonAsserts.assertOppgaveSendt(mockBruker.getFnrAsFnr());
+        final var brukernotifikajonOppgave = brukernotifikasjonAsserts.assertOppgaveSendt(mockBruker.getFnrAsFnr());
 
         // Kafka consumer for svarmelding til rekrutteringsbistand.
         final Consumer<String, DelingAvCvRespons> consumer = kafkaTestService.createStringAvroConsumer(utTopic);

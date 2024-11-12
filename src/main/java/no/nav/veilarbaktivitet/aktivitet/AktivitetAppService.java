@@ -1,7 +1,6 @@
 package no.nav.veilarbaktivitet.aktivitet;
 
 import lombok.RequiredArgsConstructor;
-import lombok.val;
 import no.nav.poao.dab.spring_auth.IAuthService;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
@@ -203,7 +202,7 @@ public class AktivitetAppService {
 
     @Transactional
     public AktivitetData oppdaterStatus(AktivitetData aktivitet) {
-        val originalAktivitet = hentAktivitet(aktivitet.getId());
+        final var originalAktivitet = hentAktivitet(aktivitet.getId());
         kanEndreAktivitetGuard(originalAktivitet, aktivitet.getVersjon(), aktivitet.getAktorId());
 
         if (authService.erEksternBruker() && !TYPER_SOM_KAN_ENDRES_EKSTERNT.contains(originalAktivitet.getAktivitetType())) {
@@ -219,7 +218,7 @@ public class AktivitetAppService {
 
     @Transactional
     public AktivitetData oppdaterEtikett(AktivitetData aktivitet) {
-        val originalAktivitet = hentAktivitet(aktivitet.getId());
+        final var originalAktivitet = hentAktivitet(aktivitet.getId());
         kanEndreAktivitetEtikettGuard(originalAktivitet, aktivitet);
         aktivitetService.oppdaterEtikett(originalAktivitet, aktivitet);
         return aktivitetService.hentAktivitetMedForhaandsorientering(aktivitet.getId());
@@ -227,7 +226,7 @@ public class AktivitetAppService {
 
     @Transactional
     public AktivitetData oppdaterReferat(AktivitetData aktivitet) {
-        val originalAktivitet = hentAktivitet(aktivitet.getId());
+        final var originalAktivitet = hentAktivitet(aktivitet.getId());
         kanEndreAktivitetGuard(originalAktivitet, aktivitet.getVersjon(), aktivitet.getAktorId());
 
         var oppdatertAktivtiet = aktivitetService.oppdaterReferat(

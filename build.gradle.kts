@@ -16,7 +16,7 @@ plugins {
     id("project-report")
     id("jacoco")
     id("org.sonarqube") version "4.4.1.3373"
-    id("org.springframework.boot") version "3.0.2"
+    id("org.springframework.boot") version "3.3.1"
     kotlin("plugin.lombok") version "2.0.21"
     id("io.freefair.lombok") version "8.10"
 }
@@ -138,6 +138,7 @@ if (hasProperty("buildScan")) {
 }
 
 dependencies {
+//    rewrite("org.openrewrite.recipe:rewrite-spring:5.22.0")
     annotationProcessor("org.projectlombok:lombok:1.18.32")
     testAnnotationProcessor("org.projectlombok:lombok:1.18.32")
 
@@ -184,7 +185,7 @@ dependencies {
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.17.1")
 //    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.0")
 
-    implementation("org.springframework.cloud:spring-cloud-starter-gateway-mvc:4.1.4")
+    //implementation("org.springframework.cloud:spring-cloud-starter-gateway-mvc:4.1.4")
 
     // Hvis det ønskes swagger doc, foreslås å bruke springdoc (springdoc-openapi-starter-webmvc-ui - se no.nav.fo.veilarbdialog.rest.SwaggerConfig for eksempelconfig)
     implementation("io.swagger.core.v3:swagger-annotations:2.2.8")

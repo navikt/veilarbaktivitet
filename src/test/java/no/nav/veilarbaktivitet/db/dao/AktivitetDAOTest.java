@@ -1,7 +1,6 @@
 package no.nav.veilarbaktivitet.db.dao;
 
 import lombok.extern.slf4j.Slf4j;
-import lombok.val;
 import no.nav.veilarbaktivitet.SpringBootTestBase;
 import no.nav.veilarbaktivitet.admin.KasseringDAO;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
@@ -33,7 +32,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 @Slf4j
@@ -61,65 +59,65 @@ class AktivitetDAOTest extends SpringBootTestBase { //TODO burde denne skrives o
 
     @Test
     void opprette_og_hente_egenaktivitet() {
-        val aktivitet = gitt_at_det_finnes_en_egen_aktivitet();
+        final var aktivitet = gitt_at_det_finnes_en_egen_aktivitet();
 
-        val aktiviteter = aktivitetDAO.hentAktiviteterForAktorId(AKTOR_ID);
+        final var aktiviteter = aktivitetDAO.hentAktiviteterForAktorId(AKTOR_ID);
         assertThat(aktiviteter).hasSize(1);
-        assertThat(aktivitet).isEqualTo(aktiviteter.get(0));
+        assertThat(aktivitet).isEqualTo(aktiviteter.getFirst());
     }
 
     @Test
     void opprette_og_hente_stillingaktivitet() {
-        val aktivitet = gitt_at_det_finnes_en_stillings_aktivitet();
+        final var aktivitet = gitt_at_det_finnes_en_stillings_aktivitet();
 
-        val aktiviteter = aktivitetDAO.hentAktiviteterForAktorId(AKTOR_ID);
+        final var aktiviteter = aktivitetDAO.hentAktiviteterForAktorId(AKTOR_ID);
         assertThat(aktiviteter).hasSize(1);
-        assertThat(aktivitet).isEqualTo(aktiviteter.get(0));
+        assertThat(aktivitet).isEqualTo(aktiviteter.getFirst());
     }
 
     @Test
     void opprette_og_hente_sokeavtaleaktivitet() {
-        val aktivitet = gitt_at_det_finnes_en_sokeavtale();
+        final var aktivitet = gitt_at_det_finnes_en_sokeavtale();
 
-        val aktiviteter = aktivitetDAO.hentAktiviteterForAktorId(AKTOR_ID);
+        final var aktiviteter = aktivitetDAO.hentAktiviteterForAktorId(AKTOR_ID);
         assertThat(aktiviteter).hasSize(1);
-        assertThat(aktivitet).isEqualTo(aktiviteter.get(0));
+        assertThat(aktivitet).isEqualTo(aktiviteter.getFirst());
     }
 
     @Test
     void opprette_og_hente_ijobbaktivitet() {
-        val aktivitet = gitt_at_det_finnes_en_ijobb();
-        val aktiviteter = aktivitetDAO.hentAktiviteterForAktorId(AKTOR_ID);
+        final var aktivitet = gitt_at_det_finnes_en_ijobb();
+        final var aktiviteter = aktivitetDAO.hentAktiviteterForAktorId(AKTOR_ID);
 
         assertThat(aktiviteter).hasSize(1);
-        assertThat(aktivitet).isEqualTo(aktiviteter.get(0));
+        assertThat(aktivitet).isEqualTo(aktiviteter.getFirst());
     }
 
     @Test
     void opprette_og_hente_behandlingaktivitet() {
-        val aktivitet = gitt_at_det_finnes_en_behandling();
-        val aktiviteter = aktivitetDAO.hentAktiviteterForAktorId(AKTOR_ID);
+        final var aktivitet = gitt_at_det_finnes_en_behandling();
+        final var aktiviteter = aktivitetDAO.hentAktiviteterForAktorId(AKTOR_ID);
 
         assertThat(aktiviteter).hasSize(1);
-        assertThat(aktivitet).isEqualTo(aktiviteter.get(0));
+        assertThat(aktivitet).isEqualTo(aktiviteter.getFirst());
     }
 
     @Test
     void opprette_og_hente_mote() {
-        val aktivitet = gitt_at_det_finnes_et_mote();
-        val aktiviteter = aktivitetDAO.hentAktiviteterForAktorId(AKTOR_ID);
+        final var aktivitet = gitt_at_det_finnes_et_mote();
+        final var aktiviteter = aktivitetDAO.hentAktiviteterForAktorId(AKTOR_ID);
 
         assertThat(aktiviteter).hasSize(1);
-        assertThat(aktivitet).isEqualTo(aktiviteter.get(0));
+        assertThat(aktivitet).isEqualTo(aktiviteter.getFirst());
     }
 
     @Test
     void opprette_og_hente_samtalereferat() {
-        val aktivitet = gitt_at_det_finnes_et_samtalereferat();
-        val aktiviteter = aktivitetDAO.hentAktiviteterForAktorId(AKTOR_ID);
+        final var aktivitet = gitt_at_det_finnes_et_samtalereferat();
+        final var aktiviteter = aktivitetDAO.hentAktiviteterForAktorId(AKTOR_ID);
 
         assertThat(aktiviteter).hasSize(1);
-        assertThat(aktivitet).isEqualTo(aktiviteter.get(0));
+        assertThat(aktivitet).isEqualTo(aktiviteter.getFirst());
     }
 
     @Test
@@ -128,23 +126,23 @@ class AktivitetDAOTest extends SpringBootTestBase { //TODO burde denne skrives o
         var aktiviteter = aktivitetDAO.hentAktiviteterForAktorId(AKTOR_ID);
 
         assertThat(aktiviteter).hasSize(1);
-        assertThat(aktivitet).isEqualTo(aktiviteter.get(0));
+        assertThat(aktivitet).isEqualTo(aktiviteter.getFirst());
     }
 
     @Test
     void hent_aktivitet() {
-        val aktivitet = gitt_at_det_finnes_en_stillings_aktivitet();
+        final var aktivitet = gitt_at_det_finnes_en_stillings_aktivitet();
 
-        val hentetAktivitet = aktivitetDAO.hentAktivitet(aktivitet.getId());
+        final var hentetAktivitet = aktivitetDAO.hentAktivitet(aktivitet.getId());
         assertThat(aktivitet).isEqualTo(hentetAktivitet);
     }
 
     @Test
     void transaksjonsTypene_er_rett_satt_opp() {
         Arrays.asList(AktivitetTransaksjonsType.values()).forEach(t -> {
-                    val aktivitetData = AktivitetDataTestBuilder
-                            .nyEgenaktivitet()
-                            .withTransaksjonsType(t);
+            final var aktivitetData = AktivitetDataTestBuilder
+                    .nyEgenaktivitet()
+                    .withTransaksjonsType(t);
                     try {
                         addAktivitet(aktivitetData);
                     } catch (Exception e) {
@@ -156,16 +154,16 @@ class AktivitetDAOTest extends SpringBootTestBase { //TODO burde denne skrives o
 
     @Test
     void skal_legge_til_lest_av_bruker_forste_gang() {
-        val aktivitet = gitt_at_det_finnes_en_egen_aktivitet();
+        final var aktivitet = gitt_at_det_finnes_en_egen_aktivitet();
         aktivitetDAO.insertLestAvBrukerTidspunkt(aktivitet.getId());
 
-        val hentetAktivitet = aktivitetDAO.hentAktivitet(aktivitet.getId());
+        final var hentetAktivitet = aktivitetDAO.hentAktivitet(aktivitet.getId());
         assertThat(hentetAktivitet.getLestAvBrukerForsteGang()).isNotNull();
     }
 
     @Test
     void skal_hente_alle_aktivitets_versjoner() {
-        val aktivitet = gitt_at_det_finnes_en_aktivitet_med_flere_versjoner(3);
+        final var aktivitet = gitt_at_det_finnes_en_aktivitet_med_flere_versjoner(3);
         List<AktivitetData> aktivitetData = aktivitetDAO.hentAktivitetVersjoner(aktivitet.getId());
         assertThat(aktivitetData).hasSize(3);
     }
@@ -254,19 +252,19 @@ class AktivitetDAOTest extends SpringBootTestBase { //TODO burde denne skrives o
     }
 
     private AktivitetData gitt_at_det_finnes_en_stillings_aktivitet() {
-        val aktivitet = AktivitetDataTestBuilder.nyttStillingssok();
+        final var aktivitet = AktivitetDataTestBuilder.nyttStillingssok();
 
         return addAktivitet(aktivitet);
     }
 
     private AktivitetData gitt_at_det_finnes_en_egen_aktivitet() {
-        val aktivitet = AktivitetDataTestBuilder.nyEgenaktivitet();
+        final var aktivitet = AktivitetDataTestBuilder.nyEgenaktivitet();
 
         return addAktivitet(aktivitet);
     }
 
     private AktivitetData gitt_at_det_finnes_en_sokeavtale() {
-        val aktivitet = AktivitetDataTestBuilder.nySokeAvtaleAktivitet();
+        final var aktivitet = AktivitetDataTestBuilder.nySokeAvtaleAktivitet();
 
         return addAktivitet(aktivitet);
     }
@@ -321,7 +319,7 @@ class AktivitetDAOTest extends SpringBootTestBase { //TODO burde denne skrives o
     }
 
     private AktivitetData addAktivitet(AktivitetData aktivitet) {
-        val aktivitetUtenId = aktivitet.toBuilder()
+        final var aktivitetUtenId = aktivitet.toBuilder()
                 .aktorId(AKTOR_ID)
                 .build();
 

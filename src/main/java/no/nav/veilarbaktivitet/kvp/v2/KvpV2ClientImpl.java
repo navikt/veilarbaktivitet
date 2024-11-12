@@ -22,7 +22,7 @@ class KvpV2ClientImpl implements KvpV2Client {
     private final OkHttpClient veilarboppfolgingHttpClient;
 
     public Optional<KvpV2DTO> get(Person.AktorId aktorId) {
-        String uri = String.format("%s/veilarboppfolging/api/v2/kvp?aktorId=%s", baseUrl, aktorId.get());
+        String uri = "%s/veilarboppfolging/api/v2/kvp?aktorId=%s".formatted(baseUrl, aktorId.get());
         Request request = new Request.Builder()
                 .url(uri)
                 .build();
@@ -34,7 +34,7 @@ class KvpV2ClientImpl implements KvpV2Client {
 
             return RestUtils.parseJsonResponse(response, KvpV2DTO.class);
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, String.format("Feil ved kall mot %s - %s", request.url(), e.getMessage()), e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Feil ved kall mot %s - %s".formatted(request.url(), e.getMessage()), e);
         }
 
     }

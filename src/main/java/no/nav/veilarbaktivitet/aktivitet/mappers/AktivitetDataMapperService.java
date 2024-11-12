@@ -1,7 +1,6 @@
 package no.nav.veilarbaktivitet.aktivitet.mappers;
 
 import lombok.RequiredArgsConstructor;
-import lombok.val;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.types.identer.*;
 import no.nav.poao.dab.spring_auth.IAuthService;
@@ -35,19 +34,19 @@ public class AktivitetDataMapperService {
     }
 
     public AktivitetData mapTilAktivitetData(AktivitetDTO aktivitetDTO) {
-        val id = Optional.ofNullable(aktivitetDTO.getId())
+        final var id = Optional.ofNullable(aktivitetDTO.getId())
                 .filter(s -> !s.isEmpty())
                 .map(Long::parseLong)
                 .orElse(null);
-        val versjon = Optional.ofNullable(aktivitetDTO.getVersjon()).map(Long::parseLong).orElse(0L);
-        val aktivitetType = Helpers.Type.getData(aktivitetDTO.getType());
-        val innloggetBruker = authService.getLoggedInnUser();
-        val endretAvType = innloggetBruker instanceof EksternBrukerId ? Innsender.BRUKER : Innsender.NAV;
-        val endretAv = getEndretAv(innloggetBruker);
-        val aktorId = userInContext.getAktorId();
+        final var versjon = Optional.ofNullable(aktivitetDTO.getVersjon()).map(Long::parseLong).orElse(0L);
+        final var aktivitetType = Helpers.Type.getData(aktivitetDTO.getType());
+        final var innloggetBruker = authService.getLoggedInnUser();
+        final var endretAvType = innloggetBruker instanceof EksternBrukerId ? Innsender.BRUKER : Innsender.NAV;
+        final var endretAv = getEndretAv(innloggetBruker);
+        final var aktorId = userInContext.getAktorId();
         var kontorSperreEnhet = kvpService.getKontorSperreEnhet(aktorId);
 
-        val aktivitetData = AktivitetData
+        final var aktivitetData = AktivitetData
                 .builder()
                 .id(id)
                 .aktorId(aktorId)

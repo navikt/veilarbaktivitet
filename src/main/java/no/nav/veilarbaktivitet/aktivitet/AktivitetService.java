@@ -1,7 +1,6 @@
 package no.nav.veilarbaktivitet.aktivitet;
 
 import lombok.AllArgsConstructor;
-import lombok.val;
 import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavService;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Forhaandsorientering;
@@ -104,10 +103,10 @@ public class AktivitetService {
     }
 
     public AktivitetData avsluttStillingFraNav(AktivitetData originalAktivitet, Ident endretAv) {
-        val originalStillingFraNav = originalAktivitet.getStillingFraNavData();
-        val nyStillingFraNav = originalStillingFraNav.withLivslopsStatus(LivslopsStatus.AVBRUTT_AV_SYSTEM);
+        final var originalStillingFraNav = originalAktivitet.getStillingFraNavData();
+        final var nyStillingFraNav = originalStillingFraNav.withLivslopsStatus(LivslopsStatus.AVBRUTT_AV_SYSTEM);
 
-        val nyAktivitet = originalAktivitet
+        final var nyAktivitet = originalAktivitet
                 .toBuilder()
                 .endretAv(endretAv.ident())
                 .endretAvType(endretAv.identType().toInnsender())
@@ -122,10 +121,10 @@ public class AktivitetService {
     }
 
     public void oppdaterEtikett(AktivitetData originalAktivitet, AktivitetData aktivitet) {
-        val nyEtikett = aktivitet.getStillingsSoekAktivitetData().getStillingsoekEtikett();
-        val originalStillingsAktivitet = originalAktivitet.getStillingsSoekAktivitetData();
-        val nyStillingsAktivitet = originalStillingsAktivitet.withStillingsoekEtikett(nyEtikett);
-        val nyAktivitet = originalAktivitet
+        final var nyEtikett = aktivitet.getStillingsSoekAktivitetData().getStillingsoekEtikett();
+        final var originalStillingsAktivitet = originalAktivitet.getStillingsSoekAktivitetData();
+        final var nyStillingsAktivitet = originalStillingsAktivitet.withStillingsoekEtikett(nyEtikett);
+        final var nyAktivitet = originalAktivitet
                 .toBuilder()
                 .endretAvType(aktivitet.getEndretAvType())
                 .endretAv(aktivitet.getEndretAv())
@@ -137,7 +136,7 @@ public class AktivitetService {
     }
 
     public void oppdaterAktivitetFrist(AktivitetData originalAktivitet, AktivitetData aktivitetData) {
-        val oppdatertAktivitetMedNyFrist = originalAktivitet
+        final var oppdatertAktivitetMedNyFrist = originalAktivitet
                 .toBuilder()
                 .endretAvType(aktivitetData.getEndretAvType())
                 .endretAv(aktivitetData.getEndretAv())
@@ -149,7 +148,7 @@ public class AktivitetService {
     }
 
     public void oppdaterMoteTidStedOgKanal(AktivitetData originalAktivitet, AktivitetData aktivitetData) {
-        val oppdatertAktivitetMedNyFrist = originalAktivitet
+        final var oppdatertAktivitetMedNyFrist = originalAktivitet
                 .toBuilder()
                 .endretAvType(aktivitetData.getEndretAvType())
                 .endretAv(aktivitetData.getEndretAv())
@@ -169,9 +168,9 @@ public class AktivitetService {
             AktivitetData originalAktivitet,
             AktivitetData aktivitetData
     ) {
-        val transaksjon = getReferatTransakjsonType(originalAktivitet, aktivitetData);
+        final var transaksjon = getReferatTransakjsonType(originalAktivitet, aktivitetData);
 
-        val merger = MappingUtils.merge(originalAktivitet, aktivitetData);
+        final var merger = MappingUtils.merge(originalAktivitet, aktivitetData);
         return aktivitetDAO.oppdaterAktivitet(originalAktivitet
                 .withEndretDato(aktivitetData.getEndretDato())
                 .withEndretAv(aktivitetData.getEndretAv())
@@ -183,7 +182,7 @@ public class AktivitetService {
 
     private AktivitetTransaksjonsType getReferatTransakjsonType(AktivitetData originalAktivitet,
                                                                 AktivitetData aktivitetData) {
-        val transaksjon = nullOrEmpty(originalAktivitet.getMoteData().getReferat())
+        final var transaksjon = nullOrEmpty(originalAktivitet.getMoteData().getReferat())
                 ? AktivitetTransaksjonsType.REFERAT_OPPRETTET : AktivitetTransaksjonsType.REFERAT_ENDRET;
 
         if (!originalAktivitet.getMoteData().isReferatPublisert() && aktivitetData.getMoteData().isReferatPublisert()) {
@@ -208,13 +207,13 @@ public class AktivitetService {
     }
 
     public AktivitetData oppdaterAktivitet(AktivitetData originalAktivitet, AktivitetData aktivitet) {
-        val blittAvtalt = originalAktivitet.isAvtalt() != aktivitet.isAvtalt();
+        final var blittAvtalt = originalAktivitet.isAvtalt() != aktivitet.isAvtalt();
         if (blittAvtalt) {
             throw new IllegalArgumentException(String.format("Kan ikke sette avtalt for aktivitetsid: %s gjennom oppdaterAktivitet", originalAktivitet.getId()));
         }
-        val transType = AktivitetTransaksjonsType.DETALJER_ENDRET;
-        val merger = MappingUtils.merge(originalAktivitet, aktivitet);
-        val result = aktivitetDAO.oppdaterAktivitet(originalAktivitet
+        final var transType = AktivitetTransaksjonsType.DETALJER_ENDRET;
+        final var merger = MappingUtils.merge(originalAktivitet, aktivitet);
+        final var result = aktivitetDAO.oppdaterAktivitet(originalAktivitet
                 .toBuilder()
                 .avsluttetKommentar(aktivitet.getAvsluttetKommentar())
                 .behandlingAktivitetData(merger.map(AktivitetData::getBehandlingAktivitetData).merge(this::mergeBehandlingAktivitetData))

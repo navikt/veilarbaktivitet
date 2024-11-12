@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.oppfolging.client;
 
 import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.rest.client.RestUtils;
 import no.nav.veilarbaktivitet.oppfolging.periode.GjeldendePeriodeMetrikk;
@@ -29,13 +30,14 @@ public class OppfolgingClientImpl implements OppfolgingClient {
     private final PersonService personService;
     private final GjeldendePeriodeMetrikk gjeldendePeriodeMetrikk;
 
+    @Setter
     @Value("${VEILARBOPPFOLGINGAPI_URL}")
     private String baseUrl;
 
     public Optional<OppfolgingV2UnderOppfolgingDTO> fetchUnderoppfolging(Person.AktorId aktorId) {
         Person.Fnr fnr = personService.getFnrForAktorId(aktorId);
 
-        String uri = String.format("%s/veilarboppfolging/api/v2/oppfolging?fnr=%s", baseUrl, fnr.get());
+        String uri = "%s/veilarboppfolging/api/v2/oppfolging?fnr=%s".formatted(baseUrl, fnr.get());
         Request request = new Request.Builder()
                 .url(uri)
                 .build();
@@ -52,7 +54,7 @@ public class OppfolgingClientImpl implements OppfolgingClient {
     public Optional<OppfolgingPeriodeMinimalDTO> fetchGjeldendePeriode(Person.AktorId aktorId) {
         Person.Fnr fnr = personService.getFnrForAktorId(aktorId);
 
-        String uri = String.format("%s/veilarboppfolging/api/v2/oppfolging/periode/gjeldende?fnr=%s", baseUrl, fnr.get());
+        String uri = "%s/veilarboppfolging/api/v2/oppfolging/periode/gjeldende?fnr=%s".formatted(baseUrl, fnr.get());
         Request request = new Request.Builder()
                 .url(uri)
                 .build();
@@ -73,7 +75,7 @@ public class OppfolgingClientImpl implements OppfolgingClient {
     @Override
     public List<OppfolgingPeriodeMinimalDTO> hentOppfolgingsperioder(Person.AktorId aktorId) {
 
-        String uri = String.format("%s/veilarboppfolging/api/v2/oppfolging/perioder?aktorId=%s", baseUrl, aktorId.get());
+        String uri = "%s/veilarboppfolging/api/v2/oppfolging/perioder?aktorId=%s".formatted(baseUrl, aktorId.get());
         Request request = new Request.Builder()
                 .url(uri)
                 .build();
@@ -87,7 +89,7 @@ public class OppfolgingClientImpl implements OppfolgingClient {
 
     @Override
     public Optional<SakDTO> hentSak(UUID oppfolgingsperiodeId) {
-        String uri = String.format("%s/veilarboppfolging/api/v3/sak/%s", baseUrl, oppfolgingsperiodeId );
+        String uri = "%s/veilarboppfolging/api/v3/sak/%s".formatted(baseUrl, oppfolgingsperiodeId);
         Request request = new Request.Builder()
                 .url(uri)
                 .post(RequestBody.create("", null))
@@ -105,7 +107,7 @@ public class OppfolgingClientImpl implements OppfolgingClient {
 
     @Override
     public Optional<MålDTO> hentMål(Person.Fnr fnr) {
-        String uri = String.format("%s/veilarboppfolging/api/oppfolging/mal?fnr=%s", baseUrl, fnr.get());
+        String uri = "%s/veilarboppfolging/api/oppfolging/mal?fnr=%s".formatted(baseUrl, fnr.get());
         Request request = new Request.Builder()
                 .url(uri)
                 .get()
@@ -122,9 +124,6 @@ public class OppfolgingClientImpl implements OppfolgingClient {
     }
 
     private ResponseStatusException internalServerError(Exception cause, String url) {
-        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, String.format("Feil ved kall mot %s - %s", url, cause.getMessage()), cause);
-    }
-    public void setBaseUrl(String baseUrl) {
-        this.baseUrl = baseUrl;
+        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Feil ved kall mot %s - %s".formatted(url, cause.getMessage()), cause);
     }
 }

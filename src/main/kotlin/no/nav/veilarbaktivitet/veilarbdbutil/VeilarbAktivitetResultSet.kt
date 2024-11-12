@@ -16,4 +16,19 @@ class VeilarbAktivitetResultSet(private val resultSet: ResultSet): ResultSet by 
         if (resultSet.getObject(columnLabel) == null) return null
         return resultSet.getBoolean(columnLabel)
     }
+    override fun isWrapperFor( iface: Class<*>): Boolean {
+        // TODO Auto-generated method stub
+        return iface != null && iface.isAssignableFrom(this.javaClass)
+    }
+    override fun <T> unwrap( iface: Class<T>): T {
+        // TODO Auto-generated method stub
+        try {
+            if (iface != null && iface.isAssignableFrom(this.javaClass)) {
+                return this as T
+            }
+            throw  java.sql.SQLException("Auto-generated unwrap failed; Revisit implementation")
+        } catch ( e: Exception) {
+            throw  java.sql.SQLException(e)
+        }
+    }
 }

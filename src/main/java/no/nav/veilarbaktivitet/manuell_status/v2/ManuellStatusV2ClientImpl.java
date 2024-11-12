@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.manuell_status.v2;
 
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.rest.client.RestUtils;
 import no.nav.veilarbaktivitet.person.Person;
@@ -22,13 +23,14 @@ public class ManuellStatusV2ClientImpl implements ManuellStatusV2Client {
     private final OkHttpClient veilarboppfolgingHttpClient;
     private final PersonService personService;
 
+    @Setter
     @Value("${VEILARBOPPFOLGINGAPI_URL}")
     private String baseUrl;
 
     public Optional<ManuellStatusV2DTO> get(Person.AktorId aktorId) {
         Person.Fnr fnr = personService.getFnrForAktorId(aktorId);
 
-        String uri = String.format("%s/veilarboppfolging/api/v2/manuell/status?fnr=%s", baseUrl, fnr.get());
+        String uri = "%s/veilarboppfolging/api/v2/manuell/status?fnr=%s".formatted(baseUrl, fnr.get());
         Request request = new Request.Builder()
                 .url(uri)
                 .build();
@@ -36,11 +38,7 @@ public class ManuellStatusV2ClientImpl implements ManuellStatusV2Client {
             RestUtils.throwIfNotSuccessful(response);
             return RestUtils.parseJsonResponse(response, ManuellStatusV2DTO.class);
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, String.format("Feil ved kall mot %s - %s", request.url(), e.getMessage()), e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Feil ved kall mot %s - %s".formatted(request.url(), e.getMessage()), e);
         }
-    }
-
-    public void setBaseUrl(String baseUrl) {
-        this.baseUrl = baseUrl;
     }
 }

@@ -7,6 +7,7 @@ import no.nav.veilarbaktivitet.internapi.model.Aktivitet;
 import no.nav.veilarbaktivitet.stilling_fra_nav.Soknadsstatus;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -15,7 +16,8 @@ import java.util.stream.Stream;
 import static no.nav.veilarbaktivitet.internapi.InternAktivitetMapperKt.mapTilAktivitet;
 
 class InternAktivitetMapperTestContainer {
-    static class StillingFraNavMapperTest {
+    @Nested
+    class StillingFraNavMapperTest {
         static Stream<Soknadsstatus> soknadsstatuser() {
             return Stream.of(Soknadsstatus.values());
         }
@@ -30,7 +32,8 @@ class InternAktivitetMapperTestContainer {
         }
     }
 
-    static class JobbsoekingMapperTest {
+    @Nested
+    class JobbsoekingMapperTest {
         static Stream<StillingsoekEtikettData> stillingsoekEtiketter() {
             return Stream.of(StillingsoekEtikettData.values());
         }

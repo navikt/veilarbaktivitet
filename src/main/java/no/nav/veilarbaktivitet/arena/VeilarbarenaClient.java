@@ -28,7 +28,7 @@ public class VeilarbarenaClient {
     private String veilarbarenaServiceUrl;
 
     public HealthStatus  ping() {
-        String uri = String.format("%s/veilarbarena/internal/selftest", veilarbarenaServiceUrl);
+        String uri = "%s/veilarbarena/internal/selftest".formatted(veilarbarenaServiceUrl);
         // This endpoint this not need auth and therfore uses baseClient
         var basicHttpClient = RestClient.baseClientBuilder().build();
         Request request = new Request.Builder()
@@ -46,7 +46,7 @@ public class VeilarbarenaClient {
 
     @Timed
     public Optional<AktiviteterDTO> hentAktiviteter(Person.Fnr fnr) {
-        String uri = String.format("%s/veilarbarena/api/arena/aktiviteter?fnr=%s", veilarbarenaServiceUrl, fnr.get());
+        String uri = "%s/veilarbarena/api/arena/aktiviteter?fnr=%s".formatted(veilarbarenaServiceUrl, fnr.get());
         Request request = new Request.Builder()
                 .url(uri)
                 .build();

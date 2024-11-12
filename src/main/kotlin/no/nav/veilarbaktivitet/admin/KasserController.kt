@@ -22,7 +22,7 @@ class KasserController(
 
     @PutMapping("/{aktivitetId}")
     @ResponseStatus(value = HttpStatus.OK)
-    fun kasserAktivitet(@PathVariable("aktivitetId") aktivitetId: String) {
+    fun kasserAktivitet(@PathVariable aktivitetId: String) {
         val id = aktivitetId.toLong()
         val aktivitetData = aktivitetDAO.hentAktivitet(id)
         val veilederIdent = Person.navIdent(authService.getInnloggetVeilederIdent().get())

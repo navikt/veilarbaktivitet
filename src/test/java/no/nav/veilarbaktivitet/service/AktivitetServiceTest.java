@@ -1,7 +1,6 @@
 package no.nav.veilarbaktivitet.service;
 
 import lombok.SneakyThrows;
-import lombok.val;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
 import no.nav.veilarbaktivitet.aktivitet.MetricService;
@@ -66,7 +65,7 @@ class AktivitetServiceTest {
 
     @Test
     void viktigeFelterSkalPropageresTilDaoVedOpprettAktivitet() {
-        val aktivitet = lagEnNyAktivitet();
+        final var aktivitet = lagEnNyAktivitet();
 
         when(aktivitetDAO.opprettNyAktivitet(any(AktivitetData.class))).thenReturn(aktivitet);
         aktivitetService.opprettAktivitet( aktivitet);
@@ -90,7 +89,7 @@ class AktivitetServiceTest {
 
     @Test
     void opprettAktivitetMedKvp() {
-        val aktivitet = lagEnNyAktivitet().withKontorsperreEnhetId(KJENT_KONTORSPERRE_ENHET_ID);
+        final var aktivitet = lagEnNyAktivitet().withKontorsperreEnhetId(KJENT_KONTORSPERRE_ENHET_ID);
         KvpV2DTO kvp = new KvpV2DTO().setEnhet(KONTORSPERRE_ENHET_ID);
 
         when(aktivitetDAO.opprettNyAktivitet(any(AktivitetData.class))).thenReturn(aktivitet);
@@ -103,11 +102,11 @@ class AktivitetServiceTest {
 
     @Test
     void oppdaterStatus() {
-        val aktivitet = lagEnNyAktivitet();
+        final var aktivitet = lagEnNyAktivitet();
 
-        val avsluttKommentar = "Alexander er best";
-        val nyStatus = AktivitetStatus.GJENNOMFORES;
-        val oppdatertAktivitet = aktivitet
+        final var avsluttKommentar = "Alexander er best";
+        final var nyStatus = AktivitetStatus.GJENNOMFORES;
+        final var oppdatertAktivitet = aktivitet
                 .toBuilder()
                 .endretAv("bruker")
                 .endretAvType(Innsender.BRUKER)
@@ -132,11 +131,11 @@ class AktivitetServiceTest {
     @SneakyThrows
     @Test
     void oppdaterStatusMedKvpTilgang() {
-        val aktivitet = lagEnNyAktivitet();
-        val kvpAktivitet = aktivitet.withKontorsperreEnhetId(KONTORSPERRE_ENHET_ID);
+        final var aktivitet = lagEnNyAktivitet();
+        final var kvpAktivitet = aktivitet.withKontorsperreEnhetId(KONTORSPERRE_ENHET_ID);
 
-        val nyStatus = AktivitetStatus.GJENNOMFORES;
-        val oppdatertAktivitet = kvpAktivitet
+        final var nyStatus = AktivitetStatus.GJENNOMFORES;
+        final var oppdatertAktivitet = kvpAktivitet
                 .toBuilder()
                 .endretDato(new Date())
                 .status(nyStatus)
@@ -150,9 +149,9 @@ class AktivitetServiceTest {
 
     @Test
     void oppdaterEtikett() {
-        val aktivitet = lagEnNyAktivitet();
+        final var aktivitet = lagEnNyAktivitet();
 
-        val oppdatertAktivitet = aktivitet
+        final var oppdatertAktivitet = aktivitet
                 .toBuilder()
                 .beskrivelse("Alexander er fremdeles best")
                 .endretDato(new Date())
@@ -175,11 +174,11 @@ class AktivitetServiceTest {
 
     @Test
     void oppdaterReferat() {
-        val aktivitet = AktivitetDataTestBuilder.nyMoteAktivitet();
+        final var aktivitet = AktivitetDataTestBuilder.nyMoteAktivitet();
 
         String REFERAT = "Referat";
 
-        val oppdatertAktivitet = aktivitet
+        final var oppdatertAktivitet = aktivitet
                 .toBuilder()
                 .endretDato(new Date())
                 .beskrivelse("Alexander er fremdeles best")
@@ -203,10 +202,10 @@ class AktivitetServiceTest {
 
     @Test
     void oppdaterAktivitetFrist() {
-        val aktivitet = lagEnNyAktivitet();
+        final var aktivitet = lagEnNyAktivitet();
 
-        val nyFrist = new Date();
-        val oppdatertAktivitet = aktivitet.toBuilder().endretDato(new Date()).tilDato(nyFrist).build();
+        final var nyFrist = new Date();
+        final var oppdatertAktivitet = aktivitet.toBuilder().endretDato(new Date()).tilDato(nyFrist).build();
         aktivitetService.oppdaterAktivitetFrist(aktivitet, oppdatertAktivitet);
 
         captureOppdaterAktivitetArgument();
@@ -244,8 +243,8 @@ class AktivitetServiceTest {
 
     @Test
     void oppdaterAktivitet() {
-        val aktivitet = lagEnNyAktivitet();
-        val oppdatertAktivitet = aktivitet
+        final var aktivitet = lagEnNyAktivitet();
+        final var oppdatertAktivitet = aktivitet
                 .toBuilder()
                 .beskrivelse("Alexander er den beste")
                 .lenke("www.alexander-er-best.no")
@@ -262,7 +261,7 @@ class AktivitetServiceTest {
     @Disabled("Må fikses")
     @Test
     void oppdaterAktivitet_skal_gi_versjonsKonflikt_hvis_to_oppdaterer_aktiviteten_samtidig() {
-        val aktivitet = lagEnNyAktivitet();
+        final var aktivitet = lagEnNyAktivitet();
         doThrow(new DuplicateKeyException("versjon fins")).when(aktivitetDAO).oppdaterAktivitet(any());
 
         try {
