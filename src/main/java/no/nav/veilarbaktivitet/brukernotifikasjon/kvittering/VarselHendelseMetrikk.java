@@ -4,7 +4,7 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import kotlin.enums.EnumEntries;
-import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.EksternVarsling;
+import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.EksternVarselOppdatering;
 import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.Feilet;
 import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.InternVarselHendelseDTO;
 import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.VarselHendelseEventType;
@@ -62,7 +62,7 @@ public class VarselHendelseMetrikk {
                 .increment();
     }
 
-    public void incrementVarselKvitteringMottatt(EksternVarsling event) {
+    public void incrementVarselKvitteringMottatt(EksternVarselOppdatering event) {
         var counterBuilder = Counter.builder(VARSEL_HENDELSE);
         if(event.getHendelseType() == VarselHendelseEventType.feilet_ekstern) {
             counterBuilder.tag(FEILMELDING, ((Feilet) event).getFeilmelding() );

@@ -29,7 +29,7 @@ open class VarselHendelseConsumer(
     open fun consume(kafkaRecord: ConsumerRecord<String?, String>) {
         val melding = kafkaRecord.value().deserialiserVarselHendelse()
         when (melding) {
-            is EksternVarsling -> behandleEksternVarselHendelse(melding)
+            is EksternVarselOppdatering -> behandleEksternVarselHendelse(melding)
             is InternVarselHendelseDTO -> behandleInternVarselHendelse(melding)
             is VarselFraAnnenApp -> {}
         }
@@ -50,8 +50,8 @@ open class VarselHendelseConsumer(
         }
     }
 
-    open fun behandleEksternVarselHendelse(hendelse: EksternVarsling) {
-        val varselId = hendelse.varselId
+    open fun behandleEksternVarselHendelse(varsel: EksternVarselOppdatering) {
+        val varselId = varsel.varselId
 
         if (!varselDAO.finnesBrukernotifikasjon(varselId)) {
             log.warn(
@@ -61,34 +61,27 @@ open class VarselHendelseConsumer(
             throw IllegalArgumentException("Ugyldig varselId.")
         }
 
-//        kvitteringDAO.lagreKvitering(varselId, Kvittering(
-//            status = hendelse.status.name,
-//            melding = hendelse.feilmelding,
-//        ), hendelse)
+        log.info("Minside varsel (ekstern) av type {} er {} varselId {}", varsel.varseltype, varsel.hendelseType, varselId);
 
-        when (hendelse) {
+        when (varsel) {
             is Sendt -> {
                 kvitteringDAO.setEksternVarselStatusOK(varselId)
-                log.info("Minside varsel (ekstern) varsel sendt for varselId={} kanal={}", varselId, hendelse.kanal)
             }
-            is Bestilt -> {
-                log.info("Minside varsel (ekstern) bestilt for varselId={}", varselId)
-            }
-            is Renotifikasjon -> {
-                log.info("Minside varsel (ekstern) renotifikasjon for varselId={}", varselId)
-            }
+            is Bestilt -> {}
+            is Renotifikasjon -> {}
             is Feilet -> {
                 log.warn(
                     "Minside varsel (ekstern) feilet for varselId={} med melding {}",
                     varselId,
-                    hendelse.feilmelding
+                    varsel.feilmelding
                 )
                 kvitteringDAO.setFeilet(varselId)
             }
-            else -> {}
+
+            is Venter -> {}
         }
 
-        varselHendelseMetrikk.incrementVarselKvitteringMottatt(hendelse)
+        varselHendelseMetrikk.incrementVarselKvitteringMottatt(varsel)
     }
 
 }
