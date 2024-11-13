@@ -21,7 +21,7 @@ data class EksternVarselHendelseDTO(
     val kanal: EksternVarselKanal? = null
 )
 object VarselFraAnnenApp: VarselHendelse()
-sealed class EksternVarsling(
+sealed class EksternVarselOppdatering(
     val varselId: MinSideVarselId,
     val hendelseType: VarselHendelseEventType,
     val varseltype: Varseltype
@@ -30,23 +30,27 @@ sealed class EksternVarsling(
 class Renotifikasjon(
     varseltype: Varseltype,
     varselId: MinSideVarselId,
-): EksternVarsling(varselId, VarselHendelseEventType.renotifikasjon_ekstern, varseltype)
+): EksternVarselOppdatering(varselId, VarselHendelseEventType.renotifikasjon_ekstern, varseltype)
 class Sendt(
     varseltype: Varseltype,
     varselId: MinSideVarselId,
     val kanal: EksternVarselKanal
-): EksternVarsling(varselId, VarselHendelseEventType.sendt_ekstern, varseltype)
+): EksternVarselOppdatering(varselId, VarselHendelseEventType.sendt_ekstern, varseltype)
 class Bestilt(
     varseltype: Varseltype,
     varselId: MinSideVarselId,
-): EksternVarsling(varselId, VarselHendelseEventType.bestilt_ekstern, varseltype)
+): EksternVarselOppdatering(varselId, VarselHendelseEventType.bestilt_ekstern, varseltype)
 class Feilet(
     varseltype: Varseltype,
     varselId: MinSideVarselId,
     val feilmelding: String
-): EksternVarsling(varselId, VarselHendelseEventType.feilet_ekstern, varseltype)
+): EksternVarselOppdatering(varselId, VarselHendelseEventType.feilet_ekstern, varseltype)
+class Venter(
+    varseltype: Varseltype,
+    varselId: MinSideVarselId,
+): EksternVarselOppdatering(varselId, VarselHendelseEventType.venter_ekstern, varseltype)
 
-fun JsonNode.deserialiserEksternVarselHendelse(): EksternVarsling {
+fun JsonNode.deserialiserEksternVarselHendelse(): EksternVarselOppdatering {
     val eksternStatus = EksternVarselStatus.valueOf(this["status"].asText())
     val varselId = MinSideVarselId(UUID.fromString(this["varselId"].asText()))
     val varseltype = Varseltype.valueOf(this["varseltype"].asText().replaceFirstChar { it.titlecase()})
@@ -67,11 +71,14 @@ fun JsonNode.deserialiserEksternVarselHendelse(): EksternVarsling {
             )
         }
         EksternVarselStatus.feilet -> {
-            return Feilet(
+            Feilet(
                 varseltype,
                 varselId,
                 this["feilmelding"].asText()
             )
+        }
+        EksternVarselStatus.venter -> {
+            Venter(varseltype, varselId)
         }
     }
 }
@@ -84,5 +91,6 @@ enum class EksternVarselKanal {
 enum class EksternVarselStatus {
     bestilt,
     sendt,
-    feilet
+    feilet,
+    venter // Vi tror det skjer når meldinger batches?
 }
