@@ -168,15 +168,9 @@ public class VeilarbarenaMapper {
 
         Date startDato = motePlan.getFirst().getStartDato();
         Date sluttDato = motePlan.getLast().getSluttDato();
-        AktivitetStatus status;
-        if (startDato == null || sluttDato == null) {
-            // Har aldri skjedd, men legger inn null-safe håndtering
-            status = PLANLAGT;
-        } else {
-            status = "AVBR".equals(gruppeaktivitet.getStatus())
-                    ? AVBRUTT
-                    : mapTilAktivitetsStatus(startDato, sluttDato);
-        }
+        AktivitetStatus status = "AVBR".equals(gruppeaktivitet.getStatus())
+                ? AVBRUTT
+                : mapTilAktivitetsStatus(startDato, sluttDato);
 
         final var oppfolgingsperiode = finnOppfolgingsperiodeForArenaAktivitet(oppfolgingsperioder, toLocalDate(startDato));
 
@@ -214,6 +208,10 @@ public class VeilarbarenaMapper {
 
 
     private static AktivitetStatus mapTilAktivitetsStatus(Date startDato, Date sluttDato) {
+        if (startDato == null || sluttDato == null) {
+            // Har aldri skjedd, men legger inn null-safe håndtering
+            return PLANLAGT;
+        }
         LocalDateTime now = LocalDateTime.now();
 
         LocalDateTime startDatoStart = ofInstant(startDato.toInstant(), systemDefault()).toLocalDate().atStartOfDay();
