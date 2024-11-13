@@ -18,7 +18,7 @@ public class SistePeriodeService {
     @Timed
     public UUID hentGjeldendeOppfolgingsperiodeMedFallback(Person.AktorId aktorId) {
 
-        Supplier<IngenGjeldendePeriodeException> exceptionSupplier = () -> new IngenGjeldendePeriodeException(String.format("AktorId: %s har ingen gjeldende oppfølgingsperiode", aktorId.get()));
+        Supplier<IngenGjeldendePeriodeException> exceptionSupplier = () -> new IngenGjeldendePeriodeException("AktorId: %s har ingen gjeldende oppfølgingsperiode".formatted(aktorId.get()));
 
         Oppfolgingsperiode oppfolgingsperiode = sistePeriodeDAO.hentSisteOppfolgingsPeriode(aktorId)
                 // Mangler aktiv oppfølgingsperiode

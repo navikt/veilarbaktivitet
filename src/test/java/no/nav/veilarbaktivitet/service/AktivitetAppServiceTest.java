@@ -1,6 +1,5 @@
 package no.nav.veilarbaktivitet.service;
 
-import lombok.val;
 import no.nav.poao.dab.spring_auth.IAuthService;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetAppService;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
@@ -209,14 +208,14 @@ public class AktivitetAppServiceTest {
 
     @Test
     void skal_ikke_kunne_endre_aktivitet_nar_den_er_avbrutt_eller_fullfort() {
-        val aktivitet = nyttStillingssok().toBuilder().id(AKTIVITET_ID).aktorId(Person.aktorId("haha")).status(AktivitetStatus.AVBRUTT).build();
+        final var aktivitet = nyttStillingssok().toBuilder().id(AKTIVITET_ID).aktorId(Person.aktorId("haha")).status(AktivitetStatus.AVBRUTT).build();
         when(aktivitetService.hentAktivitetMedForhaandsorientering(AKTIVITET_ID)).thenReturn(aktivitet);
         testAlleOppdateringsmetoderUnntattEtikett(aktivitet);
     }
 
     @Test
     void skal_kunne_endre_etikett_nar_aktivitet_avbrutt_eller_fullfort() {
-        val aktivitet = nyttStillingssok().toBuilder().id(AKTIVITET_ID)
+        final var aktivitet = nyttStillingssok().toBuilder().id(AKTIVITET_ID)
                 .aktorId(Person.aktorId("haha")).status(AktivitetStatus.AVBRUTT).build();
         when(aktivitetService.hentAktivitetMedForhaandsorientering(AKTIVITET_ID)).thenReturn(aktivitet);
         AktivitetData aktivitetData = appService.oppdaterEtikett(aktivitet);
@@ -243,7 +242,7 @@ public class AktivitetAppServiceTest {
 
     @Test
     void skal_ikke_kunne_endre_aktivitet_nar_den_er_historisk() {
-        val aktivitet = nyttStillingssok().toBuilder().id(AKTIVITET_ID)
+        final var aktivitet = nyttStillingssok().toBuilder().id(AKTIVITET_ID)
                 .aktorId(Person.aktorId("haha")).historiskDato(new Date()).build();
         when(aktivitetService.hentAktivitetMedForhaandsorientering(AKTIVITET_ID)).thenReturn(aktivitet);
         testAlleOppdateringsmetoder(aktivitet);
@@ -251,8 +250,8 @@ public class AktivitetAppServiceTest {
 
     @Test
     void skal_ikke_kaste_feil_selv_om_en_aktivitet_har_kontorsperre() {
-        val aktorId = Person.aktorId("haha");
-        val aktivitetMedKontorsperre = nyttStillingssok().toBuilder().id(AKTIVITET_ID)
+        final var aktorId = Person.aktorId("haha");
+        final var aktivitetMedKontorsperre = nyttStillingssok().toBuilder().id(AKTIVITET_ID)
                 .aktorId(Person.aktorId("haha")).kontorsperreEnhetId("EnhetId").build();
         when(personService.getAktorIdForPersonBruker(any(Person.class))).thenReturn(Optional.of(aktorId));
         when(aktivitetService.hentAktiviteterForAktorId(aktorId)).thenReturn(List.of(aktivitetMedKontorsperre));

@@ -8,9 +8,10 @@ val _version: String by project
 
 plugins {
     id("java")
+    id("org.jetbrains.kotlin.plugin.spring") version "2.0.21"
     id("application")
     id("maven-publish")
-    kotlin("jvm") version "2.0.20"
+    kotlin("jvm") version "2.0.21"
     id("org.openapi.generator") version "6.4.0"
     id("com.github.davidmc24.gradle.plugin.avro") version "1.3.0"
     id("project-report")
@@ -33,15 +34,6 @@ kotlin {
 
 configurations.all {
     resolutionStrategy.failOnNonReproducibleResolution()
-    // Kan mest sannsynlig fjernes når vi oppgrader poao-tilgang og springboot
-//    resolutionStrategy {
-//        force("com.fasterxml.jackson.core:jackson-databind:2.16.0")
-//        force("com.fasterxml.jackson.core:jackson-core:2.16.0")
-//        force("com.fasterxml.jackson.core:jackson-annotations:2.16.0")
-//        force("com.fasterxml.jackson.core:jackson-datatype-jdk8:2.16.0")
-//        force("com.fasterxml.jackson.module:jackson-module-scala:2.16.0")
-//        force("com.fasterxml.jackson.module:jackson-module-scala_2.13:2.16.0")
-//    }
 }
 
 tasks.test {
@@ -182,10 +174,6 @@ dependencies {
     implementation("org.flywaydb:flyway-database-postgresql:10.15.2")
     implementation("org.postgresql:postgresql:42.7.3")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.17.1")
-//    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.0")
-
-    implementation("org.springframework.cloud:spring-cloud-starter-gateway-mvc:4.1.4")
-
     // Hvis det ønskes swagger doc, foreslås å bruke springdoc (springdoc-openapi-starter-webmvc-ui - se no.nav.fo.veilarbdialog.rest.SwaggerConfig for eksempelconfig)
     implementation("io.swagger.core.v3:swagger-annotations:2.2.8")
 

@@ -33,7 +33,7 @@ open class ArenaController(
     open fun opprettFHO(
         @RequestBody forhaandsorientering: ForhaandsorienteringDTO?,
         @RequestParam arenaaktivitetId: ArenaId,
-        @RequestAttribute(name="fnr") fnr: Fnr
+        @RequestAttribute fnr: Fnr
     ): ArenaAktivitetDTO {
         if (!authService.erInternBruker()) throw ResponseStatusException(HttpStatus.FORBIDDEN, "Må være internbruker")
         getInputFeilmelding(forhaandsorientering, arenaaktivitetId)

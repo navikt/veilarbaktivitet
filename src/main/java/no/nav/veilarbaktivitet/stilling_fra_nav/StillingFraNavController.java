@@ -29,11 +29,11 @@ public class StillingFraNavController {
 
     @PutMapping("/kanDeleCV")
     @AuthorizeFnr(auditlogMessage = "oppdater kan dele CV", resourceIdParamName = "aktivitetId", resourceType = AktivitetResource.class)
-    public AktivitetDTO oppdaterKanCvDeles(@RequestParam("aktivitetId") String aktivitetId, @RequestBody DelingAvCvDTO delingAvCvDTO) {
+    public AktivitetDTO oppdaterKanCvDeles(@RequestParam String aktivitetId, @RequestBody DelingAvCvDTO delingAvCvDTO) {
         boolean erEksternBruker = authService.erEksternBruker();
         var aktivitet = aktivitetAppService.hentAktivitet(Long.parseLong(aktivitetId));
         if (aktivitet.getAktivitetType() != AktivitetTypeData.STILLING_FRA_NAV) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Kan bare dele cv på aktiviteter med type %s", AktivitetTypeData.STILLING_FRA_NAV));
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Kan bare dele cv på aktiviteter med type %s".formatted(AktivitetTypeData.STILLING_FRA_NAV));
         }
         if (aktivitet.getStillingFraNavData().getSvarfrist().toInstant().isBefore(Instant.now())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Svarfrist %s er utløpt.", aktivitet.getStillingFraNavData().getSvarfrist()));
@@ -53,7 +53,7 @@ public class StillingFraNavController {
 
     @PutMapping("/soknadStatus")
     @AuthorizeFnr(auditlogMessage = "oppdater soknadStatus", resourceIdParamName = "aktivitetId", resourceType = AktivitetResource.class)
-    public AktivitetDTO oppdaterSoknadstatus(@RequestParam("aktivitetId") String aktivitetId, @RequestBody SoknadsstatusDTO soknadsstatusDTO) {
+    public AktivitetDTO oppdaterSoknadstatus(@RequestParam String aktivitetId, @RequestBody SoknadsstatusDTO soknadsstatusDTO) {
         boolean erEksternBruker = authService.erEksternBruker();
         var aktivitet = aktivitetAppService.hentAktivitet(Long.parseLong(aktivitetId));
         authService.sjekkTilgangTilPerson(aktivitet.getAktorId().eksternBrukerId(), TilgangsType.LESE); // TODO SKRIVE

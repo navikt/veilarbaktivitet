@@ -546,6 +546,6 @@ public class AktivitetTestService {
         return hentAktiviteterForFnr(mockBruker, veileder)
                 .getAktiviteter().stream()
                 .filter((a) -> Objects.equals(a.getFunksjonellId(), funksjonellId))
-                .findFirst().orElseThrow(() -> new IllegalStateException(String.format("Fant ikke aktivitet med funksjonellId %s", funksjonellId)));
+                .findFirst().orElseThrow(() -> new IllegalStateException("Fant ikke aktivitet med funksjonellId %s".formatted(funksjonellId)));
     }
 }

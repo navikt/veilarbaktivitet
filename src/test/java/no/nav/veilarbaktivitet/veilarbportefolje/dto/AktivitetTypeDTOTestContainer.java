@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.veilarbportefolje.dto;
 
 import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -12,7 +13,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class AktivitetTypeDTOTestContainer {
 
-    static class DomainAktivitetsTyperTest {
+    @Nested
+    class DomainAktivitetsTyperTest {
         static Stream<no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO> domainAktivitetetTyper() {
             return Stream.of(no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO.values());
         }
@@ -25,7 +27,8 @@ class AktivitetTypeDTOTestContainer {
         }
     }
 
-    static class EksternAktivitetstypeTest {
+    @Nested
+    class EksternAktivitetstypeTest {
         @Test
         void mapEksterneAktiviteterTilTiltak() {
             AktivitetTypeDTO aktivitetTypeDTO = AktivitetTypeDTO.fromDomainAktivitetType(no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO.EKSTERNAKTIVITET);
@@ -33,10 +36,12 @@ class AktivitetTypeDTOTestContainer {
         }
     }
 
-    static class AktivitetskortTilArenaTiltakskoderTest {
+    @Nested
+    class AktivitetskortTilArenaTiltakskoderTest {
         static Stream<AktivitetskortType> aktivitetskortTyper() {
             return Stream.of(AktivitetskortType.values());
         }
+
         @ParameterizedTest
         @MethodSource("aktivitetskortTyper")
         void mapEksterneAktiviteterTilTiltak(AktivitetskortType aktivitetskortType) {

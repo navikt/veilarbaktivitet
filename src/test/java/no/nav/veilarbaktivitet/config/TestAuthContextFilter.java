@@ -19,8 +19,8 @@ import static no.nav.common.auth.Constants.AZURE_OID_CLAIM;
 public class TestAuthContextFilter implements Filter {
     public final static String TEST_AUDIENCE = "test-audience";
     public final static String TEST_ISSUER = "https://testIssuer.test";
-    public static final String identHeder = "test_ident";
-    public static final String typeHeder = "test_ident_type";
+    public static final String identHeder = "X_test_ident";
+    public static final String typeHeder = "X_test_ident_type";
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) {
@@ -30,7 +30,7 @@ public class TestAuthContextFilter implements Filter {
 
         AuthContext authContext = new AuthContext(
                 UserRole.valueOf(test_ident_type),
-                new PlainJWT((test_ident_type.equals("EKSTERN") ? brukerClaims(test_ident) : veilederClaims(test_ident)))
+                new PlainJWT((test_ident_type.equals(UserRole.EKSTERN.name()) ? brukerClaims(test_ident) : veilederClaims(test_ident)))
         );
 
         AuthContextHolderThreadLocal.instance().withContext(authContext, () -> filterChain.doFilter(servletRequest, servletResponse));

@@ -1,6 +1,5 @@
 package no.nav.veilarbaktivitet.aktivitet;
 
-import lombok.val;
 import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.aktivitet.dto.KanalDTO;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType;
@@ -29,10 +28,10 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
     }
 
     public static AktivitetData mapAktivitet(ResultSet resultSet) throws SQLException {
-        val rs = new VeilarbAktivitetResultSet(resultSet);
-        val type = AktivitetTypeData.valueOf(rs.getString("aktivitet_type_kode"));
+        final var rs = new VeilarbAktivitetResultSet(resultSet);
+        final var type = AktivitetTypeData.valueOf(rs.getString("aktivitet_type_kode"));
 
-        val aktivitet = AktivitetData
+        final var aktivitet = AktivitetData
                 .builder()
                 .id(rs.getLong("aktivitet_id"))
                 .funksjonellId(Database.hentMaybeUUID(rs, "funksjonell_id"))
@@ -79,7 +78,7 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
     }
 
     private static MoteData mapMoteData(ResultSet resultSet) throws SQLException {
-        val rs = new VeilarbAktivitetResultSet(resultSet);
+        final var rs = new VeilarbAktivitetResultSet(resultSet);
 
         return MoteData.builder()
                 .adresse(rs.getString("adresse"))
@@ -169,7 +168,7 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
     }
 
     private static EksternAktivitetData mapEksternAktivitetData(ResultSet resultSet) throws SQLException {
-        val rs = new VeilarbAktivitetResultSet(resultSet);
+        final var rs = new VeilarbAktivitetResultSet(resultSet);
         var arenaId = rs.getString("ARENA_ID");
         return new EksternAktivitetData(
             rs.getString("SOURCE"),

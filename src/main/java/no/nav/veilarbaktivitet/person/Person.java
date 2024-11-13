@@ -20,7 +20,7 @@ import java.util.Objects;
  * Merk JsonSerializable.Base for å støtte deserialisering av en person til en simpel json streng (brukerid).
  * Deserialisering av Person skjer kun i ett tilfelle, og det er under deserialisering av AktivitetData under skriving til topic.ut.aktivitetdata.rawjson.
  * Denne topicen er foreløpig ikke i bruk av andre funksjoner, og skal den tas i bruk,
- * @TODO er det nok fornuftig å mappe AktivitetData om til en dto før serialisering, og fjerne jackson-annotasjonene på denne klassen.
+ *  TODO er det nok fornuftig å mappe AktivitetData om til en dto før serialisering, og fjerne jackson-annotasjonene på denne klassen.
  */
 public abstract class Person extends JsonSerializable.Base {
     private final Logger secureLogs = LoggerFactory.getLogger("SecureLog");
@@ -65,7 +65,7 @@ public abstract class Person extends JsonSerializable.Base {
         if (this instanceof NavIdent) return Innsender.NAV;
         if (this instanceof SystemUser) return Innsender.SYSTEM;
         logWrongTypeToSecureLogs();
-        throw new IllegalArgumentException(String.format("Ukjent persontype %s", this.getClass().getSimpleName()));
+        throw new IllegalArgumentException("Ukjent persontype %s".formatted(this.getClass().getSimpleName()));
     }
 
     public Ident tilIdent() {
@@ -73,15 +73,14 @@ public abstract class Person extends JsonSerializable.Base {
         if (this instanceof NavIdent) return new Ident(this.get(), IdentType.NAVIDENT);
         if (this instanceof SystemUser) return new Ident(this.get(), IdentType.SYSTEM);
         logWrongTypeToSecureLogs();
-        throw new IllegalArgumentException(String.format("Ukjent persontype %s", this.getClass().getSimpleName()));
+        throw new IllegalArgumentException("Ukjent persontype %s".formatted(this.getClass().getSimpleName()));
     }
 
     public EksternBrukerId eksternBrukerId(){
         if (this instanceof Fnr) return no.nav.common.types.identer.Fnr.of(this.get());
         if (this instanceof AktorId) return no.nav.common.types.identer.AktorId.of(this.get());
         logWrongTypeToSecureLogs();
-        throw new IllegalStateException(String.format(
-            "Bare fnr eller aktorId kan brukes som eksternId, fikk %s", this.getClass().getSimpleName())
+        throw new IllegalStateException("Bare fnr eller aktorId kan brukes som eksternId, fikk %s".formatted(this.getClass().getSimpleName())
         );
     }
 
@@ -127,15 +126,12 @@ public abstract class Person extends JsonSerializable.Base {
     }
 
     public static Person of(Id id) {
-        if (id instanceof no.nav.common.types.identer.Fnr) {
-            return fnr(id.get());
-        } else if (id instanceof no.nav.common.types.identer.AktorId) {
-            return aktorId(id.get());
-        } else if (id instanceof no.nav.common.types.identer.NavIdent) {
-            return navIdent(id.get());
-        } else {
-            throw new IllegalStateException("Person må være enten fnr, aktørId eller navIdent");
-        }
+        return switch (id) {
+            case no.nav.common.types.identer.Fnr fnr -> fnr(id.get());
+            case no.nav.common.types.identer.AktorId aktorId -> aktorId(id.get());
+            case no.nav.common.types.identer.NavIdent navIdent -> navIdent(id.get());
+            case null, default -> throw new IllegalStateException("Person må være enten fnr, aktørId eller navIdent");
+        };
     }
 
     @Override

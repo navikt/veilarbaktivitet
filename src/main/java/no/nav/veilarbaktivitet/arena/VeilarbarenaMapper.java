@@ -1,7 +1,6 @@
 package no.nav.veilarbaktivitet.arena;
 
 import lombok.extern.slf4j.Slf4j;
-import lombok.val;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.arena.model.*;
 import no.nav.veilarbaktivitet.oppfolging.periode.Oppfolgingsperiode;
@@ -73,19 +72,19 @@ public class VeilarbarenaMapper {
     }
 
     private static String getTittel(AktiviteterDTO.Tiltaksaktivitet tiltaksaktivitet){
-        val erVanligAmo = tiltaksaktivitet.getTiltaksnavn().trim()
+        final var erVanligAmo = tiltaksaktivitet.getTiltaksnavn().trim()
                 .equalsIgnoreCase(VANLIG_AMO_NAVN);
         if (erVanligAmo) {
             return "AMO-kurs: " + tiltaksaktivitet.getTiltakLokaltNavn();
         }
 
-        val erGruppeAmo = tiltaksaktivitet.getTiltaksnavn().trim()
+        final var erGruppeAmo = tiltaksaktivitet.getTiltaksnavn().trim()
                 .equalsIgnoreCase(GRUPPE_AMO_NAVN);
         if (erGruppeAmo) {
             return "Gruppe AMO: " + tiltaksaktivitet.getTiltakLokaltNavn();
         }
 
-        val erEnkeltplassAmo = tiltaksaktivitet.getTiltaksnavn().trim()
+        final var erEnkeltplassAmo = tiltaksaktivitet.getTiltaksnavn().trim()
                 .equalsIgnoreCase(ENKELTPLASS_AMO_NAVN);
         if (erEnkeltplassAmo) {
             return "Enkeltplass AMO: " + tiltaksaktivitet.getTiltakLokaltNavn();
@@ -95,9 +94,9 @@ public class VeilarbarenaMapper {
     }
 
     static ArenaAktivitetDTO mapTilAktivitet(AktiviteterDTO.Tiltaksaktivitet tiltaksaktivitet, List<Oppfolgingsperiode> oppfolgingsperioder) {
-        val sistEndret = Optional.ofNullable(tiltaksaktivitet.getStatusSistEndret());
-        val tilDatoDate = mapPeriodeToDate(tiltaksaktivitet.getDeltakelsePeriode(), AktiviteterDTO.Tiltaksaktivitet.DeltakelsesPeriode::getTom);
-        val tilDato = tilDatoDate != null ? DateUtils.dateToLocalDate(tilDatoDate) : null;
+        final var sistEndret = Optional.ofNullable(tiltaksaktivitet.getStatusSistEndret());
+        final var tilDatoDate = mapPeriodeToDate(tiltaksaktivitet.getDeltakelsePeriode(), AktiviteterDTO.Tiltaksaktivitet.DeltakelsesPeriode::getTom);
+        final var tilDato = tilDatoDate != null ? DateUtils.dateToLocalDate(tilDatoDate) : null;
         LocalDate oppslagsDato;
         if (sistEndret.isEmpty() && tilDato == null) {
             oppslagsDato = null;
@@ -112,9 +111,9 @@ public class VeilarbarenaMapper {
         } else {
             oppslagsDato = sistEndret.get();
         }
-        val oppfolgingsperiode = finnOppfolgingsperiodeForArenaAktivitet(oppfolgingsperioder, oppslagsDato);
+        final var oppfolgingsperiode = finnOppfolgingsperiodeForArenaAktivitet(oppfolgingsperioder, oppslagsDato);
 
-        val arenaAktivitetDTO = new ArenaAktivitetDTO()
+        final var arenaAktivitetDTO = new ArenaAktivitetDTO()
                 .setId(tiltaksaktivitet.getAktivitetId().id())
                 .setStatus(EnumUtils.valueOf(ArenaStatus.class, tiltaksaktivitet.getDeltakerStatus()).getStatus())
                 .setType(ArenaAktivitetTypeDTO.TILTAKSAKTIVITET)
@@ -131,19 +130,19 @@ public class VeilarbarenaMapper {
                 .setOpprettetDato(mapToDate(tiltaksaktivitet.getStatusSistEndret()))
                 .setOppfolgingsperiodeId(oppfolgingsperiode != null ? oppfolgingsperiode.oppfolgingsperiodeId() : null);
 
-        val erVanligAmo = tiltaksaktivitet.getTiltaksnavn().trim()
+        final var erVanligAmo = tiltaksaktivitet.getTiltaksnavn().trim()
                 .equalsIgnoreCase(VANLIG_AMO_NAVN);
 
         arenaAktivitetDTO.setTittel(getTittel(tiltaksaktivitet));
 
-        val erJobbKlubb = tiltaksaktivitet.getTiltaksnavn().trim()
+        final var erJobbKlubb = tiltaksaktivitet.getTiltaksnavn().trim()
                 .equalsIgnoreCase(JOBBKLUBB_NAVN);
 
         if (erJobbKlubb) {
             arenaAktivitetDTO.setBeskrivelse(tiltaksaktivitet.getTiltakLokaltNavn());
         }
 
-        val arenaEtikett = Arrays.stream(ArenaStatusEtikettDTO.values())
+        final var arenaEtikett = Arrays.stream(ArenaStatusEtikettDTO.values())
                 .filter(value -> value.name().equals(tiltaksaktivitet.getDeltakerStatus()))
                 .findFirst()
                 .orElse(null);
@@ -169,10 +168,11 @@ public class VeilarbarenaMapper {
 
         Date startDato = motePlan.getFirst().getStartDato();
         Date sluttDato = motePlan.getLast().getSluttDato();
-        AktivitetStatus status = "AVBR".equals(gruppeaktivitet.getStatus()) ?
-                AVBRUTT : mapTilAktivitetsStatus(startDato, sluttDato);
+        AktivitetStatus status = "AVBR".equals(gruppeaktivitet.getStatus())
+                ? AVBRUTT
+                : mapTilAktivitetsStatus(startDato, sluttDato);
 
-        val oppfolgingsperiode = finnOppfolgingsperiodeForArenaAktivitet(oppfolgingsperioder, toLocalDate(startDato));
+        final var oppfolgingsperiode = finnOppfolgingsperiodeForArenaAktivitet(oppfolgingsperioder, toLocalDate(startDato));
 
         return new ArenaAktivitetDTO()
                 .setId(gruppeaktivitet.getAktivitetId().id())
@@ -191,7 +191,7 @@ public class VeilarbarenaMapper {
     static ArenaAktivitetDTO mapTilAktivitet(AktiviteterDTO.Utdanningsaktivitet utdanningsaktivitet, List<Oppfolgingsperiode> oppfolgingsperioder) {
         Date startDato = mapToDate(utdanningsaktivitet.getAktivitetPeriode().getFom());
         Date sluttDato = mapToDate(utdanningsaktivitet.getAktivitetPeriode().getTom());
-        val oppfolgingsperiode = finnOppfolgingsperiodeForArenaAktivitet(oppfolgingsperioder, toLocalDate(startDato));
+        final var oppfolgingsperiode = finnOppfolgingsperiodeForArenaAktivitet(oppfolgingsperioder, toLocalDate(startDato));
 
         return new ArenaAktivitetDTO()
                 .setId(utdanningsaktivitet.getAktivitetId().id())
@@ -208,6 +208,10 @@ public class VeilarbarenaMapper {
 
 
     private static AktivitetStatus mapTilAktivitetsStatus(Date startDato, Date sluttDato) {
+        if (startDato == null || sluttDato == null) {
+            // Har aldri skjedd, men legger inn null-safe håndtering
+            return PLANLAGT;
+        }
         LocalDateTime now = LocalDateTime.now();
 
         LocalDateTime startDatoStart = ofInstant(startDato.toInstant(), systemDefault()).toLocalDate().atStartOfDay();

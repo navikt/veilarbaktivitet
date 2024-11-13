@@ -1,7 +1,5 @@
 package no.nav.veilarbaktivitet.service;
 
-import static org.mockito.ArgumentMatchers.eq;
-
 
 //TOODO fiks denne
 /*
