@@ -146,25 +146,25 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
     }
 
     @Test
-    fun `skal returnere feil hvis bruker i kontekst ikke eier aktiviteten`() {
+    fun `skal kunne hente eier av aktivitetskort`() {
         val nyPeriode = UUID.randomUUID()
         val jobbAktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
             .toBuilder().oppfolgingsperiodeId(nyPeriode).build()
         val aktivitet = aktivitetTestService.opprettAktivitet(mockBruker, mockBruker, jobbAktivitet)
         val aktivitetIdParam = "\$aktivitetId"
-        val annetFodselsnr = "15850299673"
-        val fnrParam = "\$fnr"
         val query = """
-            query($aktivitetIdParam: String! , $fnrParam: String!) {
-                aktivitet(aktivitetId: $aktivitetIdParam, fnr: "$fnrParam") {
+            query($aktivitetIdParam: String!) {
+                aktivitet(aktivitetId: $aktivitetIdParam) {
                    tittel                   
+                },
+                eier(aktivitetId: $aktivitetIdParam) {
+                    fnr
                 }
             }
         """.trimIndent().replace("\n", "")
-        val result = aktivitetTestService.queryAktivitetskortMedID(mockBruker ,mockVeileder , query, aktivitet.id, annetFodselsnr)
+        val result = aktivitetTestService.queryHentEier(mockVeileder , query, aktivitet.id)
         assertThat(result.errors).isNull()
-        assertThat(result.data?.aktivitet?.historikk).isNotNull()
-        assertThat(result.data?.aktivitet?.historikk?.endringer).hasSize(2)
+        assertThat(result.data?.eier).isNotNull()
     }
 
     @Test

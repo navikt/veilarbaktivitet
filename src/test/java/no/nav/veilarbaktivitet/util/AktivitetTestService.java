@@ -108,10 +108,10 @@ public class AktivitetTestService {
         return response.as(GraphqlResult.class);
     }
 
-    public GraphqlResult queryAktivitetskortMedID(MockBruker mockBruker, RestassuredUser user, String query, String aktivitetId, String fnr) {
+    public GraphqlResult queryHentEier(RestassuredUser user, String query, String aktivitetId) {
         var validatableResponse = user
                 .createRequest()
-                .body("{ \"query\": \""+ query  +"\", \"variables\": { \"fnr\": \"" + mockBruker.getFnr() + "\", \"aktivitetId\": \"" + aktivitetId + "\" } }")
+                .body("{ \"query\": \""+ query  +"\", \"variables\": { \"aktivitetId\": \"" + aktivitetId + "\" } }")
                 .post("http://localhost:" + port + "/veilarbaktivitet/graphql")
                 .then();
         var response = validatableResponse
