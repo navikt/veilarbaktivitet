@@ -31,24 +31,39 @@ class Renotifikasjon(
     varseltype: Varseltype,
     varselId: MinSideVarselId,
 ): EksternVarselOppdatering(varselId, VarselHendelseEventType.renotifikasjon_ekstern, varseltype)
+
 class Sendt(
     varseltype: Varseltype,
     varselId: MinSideVarselId,
     val kanal: EksternVarselKanal
 ): EksternVarselOppdatering(varselId, VarselHendelseEventType.sendt_ekstern, varseltype)
+
 class Bestilt(
     varseltype: Varseltype,
     varselId: MinSideVarselId,
 ): EksternVarselOppdatering(varselId, VarselHendelseEventType.bestilt_ekstern, varseltype)
+
 class Feilet(
     varseltype: Varseltype,
     varselId: MinSideVarselId,
     val feilmelding: String
 ): EksternVarselOppdatering(varselId, VarselHendelseEventType.feilet_ekstern, varseltype)
+
 class Venter(
     varseltype: Varseltype,
     varselId: MinSideVarselId,
 ): EksternVarselOppdatering(varselId, VarselHendelseEventType.venter_ekstern, varseltype)
+
+class Ferdigstilt(
+    varseltype: Varseltype,
+    varselId: MinSideVarselId,
+): EksternVarselOppdatering(varselId, VarselHendelseEventType.ferdigstil_ektsern, varseltype)
+
+class Kansellert(
+    varseltype: Varseltype,
+    varselId: MinSideVarselId,
+): EksternVarselOppdatering(varselId, VarselHendelseEventType.kansellert_ekstern, varseltype)
+
 
 fun JsonNode.deserialiserEksternVarselHendelse(): EksternVarselOppdatering {
     val eksternStatus = EksternVarselStatus.valueOf(this["status"].asText())
@@ -77,9 +92,9 @@ fun JsonNode.deserialiserEksternVarselHendelse(): EksternVarselOppdatering {
                 this["feilmelding"].asText()
             )
         }
-        EksternVarselStatus.venter -> {
-            Venter(varseltype, varselId)
-        }
+        EksternVarselStatus.venter -> Venter(varseltype, varselId)
+        EksternVarselStatus.ferdigstilt -> Ferdigstilt(varseltype, varselId)
+        EksternVarselStatus.kansellert -> Kansellert(varseltype, varselId)
     }
 }
 
@@ -92,5 +107,7 @@ enum class EksternVarselStatus {
     bestilt,
     sendt,
     feilet,
-    venter // Vi tror det skjer når meldinger batches?
+    venter,
+    kansellert,
+    ferdigstilt
 }

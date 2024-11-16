@@ -79,6 +79,8 @@ open class VarselHendelseConsumer(
             }
 
             is Venter -> {}
+            is Kansellert -> {}
+            is Ferdigstilt -> {}
         }
 
         varselHendelseMetrikk.incrementVarselKvitteringMottatt(varsel)
