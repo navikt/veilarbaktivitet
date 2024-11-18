@@ -13,7 +13,7 @@ plugins {
     id("maven-publish")
     kotlin("jvm") version "2.0.21"
     id("org.openapi.generator") version "6.4.0"
-    id("com.github.davidmc24.gradle.plugin.avro") version "1.3.0"
+    id("com.github.davidmc24.gradle.plugin.avro") version "1.9.1"
     id("project-report")
     id("jacoco")
     id("org.sonarqube") version "4.4.1.3373"
