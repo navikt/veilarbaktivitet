@@ -7,7 +7,10 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData.*
 import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.LenkeType
-import no.nav.veilarbaktivitet.arkivering.*
+import no.nav.veilarbaktivitet.arkivering.ArkivAktivitet
+import no.nav.veilarbaktivitet.arkivering.ArkivDialogtråd
+import no.nav.veilarbaktivitet.arkivering.Detalj
+import no.nav.veilarbaktivitet.arkivering.EksternHandling
 import no.nav.veilarbaktivitet.arkivering.Stil.*
 import no.nav.veilarbaktivitet.arkivering.etiketter.getArkivEtiketter
 import no.nav.veilarbaktivitet.person.Innsender
@@ -60,7 +63,7 @@ fun AktivitetData.toArkivTypeTekst(): String {
                 AktivitetskortType.AVKLARAG -> "Avklaring"
                 AktivitetskortType.VASV -> "Varig tilrettelagt arbeid i skjermet virksomhet"
                 AktivitetskortType.ARBRRHDAG -> "Arbeidsrettet rehabilitering"
-                AktivitetskortType.DIGIOPPARB -> "Digitalt oppfølgingstiltak"
+                AktivitetskortType.DIGIOPPARB -> "Digitalt jobbsøkerkurs"
                 AktivitetskortType.JOBBK -> "Jobbklubb"
                 AktivitetskortType.GRUPPEAMO -> "Arbeidsmarkedsopplæring (Gruppe)"
                 AktivitetskortType.GRUFAGYRKE -> "Fag- og yrkesopplæring (Gruppe)"
