@@ -28,7 +28,7 @@ jobs:
         if: ${{ github.event_name == 'pull_request_target' }}
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.sha }
+          ref: ${{ github.event.pull_request.head.sha }}
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
