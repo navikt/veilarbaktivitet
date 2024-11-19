@@ -6,7 +6,7 @@ import no.nav.veilarbaktivitet.brukernotifikasjon.avslutt.AvsluttBrukernotifikas
 import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.InaktiverVarselDto
 import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.MinSideVarselId
 import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendMinsideVarselFraOutboxCron
-import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.EksternVarselHendelseDTO
+import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.VarselHendelse
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringTemplate
 import no.nav.veilarbaktivitet.util.KafkaTestService
 import org.apache.kafka.clients.consumer.Consumer
@@ -82,9 +82,9 @@ class TestProducer(
     val brukernotifikasjonVarselHendelseProducer: KafkaStringTemplate,
     val topic: String) {
 
-    fun publiserBrukernotifikasjonVarselHendelse(varselId: MinSideVarselId, eksternVarselHendelseDTO: EksternVarselHendelseDTO): SendResult<String, String> {
+    fun publiserBrukernotifikasjonVarselHendelse(varselId: MinSideVarselId, varselHendelse: VarselHendelse): SendResult<String, String> {
         return brukernotifikasjonVarselHendelseProducer.send(
-            topic, varselId.value.toString(), JsonUtils.toJson(eksternVarselHendelseDTO)
+            topic, varselId.value.toString(), JsonUtils.toJson(varselHendelse)
         ).get()
     }
 

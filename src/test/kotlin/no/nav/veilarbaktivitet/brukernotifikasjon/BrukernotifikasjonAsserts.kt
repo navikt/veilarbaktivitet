@@ -5,10 +5,7 @@ import lombok.SneakyThrows
 import no.nav.tms.varsel.action.Varseltype
 import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.InaktiverVarselDto
 import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.MinSideVarselId
-import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.EksternStatusOppdatertEventName
-import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.EksternVarselHendelseDTO
-import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.EksternVarselKanal
-import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.EksternVarselStatus
+import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.*
 import no.nav.veilarbaktivitet.person.Person.Fnr
 import no.nav.veilarbaktivitet.util.KafkaTestService
 import org.assertj.core.api.Assertions.assertThat
@@ -92,6 +89,13 @@ class BrukernotifikasjonAsserts(var config: BrukernotifikasjonAssertsConfig) {
         kafkaTestService.assertErKonsumert(brukernotifikasjonVarselHendelseProducer.topic, result.recordMetadata.offset())
     }
 
+    fun simulerInternVarselStatusHendelse(internVarselHendelseType: InternVarselHendelseType, varselType: Varseltype, varselId: MinSideVarselId) {
+        val internVarsel = internVarselHendelse(internVarselHendelseType, varselType, varselId)
+        val result = brukernotifikasjonVarselHendelseProducer.publiserBrukernotifikasjonVarselHendelse(
+            varselId, internVarsel
+        )
+    }
+
     fun assertSkalIkkeHaProdusertFlereMeldinger() {
         config.avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner()
         config.sendMinsideVarselFraOutboxCron.sendBrukernotifikasjoner()
@@ -107,6 +111,16 @@ class BrukernotifikasjonAsserts(var config: BrukernotifikasjonAssertsConfig) {
             varselId = varselId.value,
             varseltype = varselType,
             kanal = kanal
+        )
+    }
+
+    private fun internVarselHendelse(internVarselHendelseType: InternVarselHendelseType, varselType: Varseltype, varselId: MinSideVarselId): InternVarselHendelseDTO {
+        return InternVarselHendelseDTO(
+            eventName = internVarselHendelseType,
+            namespace = config.namespace,
+            appnavn = config.appname,
+            varseltype = varselType,
+            varselId = varselId
         )
     }
 }
