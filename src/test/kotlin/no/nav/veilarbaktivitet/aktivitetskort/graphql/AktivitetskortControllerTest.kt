@@ -165,6 +165,7 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
         val result = aktivitetTestService.queryHentEier(mockVeileder , query, aktivitet.id)
         assertThat(result.errors).isNull()
         assertThat(result.data?.eier).isNotNull()
+        assertThat(result.data?.eier?.fnr).isEqualTo(mockBruker.fnr)
     }
 
     @Test
