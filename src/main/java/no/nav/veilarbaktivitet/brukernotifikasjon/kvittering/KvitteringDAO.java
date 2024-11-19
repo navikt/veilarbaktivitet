@@ -3,11 +3,8 @@ package no.nav.veilarbaktivitet.brukernotifikasjon.kvittering;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAktivitetIder;
-import no.nav.veilarbaktivitet.brukernotifikasjon.VarselStatus;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
 import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.MinSideVarselId;
-import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.EksternVarselHendelseDTO;
-import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.Kvittering;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -40,21 +37,31 @@ public class KvitteringDAO {
                 " where BRUKERNOTIFIKASJON_ID = :brukernotifikasjonId ", param);
     }
 
-    public void setEksternVarselStatusOK(MinSideVarselId varselId) {
-        MapSqlParameterSource param = new MapSqlParameterSource()
+    public void setBekreftetSendt(MinSideVarselId varselId) {
+        var param = new MapSqlParameterSource()
                 .addValue("brukernotifikasjonId", varselId.getValue().toString())
                 .addValue("varselKvitteringStatus", VarselKvitteringStatus.OK.toString());
 
-        jdbc.update("" +
-                        " update BRUKERNOTIFIKASJON " +
-                        " set" +
-                        " BEKREFTET_SENDT = CURRENT_TIMESTAMP, " +
-                        " VARSEL_KVITTERING_STATUS = :varselKvitteringStatus" +
-//                        " where BRUKERNOTIFIKASJON.VARSEL_KVITTERING_STATUS != 'FEILET' " +
-                        " where STATUS != 'AVSLUTTET'" +
-                        " and BRUKERNOTIFIKASJON_ID = :brukernotifikasjonId"
-                , param
-        );
+        var sql = """
+                update BRUKERNOTIFIKASJON
+                set BEKREFTET_SENDT = CURRENT_TIMESTAMP,
+                VARSEL_KVITTERING_STATUS = :varselKvitteringStatus
+                where BRUKERNOTIFIKASJON_ID = :brukernotifikasjonId
+        """;
+        jdbc.update(sql, param);
+    }
+    public void setFerdigStiltEllerKansellert(MinSideVarselId varselId) {
+        var param = new MapSqlParameterSource()
+                .addValue("brukernotifikasjonId", varselId.getValue().toString())
+                .addValue("varselKvitteringStatus", VarselKvitteringStatus.OK.toString());
+
+        var sql = """
+                update BRUKERNOTIFIKASJON
+                set ferdig_behandlet = CURRENT_TIMESTAMP,
+                VARSEL_KVITTERING_STATUS = :varselKvitteringStatus
+                where BRUKERNOTIFIKASJON_ID = :brukernotifikasjonId
+        """;
+        jdbc.update(sql, param);
     }
 
     public void setFerdigBehandlet(long id) {
@@ -101,36 +108,4 @@ public class KvitteringDAO {
                 """, parameterSource, rowmapper);
     }
 
-    public void lagreKvitering(String bestillingsId, Kvittering melding, EksternVarselHendelseDTO heleMeldingen) {
-        SqlParameterSource parameterSource = new MapSqlParameterSource()
-                .addValue("BRUKERNOTIFIKASJON_ID", bestillingsId)
-                .addValue("STATUS", melding.getStatus())
-                .addValue("MELDING", melding.getMelding())
-                .addValue("distribusjonId", null)
-                .addValue("BESKJED", heleMeldingen.toString());
-        jdbc.update("""
-                insert into  BRUKERNOTIFIKAJSON_KVITERING_TABELL
-                        (  BRUKERNOTIFIKASJON_ID,  STATUS,  MELDING,  distribusjonId,  BESKJED )
-                VALUES  ( :BRUKERNOTIFIKASJON_ID, :STATUS, :MELDING, :distribusjonId, :BESKJED )
-                """, parameterSource);
-    }
-
-    public void setAvsluttetHvisVarselKvitteringStatusErIkkeSatt(String brukernotifikasjonsId) {
-        MapSqlParameterSource param = new MapSqlParameterSource()
-                .addValue("brukernotifikasjonsId", brukernotifikasjonsId)
-                .addValue("avsluttetStatus", VarselStatus.AVSLUTTET.name())
-                .addValue("eksternKvitteringIkkeSattStatus", VarselKvitteringStatus.IKKE_SATT.name());
-        int update = jdbc.update(
-            """
-                 update BRUKERNOTIFIKASJON
-                 set STATUS = :avsluttetStatus
-                 where BRUKERNOTIFIKASJON_ID = :brukernotifikasjonsId
-                 AND VARSEL_KVITTERING_STATUS = :eksternKvitteringIkkeSattStatus
-                """
-                , param);
-
-        if (update > 0) {
-            log.warn("Brukernotifikasjon id={} avsluttet uten at eksterne varsel er sendt, fordi done ble sannsynligvis trigger av eksternt system.", brukernotifikasjonsId);
-        }
-    }
 }

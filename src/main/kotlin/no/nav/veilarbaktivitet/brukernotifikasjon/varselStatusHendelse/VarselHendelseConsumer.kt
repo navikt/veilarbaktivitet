@@ -30,24 +30,29 @@ open class VarselHendelseConsumer(
         val melding = kafkaRecord.value().deserialiserVarselHendelse()
         when (melding) {
             is EksternVarselOppdatering -> behandleEksternVarselHendelse(melding)
-            is InternVarselHendelseDTO -> behandleInternVarselHendelse(melding)
+            is InternVarselHendelse -> behandleInternVarselHendelse(melding)
             is VarselFraAnnenApp -> {}
         }
     }
 
-    open fun behandleInternVarselHendelse(hendelse: InternVarselHendelseDTO) {
+    open fun behandleInternVarselHendelse(hendelse: InternVarselHendelse) {
         varselHendelseMetrikk.incrementInternVarselMetrikk(hendelse)
         log.info("Minside varsel (hendelse) av type {} er {} varselId {}", hendelse.varseltype.name, hendelse.eventName, hendelse.varselId)
         when (hendelse.eventName) {
             InternVarselHendelseType.opprettet -> {}
             InternVarselHendelseType.inaktivert -> {
-                val opprettet = varselDAO.hentOpprettetTidspunkt(hendelse.varselId)
-                if (opprettet.isEmpty) return;
-                val tidTilInaktivering = Duration.between(opprettet.get(), LocalDateTime.now())
-                varselHendelseMetrikk.recordTidTilInaktivering(tidTilInaktivering)
+                recordTidTilInaktivering(hendelse)
+                varselDAO.setAvsluttetStatus(hendelse.varselId)
             }
             InternVarselHendelseType.slettet -> {}
         }
+    }
+
+    private fun recordTidTilInaktivering(hendelse: InternVarselHendelse) {
+        val opprettet = varselDAO.hentOpprettetTidspunkt(hendelse.varselId)
+        if (opprettet.isEmpty) return;
+        val tidTilInaktivering = Duration.between(opprettet.get(), LocalDateTime.now())
+        varselHendelseMetrikk.recordTidTilInaktivering(tidTilInaktivering)
     }
 
     open fun behandleEksternVarselHendelse(varsel: EksternVarselOppdatering) {
@@ -64,10 +69,11 @@ open class VarselHendelseConsumer(
         log.info("Minside varsel (ekstern) av type {} er {} varselId {}", varsel.varseltype, varsel.hendelseType, varselId);
 
         when (varsel) {
-            is Sendt -> {
-                kvitteringDAO.setEksternVarselStatusOK(varselId)
-            }
             is Bestilt -> {}
+            is Venter -> {}
+            is Sendt -> {
+                kvitteringDAO.setBekreftetSendt(varselId)
+            }
             is Renotifikasjon -> {}
             is Feilet -> {
                 log.warn(
@@ -77,10 +83,9 @@ open class VarselHendelseConsumer(
                 )
                 kvitteringDAO.setFeilet(varselId)
             }
-
-            is Venter -> {}
-            is Kansellert -> {}
-            is Ferdigstilt -> {}
+            is Ferdigstilt, is Kansellert -> {
+                kvitteringDAO.setFerdigStiltEllerKansellert(varselId)
+            }
         }
 
         varselHendelseMetrikk.incrementVarselKvitteringMottatt(varsel)
