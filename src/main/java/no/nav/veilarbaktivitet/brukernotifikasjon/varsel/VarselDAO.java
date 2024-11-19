@@ -302,7 +302,7 @@ public class VarselDAO {
         MapSqlParameterSource param = new MapSqlParameterSource()
                 .addValue("brukernotifikasjonsId", varselId.getValue().toString())
                 .addValue("avsluttetStatus", VarselStatus.AVSLUTTET.name());
-        int update = jdbcTemplate.update(
+        jdbcTemplate.update(
                 """
                      update BRUKERNOTIFIKASJON
                      set STATUS = :avsluttetStatus, 
