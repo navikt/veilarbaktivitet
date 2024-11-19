@@ -7,7 +7,7 @@ package no.nav.veilarbaktivitet.aktivitetskort.dto
       AVKLARAG  - Avklaring
       VASV  - Varig tilrettelagt arbeid i skjermet virksomhet
       ARBRRHDAG” - Arbeidsrettet rehabilitering (dag)
-      DIGIOPPARB - Digitalt oppfølgingstiltak for arbeidsledige (jobbklubb)
+      DIGIOPPARB - Digitalt jobbsøkerkurs for arbeidsledige (jobbklubb)
       JOBBK - Jobbklubb
       GRUPPEAMO Gruppe AMO (arbeidsmarkedsopplæring)
       GRUFAGYRKE  - Gruppe Fag- og yrkesopplæring VGS og høyere yrkesfaglig utdanning
