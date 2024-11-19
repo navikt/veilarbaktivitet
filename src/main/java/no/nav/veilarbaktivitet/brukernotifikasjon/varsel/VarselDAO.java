@@ -297,4 +297,19 @@ public class VarselDAO {
         brukernotifikasjonIds
                 .forEach(brukernotifikasjonId -> kobleAktivitetIdTilBrukernotifikasjon(brukernotifikasjonId, aktivitetId, aktivitetVersjon));
     }
+
+    public void setAvsluttetStatus(MinSideVarselId varselId) {
+        MapSqlParameterSource param = new MapSqlParameterSource()
+                .addValue("brukernotifikasjonsId", varselId.getValue().toString())
+                .addValue("avsluttetStatus", VarselStatus.AVSLUTTET.name());
+        int update = jdbcTemplate.update(
+                """
+                     update BRUKERNOTIFIKASJON
+                     set STATUS = :avsluttetStatus, 
+                         ferdig_behandlet = CURRENT_TIMESTAMP, 
+                         avsluttet = CURRENT_TIMESTAMP
+                     where BRUKERNOTIFIKASJON_ID = :brukernotifikasjonsId
+                    """
+                , param);
+    }
 }
