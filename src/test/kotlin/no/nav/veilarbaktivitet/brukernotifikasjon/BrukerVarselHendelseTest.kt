@@ -92,7 +92,7 @@ internal class BrukerVarselHendelseTest(
         val aktivitetDTO = aktivitetTestService.opprettAktivitet(mockBruker, skalOpprettes)
 
 
-        val oppgaveRecord = opprettOppgave(mockBruker, aktivitetDTO)
+        val oppgaveRecord = opprettVarsel(mockBruker, aktivitetDTO, VarselType.STILLING_FRA_NAV)
         val eventId = UUID.fromString(oppgaveRecord.varselId)
 
         assertVarselStatus(eventId, VarselStatus.SENDT)
@@ -116,6 +116,38 @@ internal class BrukerVarselHendelseTest(
         Assertions.assertEquals(0.0, gauge?.value())
     }
 
+    @Test
+    fun `notifikasjonssatus ferdigsstilt skal sette kvitteringsstatus OK`() {
+        val mockBruker = navMockService.createHappyBruker()
+        val aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet()
+        val skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false)
+        val aktivitetDTO = aktivitetTestService.opprettAktivitet(mockBruker, skalOpprettes)
+
+        val beskjed = opprettVarsel(mockBruker, aktivitetDTO, VarselType.IKKE_FATT_JOBBEN)
+        val eventId = UUID.fromString(beskjed.varselId)
+
+        assertVarselStatus(eventId, VarselStatus.SENDT)
+
+        brukernotifikasjonAsserts.simulerEksternVarselStatusFerdigstilt(beskjed)
+        assertEksternVarselKvitteringStatus(eventId, VarselKvitteringStatus.OK)
+    }
+
+    @Test
+    fun `notifikasjonssatus kansellert skal sette kvitteringsstatus OK`() {
+        val mockBruker = navMockService.createHappyBruker()
+        val aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet()
+        val skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false)
+        val aktivitetDTO = aktivitetTestService.opprettAktivitet(mockBruker, skalOpprettes)
+
+        val beskjed = opprettVarsel(mockBruker, aktivitetDTO, VarselType.STILLING_FRA_NAV)
+        val eventId = UUID.fromString(beskjed.varselId)
+
+        assertVarselStatus(eventId, VarselStatus.SENDT)
+
+        brukernotifikasjonAsserts.simulerEksternVarselStatusKansellert(beskjed)
+        assertEksternVarselKvitteringStatus(eventId, VarselKvitteringStatus.OK)
+    }
+
     @SneakyThrows
     @Test
     fun ekstern_done_event() {
@@ -125,7 +157,7 @@ internal class BrukerVarselHendelseTest(
         val aktivitetDTO = aktivitetTestService.opprettAktivitet(mockBruker, skalOpprettes)
         Assertions.assertEquals(0, varselDao.hentAntallUkvitterteVarslerForsoktSendt(-1))
 
-        val oppgaveVarsel = opprettOppgave(mockBruker, aktivitetDTO)
+        val oppgaveVarsel = opprettVarsel(mockBruker, aktivitetDTO, VarselType.FORHAANDSORENTERING)
         val varselId = UUID.fromString(oppgaveVarsel.varselId)
 
         assertVarselStatus(varselId, VarselStatus.SENDT)
@@ -163,14 +195,14 @@ internal class BrukerVarselHendelseTest(
         Assertions.assertEquals(expectedVarselStatus.name, status)
     }
 
-    private fun opprettOppgave(mockBruker: MockBruker, aktivitetDTO: AktivitetDTO): OpprettVarselDto {
+    private fun opprettVarsel(mockBruker: MockBruker, aktivitetDTO: AktivitetDTO, varselType: VarselType): OpprettVarselDto {
         minsideVarselService.opprettVarselPaaAktivitet(
             AktivitetVarsel(
                 aktivitetDTO.id.toLong(),
                 aktivitetDTO.versjon.toLong(),
                 mockBruker.aktorId,
                 "Testvarsel",
-                VarselType.STILLING_FRA_NAV, null, null, null
+                varselType, null, null, null
             )
         )
 

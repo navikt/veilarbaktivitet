@@ -65,6 +65,24 @@ class BrukernotifikasjonAsserts(var config: BrukernotifikasjonAssertsConfig) {
         )
     }
 
+    fun simulerEksternVarselStatusKansellert(varsel: OpprettVarselDto) {
+        simulerEksternVarselStatusHendelse(
+            MinSideVarselId(UUID.fromString(varsel.varselId)),
+            EksternVarselStatus.kansellert,
+            varsel.type,
+            null
+        )
+    }
+
+    fun simulerEksternVarselStatusFerdigstilt(varsel: OpprettVarselDto) {
+        simulerEksternVarselStatusHendelse(
+            MinSideVarselId(UUID.fromString(varsel.varselId)),
+            EksternVarselStatus.ferdigstilt,
+            varsel.type,
+            null
+        )
+    }
+
     @SneakyThrows
     private fun simulerEksternVarselStatusHendelse(varselId: MinSideVarselId, status: EksternVarselStatus, varselType: Varseltype, kanal: EksternVarselKanal?) {
         val eksternVarsel = eksternVarselHendelse(varselId, status, varselType, kanal)
