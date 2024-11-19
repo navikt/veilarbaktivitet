@@ -1,11 +1,13 @@
 package no.nav.veilarbaktivitet.brukernotifikasjon
 
 import junit.framework.TestCase.assertEquals
-import lombok.SneakyThrows
 import no.nav.tms.varsel.action.Varseltype
 import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.InaktiverVarselDto
 import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.MinSideVarselId
-import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.*
+import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.EksternStatusOppdatertEventName
+import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.EksternVarselKanal
+import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.EksternVarselStatus
+import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.InternVarselHendelseType
 import no.nav.veilarbaktivitet.person.Person.Fnr
 import no.nav.veilarbaktivitet.util.KafkaTestService
 import org.assertj.core.api.Assertions.assertThat
@@ -80,20 +82,27 @@ class BrukernotifikasjonAsserts(var config: BrukernotifikasjonAssertsConfig) {
         )
     }
 
-    @SneakyThrows
     private fun simulerEksternVarselStatusHendelse(varselId: MinSideVarselId, status: EksternVarselStatus, varselType: Varseltype, kanal: EksternVarselKanal?) {
         val eksternVarsel = eksternVarselHendelse(varselId, status, varselType, kanal)
-        val result = brukernotifikasjonVarselHendelseProducer.publiserBrukernotifikasjonVarselHendelse(
-            varselId, eksternVarsel
-        )
-        kafkaTestService.assertErKonsumert(brukernotifikasjonVarselHendelseProducer.topic, result.recordMetadata.offset())
+        simulerVarselHendelse(varselId, eksternVarsel)
     }
 
-    fun simulerInternVarselStatusHendelse(internVarselHendelseType: InternVarselHendelseType, varselType: Varseltype, varselId: MinSideVarselId) {
-        val internVarsel = internVarselHendelse(internVarselHendelseType, varselType, varselId)
+    fun simulerInternVarselStatusHendelse(varselId: MinSideVarselId, internVarselHendelseType: InternVarselHendelseType, varselType: Varseltype) {
+        val internVarsel = internVarselHendelse(varselId, internVarselHendelseType, varselType)
+        simulerVarselHendelse(varselId, internVarsel)
+    }
+
+    fun simulerVarselFraAnnenApp() {
+        val annenAppSittVarsel = internVarselHendelse(MinSideVarselId(UUID.randomUUID()), InternVarselHendelseType.opprettet, Varseltype.Beskjed)
+            .copy(appnavn = "annen app")
+        simulerVarselHendelse(MinSideVarselId(annenAppSittVarsel.varselId), annenAppSittVarsel)
+    }
+
+    private fun simulerVarselHendelse(varselId: MinSideVarselId, hendelse: TestVarselHendelseDTO) {
         val result = brukernotifikasjonVarselHendelseProducer.publiserBrukernotifikasjonVarselHendelse(
-            varselId, internVarsel
+            varselId, hendelse
         )
+        kafkaTestService.assertErKonsumert(brukernotifikasjonVarselHendelseProducer.topic, result.recordMetadata.offset())
     }
 
     fun assertSkalIkkeHaProdusertFlereMeldinger() {
@@ -114,13 +123,13 @@ class BrukernotifikasjonAsserts(var config: BrukernotifikasjonAssertsConfig) {
         )
     }
 
-    private fun internVarselHendelse(internVarselHendelseType: InternVarselHendelseType, varselType: Varseltype, varselId: MinSideVarselId): InternVarselHendelseDTO {
+    private fun internVarselHendelse(varselId: MinSideVarselId, hendelseType: InternVarselHendelseType, varselType: Varseltype): InternVarselHendelseDTO {
         return InternVarselHendelseDTO(
-            eventName = internVarselHendelseType,
             namespace = config.namespace,
             appnavn = config.appname,
             varseltype = varselType,
-            varselId = varselId
+            varselId = varselId.value,
+            eventName = hendelseType.name,
         )
     }
 }

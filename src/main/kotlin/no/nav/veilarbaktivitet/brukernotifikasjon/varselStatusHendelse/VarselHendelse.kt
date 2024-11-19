@@ -30,7 +30,7 @@ fun String.deserialiserVarselHendelse(): VarselHendelse {
     return when (eventName == EksternStatusOppdatertEventName) {
         true -> jsonTree.deserialiserEksternVarselHendelse()
         else -> {
-            return InternVarselHendelseDTO(
+            return InternVarselHendelse(
                 namespace = jsonTree["namespace"].asText(),
                 varseltype = varseltype,
                 appnavn = appNavn,

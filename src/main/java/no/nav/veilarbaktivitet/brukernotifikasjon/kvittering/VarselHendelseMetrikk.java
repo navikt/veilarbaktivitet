@@ -6,7 +6,7 @@ import io.micrometer.core.instrument.Timer;
 import kotlin.enums.EnumEntries;
 import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.EksternVarselOppdatering;
 import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.Feilet;
-import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.InternVarselHendelseDTO;
+import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.InternVarselHendelse;
 import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.VarselHendelseEventType;
 import org.springframework.stereotype.Component;
 
@@ -54,7 +54,7 @@ public class VarselHendelseMetrikk {
         tidTilInaktiveringTimer.record(duration);
     }
 
-    public void incrementInternVarselMetrikk(InternVarselHendelseDTO event) {
+    public void incrementInternVarselMetrikk(InternVarselHendelse event) {
         Counter.builder(VARSEL_HENDELSE)
                 .tag(VarselHendelseMetrikk.HENDELSE_TYPE, event.getHendelseType().name())
                 .tag(VarselHendelseMetrikk.VARSEL_TYPE, event.getVarseltype().name())

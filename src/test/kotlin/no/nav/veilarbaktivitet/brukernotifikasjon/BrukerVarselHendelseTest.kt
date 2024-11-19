@@ -12,8 +12,10 @@ import no.nav.veilarbaktivitet.brukernotifikasjon.avslutt.AvsluttBrukernotifikas
 import no.nav.veilarbaktivitet.brukernotifikasjon.kvittering.VarselHendelseMetrikk.VARSEL_HENDELSE
 import no.nav.veilarbaktivitet.brukernotifikasjon.kvittering.VarselKvitteringStatus
 import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.AktivitetVarsel
+import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.MinSideVarselId
 import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendMinsideVarselFraOutboxCron
 import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.VarselDAO
+import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.InternVarselHendelseType
 import no.nav.veilarbaktivitet.db.DbTestUtils
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker
 import no.nav.veilarbaktivitet.mock_nav_modell.NavMockService
@@ -76,11 +78,8 @@ internal class BrukerVarselHendelseTest(
 
     @Test
     fun skalIkkeBehandleKvitteringerFraAndreApper() {
-        // opprett oppgave
-        // send kvittering med samme varselid, men annen app
-        // sjekk status ikke endret
-        // send kvittering for vår app
-        // sjekk status endret
+        /* Asserter at meldingen er konsummert inni utility funksjonen */
+        brukernotifikasjonAsserts.simulerVarselFraAnnenApp()
     }
 
     @SneakyThrows
@@ -96,19 +95,15 @@ internal class BrukerVarselHendelseTest(
         val eventId = UUID.fromString(oppgaveRecord.varselId)
 
         assertVarselStatus(eventId, VarselStatus.SENDT)
-
         assertEksternVarselKvitteringStatus(eventId, VarselKvitteringStatus.IKKE_SATT)
 
         brukernotifikasjonAsserts.simulerEksternVarselStatusSendt(oppgaveRecord)
-
         assertEksternVarselKvitteringStatus(eventId, VarselKvitteringStatus.OK)
 
         brukernotifikasjonAsserts.simulerEksternVarselStatusFeilet(oppgaveRecord)
-
         assertEksternVarselKvitteringStatus(eventId, VarselKvitteringStatus.FEILET)
 
         brukernotifikasjonAsserts.simulerEksternVarselStatusSendt(oppgaveRecord)
-
         assertEksternVarselKvitteringStatus(eventId, VarselKvitteringStatus.OK)
 
         sendMinsideVarselFraOutboxCron.countForsinkedeVarslerSisteDognet()
@@ -117,7 +112,7 @@ internal class BrukerVarselHendelseTest(
     }
 
     @Test
-    fun `notifikasjonssatus ferdigsstilt skal sette kvitteringsstatus OK`() {
+    fun `ekstern-varsel-hendelse FERDIGSTILT skal sette kvitteringsstatus OK`() {
         val mockBruker = navMockService.createHappyBruker()
         val aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet()
         val skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false)
@@ -133,7 +128,7 @@ internal class BrukerVarselHendelseTest(
     }
 
     @Test
-    fun `notifikasjonssatus kansellert skal sette kvitteringsstatus OK`() {
+    fun `ekstern-varsel-hendelse KANSELLERT skal sette kvitteringsstatus OK`() {
         val mockBruker = navMockService.createHappyBruker()
         val aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet()
         val skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false)
@@ -146,6 +141,25 @@ internal class BrukerVarselHendelseTest(
 
         brukernotifikasjonAsserts.simulerEksternVarselStatusKansellert(beskjed)
         assertEksternVarselKvitteringStatus(eventId, VarselKvitteringStatus.OK)
+    }
+
+    @Test
+    fun `varsel-hendelse inaktivert skal sette status AVSLUTTET`() {
+        val mockBruker = navMockService.createHappyBruker()
+        val aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet()
+        val skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false)
+        val aktivitetDTO = aktivitetTestService.opprettAktivitet(mockBruker, skalOpprettes)
+
+        val beskjed = opprettVarsel(mockBruker, aktivitetDTO, VarselType.STILLING_FRA_NAV)
+        val varselId = UUID.fromString(beskjed.varselId)
+
+        assertVarselStatus(varselId, VarselStatus.SENDT)
+
+        brukernotifikasjonAsserts.simulerInternVarselStatusHendelse(
+            MinSideVarselId(varselId),
+            InternVarselHendelseType.inaktivert ,
+            beskjed.type)
+        assertVarselStatus(varselId, VarselStatus.AVSLUTTET)
     }
 
     @SneakyThrows

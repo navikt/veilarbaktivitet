@@ -30,12 +30,12 @@ open class VarselHendelseConsumer(
         val melding = kafkaRecord.value().deserialiserVarselHendelse()
         when (melding) {
             is EksternVarselOppdatering -> behandleEksternVarselHendelse(melding)
-            is InternVarselHendelseDTO -> behandleInternVarselHendelse(melding)
+            is InternVarselHendelse -> behandleInternVarselHendelse(melding)
             is VarselFraAnnenApp -> {}
         }
     }
 
-    open fun behandleInternVarselHendelse(hendelse: InternVarselHendelseDTO) {
+    open fun behandleInternVarselHendelse(hendelse: InternVarselHendelse) {
         varselHendelseMetrikk.incrementInternVarselMetrikk(hendelse)
         log.info("Minside varsel (hendelse) av type {} er {} varselId {}", hendelse.varseltype.name, hendelse.eventName, hendelse.varselId)
         when (hendelse.eventName) {
@@ -48,7 +48,7 @@ open class VarselHendelseConsumer(
         }
     }
 
-    private fun recordTidTilInaktivering(hendelse: InternVarselHendelseDTO) {
+    private fun recordTidTilInaktivering(hendelse: InternVarselHendelse) {
         val opprettet = varselDAO.hentOpprettetTidspunkt(hendelse.varselId)
         if (opprettet.isEmpty) return;
         val tidTilInaktivering = Duration.between(opprettet.get(), LocalDateTime.now())
