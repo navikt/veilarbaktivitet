@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import no.nav.tms.varsel.action.Varseltype
 import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.MinSideVarselId
 
-data class InternVarselHendelseDTO(
+data class InternVarselHendelse(
     @JsonProperty("@event_name") val eventName: InternVarselHendelseType,
     val namespace: String,
     val appnavn: String,
