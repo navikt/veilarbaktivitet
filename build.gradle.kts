@@ -175,7 +175,7 @@ dependencies {
     implementation("org.postgresql:postgresql:42.7.3")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.17.1")
     // Hvis det ønskes swagger doc, foreslås å bruke springdoc (springdoc-openapi-starter-webmvc-ui - se no.nav.fo.veilarbdialog.rest.SwaggerConfig for eksempelconfig)
-    implementation("io.swagger.core.v3:swagger-annotations:2.2.8")
+    implementation("io.swagger.core.v3:swagger-annotations:2.2.26")
 
     // BigQuery
     implementation(platform("com.google.cloud:libraries-bom:26.45.0"))
