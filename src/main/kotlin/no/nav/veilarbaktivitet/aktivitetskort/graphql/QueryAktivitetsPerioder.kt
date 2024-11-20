@@ -21,7 +21,12 @@ class Extension(val classification: String)
 
 class QueryAktivitetsPerioder(
     val perioder: List<OppfolgingsPeriode>? = emptyList(),
-    val aktivitet: AktivitetDTO? = null
+    val aktivitet: AktivitetDTO? = null,
+    val eier: Eier? = null
+)
+
+class Eier(
+    val fnr: String
 )
 
 class GraphqlResult(
