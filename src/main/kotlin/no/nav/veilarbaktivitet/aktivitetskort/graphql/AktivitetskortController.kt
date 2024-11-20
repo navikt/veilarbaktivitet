@@ -64,6 +64,14 @@ class AktivitetskortController(
             .let { AktivitetDTOMapper.mapTilAktivitetDTO(it, erEksternBruker) }
     }
 
+    @QueryMapping
+    fun eier(@Argument aktivitetId: Long): Eier {
+        val eksternBrukerId = ownerProvider.getOwner(aktivitetId.toString())
+            ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "No owner found for aktivitetId")
+        authService.sjekkTilgangTilPerson(eksternBrukerId, TilgangsType.LESE)
+        return Eier(eksternBrukerId.get())
+    }
+
     @SchemaMapping(typeName="AktivitetDTO", field="historikk")
     fun getHistorikk(aktivitet: AktivitetDTO): Historikk {
         val aktivitetId = aktivitet.id.toLong()
