@@ -146,6 +146,29 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
     }
 
     @Test
+    fun `skal kunne hente eier av aktivitetskort`() {
+        val nyPeriode = UUID.randomUUID()
+        val jobbAktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
+            .toBuilder().oppfolgingsperiodeId(nyPeriode).build()
+        val aktivitet = aktivitetTestService.opprettAktivitet(mockBruker, mockBruker, jobbAktivitet)
+        val aktivitetIdParam = "\$aktivitetId"
+        val query = """
+            query($aktivitetIdParam: String!) {
+                aktivitet(aktivitetId: $aktivitetIdParam) {
+                   tittel                   
+                },
+                eier(aktivitetId: $aktivitetIdParam) {
+                    fnr
+                }
+            }
+        """.trimIndent().replace("\n", "")
+        val result = aktivitetTestService.queryHentEier(mockVeileder , query, aktivitet.id)
+        assertThat(result.errors).isNull()
+        assertThat(result.data?.eier).isNotNull()
+        assertThat(result.data?.eier?.fnr).isEqualTo(mockBruker.fnr)
+    }
+
+    @Test
     fun `skal kunne hente historikk`() {
         val nyPeriode = UUID.randomUUID()
         val jobbAktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
