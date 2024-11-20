@@ -1,6 +1,11 @@
 type Query {
     perioder(fnr: String!): [OppfolgingsPeriode]
     aktivitet(aktivitetId: String): AktivitetDTO
+    eier(aktivitetId: String): Eier
+}
+
+type Eier {
+    fnr: String
 }
 
 type Historikk {
