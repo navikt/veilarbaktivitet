@@ -171,7 +171,7 @@ dependencies {
     implementation("org.springframework.kafka:spring-kafka")
     implementation("com.squareup.okhttp3:okhttp")
     implementation("io.micrometer:micrometer-registry-prometheus-simpleclient")
-    implementation("org.flywaydb:flyway-database-postgresql:10.15.2")
+    implementation("org.flywaydb:flyway-database-postgresql:10.22.0")
     implementation("org.postgresql:postgresql:42.7.4")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.17.1")
     // Hvis det ønskes swagger doc, foreslås å bruke springdoc (springdoc-openapi-starter-webmvc-ui - se no.nav.fo.veilarbdialog.rest.SwaggerConfig for eksempelconfig)
