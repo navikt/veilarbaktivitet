@@ -188,7 +188,7 @@ dependencies {
 //test dependencies
     testImplementation("no.nav.poao-tilgang:poao-tilgang-test-wiremock:$poao_tilgang_version")
 
-    testImplementation("org.awaitility:awaitility:4.1.0")
+    testImplementation("org.awaitility:awaitility:4.2.2")
 //    testImplementation("com.github.tomakehurst:wiremock:3.0.0-beta-2")
 //    testImplementation("org.springframework.cloud:spring-cloud-starter-contract-stub-runner:4.0.1")
     
