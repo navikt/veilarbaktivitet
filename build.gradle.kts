@@ -19,7 +19,7 @@ plugins {
     id("org.sonarqube") version "4.4.1.3373"
     id("org.springframework.boot") version "3.0.2"
     kotlin("plugin.lombok") version "2.0.21"
-    id("io.freefair.lombok") version "8.10"
+    id("io.freefair.lombok") version "8.11"
 }
 
 java {
