@@ -16,7 +16,7 @@ plugins {
     id("com.github.davidmc24.gradle.plugin.avro") version "1.3.0"
     id("project-report")
     id("jacoco")
-    id("org.sonarqube") version "4.4.1.3373"
+    id("org.sonarqube") version "6.0.0.5145"
     id("org.springframework.boot") version "3.3.1"
     kotlin("plugin.lombok") version "2.0.21"
     id("io.freefair.lombok") version "8.11"
