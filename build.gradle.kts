@@ -1,6 +1,6 @@
 
 val spring_boot_version = "3.4.0"
-val common_version = "3.2024.10.25_13.44-9db48a0dbe67"
+val common_version = "3.2024.11.26_16.35-432a29107830"
 val dab_common_version = "2024.11.14-10.46.174740baf5c7"
 val poao_tilgang_version = "2024.11.08_14.51-f6a9a0795785"
 val shedlock_version = "5.9.0"
@@ -12,7 +12,7 @@ plugins {
     id("application")
     id("maven-publish")
     kotlin("jvm") version "2.0.21"
-    id("org.openapi.generator") version "6.4.0"
+    id("org.openapi.generator") version "7.10.0"
     id("com.github.davidmc24.gradle.plugin.avro") version "1.9.1"
     id("project-report")
     id("jacoco")
