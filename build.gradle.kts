@@ -152,7 +152,7 @@ dependencies {
     implementation("no.nav.common:client:$common_version")
     implementation("no.nav.common:util:$common_version")
     implementation("no.nav.common:types:$common_version")
-    implementation("net.sourceforge.collections:collections-generic:4.01")
+    implementation("org.apache.commons:commons-collections4:4.1")
     implementation("no.nav.tms.varsel:kotlin-builder:2.1.0")
     implementation("no.nav.poao.dab:spring-auth:$dab_common_version")
     implementation("no.nav.poao.dab:spring-a2-annotations:$dab_common_version")
