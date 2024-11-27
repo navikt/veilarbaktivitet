@@ -3,7 +3,7 @@ val spring_boot_version = "3.4.0"
 val common_version = "3.2024.11.26_16.35-432a29107830"
 val dab_common_version = "2024.11.14-10.46.174740baf5c7"
 val poao_tilgang_version = "2024.11.08_14.51-f6a9a0795785"
-val shedlock_version = "5.9.0"
+val shedlock_version = "6.0.2"
 val _version: String by project
 
 plugins {
