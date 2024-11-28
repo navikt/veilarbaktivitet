@@ -7,8 +7,8 @@ import no.nav.veilarbaktivitet.aktivitet.domain.StillingsoekEtikettData;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.EtikettTypeDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.JobbStatusTypeDTO;
-import org.apache.commons.collections15.BidiMap;
-import org.apache.commons.collections15.bidimap.DualHashBidiMap;
+import org.apache.commons.collections4.BidiMap;
+import org.apache.commons.collections4.bidimap.DualHashBidiMap;
 
 import static lombok.AccessLevel.PRIVATE;
 

@@ -5,13 +5,6 @@
 
 version: 2
 
-registries:
-  maven-github:
-    type: maven-repository
-    url: https://github-package-registry-mirror.gc.nav.no/cached/maven-release
-    username: x-access-token
-    password: no-secret-required
-
 updates:
   - package-ecosystem: github-actions
     directory: "/"

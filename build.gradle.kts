@@ -1,9 +1,9 @@
 
-val spring_boot_version = "3.3.1"
-val common_version = "3.2024.10.25_13.44-9db48a0dbe67"
-val dab_common_version = "2024.08.12-09.31.acb34e4804a0"
+val spring_boot_version = "3.4.0"
+val common_version = "3.2024.11.26_16.35-432a29107830"
+val dab_common_version = "2024.11.14-10.46.174740baf5c7"
 val poao_tilgang_version = "2024.11.08_14.51-f6a9a0795785"
-val shedlock_version = "5.9.0"
+val shedlock_version = "6.0.2"
 val _version: String by project
 
 plugins {
@@ -12,12 +12,12 @@ plugins {
     id("application")
     id("maven-publish")
     kotlin("jvm") version "2.0.21"
-    id("org.openapi.generator") version "6.4.0"
-    id("com.github.davidmc24.gradle.plugin.avro") version "1.3.0"
+    id("org.openapi.generator") version "7.10.0"
+    id("com.github.davidmc24.gradle.plugin.avro") version "1.9.1"
     id("project-report")
     id("jacoco")
     id("org.sonarqube") version "4.4.1.3373"
-    id("org.springframework.boot") version "3.3.1"
+    id("org.springframework.boot") version "3.4.0"
     kotlin("plugin.lombok") version "2.0.21"
     id("io.freefair.lombok") version "8.11"
 }
@@ -130,13 +130,13 @@ if (hasProperty("buildScan")) {
 }
 
 dependencies {
-    annotationProcessor("org.projectlombok:lombok:1.18.32")
-    testAnnotationProcessor("org.projectlombok:lombok:1.18.32")
+    annotationProcessor("org.projectlombok:lombok:1.18.36")
+    testAnnotationProcessor("org.projectlombok:lombok:1.18.36")
 
     implementation(enforcedPlatform("org.springframework.boot:spring-boot-dependencies:$spring_boot_version"))
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:$spring_boot_version")
 
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
 
     implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:$shedlock_version")
     implementation("net.javacrumbs.shedlock:shedlock-spring:$shedlock_version")
@@ -152,7 +152,7 @@ dependencies {
     implementation("no.nav.common:client:$common_version")
     implementation("no.nav.common:util:$common_version")
     implementation("no.nav.common:types:$common_version")
-    implementation("net.sourceforge.collections:collections-generic:4.01")
+    implementation("org.apache.commons:commons-collections4:4.1")
     implementation("no.nav.tms.varsel:kotlin-builder:2.1.0")
     implementation("no.nav.poao.dab:spring-auth:$dab_common_version")
     implementation("no.nav.poao.dab:spring-a2-annotations:$dab_common_version")
@@ -173,7 +173,7 @@ dependencies {
     implementation("io.micrometer:micrometer-registry-prometheus-simpleclient")
     implementation("org.flywaydb:flyway-database-postgresql:11.0.0")
     implementation("org.postgresql:postgresql:42.7.4")
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.17.1")
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.18.1")
     // Hvis det ønskes swagger doc, foreslås å bruke springdoc (springdoc-openapi-starter-webmvc-ui - se no.nav.fo.veilarbdialog.rest.SwaggerConfig for eksempelconfig)
     implementation("io.swagger.core.v3:swagger-annotations:2.2.26")
 
@@ -194,7 +194,7 @@ dependencies {
     
 //    testImplementation("org.springframework.cloud:spring-cloud-contract-wiremock:4.1.3")
 
-    testImplementation("com.networknt:json-schema-validator:1.5.3")
+    testImplementation("com.networknt:json-schema-validator:1.5.4")
 
 //    testImplementation("de.mkammerer.wiremock-junit5:wiremock-junit5:1.1.0")
 //    testImplementation("io.github.ricall.junit5-wiremock:junit5-wiremock:2.0.0")
@@ -209,5 +209,5 @@ dependencies {
     testImplementation("org.springframework.kafka:spring-kafka-test")
     testImplementation("org.mockito:mockito-core")
     testImplementation("io.zonky.test:embedded-database-spring-test:2.5.1")
-    testImplementation("io.zonky.test:embedded-postgres:2.0.7")
+    testImplementation("io.zonky.test:embedded-postgres:2.1.0")
 }
