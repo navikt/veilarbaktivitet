@@ -176,4 +176,19 @@ internal class AktivitetsplanControllerTest : SpringBootTestBase() {
             .assertThat()
             .statusCode(HttpStatus.FORBIDDEN.value())
     }
+
+    @Test
+    fun  når_udelt_referat_opprettes_så_sendes_melding_til_oversikten() {
+        val happyBruker = navMockService.createBruker()
+        val veileder = navMockService.createVeileder(happyBruker)
+        val aktivitet = aktivitetTestService.opprettAktivitet(happyBruker, veileder, AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE))
+        val aktivitetPayloadJson = JsonUtils.toJson(aktivitet)
+        veileder
+            .createRequest(happyBruker)
+            .body(aktivitetPayloadJson)
+            .put("http://localhost:$port/veilarbaktivitet/api/aktivitet/${aktivitet.id}/referat")
+            .then()
+            .assertThat()
+            .statusCode(HttpStatus.OK.value())
+    }
 }
