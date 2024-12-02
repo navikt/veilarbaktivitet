@@ -9,6 +9,7 @@ import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvFerdigAktivitetException;
 import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvHistoriskAktivitetException;
 import no.nav.veilarbaktivitet.eventsLogger.BigQueryClient;
 import no.nav.veilarbaktivitet.eventsLogger.EventType;
+import no.nav.veilarbaktivitet.oversikten.OversiktenService;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
 import org.slf4j.Logger;
@@ -31,6 +32,7 @@ public class AktivitetAppService {
     private final MetricService metricService;
     private final PersonService personService;
     private final BigQueryClient bigQueryClient;
+    private final OversiktenService oversiktenService;
 
     private static final Set<AktivitetTypeData> TYPER_SOM_KAN_ENDRES_EKSTERNT = new HashSet<>(Arrays.asList(
             AktivitetTypeData.EGENAKTIVITET,
@@ -234,7 +236,7 @@ public class AktivitetAppService {
                 aktivitet
         );
 
-        var referatHarNåBlittPublisert = !originalAktivitet.getMoteData().isReferatPublisert() && oppdatertAktivtiet.getMoteData().isReferatPublisert()
+        var referatHarNåBlittPublisert = !originalAktivitet.getMoteData().isReferatPublisert() && oppdatertAktivtiet.getMoteData().isReferatPublisert();
         if(referatHarNåBlittPublisert) {
             // TODO: Send stoppmelding til oversikten
             bigQueryClient.logEvent(oppdatertAktivtiet, EventType.SAMTALEREFERAT_DELT_MED_BRUKER);
@@ -247,7 +249,7 @@ public class AktivitetAppService {
         if (referatHarNåFåttInnhold) {
             var referatIkkePublisert = !oppdatertAktivtiet.getMoteData().isReferatPublisert();
             if (referatIkkePublisert) {
-                // TODO: Send startmelding til oversikten
+                oversiktenService.lagreStartMeldingOmUdeltSamtalereferatIUtboks(aktivitet.getAktorId());
             }
             bigQueryClient.logEvent(oppdatertAktivtiet, EventType.SAMTALEREFERAT_FIKK_INNHOLD);
         }

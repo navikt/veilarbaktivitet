@@ -1,4 +1,4 @@
-package no.nav.fo.veilarbdialog.oversiktenVaas
+package no.nav.veilarbaktivitet.oversikten
 
 import no.nav.common.types.identer.Fnr
 import java.time.ZonedDateTime

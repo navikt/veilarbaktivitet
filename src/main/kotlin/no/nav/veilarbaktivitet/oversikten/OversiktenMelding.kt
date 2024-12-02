@@ -1,10 +1,10 @@
-package no.nav.fo.veilarbdialog.oversiktenVaas
+package no.nav.veilarbaktivitet.oversikten
 
 import java.time.LocalDateTime
 
 data class OversiktenMelding(
     val personID: String,
-    val avsender: String = "veilarbdialog",
+    val avsender: String = "veilarbaktivitet",
     val kategori: Kategori,
     val operasjon: Operasjon,
     val hendelse: Hendelse
@@ -13,12 +13,12 @@ data class OversiktenMelding(
         private fun baseUrlVeilarbpersonflate(erProd: Boolean) =
             if (erProd) "https://veilarbpersonflate.intern.nav.no" else "https://veilarbpersonflate.intern.dev.nav.no"
 
-        fun forUtgattVarsel(fnr: String, operasjon: Operasjon, erProd: Boolean) = OversiktenMelding(
+        fun forUdeltSamtalereferat(fnr: String, operasjon: Operasjon, erProd: Boolean) = OversiktenMelding(
             personID = fnr,
-            kategori = Kategori.UTGATT_VARSEL,
+            kategori = Kategori.UDELT_SAMTALEREFERAT,
             operasjon = operasjon,
             hendelse = Hendelse(
-                beskrivelse = "Bruker har et utgått varsel",
+                beskrivelse = "Bruker har et udelt samtalereferat",
                 dato = LocalDateTime.now(),
                 lenke = "${baseUrlVeilarbpersonflate(erProd)}/aktivitetsplan",
             )
@@ -33,7 +33,7 @@ data class OversiktenMelding(
     )
 
     enum class Kategori {
-        UTGATT_VARSEL
+        UDELT_SAMTALEREFERAT
     }
 
     enum class Operasjon {
