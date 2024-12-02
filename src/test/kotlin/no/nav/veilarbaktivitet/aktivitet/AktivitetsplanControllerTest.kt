@@ -3,12 +3,19 @@ package no.nav.veilarbaktivitet.aktivitet
 import no.nav.common.json.JsonUtils
 import no.nav.veilarbaktivitet.SpringBootTestBase
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO
+import no.nav.veilarbaktivitet.oversikten.OversiktenMeldingMedMetadataRepository
 import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 
-internal class AktivitetsplanControllerTest : SpringBootTestBase() {
+internal class AktivitetsplanControllerTest: SpringBootTestBase() {
+
+    @Autowired
+    lateinit var oversiktenMeldingMedMetadataRepository: OversiktenMeldingMedMetadataRepository;
+
     @Test
     fun veileder_skal_kunne_oprette_aktivitet() {
         val happyBruker = navMockService.createBruker()
@@ -178,10 +185,14 @@ internal class AktivitetsplanControllerTest : SpringBootTestBase() {
     }
 
     @Test
-    fun  når_udelt_referat_opprettes_så_sendes_melding_til_oversikten() {
+    fun når_udelt_referat_opprettes_så_sendes_melding_til_oversikten() {
         val happyBruker = navMockService.createBruker()
         val veileder = navMockService.createVeileder(happyBruker)
-        val aktivitet = aktivitetTestService.opprettAktivitet(happyBruker, veileder, AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE))
+        val aktivitet = aktivitetTestService.opprettAktivitet(
+            happyBruker,
+            veileder,
+            AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE)
+        )
         val aktivitetPayloadJson = JsonUtils.toJson(aktivitet)
         veileder
             .createRequest(happyBruker)
@@ -190,5 +201,6 @@ internal class AktivitetsplanControllerTest : SpringBootTestBase() {
             .then()
             .assertThat()
             .statusCode(HttpStatus.OK.value())
+        assertThat(oversiktenMeldingMedMetadataRepository.hentAlleSomSkalSendes()).hasSize(1)
     }
 }

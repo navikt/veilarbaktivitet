@@ -1,6 +1,10 @@
-package no.nav.fo.veilarbdialog.oversiktenVaas
+package no.nav.veilarbaktivitet.oversikten
 
 import no.nav.common.types.identer.Fnr
+import no.nav.fo.veilarbdialog.oversiktenVaas.MeldingKey
+import no.nav.fo.veilarbdialog.oversiktenVaas.OversiktenMelding
+import no.nav.fo.veilarbdialog.oversiktenVaas.OversiktenMeldingMedMetadata
+import no.nav.fo.veilarbdialog.oversiktenVaas.UtsendingStatus
 import no.nav.veilarbaktivitet.config.database.Database
 import no.nav.veilarbaktivitet.veilarbdbutil.VeilarbAktivitetSqlParameterSource
 import org.springframework.jdbc.core.RowMapper

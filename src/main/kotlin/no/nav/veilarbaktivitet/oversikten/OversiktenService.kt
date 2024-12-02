@@ -3,6 +3,7 @@ package no.nav.fo.veilarbdialog.oversiktenVaas
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.utils.EnvironmentUtils
+import no.nav.veilarbaktivitet.oversikten.OversiktenMeldingMedMetadataRepository
 import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
