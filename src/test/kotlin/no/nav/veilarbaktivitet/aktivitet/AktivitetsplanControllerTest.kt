@@ -202,5 +202,6 @@ internal class AktivitetsplanControllerTest: SpringBootTestBase() {
             .assertThat()
             .statusCode(HttpStatus.OK.value())
         assertThat(oversiktenMeldingMedMetadataRepository.hentAlleSomSkalSendes()).hasSize(1)
+        // TODO: Asserts på melding
     }
 }

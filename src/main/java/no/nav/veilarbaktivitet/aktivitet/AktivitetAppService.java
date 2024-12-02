@@ -234,16 +234,24 @@ public class AktivitetAppService {
                 aktivitet
         );
 
-        if(!originalAktivitet.getMoteData().isReferatPublisert() && oppdatertAktivtiet.getMoteData().isReferatPublisert()) {
+        var referatHarNåBlittPublisert = !originalAktivitet.getMoteData().isReferatPublisert() && oppdatertAktivtiet.getMoteData().isReferatPublisert()
+        if(referatHarNåBlittPublisert) {
+            // TODO: Send stoppmelding til oversikten
             bigQueryClient.logEvent(oppdatertAktivtiet, EventType.SAMTALEREFERAT_DELT_MED_BRUKER);
         }
+
         var forrigeReferat = Optional.ofNullable(originalAktivitet.getMoteData()).map(it -> it.getReferat()).orElse("");
         var nesteReferat = Optional.ofNullable(oppdatertAktivtiet.getMoteData()).map(it -> it.getReferat()).orElse("");
-        if (forrigeReferat.isEmpty() && !nesteReferat.isEmpty() && oppdatertAktivtiet.getAktivitetType() == AktivitetTypeData.MOTE ) {
+
+        var referatHarNåFåttInnhold = forrigeReferat.isEmpty() && !nesteReferat.isEmpty() && oppdatertAktivtiet.getAktivitetType() == AktivitetTypeData.MOTE;
+        if (referatHarNåFåttInnhold) {
+            var referatIkkePublisert = !oppdatertAktivtiet.getMoteData().isReferatPublisert();
+            if (referatIkkePublisert) {
+                // TODO: Send startmelding til oversikten
+            }
             bigQueryClient.logEvent(oppdatertAktivtiet, EventType.SAMTALEREFERAT_FIKK_INNHOLD);
         }
 
         return oppdatertAktivtiet;
     }
-
 }

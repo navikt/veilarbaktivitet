@@ -124,7 +124,7 @@ class AktivitetsplanController(
     @AuthorizeFnr(auditlogMessage = "oppdater referat", resourceIdParamName = "aktivitetId", resourceType = AktivitetResource::class)
     @OnlyInternBruker
     fun oppdaterReferat(@RequestBody aktivitetDTO: AktivitetDTO): AktivitetDTO {
-        // TODO: Upublisert samtalereferat for møter
+        // TODO: Upubliserte og publiserte samtalereferat for møter
         return Optional.of(aktivitetDTO)
             .map { aktivitetDTO -> aktivitetDataMapperService.mapTilAktivitetData(aktivitetDTO) }
             .map { aktivitet -> appService.oppdaterReferat(aktivitet) }
@@ -136,7 +136,6 @@ class AktivitetsplanController(
     @OnlyInternBruker
     @PutMapping("/{aktivitetId}/referat/publiser")
     fun publiserReferat(@RequestBody aktivitetDTO: AktivitetDTO): AktivitetDTO {
-        // TODO: Samtalereferat publisert for møter
         return oppdaterReferat(aktivitetDTO)
     }
 
