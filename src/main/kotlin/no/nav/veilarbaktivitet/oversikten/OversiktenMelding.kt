@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.oversikten
 
 import java.time.LocalDateTime
 
+// TODO: Test
 data class OversiktenMelding(
     val personID: String,
     val avsender: String = "veilarbaktivitet",

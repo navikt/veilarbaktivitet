@@ -3,13 +3,18 @@ package no.nav.veilarbaktivitet.aktivitet
 import no.nav.common.json.JsonUtils
 import no.nav.veilarbaktivitet.SpringBootTestBase
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO
+import no.nav.veilarbaktivitet.oversikten.OversiktenMelding
 import no.nav.veilarbaktivitet.oversikten.OversiktenMeldingMedMetadataRepository
+import no.nav.veilarbaktivitet.oversikten.UtsendingStatus
 import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
+import java.time.ZonedDateTime
+import java.time.temporal.ChronoUnit
 
 internal class AktivitetsplanControllerTest: SpringBootTestBase() {
 
@@ -191,9 +196,12 @@ internal class AktivitetsplanControllerTest: SpringBootTestBase() {
         val aktivitet = aktivitetTestService.opprettAktivitet(
             happyBruker,
             veileder,
-            AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE)
+            AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE).setErReferatPublisert(false).setReferat("")
         )
-        val aktivitetPayloadJson = JsonUtils.toJson(aktivitet)
+        val oppdatertAktivitet = aktivitet
+        oppdatertAktivitet.setReferat("Et referat")
+        val aktivitetPayloadJson = JsonUtils.toJson(oppdatertAktivitet)
+
         veileder
             .createRequest(happyBruker)
             .body(aktivitetPayloadJson)
@@ -201,7 +209,17 @@ internal class AktivitetsplanControllerTest: SpringBootTestBase() {
             .then()
             .assertThat()
             .statusCode(HttpStatus.OK.value())
-        assertThat(oversiktenMeldingMedMetadataRepository.hentAlleSomSkalSendes()).hasSize(1)
-        // TODO: Asserts på melding
+
+        val meldingerTilOversikten = oversiktenMeldingMedMetadataRepository.hentAlleSomSkalSendes()
+        assertThat(meldingerTilOversikten).hasSize(1)
+        val melding = meldingerTilOversikten.first()
+        assertThat(melding.fnr.get()).isEqualTo(happyBruker.fnr)
+        assertThat(melding.kategori).isEqualTo(OversiktenMelding.Kategori.UDELT_SAMTALEREFERAT)
+        assertThat(melding.opprettet).isCloseTo(ZonedDateTime.now(), within(1, ChronoUnit.SECONDS))
+        assertThat(melding.tidspunktSendt).isNull()
+        assertThat(melding.utsendingStatus).isEqualTo(UtsendingStatus.SKAL_SENDES)
     }
+
+    // TODO: IKke send melding når man lagrer for 2. gang
+    // TODO: Send stoppmelding når referat plutselig deles
 }
