@@ -220,6 +220,46 @@ internal class AktivitetsplanControllerTest: SpringBootTestBase() {
         assertThat(melding.utsendingStatus).isEqualTo(UtsendingStatus.SKAL_SENDES)
     }
 
-    // TODO: IKke send melding når man lagrer for 2. gang
+    @Test
+    fun skal_ikke_sende_startmelding_når_referat_oppdateres() {
+        val happyBruker = navMockService.createBruker()
+        val veileder = navMockService.createVeileder(happyBruker)
+        val aktivitet = aktivitetTestService.opprettAktivitet(
+            happyBruker,
+            veileder,
+            AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE).setErReferatPublisert(false).setReferat("Et referat")
+        )
+        val oppdatertAktivitet = aktivitet
+        oppdatertAktivitet.setReferat("Et oppdatert referat")
+        val aktivitetPayloadJson = JsonUtils.toJson(oppdatertAktivitet)
+        val antallMeldingerTilOversiktenFørOppdatering = oversiktenMeldingMedMetadataRepository.hentAlleSomSkalSendes().size
+
+        veileder
+            .createRequest(happyBruker)
+            .body(aktivitetPayloadJson)
+            .put("http://localhost:$port/veilarbaktivitet/api/aktivitet/${aktivitet.id}/referat")
+            .then()
+            .assertThat()
+            .statusCode(HttpStatus.OK.value())
+
+        val antallMeldingerTilOversiktenEtterOppdatering = oversiktenMeldingMedMetadataRepository.hentAlleSomSkalSendes().size
+        assertThat(antallMeldingerTilOversiktenEtterOppdatering).isEqualTo(antallMeldingerTilOversiktenFørOppdatering)
+    }
+
+    @Test
+    fun når_aktivitet_opprettes_med_referat_sendes_melding_til_oversikten() {
+        val happyBruker = navMockService.createBruker()
+        val veileder = navMockService.createVeileder(happyBruker)
+
+        aktivitetTestService.opprettAktivitet(
+            happyBruker,
+            veileder,
+            AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE).setErReferatPublisert(false).setReferat("Et referat")
+        )
+
+        val antallMeldingerTilOversikten = oversiktenMeldingMedMetadataRepository.hentAlleSomSkalSendes().size
+        assertThat(antallMeldingerTilOversikten).isEqualTo(1)
+    }
+
     // TODO: Send stoppmelding når referat plutselig deles
 }
