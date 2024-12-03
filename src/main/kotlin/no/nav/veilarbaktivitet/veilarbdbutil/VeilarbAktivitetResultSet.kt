@@ -18,12 +18,13 @@ class VeilarbAktivitetResultSet(private val resultSet: ResultSet): ResultSet by 
     }
     override fun isWrapperFor( iface: Class<*>): Boolean {
         // TODO Auto-generated method stub
-        return iface != null && iface.isAssignableFrom(this.javaClass)
+        return iface.isAssignableFrom(this.javaClass)
     }
-    override fun <T> unwrap( iface: Class<T>): T {
+    @Suppress("UNCHECKED_CAST")
+    override fun <T> unwrap(iface: Class<T>): T {
         // TODO Auto-generated method stub
         try {
-            if (iface != null && iface.isAssignableFrom(this.javaClass)) {
+            if (iface.isAssignableFrom(this.javaClass)) {
                 return this as T
             }
             throw  java.sql.SQLException("Auto-generated unwrap failed; Revisit implementation")
