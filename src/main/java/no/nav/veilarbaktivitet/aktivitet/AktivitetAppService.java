@@ -119,7 +119,8 @@ public class AktivitetAppService {
             bigQueryClient.logEvent(nyAktivitet, EventType.SAMTALEREFERAT_OPPRETTET);
             var harReferat = !nyAktivitet.getMoteData().getReferat().isEmpty();
             if (harReferat) {
-                oversiktenService.lagreStartMeldingOmUdeltSamtalereferatIUtboks(aktivitetData.getAktorId());
+                // TODO: Lagre
+                var oversiktenSendingUuid = oversiktenService.lagreStartMeldingOmUdeltSamtalereferatIUtboks(aktivitetData.getAktorId());
             }
         }
 
@@ -253,7 +254,8 @@ public class AktivitetAppService {
         if (referatHarNåFåttInnhold) {
             var referatIkkePublisert = !oppdatertAktivtiet.getMoteData().isReferatPublisert();
             if (referatIkkePublisert) {
-                oversiktenService.lagreStartMeldingOmUdeltSamtalereferatIUtboks(aktivitet.getAktorId());
+                var oversiktenSendingUuid = oversiktenService.lagreStartMeldingOmUdeltSamtalereferatIUtboks(aktivitet.getAktorId());
+                // TODO: Lagre
             }
             bigQueryClient.logEvent(oppdatertAktivtiet, EventType.SAMTALEREFERAT_FIKK_INNHOLD);
         }
