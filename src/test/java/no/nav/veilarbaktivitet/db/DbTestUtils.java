@@ -30,7 +30,7 @@ public class DbTestUtils {
             "AKTIVITET",
             "FORHAANDSORIENTERING",
             "SHEDLOCK",
-            "ID_MAPPINGER"
+            "OVERSIKTEN_MELDING_MED_METADATA"
     );
 
     public static void cleanupTestDb(JdbcTemplate db) {

@@ -118,7 +118,7 @@ public class AktivitetAppService {
         if (nyAktivitet.getAktivitetType() == AktivitetTypeData.SAMTALEREFERAT || nyAktivitet.getAktivitetType() == AktivitetTypeData.MOTE) {
             bigQueryClient.logEvent(nyAktivitet, EventType.SAMTALEREFERAT_OPPRETTET);
             var harReferat = !nyAktivitet.getMoteData().getReferat().isEmpty();
-            if (harReferat){
+            if (harReferat) {
                 oversiktenService.lagreStartMeldingOmUdeltSamtalereferatIUtboks(aktivitetData.getAktorId());
             }
         }
