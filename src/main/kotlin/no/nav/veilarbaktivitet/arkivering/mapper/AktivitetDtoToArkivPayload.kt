@@ -58,6 +58,7 @@ fun AktivitetData.toArkivTypeTekst(): String {
                 AktivitetskortType.ARENA_TILTAK -> "Tiltak gjennom NAV"
                 AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD -> "Avtale midlertidig lønnstilskudd"
                 AktivitetskortType.VARIG_LONNSTILSKUDD -> "Avtale varig lønnstilskudd"
+                AktivitetskortType.ARBEIDSTRENING -> "Arbeidstrening"
                 AktivitetskortType.INDOPPFAG -> "Oppfølging"
                 AktivitetskortType.ARBFORB -> "Arbeidsforberedende trening"
                 AktivitetskortType.AVKLARAG -> "Avklaring"

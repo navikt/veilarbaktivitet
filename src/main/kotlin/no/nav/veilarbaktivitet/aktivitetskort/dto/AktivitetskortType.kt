@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.aktivitetskort.dto
 /*
       MIDLERTIDIG_LONNSTILSKUDD - Midlertidig lønnstilskudd
       VARIG_LONNSTILSKUDD - Varig lønnstilskudd
+      ARBEIDSTRENING - Arbeidstrening
       INDOPPFAG - Oppfølging
       ARBFORB - Arbeidsforberedende trening (AFT)
       AVKLARAG  - Avklaring
@@ -16,6 +17,7 @@ package no.nav.veilarbaktivitet.aktivitetskort.dto
 enum class AktivitetskortType {
     MIDLERTIDIG_LONNSTILSKUDD,
     VARIG_LONNSTILSKUDD,
+    ARBEIDSTRENING,
     ARENA_TILTAK,
     INDOPPFAG,
     ARBFORB,
