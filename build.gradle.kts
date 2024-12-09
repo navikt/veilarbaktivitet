@@ -178,7 +178,7 @@ dependencies {
     implementation("io.swagger.core.v3:swagger-annotations:2.2.26")
 
     // BigQuery
-    implementation(platform("com.google.cloud:libraries-bom:26.50.0"))
+    implementation(platform("com.google.cloud:libraries-bom:26.51.0"))
     implementation("com.google.cloud:google-cloud-bigquery")
 
     implementation("io.getunleash:unleash-client-java:9.2.6")
