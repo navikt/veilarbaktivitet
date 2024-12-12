@@ -242,14 +242,15 @@ public class AktivitetDAO {
     private void insertMote(long aktivitetId, long versjon, MoteData moteData) {
         // language=sql
         String sql = """
-                    INSERT INTO MOTE(aktivitet_id, versjon, adresse, forberedelser, kanal, referat, referat_publisert) VALUES (
+                    INSERT INTO MOTE(aktivitet_id, versjon, adresse, forberedelser, kanal, referat, referat_publisert, oversikten_melding_med_metadata_melding_key) VALUES (
                     :aktivitet_id,
                     :versjon,
                     :adresse,
                     :forberedelser,
                     :kanal,
                     :referat,
-                    :referat_publisert)
+                    :referat_publisert,
+                    :oversikten_melding_med_metadata_melding_key)
                     """;
         ofNullable(moteData).ifPresent(m -> {
             SqlParameterSource params = new VeilarbAktivitetSqlParameterSource()
@@ -259,7 +260,8 @@ public class AktivitetDAO {
                     .addValue("forberedelser", moteData.getForberedelser())
                     .addValue("kanal", EnumUtils.getName(moteData.getKanal()))
                     .addValue("referat", moteData.getReferat())
-                    .addValue("referat_publisert", moteData.isReferatPublisert());
+                    .addValue("referat_publisert", moteData.isReferatPublisert())
+                    .addValue("oversikten_melding_med_metadata_melding_key", moteData.getOversiktenSendingUuid());
             namedParameterJdbcTemplate.update(sql, params);
         });
     }
