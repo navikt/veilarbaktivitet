@@ -12,6 +12,7 @@ data class OversiktenMeldingMedMetadata(
     val utsendingStatus: UtsendingStatus = UtsendingStatus.SKAL_SENDES,
     val meldingSomJson: String,
     val kategori: OversiktenMelding.Kategori,
+    val operasjon: OversiktenMelding.Operasjon,
 ) {
     fun tilSendtMeldingMedMetadata() = this.copy(tidspunktSendt = ZonedDateTime.now(), utsendingStatus = UtsendingStatus.SENDT)
 }

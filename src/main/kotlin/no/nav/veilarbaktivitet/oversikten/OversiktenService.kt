@@ -13,7 +13,7 @@ import java.util.*
 @Service
 open class OversiktenService(
     private val aktorOppslagClient: AktorOppslagClient,
-    private val oversiktenMeldingMedMetadataRepository: OversiktenMeldingMedMetadataRepository,
+    private val oversiktenMeldingMedMetadataRepository: OversiktenMeldingMedMetadataDAO,
 //    private val oversiktenProducer: OversiktenProducer
 
 ) {
@@ -39,7 +39,8 @@ open class OversiktenService(
             meldingSomJson = JsonUtils.toJson(melding),
             fnr = fnr,
             kategori = melding.kategori,
-            meldingKey = UUID.randomUUID()
+            meldingKey = UUID.randomUUID(),
+            operasjon = melding.operasjon,
         )
         oversiktenMeldingMedMetadataRepository.lagre(oversiktenMeldingMedMetadata)
         return oversiktenMeldingMedMetadata.meldingKey

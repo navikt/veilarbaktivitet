@@ -4,7 +4,7 @@ import no.nav.common.json.JsonUtils
 import no.nav.veilarbaktivitet.SpringBootTestBase
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO
 import no.nav.veilarbaktivitet.oversikten.OversiktenMelding
-import no.nav.veilarbaktivitet.oversikten.OversiktenMeldingMedMetadataRepository
+import no.nav.veilarbaktivitet.oversikten.OversiktenMeldingMedMetadataDAO
 import no.nav.veilarbaktivitet.oversikten.UtsendingStatus
 import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder
 import org.assertj.core.api.Assertions.assertThat
@@ -19,7 +19,7 @@ import java.time.temporal.ChronoUnit
 internal class AktivitetsplanControllerTest: SpringBootTestBase() {
 
     @Autowired
-    lateinit var oversiktenMeldingMedMetadataRepository: OversiktenMeldingMedMetadataRepository;
+    lateinit var oversiktenMeldingMedMetadataRepository: OversiktenMeldingMedMetadataDAO;
 
     @Test
     fun veileder_skal_kunne_oprette_aktivitet() {

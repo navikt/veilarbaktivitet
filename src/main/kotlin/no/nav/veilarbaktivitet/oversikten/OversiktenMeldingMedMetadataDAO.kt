@@ -11,24 +11,24 @@ import java.sql.ResultSet
 import java.util.*
 
 @Repository
-open class OversiktenMeldingMedMetadataRepository(
+open class OversiktenMeldingMedMetadataDAO(
     private val jdbc: NamedParameterJdbcTemplate
 ) {
     open fun lagre(oversiktenMeldingMedMetadata: OversiktenMeldingMedMetadata) {
         val sql = """ 
             INSERT INTO oversikten_melding_med_metadata (
-                    fnr, opprettet, tidspunkt_sendt, utsending_status, melding, kategori, melding_key)
-            VALUES ( :fnr, :opprettet, :tidspunkt_sendt, :utsending_status, :melding::json, :kategori, :melding_key)
+                    fnr, opprettet, utsending_status, melding, kategori, melding_key, operasjon)
+            VALUES ( :fnr, :opprettet, :utsending_status, :melding::json, :kategori, :melding_key, :operasjon)
         """.trimIndent()
 
         val params = VeilarbAktivitetSqlParameterSource().apply {
             addValue("fnr", oversiktenMeldingMedMetadata.fnr.get())
             addValue("opprettet", oversiktenMeldingMedMetadata.opprettet)
-            addValue("tidspunkt_sendt", oversiktenMeldingMedMetadata.tidspunktSendt)
             addValue("utsending_status", oversiktenMeldingMedMetadata.utsendingStatus.name)
             addValue("melding", oversiktenMeldingMedMetadata.meldingSomJson)
             addValue("kategori", oversiktenMeldingMedMetadata.kategori.name)
             addValue("melding_key", oversiktenMeldingMedMetadata.meldingKey)
+            addValue("operasjon", oversiktenMeldingMedMetadata.operasjon)
         }
 
         jdbc.update(sql, params)
@@ -80,7 +80,8 @@ open class OversiktenMeldingMedMetadataRepository(
             utsendingStatus = UtsendingStatus.valueOf(rs.getString("utsending_status")),
             meldingSomJson = rs.getString("melding"),
             kategori = OversiktenMelding.Kategori.valueOf(rs.getString("kategori")),
-            meldingKey = UUID.fromString(rs.getString("melding_key"))
+            meldingKey = UUID.fromString(rs.getString("melding_key")),
+            operasjon = OversiktenMelding.Operasjon.valueOf(rs.getString("operasjon")),
         )
     }
 }
