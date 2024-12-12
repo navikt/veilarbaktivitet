@@ -38,6 +38,7 @@ class FeatureController(
             .map { it.value }
             .orElse(generateSessionId(response))
 
+        // TODO Hva med eksternbruker?
         val id = authService.getLoggedInnUser().takeIf { it is NavIdent }?.get()
 
         val unleashContext = UnleashContext(
@@ -50,8 +51,8 @@ class FeatureController(
         try {
             return features.associateWith { unleash.isEnabled(it, unleashContext) }
         } catch (e: Exception) {
-            log.error("Feil under henting av features for unleash", e);
-            throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Feil under henting av features for unleash");
+            log.error("Feil under henting av features for unleash", e)
+            throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Feil under henting av features for unleash")
         }
     }
 
