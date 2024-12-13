@@ -1,8 +1,10 @@
 package no.nav.veilarbaktivitet.aktivitet.domain;
 
 import lombok.Builder;
+import lombok.Setter;
 import lombok.Value;
 import lombok.With;
+import lombok.experimental.NonFinal;
 import no.nav.veilarbaktivitet.aktivitet.dto.KanalDTO;
 
 import java.util.UUID;
@@ -17,5 +19,8 @@ public class MoteData {
 
     String referat;
     boolean referatPublisert;
-    UUID oversiktenSendingUuid;
+
+    @Setter
+    @NonFinal
+    UUID oversiktenMeldingUuid;
 }

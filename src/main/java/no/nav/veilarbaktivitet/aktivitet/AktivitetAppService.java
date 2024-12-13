@@ -238,33 +238,37 @@ public class AktivitetAppService {
         final var originalAktivitet = hentAktivitet(aktivitet.getId());
         kanEndreAktivitetGuard(originalAktivitet, aktivitet.getVersjon(), aktivitet.getAktorId());
 
-        var oppdatertAktivitet = aktivitetService.oppdaterReferat(
-                originalAktivitet,
-                aktivitet
-        );
-
         var forrigeReferat = Optional.ofNullable(originalAktivitet.getMoteData()).map(it -> it.getReferat()).orElse("");
-        var nesteReferat = Optional.ofNullable(oppdatertAktivitet.getMoteData()).map(it -> it.getReferat()).orElse("");
+        var nesteReferat = Optional.ofNullable(aktivitet.getMoteData()).map(it -> it.getReferat()).orElse("");
 
         var referatHarNåFåttInnhold = forrigeReferat.isEmpty() && !nesteReferat.isEmpty();
-        var referatHarNåBlittDeltMedBruker = !originalAktivitet.getMoteData().isReferatPublisert() && oppdatertAktivitet.getMoteData().isReferatPublisert();
+        var referatHarNåBlittDeltMedBruker = !originalAktivitet.getMoteData().isReferatPublisert() && aktivitet.getMoteData().isReferatPublisert();
 
+
+        EventType eventType = null;
 
         if (referatHarNåFåttInnhold && !referatHarNåBlittDeltMedBruker) { // Kan kun skje for aktivitetstype "Møte"
-            bigQueryClient.logEvent(oppdatertAktivitet, EventType.SAMTALEREFERAT_OPPRETTET);
-                var oversiktenSendingUuid = oversiktenService.lagreStartMeldingOmUdeltSamtalereferatIUtboks(aktivitet.getAktorId());
-                // TODO: Lagre
+            eventType = EventType.SAMTALEREFERAT_OPPRETTET;
+            var oversiktenSendingUuid = oversiktenService.lagreStartMeldingOmUdeltSamtalereferatIUtboks(aktivitet.getAktorId());
+            // TODO: Lagre
+            aktivitet.getMoteData().setOversiktenMeldingUuid(oversiktenSendingUuid);
         }
         if(referatHarNåFåttInnhold && referatHarNåBlittDeltMedBruker) {
-                bigQueryClient.logEvent(oppdatertAktivitet, EventType.SAMTALEREFERAT_OPPRETTET_OG_DELT_MED_BRUKER);
-
+            eventType = EventType.SAMTALEREFERAT_OPPRETTET_OG_DELT_MED_BRUKER;
         }
         if(!referatHarNåFåttInnhold && referatHarNåBlittDeltMedBruker) {
-            bigQueryClient.logEvent(oppdatertAktivitet, EventType.SAMTALEREFERAT_DELT_MED_BRUKER);
+            eventType = EventType.SAMTALEREFERAT_DELT_MED_BRUKER;
 
             // TODO: Send stoppmelding til oversikten hvis det eksisterer en startmelding
         }
+        var oppdatertAktivitet = aktivitetService.oppdaterReferat(
+            originalAktivitet,
+            aktivitet
+        );
 
+        if(eventType != null) {
+            bigQueryClient.logEvent(oppdatertAktivitet, eventType);
+        }
         return oppdatertAktivitet;
     }
 }

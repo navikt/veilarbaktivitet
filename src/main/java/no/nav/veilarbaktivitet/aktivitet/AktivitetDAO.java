@@ -261,7 +261,7 @@ public class AktivitetDAO {
                     .addValue("kanal", EnumUtils.getName(moteData.getKanal()))
                     .addValue("referat", moteData.getReferat())
                     .addValue("referat_publisert", moteData.isReferatPublisert())
-                    .addValue("oversikten_melding_med_metadata_melding_key", moteData.getOversiktenSendingUuid());
+                    .addValue("oversikten_melding_med_metadata_melding_key", moteData.getOversiktenMeldingUuid());
             namedParameterJdbcTemplate.update(sql, params);
         });
     }
