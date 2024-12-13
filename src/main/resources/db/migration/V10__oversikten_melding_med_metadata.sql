@@ -18,5 +18,12 @@ create table oversikten_melding_med_metadata
 create index oversikten_melding_med_metadata_melding_key_pk on oversikten_melding_med_metadata (melding_key);
 create index oversikten_melding_med_metadata_utsending_status_idx on oversikten_melding_med_metadata (utsending_status);
 
-ALTER TABLE mote
-    ADD COLUMN oversikten_melding_med_metadata_melding_key UUID;
+create table oversikten_melding_aktivitet_mapping (
+    oversikten_melding_key  uuid    not null,
+    aktivitet_id            bigint  not null,
+    FOREIGN KEY (oversikten_melding_key) REFERENCES oversikten_melding_med_metadata(melding_key),
+    FOREIGN KEY (aktivitet_id) REFERENCES aktivitet(id)
+);
+CREATE INDEX oversikten_melding_aktivitet_mapping_melding_key ON oversikten_melding_aktivitet_mapping (oversikten_melding_key);
+CREATE INDEX oversikten_melding_aktivitet_mapping_aktivitet_id ON oversikten_melding_aktivitet_mapping (aktivitet_id);
+

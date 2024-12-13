@@ -238,27 +238,22 @@ public class AktivitetAppService {
         final var originalAktivitet = hentAktivitet(aktivitet.getId());
         kanEndreAktivitetGuard(originalAktivitet, aktivitet.getVersjon(), aktivitet.getAktorId());
 
-        var maybeEventType = hentEventType(originalAktivitet, aktivitet);
-        var oppdatertAktivitet = sendMeldingTilOversiktenOgOppdaterAktivitet(aktivitet, maybeEventType);
-        var lagretAktivitet = aktivitetService.oppdaterReferat(originalAktivitet, oppdatertAktivitet);
+        var oppdatertAktivitet = aktivitetService.oppdaterReferat(originalAktivitet, aktivitet);
 
-        maybeEventType.ifPresent(eventType -> bigQueryClient.logEvent(lagretAktivitet, eventType));
-        return lagretAktivitet;
+        var maybeEventType = hentEventType(originalAktivitet, aktivitet);
+        maybeEventType.ifPresent(eventType -> {
+            bigQueryClient.logEvent(oppdatertAktivitet, eventType);
+            sendMeldingTilOversikten(oppdatertAktivitet, eventType);
+        });
+        return oppdatertAktivitet;
     }
 
-    private AktivitetData sendMeldingTilOversiktenOgOppdaterAktivitet(AktivitetData aktivitet, Optional<EventType> maybeEventType) {
-        if(maybeEventType.isEmpty()) return aktivitet;
-        var eventType = maybeEventType.get();
-
+    private void sendMeldingTilOversikten(AktivitetData aktivitet, EventType eventType) {
         if (eventType == EventType.SAMTALEREFERAT_OPPRETTET) { // Kan kun skje for aktivitetstype "Møte"
             var oversiktenSendingUuid = oversiktenService.lagreStartMeldingOmUdeltSamtalereferatIUtboks(aktivitet.getAktorId());
-            var oppdatertMoteData = aktivitet.getMoteData().withOversiktenMeldingUuid(oversiktenSendingUuid);
-            return aktivitet.withMoteData(oppdatertMoteData);
+            // TODO: Lagre uuid i mapping-tabellen
         } else if (eventType == EventType.SAMTALEREFERAT_DELT_MED_BRUKER) {
             // TODO: Send stoppmelding (hvis det eksisterer startmelding)
-            return aktivitet;
-        } else {
-            return aktivitet;
         }
     }
 

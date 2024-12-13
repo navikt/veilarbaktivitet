@@ -17,5 +17,4 @@ public class MoteData {
 
     String referat;
     boolean referatPublisert;
-    UUID oversiktenMeldingUuid;
 }
