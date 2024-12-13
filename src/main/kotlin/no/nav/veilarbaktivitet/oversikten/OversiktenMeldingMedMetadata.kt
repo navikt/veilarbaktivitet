@@ -4,7 +4,7 @@ import no.nav.common.types.identer.Fnr
 import java.time.ZonedDateTime
 import java.util.*
 
-data class OversiktenMeldingMedMetadata(
+open class OversiktenMeldingMedMetadata(
     val meldingKey: MeldingKey,
     val fnr: Fnr,
     val opprettet: ZonedDateTime = ZonedDateTime.now(),
@@ -13,9 +13,28 @@ data class OversiktenMeldingMedMetadata(
     val meldingSomJson: String,
     val kategori: OversiktenMelding.Kategori,
     val operasjon: OversiktenMelding.Operasjon,
-) {
-    fun tilSendtMeldingMedMetadata() = this.copy(tidspunktSendt = ZonedDateTime.now(), utsendingStatus = UtsendingStatus.SENDT)
-}
+)
+
+class LagretOversiktenMeldingMedMetadata(
+    val id: Long,
+    meldingKey: MeldingKey,
+    fnr: Fnr,
+    opprettet: ZonedDateTime,
+    tidspunktSendt: ZonedDateTime?,
+    utsendingStatus: UtsendingStatus,
+    meldingSomJson: String,
+    kategori: OversiktenMelding.Kategori,
+    operasjon: OversiktenMelding.Operasjon
+) : OversiktenMeldingMedMetadata(
+    meldingKey = meldingKey,
+    fnr = fnr,
+    opprettet = opprettet,
+    tidspunktSendt = tidspunktSendt,
+    utsendingStatus = utsendingStatus,
+    meldingSomJson = meldingSomJson,
+    kategori = kategori,
+    operasjon = operasjon
+)
 
 typealias MeldingKey = UUID
 

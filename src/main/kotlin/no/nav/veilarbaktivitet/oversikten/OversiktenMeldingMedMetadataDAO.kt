@@ -34,7 +34,7 @@ open class OversiktenMeldingMedMetadataDAO(
         jdbc.update(sql, params)
     }
 
-    open fun hentAlleSomSkalSendes(): List<OversiktenMeldingMedMetadata> {
+    open fun hentAlleSomSkalSendes(): List<LagretOversiktenMeldingMedMetadata> {
         val sql = """
             SELECT * FROM oversikten_melding_med_metadata WHERE utsending_status = 'SKAL_SENDES'
         """.trimIndent()
@@ -57,23 +57,24 @@ open class OversiktenMeldingMedMetadataDAO(
         return jdbc.query(sql, params, rowMapper)
     }
 
-    open fun markerSomSendt(meldingKey: MeldingKey) {
+    open fun markerSomSendt(id: Long) {
         val sql = """
            UPDATE oversikten_melding_med_metadata
            SET utsending_status = 'SENDT',
            tidspunkt_sendt = now()
-           WHERE melding_key = :melding_key
+           WHERE id = :id
         """.trimIndent()
 
         val params = VeilarbAktivitetSqlParameterSource().apply {
-            addValue("melding_key", meldingKey)
+            addValue("id", id)
         }
 
         jdbc.update(sql, params)
     }
 
     open val rowMapper = RowMapper { rs: ResultSet, rowNum: Int ->
-        OversiktenMeldingMedMetadata(
+        LagretOversiktenMeldingMedMetadata(
+            id = rs.getLong("id"),
             fnr = Fnr.of(rs.getString("fnr")),
             opprettet = Database.hentZonedDateTime(rs, "opprettet"),
             tidspunktSendt = Database.hentZonedDateTime(rs, "tidspunkt_sendt"),
