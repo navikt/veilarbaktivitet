@@ -33,6 +33,9 @@ open class OversiktenService(
     }
 
     open fun lagreStartMeldingOmUdeltSamtalereferatIUtboks(aktorId: AktorId): MeldingKey {
+
+        //TODO: Sjekk om det allerede finnes en aktiv START-melding
+
         val fnr = aktorOppslagClient.hentFnr(no.nav.common.types.identer.AktorId.of(aktorId.get()))
         val melding = OversiktenMelding.forUdeltSamtalereferat(fnr.toString(), OversiktenMelding.Operasjon.START, erProd)
         val oversiktenMeldingMedMetadata = OversiktenMeldingMedMetadata(
