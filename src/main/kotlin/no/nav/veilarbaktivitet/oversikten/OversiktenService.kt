@@ -4,6 +4,7 @@ import net.javacrumbs.shedlock.spring.annotation.SchedulerLock
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.json.JsonUtils
 import no.nav.common.utils.EnvironmentUtils
+import no.nav.veilarbaktivitet.aktivitet.AktivitetId
 import no.nav.veilarbaktivitet.person.Person.AktorId
 import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Scheduled
@@ -14,6 +15,7 @@ import java.util.*
 open class OversiktenService(
     private val aktorOppslagClient: AktorOppslagClient,
     private val oversiktenMeldingMedMetadataRepository: OversiktenMeldingMedMetadataDAO,
+    private val oversiktenMeldingAktivitetMappingDao: OversiktenMeldingAktivitetMappingDao
 //    private val oversiktenProducer: OversiktenProducer
 
 ) {
@@ -32,12 +34,10 @@ open class OversiktenService(
         }
     }
 
-    open fun lagreStartMeldingOmUdeltSamtalereferatIUtboks(aktorId: AktorId): MeldingKey {
-
-        //TODO: Sjekk om det allerede finnes en aktiv START-melding
-
+    open fun lagreStartMeldingOmUdeltSamtalereferatIUtboks(aktorId: AktorId, aktivitetId: AktivitetId) {
         val fnr = aktorOppslagClient.hentFnr(no.nav.common.types.identer.AktorId.of(aktorId.get()))
-        val melding = OversiktenMelding.forUdeltSamtalereferat(fnr.toString(), OversiktenMelding.Operasjon.START, erProd)
+        val melding =
+            OversiktenMelding.forUdeltSamtalereferat(fnr.toString(), OversiktenMelding.Operasjon.START, erProd)
         val oversiktenMeldingMedMetadata = OversiktenMeldingMedMetadata(
             meldingSomJson = JsonUtils.toJson(melding),
             fnr = fnr,
@@ -46,7 +46,11 @@ open class OversiktenService(
             operasjon = melding.operasjon,
         )
         oversiktenMeldingMedMetadataRepository.lagre(oversiktenMeldingMedMetadata)
-        return oversiktenMeldingMedMetadata.meldingKey
+        oversiktenMeldingAktivitetMappingDao.lagreKoblingMellomOversiktenMeldingOgAktivitet(
+            aktivitetId = aktivitetId,
+            oversiktenMeldingKey = oversiktenMeldingMedMetadata.meldingKey,
+            kategori = OversiktenMelding.Kategori.UDELT_SAMTALEREFERAT
+        )
     }
 
     /*

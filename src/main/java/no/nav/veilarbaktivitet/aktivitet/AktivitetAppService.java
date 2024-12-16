@@ -9,6 +9,8 @@ import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvFerdigAktivitetException;
 import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvHistoriskAktivitetException;
 import no.nav.veilarbaktivitet.eventsLogger.BigQueryClient;
 import no.nav.veilarbaktivitet.eventsLogger.EventType;
+import no.nav.veilarbaktivitet.oversikten.OversiktenMelding;
+import no.nav.veilarbaktivitet.oversikten.OversiktenMeldingAktivitetMappingDao;
 import no.nav.veilarbaktivitet.oversikten.OversiktenService;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
@@ -121,8 +123,7 @@ public class AktivitetAppService {
                 bigQueryClient.logEvent(nyAktivitet, EventType.SAMTALEREFERAT_OPPRETTET_OG_DELT_MED_BRUKER);
             } else {
                 bigQueryClient.logEvent(nyAktivitet, EventType.SAMTALEREFERAT_OPPRETTET);
-                var oversiktenSendingUuid = oversiktenService.lagreStartMeldingOmUdeltSamtalereferatIUtboks(aktivitetData.getAktorId());
-                // TODO: Lagre referanse til melding key i aktiviteten
+                oversiktenService.lagreStartMeldingOmUdeltSamtalereferatIUtboks(aktivitetData.getAktorId(), aktivitetData.getId());
             }
         }
 
@@ -250,10 +251,9 @@ public class AktivitetAppService {
 
     private void sendMeldingTilOversikten(AktivitetData aktivitet, EventType eventType) {
         if (eventType == EventType.SAMTALEREFERAT_OPPRETTET) { // Kan kun skje for aktivitetstype "Møte"
-            var oversiktenSendingUuid = oversiktenService.lagreStartMeldingOmUdeltSamtalereferatIUtboks(aktivitet.getAktorId());
-            // TODO: Lagre uuid i mapping-tabellen
+            oversiktenService.lagreStartMeldingOmUdeltSamtalereferatIUtboks(aktivitet.getAktorId(), aktivitet.getId());
         } else if (eventType == EventType.SAMTALEREFERAT_DELT_MED_BRUKER) {
-            // TODO: Send stoppmelding (hvis det eksisterer startmelding)
+            // TODO: Send stoppmelding
         }
     }
 

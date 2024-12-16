@@ -22,6 +22,7 @@ create table oversikten_melding_aktivitet_mapping (
     id                      serial primary key,
     oversikten_melding_key  uuid    not null,
     aktivitet_id            bigint  not null,
+    kategori                oversikten_kategori not null,
     FOREIGN KEY (oversikten_melding_key) REFERENCES oversikten_melding_med_metadata(melding_key),
     FOREIGN KEY (aktivitet_id) REFERENCES aktivitet(id)
 );
