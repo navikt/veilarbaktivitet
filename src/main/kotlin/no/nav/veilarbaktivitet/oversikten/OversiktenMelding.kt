@@ -2,7 +2,6 @@ package no.nav.veilarbaktivitet.oversikten
 
 import java.time.LocalDateTime
 
-// TODO: Test
 data class OversiktenMelding(
     val personID: String,
     val avsender: String = "veilarbaktivitet",
@@ -12,7 +11,7 @@ data class OversiktenMelding(
 ) {
     companion object {
         private fun baseUrlVeilarbpersonflate(erProd: Boolean) =
-            if (erProd) "https://veilarbpersonflate.intern.nav.no" else "https://veilarbpersonflate.intern.dev.nav.no"
+            if (erProd) "https://veilarbpersonflate.intern.nav.no" else "https://veilarbpersonflate.ansatt.dev.nav.no"
 
         fun forUdeltSamtalereferat(fnr: String, operasjon: Operasjon, erProd: Boolean) = OversiktenMelding(
             personID = fnr,
