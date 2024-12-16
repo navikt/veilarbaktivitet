@@ -11,6 +11,7 @@ import no.nav.poao_tilgang.poao_tilgang_test_wiremock.PoaoTilgangWiremock;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaJsonTemplate;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.NavMockService;
+import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeService;
 import no.nav.veilarbaktivitet.stilling_fra_nav.RekrutteringsbistandStatusoppdatering;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavTestService;
 import no.nav.veilarbaktivitet.util.AktivitetTestService;
@@ -68,6 +69,9 @@ public abstract class SpringBootTestBase {
     @Autowired
     protected NavMockService navMockService;
 
+    @Autowired
+    protected OppfolgingsperiodeService oppfolgingsperiodeService;
+
     @Value("${topic.inn.aktivitetskort}")
     private String aktivitetskortTopic;
 
@@ -83,7 +87,7 @@ public abstract class SpringBootTestBase {
         DbTestUtils.cleanupTestDb(jdbcTemplate);
         JdbcTemplateLockProvider l = (JdbcTemplateLockProvider) lockProvider;
         l.clearCache();
-        aktivitetTestService = new AktivitetTestService(stillingFraNavTestService, port, innRekrutteringsbistandStatusoppdateringTopic, kafkaTestService, stringStringKafkaTemplate, navCommonKafkaJsonTemplate, aktivitetskortTopic);
+        aktivitetTestService = new AktivitetTestService(stillingFraNavTestService, port, innRekrutteringsbistandStatusoppdateringTopic, kafkaTestService, stringStringKafkaTemplate, navCommonKafkaJsonTemplate, aktivitetskortTopic, oppfolgingsperiodeService);
     }
 
     @DynamicPropertySource

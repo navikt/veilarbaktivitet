@@ -31,6 +31,7 @@ import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder
 import no.nav.veilarbaktivitet.mock_nav_modell.WireMockUtil
+import no.nav.veilarbaktivitet.oppfolging.periode.SisteOppfolgingsperiodeV1
 import no.nav.veilarbaktivitet.person.Innsender
 import no.nav.veilarbaktivitet.util.AktivitetskortFeilListener
 import no.nav.veilarbaktivitet.util.AktivitetskortIdMappingListener
@@ -217,6 +218,12 @@ class AktivitetskortConsumerIntegrationTest(
         val serie = ArenaAktivitetskortSerie(mockBruker, "MIDLONNTIL", gammelperiode)
         val actual = serie.ny(AktivitetskortStatus.PLANLAGT, endretTidspunkt = ZonedDateTime.now().minusDays(75))
         aktivitetTestService.opprettEksterntArenaKort(actual)
+        aktivitetTestService.upsertOppfolgingsperiode(SisteOppfolgingsperiodeV1.builder()
+            .uuid(gammelperiode.id)
+            .aktorId(mockBruker.aktorId.get())
+            .startDato(gammelperiode.slutt?.minusDays(10))
+            .sluttDato(gammelperiode.slutt).build()
+        )
         val aktivitetFoer = hentAktivitet(serie.funksjonellId)
         assertThat(aktivitetFoer.oppfolgingsperiodeId).isNotNull()
         assertThat(aktivitetFoer.isHistorisk).isFalse()
@@ -243,9 +250,15 @@ class AktivitetskortConsumerIntegrationTest(
         val serie = ArenaAktivitetskortSerie(mockBruker, "VARIG", avsluttetPeriode)
         val opprettMelding: ArenaKort =
             serie.ny(AktivitetskortStatus.GJENNOMFORES, avsluttetPeriode.slutt!!.minusDays(2))
-        val endretMelding: ArenaKort = serie.ny(AktivitetskortStatus.AVBRUTT, avsluttetPeriode.slutt!!.minusDays(1))
+        val endretMelding: ArenaKort = serie.ny(AktivitetskortStatus.AVBRUTT, avsluttetPeriode.slutt.minusDays(1))
+        aktivitetTestService.upsertOppfolgingsperiode(SisteOppfolgingsperiodeV1.builder()
+            .uuid(avsluttetPeriode.id)
+            .aktorId(mockBruker.aktorId.get())
+            .startDato(avsluttetPeriode.slutt.minusDays(10))
+            .sluttDato(avsluttetPeriode.slutt).build()
+        )
         aktivitetTestService.opprettEksterntArenaKort(opprettMelding)
-        tiltakMigreringCronService!!.settTiltakOpprettetSomHistoriskTilHistorisk()
+        tiltakMigreringCronService.settTiltakOpprettetSomHistoriskTilHistorisk()
         aktivitetTestService.opprettEksterntArenaKort(endretMelding)
         val aktivitet = hentAktivitet(serie.funksjonellId)
         assertThat(aktivitet.status).isEqualTo(AktivitetStatus.AVBRUTT)

@@ -6,10 +6,12 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder
+import no.nav.veilarbaktivitet.oppfolging.periode.SisteOppfolgingsperiodeV1
 import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder
 import no.nav.veilarbaktivitet.util.DateUtils
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import java.time.ZonedDateTime
 import java.util.*
 
 class AktivitetskortControllerTest: SpringBootTestBase() {
@@ -34,12 +36,19 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
         """.trimIndent().replace("\n", "")
 
         val gammelPeriode = UUID.randomUUID()
-        val nyPeriode = UUID.randomUUID()
+        val nyPeriode = mockBruker.oppfolgingsperiodeId
         val jobbAktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
             .toBuilder().oppfolgingsperiodeId(gammelPeriode).build()
         aktivitetTestService.opprettAktivitet(mockBruker, mockBruker, jobbAktivitet)
         val aktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.EGEN)
             .toBuilder().oppfolgingsperiodeId(nyPeriode).build()
+        aktivitetTestService.upsertOppfolgingsperiode(SisteOppfolgingsperiodeV1.builder()
+            .uuid(gammelPeriode)
+            .aktorId(mockBruker.aktorId.get())
+            .startDato(ZonedDateTime.now().minusYears(4))
+            .sluttDato(ZonedDateTime.now().minusYears(4).plusDays(10))
+            .build()
+        )
         aktivitetTestService.opprettAktivitet(mockBruker, mockBruker, aktivitet)
         val result = aktivitetTestService.queryAktivitetskort(mockBruker, mockBruker, query)
         assertThat(result.errors).isNull()
@@ -147,9 +156,8 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
 
     @Test
     fun `skal kunne hente eier av aktivitetskort`() {
-        val nyPeriode = UUID.randomUUID()
         val jobbAktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
-            .toBuilder().oppfolgingsperiodeId(nyPeriode).build()
+            .toBuilder().oppfolgingsperiodeId(mockBruker.oppfolgingsperiodeId).build()
         val aktivitet = aktivitetTestService.opprettAktivitet(mockBruker, mockBruker, jobbAktivitet)
         val aktivitetIdParam = "\$aktivitetId"
         val query = """
@@ -170,9 +178,8 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
 
     @Test
     fun `skal kunne hente historikk`() {
-        val nyPeriode = UUID.randomUUID()
         val jobbAktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
-            .toBuilder().oppfolgingsperiodeId(nyPeriode).build()
+            .toBuilder().oppfolgingsperiodeId(mockBruker.oppfolgingsperiodeId).build()
         val aktivitet = aktivitetTestService.opprettAktivitet(mockBruker, mockBruker, jobbAktivitet)
         aktivitetTestService.oppdaterAktivitetStatus(mockBruker, mockVeileder, aktivitet, AktivitetStatus.GJENNOMFORES)
         val aktivitetIdParam = "\$aktivitetId"
@@ -200,12 +207,11 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
 
     @Test
     fun `skal serialisere datoer riktig (aktivitet)`() {
-        val nyPeriode = UUID.randomUUID()
         // riktig:  "2024-04-30T22:00:00.000+00:00"
         // feil:    "2024-05-01T00:00+02:00"
         val fraDatoIso = "2024-04-30T22:00:00.000+00:00"
         val jobbAktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
-            .toBuilder().oppfolgingsperiodeId(nyPeriode).fraDato(DateUtils.dateFromISO8601(fraDatoIso)).build()
+            .toBuilder().oppfolgingsperiodeId(mockBruker.oppfolgingsperiodeId).fraDato(DateUtils.dateFromISO8601(fraDatoIso)).build()
         val aktivitet = aktivitetTestService.opprettAktivitet(mockBruker, mockBruker, jobbAktivitet)
         aktivitetTestService.oppdaterAktivitetStatus(mockBruker, mockVeileder, aktivitet, AktivitetStatus.GJENNOMFORES)
         val aktivitetIdParam = "\$aktivitetId"
@@ -223,12 +229,11 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
 
     @Test
     fun `skal serialisere datoer riktig (perioder)`() {
-        val nyPeriode = UUID.randomUUID()
         // riktig:  "2024-04-30T22:00:00.000+00:00"
         // feil:    "2024-05-01T00:00+02:00"
         val fraDatoIso = "2024-04-30T22:00:00.000+00:00"
         val jobbAktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
-            .toBuilder().oppfolgingsperiodeId(nyPeriode).fraDato(DateUtils.dateFromISO8601(fraDatoIso)).build()
+            .toBuilder().oppfolgingsperiodeId(mockBruker.oppfolgingsperiodeId).fraDato(DateUtils.dateFromISO8601(fraDatoIso)).build()
         val aktivitet = aktivitetTestService.opprettAktivitet(mockBruker, mockBruker, jobbAktivitet)
         aktivitetTestService.oppdaterAktivitetStatus(mockBruker, mockVeileder, aktivitet, AktivitetStatus.GJENNOMFORES)
         val fnrParam = "\$fnr"

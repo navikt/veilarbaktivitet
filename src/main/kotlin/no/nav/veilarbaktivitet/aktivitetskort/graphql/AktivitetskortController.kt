@@ -1,7 +1,7 @@
 package no.nav.veilarbaktivitet.aktivitetskort.graphql
 
+import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.types.identer.EnhetId
-import no.nav.common.types.identer.Fnr
 import no.nav.poao.dab.spring_auth.IAuthService
 import no.nav.poao.dab.spring_auth.TilgangsType
 import no.nav.veilarbaktivitet.aktivitet.AktivitetAppService
@@ -13,6 +13,7 @@ import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper
 import no.nav.veilarbaktivitet.aktivitetskort.MigreringService
 import no.nav.veilarbaktivitet.config.ownerProviders.AktivitetOwnerProvider
+import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeService
 import no.nav.veilarbaktivitet.person.Person
 import org.springframework.graphql.data.method.annotation.Argument
 import org.springframework.graphql.data.method.annotation.QueryMapping
@@ -30,18 +31,25 @@ class AktivitetskortController(
     val ownerProvider: AktivitetOwnerProvider,
     val aktivitetService: AktivitetService,
     val aktivitetAppService: AktivitetAppService,
+    val oppfolgingsperiodeService: OppfolgingsperiodeService,
+    val aktorOppslagClient: AktorOppslagClient,
     val authService: IAuthService
 ) {
 
     @QueryMapping
     fun perioder(@Argument fnr: String): List<OppfolgingsPeriode> {
-        val fnr = getContextUserIdent(fnr)
-        val eksternBrukerId = Fnr.of(fnr.get())
-        authService.sjekkTilgangTilPerson(eksternBrukerId, TilgangsType.LESE)
-        val aktiviteter = getAktiviteter(fnr)
+        val eksternBrukerId = getContextUserIdent(fnr)
+//        val eksternBrukerId = Fnr.of(fnr.get())
+        authService.sjekkTilgangTilPerson(eksternBrukerId.otherFnr(), TilgangsType.LESE)
+        val aktorId = aktorOppslagClient.hentAktorId(eksternBrukerId.otherFnr())
+        val oppfolgingsPerioder = oppfolgingsperiodeService.hentOppfolgingsPerioder(Person.AktorId(aktorId.get()))
+        val aktiviteter = getAktiviteter(eksternBrukerId)
             .groupBy { it.oppfolgingsperiodeId }
             .toList()
-            .map { OppfolgingsPeriode(it.first, it.second) }
+            .map { (oppfolgingPeriodeId, aktiviteter) ->
+                oppfolgingsPerioder.first { it.oppfolgingsperiodeId.equals(oppfolgingPeriodeId) }
+                    .let { OppfolgingsPeriode(oppfolgingPeriodeId, aktiviteter, it.startTid, it.sluttTid) }
+            }
         return aktiviteter
     }
 
@@ -78,7 +86,7 @@ class AktivitetskortController(
         return historikkService.hentHistorikk(listOf(aktivitetId))[aktivitetId]!!
     }
 
-    private fun getContextUserIdent(fnr: String): Person {
+    private fun getContextUserIdent(fnr: String): Person.Fnr {
         return when {
             authService.erEksternBruker() -> Person.fnr(authService.getLoggedInnUser().get())
             fnr.isNotBlank() -> Person.fnr(fnr)
