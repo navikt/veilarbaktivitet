@@ -39,7 +39,6 @@ class AktivitetskortController(
     @QueryMapping
     fun perioder(@Argument fnr: String): List<OppfolgingsPeriode> {
         val eksternBrukerId = getContextUserIdent(fnr)
-//        val eksternBrukerId = Fnr.of(fnr.get())
         authService.sjekkTilgangTilPerson(eksternBrukerId.otherFnr(), TilgangsType.LESE)
         val aktorId = aktorOppslagClient.hentAktorId(eksternBrukerId.otherFnr())
         val oppfolgingsPerioder = oppfolgingsperiodeService.hentOppfolgingsPerioder(Person.AktorId(aktorId.get()))
