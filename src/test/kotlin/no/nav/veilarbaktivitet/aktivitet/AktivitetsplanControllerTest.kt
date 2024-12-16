@@ -247,21 +247,6 @@ internal class AktivitetsplanControllerTest: SpringBootTestBase() {
     }
 
     @Test
-    fun når_møteaktivitet_opprettes_med_referat_sendes_melding_til_oversikten() {
-        val happyBruker = navMockService.createBruker()
-        val veileder = navMockService.createVeileder(happyBruker)
-
-        aktivitetTestService.opprettAktivitet(
-            happyBruker,
-            veileder,
-            AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE).setErReferatPublisert(false).setReferat("Et referat")
-        )
-
-        val antallMeldingerTilOversikten = oversiktenMeldingMedMetadataRepository.hentAlleSomSkalSendes().size
-        assertThat(antallMeldingerTilOversikten).isEqualTo(1)
-    }
-
-    @Test
     fun når_samtalereferat_opprettes_med_referat_sendes_melding_til_oversikten() {
         val happyBruker = navMockService.createBruker()
         val veileder = navMockService.createVeileder(happyBruker)

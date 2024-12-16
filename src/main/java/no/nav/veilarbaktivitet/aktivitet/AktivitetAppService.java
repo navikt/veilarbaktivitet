@@ -115,7 +115,11 @@ public class AktivitetAppService {
         }
 
         AktivitetData nyAktivitet = aktivitetService.opprettAktivitet(aktivitetData);
-        if (nyAktivitet.getAktivitetType() == AktivitetTypeData.SAMTALEREFERAT) {
+
+        var aktivitetstyperSomKanHaReferatNårAktivitetOpprettes = List.of(AktivitetTypeData.SAMTALEREFERAT);
+        var aktivitetKanHaReferat = aktivitetstyperSomKanHaReferatNårAktivitetOpprettes.contains(nyAktivitet.getAktivitetType());
+
+        if (aktivitetKanHaReferat) {
             var erReferatDeltMedBruker = nyAktivitet.getMoteData().isReferatPublisert();
             if (erReferatDeltMedBruker) {
                 bigQueryClient.logEvent(nyAktivitet, EventType.SAMTALEREFERAT_OPPRETTET_OG_DELT_MED_BRUKER);
