@@ -18,7 +18,7 @@ open class OversiktenMeldingMedMetadataDAO(
         val sql = """ 
             INSERT INTO oversikten_melding_med_metadata (
                     fnr, opprettet, utsending_status, melding, kategori, melding_key, operasjon)
-            VALUES ( :fnr, :opprettet, :utsending_status, :melding::json, :kategori, :melding_key, :operasjon)
+            VALUES ( :fnr, :opprettet, :utsending_status::OVERSIKTEN_UTSENDING_STATUS, :melding::json, :kategori::OVERSIKTEN_KATEGORI, :melding_key, :operasjon::OVERSIKTEN_OPERASJON)
         """.trimIndent()
 
         val params = VeilarbAktivitetSqlParameterSource().apply {
@@ -28,7 +28,7 @@ open class OversiktenMeldingMedMetadataDAO(
             addValue("melding", oversiktenMeldingMedMetadata.meldingSomJson)
             addValue("kategori", oversiktenMeldingMedMetadata.kategori.name)
             addValue("melding_key", oversiktenMeldingMedMetadata.meldingKey)
-            addValue("operasjon", oversiktenMeldingMedMetadata.operasjon)
+            addValue("operasjon", oversiktenMeldingMedMetadata.operasjon.name)
         }
 
         jdbc.update(sql, params)

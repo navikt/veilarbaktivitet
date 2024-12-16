@@ -121,7 +121,7 @@ public class AktivitetAppService {
                 bigQueryClient.logEvent(nyAktivitet, EventType.SAMTALEREFERAT_OPPRETTET_OG_DELT_MED_BRUKER);
             } else {
                 bigQueryClient.logEvent(nyAktivitet, EventType.SAMTALEREFERAT_OPPRETTET);
-                oversiktenService.lagreStartMeldingOmUdeltSamtalereferatIUtboks(aktivitetData.getAktorId(), aktivitetData.getId());
+                oversiktenService.lagreStartMeldingOmUdeltSamtalereferatIUtboks(nyAktivitet.getAktorId(), nyAktivitet.getId());
             }
         }
 

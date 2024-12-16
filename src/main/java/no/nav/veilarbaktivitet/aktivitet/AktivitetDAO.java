@@ -242,15 +242,14 @@ public class AktivitetDAO {
     private void insertMote(long aktivitetId, long versjon, MoteData moteData) {
         // language=sql
         String sql = """
-                    INSERT INTO MOTE(aktivitet_id, versjon, adresse, forberedelser, kanal, referat, referat_publisert, oversikten_melding_med_metadata_melding_key) VALUES (
+                    INSERT INTO MOTE(aktivitet_id, versjon, adresse, forberedelser, kanal, referat, referat_publisert) VALUES (
                     :aktivitet_id,
                     :versjon,
                     :adresse,
                     :forberedelser,
                     :kanal,
                     :referat,
-                    :referat_publisert,
-                    :oversikten_melding_med_metadata_melding_key)
+                    :referat_publisert)
                     """;
         ofNullable(moteData).ifPresent(m -> {
             SqlParameterSource params = new VeilarbAktivitetSqlParameterSource()
