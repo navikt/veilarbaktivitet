@@ -15,7 +15,7 @@ import java.util.*
 open class OversiktenService(
     private val aktorOppslagClient: AktorOppslagClient,
     private val oversiktenMeldingMedMetadataRepository: OversiktenMeldingMedMetadataDAO,
-    private val oversiktenMeldingAktivitetMappingDao: OversiktenMeldingAktivitetMappingDao
+    private val oversiktenMeldingAktivitetMappingDao: OversiktenMeldingAktivitetMappingDAO
 //    private val oversiktenProducer: OversiktenProducer
 
 ) {

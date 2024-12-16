@@ -6,7 +6,7 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.stereotype.Repository
 
 @Repository
-open class OversiktenMeldingAktivitetMappingDao(private val template: JdbcTemplate) {
+open class OversiktenMeldingAktivitetMappingDAO(private val template: JdbcTemplate) {
 
     open fun lagreKoblingMellomOversiktenMeldingOgAktivitet(oversiktenMeldingKey: MeldingKey, aktivitetId: AktivitetId, kategori: OversiktenMelding.Kategori) {
         val sql = """

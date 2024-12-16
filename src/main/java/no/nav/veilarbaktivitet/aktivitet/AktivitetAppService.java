@@ -9,8 +9,6 @@ import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvFerdigAktivitetException;
 import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvHistoriskAktivitetException;
 import no.nav.veilarbaktivitet.eventsLogger.BigQueryClient;
 import no.nav.veilarbaktivitet.eventsLogger.EventType;
-import no.nav.veilarbaktivitet.oversikten.OversiktenMelding;
-import no.nav.veilarbaktivitet.oversikten.OversiktenMeldingAktivitetMappingDao;
 import no.nav.veilarbaktivitet.oversikten.OversiktenService;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;

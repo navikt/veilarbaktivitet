@@ -19,10 +19,10 @@ create index oversikten_melding_med_metadata_melding_key_pk on oversikten_meldin
 create index oversikten_melding_med_metadata_utsending_status_idx on oversikten_melding_med_metadata (utsending_status);
 
 create table oversikten_melding_aktivitet_mapping (
-    id                      serial primary key,
     oversikten_melding_key  uuid    not null,
     aktivitet_id            bigint  not null,
     kategori                oversikten_kategori not null,
+    PRIMARY KEY (aktivitet_id, kategori),
     FOREIGN KEY (oversikten_melding_key) REFERENCES oversikten_melding_med_metadata(melding_key),
     FOREIGN KEY (aktivitet_id) REFERENCES aktivitet(id)
 );
