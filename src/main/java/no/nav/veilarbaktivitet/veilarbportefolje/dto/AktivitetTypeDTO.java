@@ -20,6 +20,7 @@ public enum AktivitetTypeDTO {
     static {
         aktivitetskortTypeTilArenaTiltakskode.put(AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD, "MIDLONTIL");
         aktivitetskortTypeTilArenaTiltakskode.put(AktivitetskortType.VARIG_LONNSTILSKUDD, "VARLONTIL");
+        aktivitetskortTypeTilArenaTiltakskode.put(AktivitetskortType.ARBEIDSTRENING, "ARBTREN");
         aktivitetskortTypeTilArenaTiltakskode.put(AktivitetskortType.INDOPPFAG, "INDOPPFAG");
         aktivitetskortTypeTilArenaTiltakskode.put(AktivitetskortType.ARBFORB, "ARBFORB");
         aktivitetskortTypeTilArenaTiltakskode.put(AktivitetskortType.AVKLARAG, "AVKLARAG");

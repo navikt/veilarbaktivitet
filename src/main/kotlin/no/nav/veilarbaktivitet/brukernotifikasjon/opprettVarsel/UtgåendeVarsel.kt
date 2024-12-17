@@ -3,6 +3,7 @@ package no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselStatus
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType
 import no.nav.veilarbaktivitet.person.Person
+import java.net.URI
 import java.net.URL
 import java.util.*
 
@@ -20,5 +21,5 @@ data class UtgåendeVarsel (
 )
 
 fun createAktivitetLink(aktivitetsplanBasepath: String, aktivitetId: String): URL {
-    return URL(aktivitetsplanBasepath + "/aktivitet/vis/" + aktivitetId)
+    return URI.create("$aktivitetsplanBasepath/aktivitet/vis/$aktivitetId").toURL()
 }
