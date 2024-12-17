@@ -55,7 +55,7 @@ import java.util.*
 import kotlin.random.Random
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-open class AktivitetskortConsumerIntegrationTest(
+class AktivitetskortConsumerIntegrationTest(
     @Autowired
     val aktivitetskortFeilListener: AktivitetskortFeilListener,
     @Autowired
@@ -173,7 +173,7 @@ open class AktivitetskortConsumerIntegrationTest(
                 )
             )
         val kafkaAktivitetskortWrapperDTO = KafkaAktivitetskortWrapperDTO(
-            aktivitetskort, UUID.randomUUID(), AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD, MessageSource.TEAM_TILTAK
+            aktivitetskort, UUID.randomUUID(), AktivitetskortType.ARBEIDSTRENING, MessageSource.TEAM_TILTAK
         )
         aktivitetTestService.opprettEksterntAktivitetsKort(listOf(kafkaAktivitetskortWrapperDTO))
         val resultat = hentAktivitet(aktivitetskort.id)
