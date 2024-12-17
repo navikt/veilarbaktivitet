@@ -104,6 +104,15 @@ public class AktivitetAppService {
         return !aktivitetData.getMoteData().isReferatPublisert() && referatEndret;
     }
 
+    private static boolean referatErDeltMedBruker(AktivitetData nyAktivitet) {
+        return nyAktivitet.getMoteData().isReferatPublisert();
+    }
+
+    private static boolean aktivitetKanHaReferat(AktivitetData nyAktivitet) {
+        var aktivitetstyperSomKanHaReferatNårAktivitetOpprettes = List.of(AktivitetTypeData.SAMTALEREFERAT);
+        return aktivitetstyperSomKanHaReferatNårAktivitetOpprettes.contains(nyAktivitet.getAktivitetType());
+    }
+
     @Transactional
     public AktivitetData opprettNyAktivitet(AktivitetData aktivitetData) {
 
@@ -116,12 +125,8 @@ public class AktivitetAppService {
 
         AktivitetData nyAktivitet = aktivitetService.opprettAktivitet(aktivitetData);
 
-        var aktivitetstyperSomKanHaReferatNårAktivitetOpprettes = List.of(AktivitetTypeData.SAMTALEREFERAT);
-        var aktivitetKanHaReferat = aktivitetstyperSomKanHaReferatNårAktivitetOpprettes.contains(nyAktivitet.getAktivitetType());
-
-        if (aktivitetKanHaReferat) {
-            var erReferatDeltMedBruker = nyAktivitet.getMoteData().isReferatPublisert();
-            if (erReferatDeltMedBruker) {
+        if (aktivitetKanHaReferat(nyAktivitet)) {
+            if (referatErDeltMedBruker(nyAktivitet)) {
                 bigQueryClient.logEvent(nyAktivitet, EventType.SAMTALEREFERAT_OPPRETTET_OG_DELT_MED_BRUKER);
             } else {
                 bigQueryClient.logEvent(nyAktivitet, EventType.SAMTALEREFERAT_OPPRETTET);
