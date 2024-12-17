@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.stereotype.Service
 
-
+// TODO: Fix
 @Service
 open class OversiktenProducer(
     val kafkaTemplate: KafkaTemplate<String, String>,

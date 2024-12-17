@@ -5,6 +5,7 @@ import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.json.JsonUtils
 import no.nav.common.utils.EnvironmentUtils
 import no.nav.veilarbaktivitet.aktivitet.AktivitetId
+import no.nav.veilarbaktivitet.oversikten.OversiktenMelding.Kategori.UDELT_SAMTALEREFERAT
 import no.nav.veilarbaktivitet.person.Person.AktorId
 import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Scheduled
@@ -51,15 +52,19 @@ open class OversiktenService(
         oversiktenMeldingAktivitetMappingDao.lagreKoblingMellomOversiktenMeldingOgAktivitet(
             aktivitetId = aktivitetId,
             oversiktenMeldingKey = oversiktenMeldingMedMetadata.meldingKey,
-            kategori = OversiktenMelding.Kategori.UDELT_SAMTALEREFERAT
+            kategori = UDELT_SAMTALEREFERAT
         )
     }
 
     open fun lagreStoppMeldingOmUdeltSamtalereferatIUtboks(aktorId: AktorId, aktivitetId: AktivitetId) {
         val fnr = aktorOppslagClient.hentFnr(no.nav.common.types.identer.AktorId.of(aktorId.get()))
         val sluttmelding = OversiktenMelding.forUdeltSamtalereferat(fnr.toString(), OversiktenMelding.Operasjon.STOPP, erProd)
-        val meldingKey = oversiktenMeldingAktivitetMappingDao.hentMeldingKeyForAktivitet(aktivitetId, OversiktenMelding.Kategori.UDELT_SAMTALEREFERAT)
-            ?: return;
+        val meldingKey = oversiktenMeldingAktivitetMappingDao.hentMeldingKeyForAktivitet(aktivitetId, UDELT_SAMTALEREFERAT)
+
+        if (meldingKey == null) {
+            log.warn("Finner ikke meldingKey for aktivitet med id $aktivitetId og kategori $UDELT_SAMTALEREFERAT")
+            return
+        }
 
         val oversiktenMeldingMedMetadata = OversiktenMeldingMedMetadata(
             meldingSomJson = JsonUtils.toJson(sluttmelding),
