@@ -13,37 +13,37 @@ import kotlin.math.abs
 val log = LoggerFactory.getLogger("no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeUtil")!!
 
 
-fun finnOppfolgingsperiodeForArenaAktivitet(oppfolgingsperioder: List<Oppfolgingsperiode>, primærDato: LocalDate?): Oppfolgingsperiode? {
-    return primærDato?.let { oppfolgingsperioder.finnOppfolgingsperiodeForTidspunkt(it.atStartOfDay()) }
+fun finnOppfolgingsperiodeForArenaAktivitet(oppfolgingsperioder: List<Oppfolgingsperiode>, aktivitetOppslagsdato: LocalDate?): Oppfolgingsperiode? {
+    return aktivitetOppslagsdato?.let { oppfolgingsperioder.finnOppfolgingsperiodeForTidspunkt(it.atStartOfDay()) }
 }
 
-fun List<Oppfolgingsperiode>.finnOppfolgingsperiodeForTidspunkt(tidspunkt: LocalDateTime): Oppfolgingsperiode? {
+fun List<Oppfolgingsperiode>.finnOppfolgingsperiodeForTidspunkt(aktivitetOppslagsdato: LocalDateTime): Oppfolgingsperiode? {
     val oppfolgingsperioder = this.sortedByDescending { it.startTid }
     if (oppfolgingsperioder.isEmpty()) {
-        log.info("Arenatiltak finn oppfølgingsperiode - bruker har ingen oppfølgingsperioder - tidspunkt=${tidspunkt}, oppfolgingsperioder=${listOf<OppfolgingPeriodeMinimalDTO>()}")
+        log.info("Arenatiltak finn oppfølgingsperiode - bruker har ingen oppfølgingsperioder - tidspunkt=${aktivitetOppslagsdato}, oppfolgingsperioder=${listOf<OppfolgingPeriodeMinimalDTO>()}")
         return null
     }
 
-    val opprettetTidspunktCZDT = tidspunkt.atZone(ZoneId.systemDefault())
+    val opprettetTidspunktCDT = aktivitetOppslagsdato.atZone(ZoneId.systemDefault())
 
     val match = oppfolgingsperioder
-        .firstOrNull { oppfolgingsperiode -> oppfolgingsperiode.erInnenforPeriode(opprettetTidspunktCZDT) }
+        .firstOrNull { oppfolgingsperiode -> oppfolgingsperiode.erInnenforPeriode(opprettetTidspunktCDT) }
         ?: oppfolgingsperioder
             .filterIndexed { index, oppfolgingsperiode ->
                 val forrigePeriode = oppfolgingsperioder.getOrNull(index + 1)
-                val startetEtterAtForrigePeriodeBleAvsluttet = forrigePeriode?.sluttTid?.let { opprettetTidspunktCZDT.isAfter(it) } ?: false
-                val startetRettFørDennePeriodenBleStartet = oppfolgingsperiode.erInnenforMedEkstraSlack(opprettetTidspunktCZDT)
-                startetEtterAtForrigePeriodeBleAvsluttet || startetRettFørDennePeriodenBleStartet
+                val aktivitetStartetEtterAtForrigePeriodeBleAvsluttet = forrigePeriode?.sluttTid?.let { opprettetTidspunktCDT.isAfter(it) } ?: false
+                val aktivitetStartetRettFørDennePeriodenBleStartet = oppfolgingsperiode.erInnenforMedEkstraSlack(opprettetTidspunktCDT)
+                aktivitetStartetEtterAtForrigePeriodeBleAvsluttet || aktivitetStartetRettFørDennePeriodenBleStartet
             }
-            .minByOrNull { abs(ChronoUnit.MILLIS.between(opprettetTidspunktCZDT, it.startTid)) }
+            .minByOrNull { abs(ChronoUnit.MILLIS.between(opprettetTidspunktCDT, it.startTid)) }
             ?.also { _ ->
-                log.info("Arenatiltak finn oppfølgingsperiode - valgt oppfølgingsperiode som startet etter opprettetdato) - tidspunkt=${tidspunkt}, oppfolgingsperioder=${oppfolgingsperioder}")
+                log.info("Arenatiltak finn oppfølgingsperiode - valgt oppfølgingsperiode som startet etter opprettetdato) - tidspunkt=${aktivitetOppslagsdato}, oppfolgingsperioder=${oppfolgingsperioder}")
             }
 
     return if (match != null) {
         match
     } else {
-        log.info("Arenatiltak finn oppfølgingsperiode - opprettetTidspunkt har ingen god match på oppfølgingsperioder) - tidspunkt=${tidspunkt}, oppfolgingsperioder=${oppfolgingsperioder}")
+        log.info("Arenatiltak finn oppfølgingsperiode - opprettetTidspunkt har ingen god match på oppfølgingsperioder) - tidspunkt=${aktivitetOppslagsdato}, oppfolgingsperioder=${oppfolgingsperioder}")
         null
     }
 }
