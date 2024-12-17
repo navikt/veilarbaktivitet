@@ -261,5 +261,28 @@ internal class AktivitetsplanControllerTest: SpringBootTestBase() {
         assertThat(antallMeldingerTilOversikten).isEqualTo(1)
     }
 
+    @Test
+    fun når_samtalereferat_deles_med_bruker_sendes_stop_melding_til_oversikten(){
+        val happyBruker = navMockService.createBruker()
+        val veileder = navMockService.createVeileder(happyBruker)
+        val aktivitet = aktivitetTestService.opprettAktivitet(
+            happyBruker,
+            veileder,
+            AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.SAMTALEREFERAT).setErReferatPublisert(false).setReferat("Et referat")
+        )
+        assertThat(oversiktenMeldingMedMetadataRepository.hentAlleSomSkalSendes().size).isEqualTo(1)
+
+        aktivitetTestService.publiserReferat(aktivitet, veileder)
+
+        val meldingerTilOversikten = oversiktenMeldingMedMetadataRepository.hentAlleSomSkalSendes()
+        assertThat(meldingerTilOversikten.size).isEqualTo(2)
+        val sisteMelding = meldingerTilOversikten.maxBy { it.opprettet }
+        assertThat(sisteMelding.operasjon).isEqualTo(OversiktenMelding.Operasjon.STOPP)
+    }
+
+    // TODO: Send melding når refrat på et møte deles
+    // TODO: ikke send elding vis et referat deles når kortet opprettes
+
+
     // TODO: Send stoppmelding når referat plutselig deles
 }
