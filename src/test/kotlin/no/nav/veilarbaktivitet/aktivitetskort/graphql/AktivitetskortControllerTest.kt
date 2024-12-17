@@ -10,8 +10,10 @@ import no.nav.veilarbaktivitet.oppfolging.periode.SisteOppfolgingsperiodeV1
 import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder
 import no.nav.veilarbaktivitet.util.DateUtils
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.Test
 import java.time.ZonedDateTime
+import java.time.temporal.ChronoUnit
 import java.util.*
 
 class AktivitetskortControllerTest: SpringBootTestBase() {
@@ -27,6 +29,8 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
             query($fnrParam: String!) {
                 perioder(fnr: $fnrParam) { 
                     id,
+                    start,
+                    slutt,
                     aktiviteter {
                         id,
                         opprettetDato
@@ -35,24 +39,32 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
             }
         """.trimIndent().replace("\n", "")
 
-        val gammelPeriode = UUID.randomUUID()
+        val gammelPeriodeId = UUID.randomUUID()
+        val gammelperiodeStart = ZonedDateTime.now().minusYears(4)
+        val gammelperiodeSlutt = gammelperiodeStart
         val nyPeriode = mockBruker.oppfolgingsperiodeId
         val jobbAktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
-            .toBuilder().oppfolgingsperiodeId(gammelPeriode).build()
+            .toBuilder().oppfolgingsperiodeId(gammelPeriodeId).build()
         aktivitetTestService.opprettAktivitet(mockBruker, mockBruker, jobbAktivitet)
         val aktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.EGEN)
             .toBuilder().oppfolgingsperiodeId(nyPeriode).build()
         aktivitetTestService.upsertOppfolgingsperiode(SisteOppfolgingsperiodeV1.builder()
-            .uuid(gammelPeriode)
+            .uuid(gammelPeriodeId)
             .aktorId(mockBruker.aktorId.get())
-            .startDato(ZonedDateTime.now().minusYears(4))
-            .sluttDato(ZonedDateTime.now().minusYears(4).plusDays(10))
+            .startDato(gammelperiodeStart)
+            .sluttDato(gammelperiodeSlutt)
             .build()
         )
         aktivitetTestService.opprettAktivitet(mockBruker, mockBruker, aktivitet)
         val result = aktivitetTestService.queryAktivitetskort(mockBruker, mockBruker, query)
+        val nyestePeriode = result.data?.perioder?.last()
+        val gammelPeriode = result.data?.perioder?.first()
         assertThat(result.errors).isNull()
         assertThat(result.data?.perioder).hasSize(2)
+        assertThat(nyestePeriode?.start).isCloseTo(mockBruker.oppfolgingsperioder.first().startTid, within(1, ChronoUnit.MILLIS))
+        assertThat(nyestePeriode?.slutt).isNull()
+        assertThat(gammelPeriode?.start).isCloseTo(gammelperiodeStart, within(1, ChronoUnit.MILLIS))
+        assertThat(gammelPeriode?.start).isCloseTo(gammelperiodeSlutt, within(1, ChronoUnit.MILLIS))
     }
 
     @Test
