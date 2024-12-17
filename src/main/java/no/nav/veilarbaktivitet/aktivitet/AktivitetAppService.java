@@ -261,6 +261,7 @@ public class AktivitetAppService {
             oversiktenService.lagreStartMeldingOmUdeltSamtalereferatIUtboks(aktivitet.getAktorId(), aktivitet.getId());
         } else if (eventType == EventType.SAMTALEREFERAT_DELT_MED_BRUKER) {
             // TODO: Send stoppmelding
+            oversiktenService.lagreStoppMeldingOmUdeltSamtalereferatIUtboks(aktivitet.getAktorId(), aktivitet.getId());
         }
     }
 

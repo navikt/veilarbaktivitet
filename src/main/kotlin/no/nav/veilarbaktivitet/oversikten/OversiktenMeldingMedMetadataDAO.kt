@@ -42,21 +42,6 @@ open class OversiktenMeldingMedMetadataDAO(
         return jdbc.query(sql, rowMapper)
     }
 
-    open fun hent(meldingKey: MeldingKey, operasjon: OversiktenMelding.Operasjon): List<OversiktenMeldingMedMetadata> {
-        val sql = """
-            select * from oversikten_melding_med_metadata
-            where melding_key = :melding_key
-            and melding->>'operasjon' = :operasjon
-        """.trimIndent()
-
-        val params = MapSqlParameterSource().apply {
-            addValue("melding_key", meldingKey)
-            addValue("operasjon", operasjon.name)
-        }
-
-        return jdbc.query(sql, params, rowMapper)
-    }
-
     open fun markerSomSendt(id: Long) {
         val sql = """
            UPDATE oversikten_melding_med_metadata

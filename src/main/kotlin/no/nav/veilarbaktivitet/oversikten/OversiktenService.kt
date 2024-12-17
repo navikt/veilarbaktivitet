@@ -15,8 +15,8 @@ import java.util.*
 open class OversiktenService(
     private val aktorOppslagClient: AktorOppslagClient,
     private val oversiktenMeldingMedMetadataRepository: OversiktenMeldingMedMetadataDAO,
-    private val oversiktenMeldingAktivitetMappingDao: OversiktenMeldingAktivitetMappingDAO
-//    private val oversiktenProducer: OversiktenProducer
+    private val oversiktenMeldingAktivitetMappingDao: OversiktenMeldingAktivitetMappingDAO,
+    private val oversiktenProducer: OversiktenProducer
 
 ) {
     private val log = LoggerFactory.getLogger(OversiktenService::class.java)
@@ -26,9 +26,11 @@ open class OversiktenService(
     @SchedulerLock(name = "oversikten_melding_med_metadata_scheduledTask", lockAtMostFor = "PT3M")
     open fun sendUsendteMeldingerTilOversikten() {
         val meldingerMedMetadata = oversiktenMeldingMedMetadataRepository.hentAlleSomSkalSendes()
-        log.info("Sender ${meldingerMedMetadata.size} meldinger til oversikten")
+        if(meldingerMedMetadata.isNotEmpty()) {
+            log.info("Sender ${meldingerMedMetadata.size} meldinger til oversikten")
+        }
         meldingerMedMetadata.forEach { meldingMedMetadata ->
-//            oversiktenProducer.sendMelding(meldingMedMetadata.meldingKey.toString(), meldingMedMetadata.meldingSomJson)
+            oversiktenProducer.sendMelding(meldingMedMetadata.meldingKey.toString(), meldingMedMetadata.meldingSomJson)
             oversiktenMeldingMedMetadataRepository.markerSomSendt(meldingMedMetadata.id)
             meldingMedMetadata.fnr
         }
@@ -53,21 +55,19 @@ open class OversiktenService(
         )
     }
 
-    /*
+    open fun lagreStoppMeldingOmUdeltSamtalereferatIUtboks(aktorId: AktorId, aktivitetId: AktivitetId) {
+        val fnr = aktorOppslagClient.hentFnr(no.nav.common.types.identer.AktorId.of(aktorId.get()))
+        val sluttmelding = OversiktenMelding.forUdeltSamtalereferat(fnr.toString(), OversiktenMelding.Operasjon.STOPP, erProd)
+        val meldingKey = oversiktenMeldingAktivitetMappingDao.hentMeldingKeyForAktivitet(aktivitetId, OversiktenMelding.Kategori.UDELT_SAMTALEREFERAT)
+            ?: return;
 
-    open fun lagreStoppMeldingOmUtgåttVarselIUtboks(fnr: Fnr, meldingKeyStartMelding: UUID) {
-        val opprinneligStartMelding =
-            oversiktenMeldingMedMetadataRepository.hent(meldingKeyStartMelding, OversiktenMelding.Operasjon.START).let {
-                check(it.size <= 1) { "Skal ikke kunne eksistere flere enn én startmeldinger" }
-                it.first()
-            }
-        val sluttmelding = OversiktenMelding.forUtgattVarsel(fnr.toString(), OversiktenMelding.Operasjon.STOPP, erProd)
         val oversiktenMeldingMedMetadata = OversiktenMeldingMedMetadata(
             meldingSomJson = JsonUtils.toJson(sluttmelding),
             fnr = fnr,
             kategori = sluttmelding.kategori,
-            meldingKey = opprinneligStartMelding.meldingKey
+            meldingKey = meldingKey,
+            operasjon = sluttmelding.operasjon,
         )
         oversiktenMeldingMedMetadataRepository.lagre(oversiktenMeldingMedMetadata)
-    }*/
+    }
 }
