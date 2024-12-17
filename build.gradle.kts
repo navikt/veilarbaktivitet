@@ -174,8 +174,6 @@ dependencies {
     implementation("org.flywaydb:flyway-database-postgresql:10.15.2")
     implementation("org.postgresql:postgresql:42.7.4")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.18.2")
-    // Hvis det ønskes swagger doc, foreslås å bruke springdoc (springdoc-openapi-starter-webmvc-ui - se no.nav.fo.veilarbdialog.rest.SwaggerConfig for eksempelconfig)
-    implementation("io.swagger.core.v3:swagger-annotations:2.2.27")
 
     // BigQuery
     implementation(platform("com.google.cloud:libraries-bom:26.51.0"))
