@@ -55,4 +55,8 @@ class OppfolgingsperiodeService(
     fun hentMål(fnr: Fnr): MålDTO {
         return oppfolgingClient.hentMål(fnr).orElseGet(null)
     }
+
+    fun hentOppfolgingsPerioder(aktorId: AktorId): List<Oppfolgingsperiode> {
+        return oppfolgingsperiodeDAO.getByAktorId(aktorId)
+    }
 }

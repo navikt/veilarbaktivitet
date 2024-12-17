@@ -16,6 +16,7 @@ import no.nav.veilarbaktivitet.aktivitetskort.ArenaMeldingHeaders;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.KasseringsBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.KafkaAktivitetskortWrapperDTO;
 import no.nav.veilarbaktivitet.aktivitetskort.graphql.GraphqlResult;
+import no.nav.veilarbaktivitet.aktivitetskort.graphql.QueryAktivitetsPerioder;
 import no.nav.veilarbaktivitet.arena.ArenaController;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
@@ -30,6 +31,8 @@ import no.nav.veilarbaktivitet.internapi.model.Aktivitet;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
 import no.nav.veilarbaktivitet.mock_nav_modell.RestassuredUser;
+import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeService;
+import no.nav.veilarbaktivitet.oppfolging.periode.SisteOppfolgingsperiodeV1;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.stilling_fra_nav.KontaktpersonData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.RekrutteringsbistandStatusoppdatering;
@@ -65,16 +68,12 @@ import static org.junit.jupiter.api.Assertions.*;
 public class AktivitetTestService {
     private final StillingFraNavTestService stillingFraNavTestService;
     private final int port;
-
     private final String innRekrutteringsbistandStatusoppdateringTopic;
-
     private final KafkaTestService kafkaTestService;
-
     private final KafkaTemplate<String, String> stringStringKafkaTemplate;
-
     private final KafkaJsonTemplate<RekrutteringsbistandStatusoppdatering> rekrutteringsbistandStatusoppdateringProducer;
-
     private final String aktivitetsKortV1Topic;
+    private final OppfolgingsperiodeService oppfolgingsperiodeService;
 
     /**
      * Henter alle aktiviteter for et fnr via aktivitet-apiet.
@@ -87,10 +86,13 @@ public class AktivitetTestService {
     }
 
     public AktivitetsplanDTO hentAktiviteterForFnr(MockBruker mockBruker, RestassuredUser user) {
-        List<AktivitetDTO> aktiviteter = queryAktivitetskort(mockBruker, user, DefaultGraphqlQuery.INSTANCE.getQuery())
-                .getData().getPerioder()
-                .stream().flatMap(periode -> periode.getAktiviteter().stream())
-                .toList();
+        List<AktivitetDTO> aktiviteter = Optional.ofNullable(queryAktivitetskort(mockBruker, user, DefaultGraphqlQuery.INSTANCE.getQuery())
+                .getData())
+                .map(QueryAktivitetsPerioder::getPerioder)
+                .map(perioder -> perioder.stream()
+                        .flatMap(periode -> periode.getAktiviteter().stream())
+                        .toList())
+                .orElse(List.of());
         return new AktivitetsplanDTO().setAktiviteter(aktiviteter);
     }
 
@@ -561,5 +563,10 @@ public class AktivitetTestService {
                 .getAktiviteter().stream()
                 .filter((a) -> Objects.equals(a.getFunksjonellId(), funksjonellId))
                 .findFirst().orElseThrow(() -> new IllegalStateException("Fant ikke aktivitet med funksjonellId %s".formatted(funksjonellId)));
+    }
+
+    /* Mockbruker har allerede periode, brukes til å upserte gamle perioder */
+    public void upsertOppfolgingsperiode(SisteOppfolgingsperiodeV1 sistePeriode) {
+        oppfolgingsperiodeService.upsertOppfolgingsperiode(sistePeriode);
     }
 }
