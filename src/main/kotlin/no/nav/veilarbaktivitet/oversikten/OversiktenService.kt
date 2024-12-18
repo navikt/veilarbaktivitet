@@ -8,9 +8,12 @@ import no.nav.veilarbaktivitet.aktivitet.AktivitetId
 import no.nav.veilarbaktivitet.oversikten.OversiktenMelding.Kategori.UDELT_SAMTALEREFERAT
 import no.nav.veilarbaktivitet.person.Person.AktorId
 import org.slf4j.LoggerFactory
+import org.springframework.boot.autoconfigure.couchbase.CouchbaseProperties.Env
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import java.util.*
+import kotlin.jvm.optionals.getOrElse
+import kotlin.jvm.optionals.getOrNull
 
 @Service
 open class OversiktenService(
@@ -26,14 +29,20 @@ open class OversiktenService(
     @Scheduled(cron = "0 */1 * * * *") // Hvert minutt
     @SchedulerLock(name = "oversikten_melding_med_metadata_scheduledTask", lockAtMostFor = "PT3M")
     open fun sendUsendteMeldingerTilOversikten() {
-        val meldingerMedMetadata = oversiktenMeldingMedMetadataRepository.hentAlleSomSkalSendes()
-        if(meldingerMedMetadata.isNotEmpty()) {
-            log.info("Sender ${meldingerMedMetadata.size} meldinger til oversikten")
-        }
-        meldingerMedMetadata.forEach { meldingMedMetadata ->
-            oversiktenProducer.sendMelding(meldingMedMetadata.meldingKey.toString(), meldingMedMetadata.meldingSomJson)
-            oversiktenMeldingMedMetadataRepository.markerSomSendt(meldingMedMetadata.id)
-            meldingMedMetadata.fnr
+        val kanPublisereMeldinger = !EnvironmentUtils.isProduction().getOrElse { false } && !EnvironmentUtils.isDevelopment().getOrElse { false }
+
+        if (kanPublisereMeldinger) {
+            val meldingerMedMetadata = oversiktenMeldingMedMetadataRepository.hentAlleSomSkalSendes()
+            if(meldingerMedMetadata.isNotEmpty()) {
+                log.info("Sender ${meldingerMedMetadata.size} meldinger til oversikten")
+            }
+            meldingerMedMetadata.forEach { meldingMedMetadata ->
+                oversiktenProducer.sendMelding(meldingMedMetadata.meldingKey.toString(), meldingMedMetadata.meldingSomJson)
+                oversiktenMeldingMedMetadataRepository.markerSomSendt(meldingMedMetadata.id)
+                meldingMedMetadata.fnr
+            }
+        } else {
+            log.info("OBO er ikke klare til å ta imot meldinger om udelte samtalereferat")
         }
     }
 
