@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service
 open class OversiktenProducer(
     @Autowired
     val aivenProducerClient: KafkaProducerClient<String, String>,
-    @Value("\${application.topic.ut.oversikten}")
+    @Value("\${topic.ut.oversikten}")
     private val topic: String,
 ) {
 
