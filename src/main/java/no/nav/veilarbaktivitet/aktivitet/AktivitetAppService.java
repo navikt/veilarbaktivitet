@@ -104,11 +104,12 @@ public class AktivitetAppService {
         return !aktivitetData.getMoteData().isReferatPublisert() && referatEndret;
     }
 
-    private static boolean referatErDeltMedBruker(AktivitetData nyAktivitet) {
+    private boolean referatErDeltMedBruker(AktivitetData nyAktivitet) {
+        if(nyAktivitet.getMoteData() == null) return false;
         return nyAktivitet.getMoteData().isReferatPublisert();
     }
 
-    private static boolean aktivitetKanHaReferat(AktivitetData nyAktivitet) {
+    private boolean nyopprettetAktivitetKanHaReferat(AktivitetData nyAktivitet) {
         var aktivitetstyperSomKanHaReferatNårAktivitetOpprettes = List.of(AktivitetTypeData.SAMTALEREFERAT);
         return aktivitetstyperSomKanHaReferatNårAktivitetOpprettes.contains(nyAktivitet.getAktivitetType());
     }
@@ -125,7 +126,7 @@ public class AktivitetAppService {
 
         AktivitetData nyAktivitet = aktivitetService.opprettAktivitet(aktivitetData);
 
-        if (aktivitetKanHaReferat(nyAktivitet)) {
+        if (nyopprettetAktivitetKanHaReferat(nyAktivitet)) {
             if (referatErDeltMedBruker(nyAktivitet)) {
                 bigQueryClient.logEvent(nyAktivitet, EventType.SAMTALEREFERAT_OPPRETTET_OG_DELT_MED_BRUKER);
             } else {
@@ -248,7 +249,7 @@ public class AktivitetAppService {
 
         var oppdatertAktivitet = aktivitetService.oppdaterReferat(originalAktivitet, aktivitet);
 
-        var maybeEventType = hentEventType(originalAktivitet, aktivitet);
+        var maybeEventType = hentEventTypePåSamtalereferat(originalAktivitet, aktivitet);
         maybeEventType.ifPresent(eventType -> {
             bigQueryClient.logEvent(oppdatertAktivitet, eventType);
             sendMeldingTilOversikten(oppdatertAktivitet, eventType);
@@ -260,12 +261,11 @@ public class AktivitetAppService {
         if (eventType == EventType.SAMTALEREFERAT_OPPRETTET) { // Kan kun skje for aktivitetstype "Møte"
             oversiktenService.lagreStartMeldingOmUdeltSamtalereferatIUtboks(aktivitet.getAktorId(), aktivitet.getId());
         } else if (eventType == EventType.SAMTALEREFERAT_DELT_MED_BRUKER) {
-            // TODO: Send stoppmelding
             oversiktenService.lagreStoppMeldingOmUdeltSamtalereferatIUtboks(aktivitet.getAktorId(), aktivitet.getId());
         }
     }
 
-    private Optional<EventType> hentEventType(AktivitetData originalAktivitet, AktivitetData oppdatertAktivitet) {
+    private Optional<EventType> hentEventTypePåSamtalereferat(AktivitetData originalAktivitet, AktivitetData oppdatertAktivitet) {
         var forrigeReferat = Optional.ofNullable(originalAktivitet.getMoteData()).map(it -> it.getReferat()).orElse("");
         var nesteReferat = Optional.ofNullable(oppdatertAktivitet.getMoteData()).map(it -> it.getReferat()).orElse("");
 
