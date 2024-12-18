@@ -16,7 +16,7 @@ plugins {
     id("com.github.davidmc24.gradle.plugin.avro") version "1.9.1"
     id("project-report")
     id("jacoco")
-    id("org.sonarqube") version "4.4.1.3373"
+    id("org.sonarqube") version "6.0.0.5145"
     id("org.springframework.boot") version "3.4.0"
     kotlin("plugin.lombok") version "2.1.0"
     id("io.freefair.lombok") version "8.11"
@@ -153,7 +153,7 @@ dependencies {
     implementation("no.nav.common:util:$common_version")
     implementation("no.nav.common:types:$common_version")
     implementation("org.apache.commons:commons-collections4:4.4")
-    implementation("no.nav.tms.varsel:kotlin-builder:2.1.0")
+    implementation("no.nav.tms.varsel:kotlin-builder:2.1.1")
     implementation("no.nav.poao.dab:spring-auth:$dab_common_version")
     implementation("no.nav.poao.dab:spring-a2-annotations:$dab_common_version")
 
@@ -171,14 +171,12 @@ dependencies {
     implementation("org.springframework.kafka:spring-kafka")
     implementation("com.squareup.okhttp3:okhttp")
     implementation("io.micrometer:micrometer-registry-prometheus-simpleclient")
-    implementation("org.flywaydb:flyway-database-postgresql:10.15.2")
+    implementation("org.flywaydb:flyway-database-postgresql:11.0.0")
     implementation("org.postgresql:postgresql:42.7.4")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.18.2")
-    // Hvis det ønskes swagger doc, foreslås å bruke springdoc (springdoc-openapi-starter-webmvc-ui - se no.nav.fo.veilarbdialog.rest.SwaggerConfig for eksempelconfig)
-    implementation("io.swagger.core.v3:swagger-annotations:2.2.26")
 
     // BigQuery
-    implementation(platform("com.google.cloud:libraries-bom:26.50.0"))
+    implementation(platform("com.google.cloud:libraries-bom:26.51.0"))
     implementation("com.google.cloud:google-cloud-bigquery")
 
     implementation("io.getunleash:unleash-client-java:9.2.6")

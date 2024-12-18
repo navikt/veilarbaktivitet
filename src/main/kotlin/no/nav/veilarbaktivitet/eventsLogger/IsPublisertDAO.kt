@@ -13,7 +13,7 @@ open class IsPublisertDAO(
                 join veilarbaktivitet.aktivitet a
                     on mote.aktivitet_id = a.aktivitet_id and mote.versjon = a.versjon
             where mote.referat is not null
-              and a.til_dato < NOW()
+              and a.fra_dato < NOW() -- Kun se på møter/samtalereferater som ikke er datert frem i tid
               and a.gjeldende =  1 -- Bare siste versjon
               and a.historisk_dato is null -- Ikke ta med referat i avsluttede perioder
             group by mote.referat_publisert

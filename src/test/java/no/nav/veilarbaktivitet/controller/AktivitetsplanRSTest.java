@@ -104,19 +104,24 @@ class AktivitetsplanRSTest extends SpringBootTestBase {
 
     @Test
     void hentAktivitetsplan_henterAktiviteterMedForhaandsorientering() {
-        AktivitetData aktivitetDataMedForhaandsorientering = aktivitetDAO.opprettNyAktivitet(nyttStillingssok().withAktorId(mockBruker.getAktorId()));
-        AktivitetData aktivitetDataUtenForhaandsorientering = aktivitetDAO.opprettNyAktivitet(nyttStillingssok().withAktorId(mockBruker.getAktorId()));
+        AktivitetData aktivitetDataMedForhaandsorientering = aktivitetDAO.opprettNyAktivitet(
+                nyttStillingssok().withAktorId(mockBruker.getAktorId()).withOppfolgingsperiodeId(mockBruker.getOppfolgingsperiodeId()));
+        AktivitetData aktivitetDataUtenForhaandsorientering = aktivitetDAO.opprettNyAktivitet(
+                nyttStillingssok().withAktorId(mockBruker.getAktorId()).withOppfolgingsperiodeId(mockBruker.getOppfolgingsperiodeId()));
 
         var fho = ForhaandsorienteringDTO.builder().tekst("fho tekst").type(Type.SEND_FORHAANDSORIENTERING).build();
         avtaltMedNavService.opprettFHO(new AvtaltMedNavDTO().setAktivitetVersjon(aktivitetDataMedForhaandsorientering.getVersjon()).setForhaandsorientering(fho), aktivitetDataMedForhaandsorientering.getId(), mockBruker.getAktorId(), NavIdent.of("V123"));
-        var resultat = aktivitetTestService.hentAktiviteterForFnr(mockBruker, mockBrukersVeileder);
-        assertNotNull(resultat.getAktiviteter().stream().filter(aktivitet -> Objects.equals(aktivitet.getId(), aktivitetDataMedForhaandsorientering.getId().toString())).toList().getFirst().getForhaandsorientering());
-        assertNull(resultat.getAktiviteter().stream().filter(aktivitet -> Objects.equals(aktivitet.getId(), aktivitetDataUtenForhaandsorientering.getId().toString())).toList().getFirst().getForhaandsorientering());
+        var aktiviteter = aktivitetTestService.hentAktiviteterForFnr(mockBruker, mockBrukersVeileder).getAktiviteter();
+        assertNotNull(aktiviteter.stream().filter(aktivitet ->
+                Objects.equals(aktivitet.getId(), aktivitetDataMedForhaandsorientering.getId().toString())).toList().getFirst().getForhaandsorientering());
+        assertNull(aktiviteter.stream().filter(aktivitet ->
+                Objects.equals(aktivitet.getId(), aktivitetDataUtenForhaandsorientering.getId().toString())).toList().getFirst().getForhaandsorientering());
     }
 
     @Test
     void hentAktivitetsplan_henterStillingFraNavDataUtenCVData() {
-        var aktivitet = nyStillingFraNav().withAktorId(mockBruker.getAktorId());
+        var aktivitet = nyStillingFraNav().withAktorId(mockBruker.getAktorId())
+            .withOppfolgingsperiodeId(mockBruker.getOppfolgingsperiodeId());
         AktivitetData aktivitetData = aktivitetDAO.opprettNyAktivitet(aktivitet);
 
         var resultat = aktivitetTestService.hentAktiviteterForFnr(mockBruker, mockBrukersVeileder);
@@ -128,7 +133,8 @@ class AktivitetsplanRSTest extends SpringBootTestBase {
 
     @Test
     void hentAktivitetsplan_henterStillingFraNavDataMedCVData() {
-        var aktivitet = nyStillingFraNavMedCVKanDeles().withAktorId(mockBruker.getAktorId());
+        var aktivitet = nyStillingFraNavMedCVKanDeles().withAktorId(mockBruker.getAktorId())
+                .withOppfolgingsperiodeId(mockBruker.getOppfolgingsperiodeId());
         AktivitetData aktivitetData = aktivitetDAO.opprettNyAktivitet(aktivitet);
 
         var resultat = aktivitetTestService.hentAktiviteterForFnr(mockBruker, mockBrukersVeileder);
@@ -141,7 +147,8 @@ class AktivitetsplanRSTest extends SpringBootTestBase {
 
     @Test
     void hentAktivitetsplan_henterStillingFraNavDataMedCvSvar() {
-        var aktivitet = nyStillingFraNavMedCVKanDeles().withAktorId(mockBruker.getAktorId());
+        var aktivitet = nyStillingFraNavMedCVKanDeles().withAktorId(mockBruker.getAktorId())
+                .withOppfolgingsperiodeId(mockBruker.getOppfolgingsperiodeId());
         AktivitetData aktivitetData = aktivitetDAO.opprettNyAktivitet(aktivitet);
 
         var resultat = aktivitetTestService.hentAktiviteterForFnr(mockBruker, mockBrukersVeileder);
