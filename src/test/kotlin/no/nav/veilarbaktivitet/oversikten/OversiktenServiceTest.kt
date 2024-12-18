@@ -17,8 +17,6 @@ open class OversiktenServiceTest: SpringBootTestBase() {
     @MockitoBean
     private lateinit var oversiktenProducer: OversiktenProducer
     
-    private val bruker = navMockService.createHappyBruker()
-    
     @Autowired
     private lateinit var oversiktenMeldingMedMetadataDAO: OversiktenMeldingMedMetadataDAO
 
@@ -32,6 +30,7 @@ open class OversiktenServiceTest: SpringBootTestBase() {
 
     @Test
     fun `Skal sende usendte meldinger`() {
+        val bruker = navMockService.createHappyBruker()
         val melding = melding(bruker, utsendingStatus = UtsendingStatus.SKAL_SENDES)
         val sendtMelding = melding(bruker, utsendingStatus = UtsendingStatus.SENDT)
         oversiktenMeldingMedMetadataDAO.lagre(melding)
@@ -46,6 +45,7 @@ open class OversiktenServiceTest: SpringBootTestBase() {
 
     @Test
     fun `Skal ikke sende melding som er markert som SENDT`() {
+        val bruker = navMockService.createHappyBruker()
         val melding = melding(bruker, utsendingStatus = UtsendingStatus.SENDT)
         oversiktenMeldingMedMetadataDAO.lagre(melding)
 
@@ -56,6 +56,7 @@ open class OversiktenServiceTest: SpringBootTestBase() {
 
     @Test
     fun `Skal ikke sende melding som er markert som SKAL_IKKE_SENDES`() {
+        val bruker = navMockService.createHappyBruker()
         val melding = melding(bruker, utsendingStatus = UtsendingStatus.SKAL_IKKE_SENDES)
         oversiktenMeldingMedMetadataDAO.lagre(melding)
 
@@ -66,6 +67,7 @@ open class OversiktenServiceTest: SpringBootTestBase() {
 
     @Test
     fun `Nye meldinger skal ikke påvirke andre meldinger`() {
+        val bruker = navMockService.createHappyBruker()
         val førsteMelding = melding(bruker, utsendingStatus = UtsendingStatus.SENDT)
         val førsteMeldingID = oversiktenMeldingMedMetadataDAO.lagre(førsteMelding)
         val andreMelding = melding(meldingKey = førsteMelding.meldingKey, bruker = bruker, utsendingStatus = UtsendingStatus.SKAL_SENDES)
