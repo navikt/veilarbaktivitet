@@ -17,7 +17,7 @@ open class OversiktenService(
     private val aktorOppslagClient: AktorOppslagClient,
     private val oversiktenMeldingMedMetadataRepository: OversiktenMeldingMedMetadataDAO,
     private val oversiktenMeldingAktivitetMappingDao: OversiktenMeldingAktivitetMappingDAO,
-    //private val oversiktenProducer: OversiktenProducer
+    private val oversiktenProducer: OversiktenProducer
 
 ) {
     private val log = LoggerFactory.getLogger(OversiktenService::class.java)
@@ -31,7 +31,7 @@ open class OversiktenService(
             log.info("Sender ${meldingerMedMetadata.size} meldinger til oversikten")
         }
         meldingerMedMetadata.forEach { meldingMedMetadata ->
-           // oversiktenProducer.sendMelding(meldingMedMetadata.meldingKey.toString(), meldingMedMetadata.meldingSomJson)
+            oversiktenProducer.sendMelding(meldingMedMetadata.meldingKey.toString(), meldingMedMetadata.meldingSomJson)
             oversiktenMeldingMedMetadataRepository.markerSomSendt(meldingMedMetadata.id)
             meldingMedMetadata.fnr
         }
