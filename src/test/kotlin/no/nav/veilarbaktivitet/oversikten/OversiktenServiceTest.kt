@@ -4,11 +4,13 @@ import no.nav.common.types.identer.Fnr
 import no.nav.veilarbaktivitet.SpringBootTestBase
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.bean.override.mockito.MockitoBean
+import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
 
@@ -32,15 +34,18 @@ open class OversiktenServiceTest: SpringBootTestBase() {
     fun `Skal sende usendte meldinger`() {
         val bruker = navMockService.createHappyBruker()
         val melding = melding(bruker, utsendingStatus = UtsendingStatus.SKAL_SENDES)
-        val sendtMelding = melding(bruker, utsendingStatus = UtsendingStatus.SENDT)
-        oversiktenMeldingMedMetadataDAO.lagre(melding)
-        oversiktenMeldingMedMetadataDAO.lagre(sendtMelding)
+        val alleredeSendtMelding = melding(bruker, utsendingStatus = UtsendingStatus.SENDT)
+        val meldingId = oversiktenMeldingMedMetadataDAO.lagre(melding)
+        oversiktenMeldingMedMetadataDAO.lagre(alleredeSendtMelding)
 
         oversiktenService.sendUsendteMeldingerTilOversikten()
 
         verify(oversiktenProducer, times(1))
             .sendMelding(melding.meldingKey.toString(), melding.meldingSomJson)
         verifyNoMoreInteractions(oversiktenProducer)
+        val sendtMelding = oversiktenMeldingMedMetadataDAO.hent(meldingId)!!
+        assertThat(sendtMelding.tidspunktSendt).isCloseTo(ZonedDateTime.now(), within(500, ChronoUnit.MILLIS))
+        assertThat(sendtMelding.utsendingStatus).isEqualTo(UtsendingStatus.SENDT)
     }
 
     @Test
