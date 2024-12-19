@@ -27,7 +27,7 @@ import java.util.*
 
 @Service
 @ToString(of = ["aktivitetskortService"])
-open class AktivitetskortConsumer (
+class AktivitetskortConsumer (
     private val aktivitetskortService: AktivitetskortService,
     private val kasseringsService: KasseringsService,
     private val feilProducer: AktivitetsKortFeilProducer,
@@ -62,12 +62,11 @@ open class AktivitetskortConsumer (
                 bestilling.getAktivitetskortId()
             )
             behandleBestilling(bestilling)
-        } catch (e: DuplikatMeldingFeil) {
-            ConsumeStatus.OK
         } catch (e: AktivitetsKortFunksjonellException) {
             val logMedPassendeNivå: (String, String?, Long, Int) -> Unit = when(e) {
                 is ManglerOppfolgingsperiodeFeil -> log::warn
                 is UlovligEndringFeil -> log::warn
+                is DuplikatMeldingFeil -> log::warn
                 else -> log::error
             }
             logMedPassendeNivå(
@@ -152,7 +151,7 @@ data class TraceFields(
     val source: MessageSource
 ) {
     constructor(messageId: UUID, source: String?)
-            : this(messageId, MessageSource.values().find { it.name == source } ?: MessageSource.UNKNOWN)
+            : this(messageId, MessageSource.entries.find { it.name == source } ?: MessageSource.UNKNOWN)
 }
 
 fun Long.toLocalDateTimeDefaultZone() = LocalDateTime.ofInstant(Instant.ofEpochMilli(this), ZoneId.systemDefault())
