@@ -43,13 +43,12 @@ class AktivitetskortController(
         val aktorId = aktorOppslagClient.hentAktorId(eksternBrukerId.otherFnr())
         val oppfolgingsPerioder = oppfolgingsperiodeService.hentOppfolgingsPerioder(Person.AktorId(aktorId.get()))
         val aktiviteter = getAktiviteter(eksternBrukerId)
-            .groupBy { it.oppfolgingsperiodeId }
-            .toList()
-            .map { (oppfolgingPeriodeId, aktiviteter) ->
-                oppfolgingsPerioder.first { it.oppfolgingsperiodeId.equals(oppfolgingPeriodeId) }
-                    .let { OppfolgingsPeriode(oppfolgingPeriodeId, aktiviteter, it.startTid, it.sluttTid) }
+        return oppfolgingsPerioder
+            .map { periode ->
+                val periodeAktiviteter = aktiviteter.filter { it.oppfolgingsperiodeId == periode.oppfolgingsperiodeId }
+                OppfolgingsPeriode(periode.oppfolgingsperiodeId, periodeAktiviteter, periode.startTid, periode.sluttTid)
             }
-        return aktiviteter
+            .sortedByDescending { it.start }
     }
 
     private fun getAktiviteter(userFnr: Person): List<AktivitetDTO> {
