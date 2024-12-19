@@ -80,7 +80,6 @@ class AktivitetsplanController(
         @RequestBody aktivitet: AktivitetDTO,
         @RequestParam(required = false, defaultValue = "false") automatisk: Boolean
     ): AktivitetDTO {
-        // TODO: Endepunkt for alle nye aktiviteter, inkludert samtalereferat som enten er delt med bruker eller ikke
         return aktivitetDataMapperService.mapTilAktivitetData(aktivitet)
             .withAutomatiskOpprettet(automatisk)
             .let { aktivitetData -> appService.opprettNyAktivitet(aktivitetData) }
@@ -124,7 +123,6 @@ class AktivitetsplanController(
     @AuthorizeFnr(auditlogMessage = "oppdater referat", resourceIdParamName = "aktivitetId", resourceType = AktivitetResource::class)
     @OnlyInternBruker
     fun oppdaterReferat(@RequestBody aktivitetDTO: AktivitetDTO): AktivitetDTO {
-        // TODO: Upubliserte og publiserte samtalereferat for møter
         return Optional.of(aktivitetDTO)
             .map { aktivitetDTO -> aktivitetDataMapperService.mapTilAktivitetData(aktivitetDTO) }
             .map { aktivitet -> appService.oppdaterReferat(aktivitet) }
