@@ -528,6 +528,37 @@ public class AktivitetTestService {
     }
 
     @SneakyThrows
+    public  AktivitetDTO publiserReferat(AktivitetDTO aktivitetDTO, MockVeileder veileder) {
+        aktivitetDTO.setErReferatPublisert(true);
+        Response response = veileder
+                .createRequest()
+                .and()
+                .body(JsonUtils.toJson(aktivitetDTO))
+                .when()
+                .put("http://localhost:" + port + "/veilarbaktivitet/api/aktivitet/" + aktivitetDTO.getId() + "/referat/publiser")
+                .then()
+                .assertThat().statusCode(HttpStatus.OK.value())
+                .extract().response();
+
+        return response.as(AktivitetDTO.class);
+    }
+
+    @SneakyThrows
+    public AktivitetDTO oppdaterReferat(AktivitetDTO aktivitetDTO, MockVeileder veileder) {
+        Response response = veileder
+                .createRequest()
+                .and()
+                .body(JsonUtils.toJson(aktivitetDTO))
+                .when()
+                .put("http://localhost:" + port + "/veilarbaktivitet/api/aktivitet/" + aktivitetDTO.getId() + "/referat")
+                .then()
+                .assertThat().statusCode(HttpStatus.OK.value())
+                .extract().response();
+
+        return response.as(AktivitetDTO.class);
+    }
+
+    @SneakyThrows
     public void kasserEskterntAktivitetskort(KasseringsBestilling kasseringsBestilling) {
         var record = new ProducerRecord<>(aktivitetsKortV1Topic, kasseringsBestilling.getAktivitetskortId().toString(), JsonUtils.toJson(kasseringsBestilling));
         var recordMetadata = stringStringKafkaTemplate.send(record).get();

@@ -9,6 +9,7 @@ import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvFerdigAktivitetException;
 import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvHistoriskAktivitetException;
 import no.nav.veilarbaktivitet.eventsLogger.BigQueryClient;
 import no.nav.veilarbaktivitet.eventsLogger.EventType;
+import no.nav.veilarbaktivitet.oversikten.OversiktenService;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
 import org.slf4j.Logger;
@@ -31,6 +32,7 @@ public class AktivitetAppService {
     private final MetricService metricService;
     private final PersonService personService;
     private final BigQueryClient bigQueryClient;
+    private final OversiktenService oversiktenService;
 
     private static final Set<AktivitetTypeData> TYPER_SOM_KAN_ENDRES_EKSTERNT = new HashSet<>(Arrays.asList(
             AktivitetTypeData.EGENAKTIVITET,
@@ -102,6 +104,16 @@ public class AktivitetAppService {
         return !aktivitetData.getMoteData().isReferatPublisert() && referatEndret;
     }
 
+    private boolean referatErDeltMedBruker(AktivitetData nyAktivitet) {
+        if(nyAktivitet.getMoteData() == null) return false;
+        return nyAktivitet.getMoteData().isReferatPublisert();
+    }
+
+    private boolean nyopprettetAktivitetKanHaReferat(AktivitetData nyAktivitet) {
+        var aktivitetstyperSomKanHaReferatNårAktivitetOpprettes = List.of(AktivitetTypeData.SAMTALEREFERAT);
+        return aktivitetstyperSomKanHaReferatNårAktivitetOpprettes.contains(nyAktivitet.getAktivitetType());
+    }
+
     @Transactional
     public AktivitetData opprettNyAktivitet(AktivitetData aktivitetData) {
 
@@ -113,8 +125,14 @@ public class AktivitetAppService {
         }
 
         AktivitetData nyAktivitet = aktivitetService.opprettAktivitet(aktivitetData);
-        if (nyAktivitet.getAktivitetType() == AktivitetTypeData.SAMTALEREFERAT || nyAktivitet.getAktivitetType() == AktivitetTypeData.MOTE) {
-            bigQueryClient.logEvent(nyAktivitet, EventType.SAMTALEREFERAT_OPPRETTET);
+
+        if (nyopprettetAktivitetKanHaReferat(nyAktivitet)) {
+            if (referatErDeltMedBruker(nyAktivitet)) {
+                bigQueryClient.logEvent(nyAktivitet, EventType.SAMTALEREFERAT_OPPRETTET_OG_DELT_MED_BRUKER);
+            } else {
+                bigQueryClient.logEvent(nyAktivitet, EventType.SAMTALEREFERAT_OPPRETTET);
+                oversiktenService.lagreStartMeldingOmUdeltSamtalereferatIUtboks(nyAktivitet.getAktorId(), nyAktivitet.getId());
+            }
         }
 
         // dette er gjort på grunn av KVP
@@ -229,21 +247,39 @@ public class AktivitetAppService {
         final var originalAktivitet = hentAktivitet(aktivitet.getId());
         kanEndreAktivitetGuard(originalAktivitet, aktivitet.getVersjon(), aktivitet.getAktorId());
 
-        var oppdatertAktivtiet = aktivitetService.oppdaterReferat(
-                originalAktivitet,
-                aktivitet
-        );
+        var oppdatertAktivitet = aktivitetService.oppdaterReferat(originalAktivitet, aktivitet);
 
-        if(!originalAktivitet.getMoteData().isReferatPublisert() && oppdatertAktivtiet.getMoteData().isReferatPublisert()) {
-            bigQueryClient.logEvent(oppdatertAktivtiet, EventType.SAMTALEREFERAT_DELT_MED_BRUKER);
-        }
-        var forrigeReferat = Optional.ofNullable(originalAktivitet.getMoteData()).map(it -> it.getReferat()).orElse("");
-        var nesteReferat = Optional.ofNullable(oppdatertAktivtiet.getMoteData()).map(it -> it.getReferat()).orElse("");
-        if (forrigeReferat.isEmpty() && !nesteReferat.isEmpty() && oppdatertAktivtiet.getAktivitetType() == AktivitetTypeData.MOTE ) {
-            bigQueryClient.logEvent(oppdatertAktivtiet, EventType.SAMTALEREFERAT_FIKK_INNHOLD);
-        }
-
-        return oppdatertAktivtiet;
+        var maybeEventType = hentEventTypePåSamtalereferat(originalAktivitet, aktivitet);
+        maybeEventType.ifPresent(eventType -> {
+            bigQueryClient.logEvent(oppdatertAktivitet, eventType);
+            sendMeldingTilOversikten(oppdatertAktivitet, eventType);
+        });
+        return oppdatertAktivitet;
     }
 
+    private void sendMeldingTilOversikten(AktivitetData aktivitet, EventType eventType) {
+        if (eventType == EventType.SAMTALEREFERAT_OPPRETTET) { // Kan kun skje for aktivitetstype "Møte"
+            oversiktenService.lagreStartMeldingOmUdeltSamtalereferatIUtboks(aktivitet.getAktorId(), aktivitet.getId());
+        } else if (eventType == EventType.SAMTALEREFERAT_DELT_MED_BRUKER) {
+            oversiktenService.lagreStoppMeldingOmUdeltSamtalereferatIUtboks(aktivitet.getAktorId(), aktivitet.getId());
+        }
+    }
+
+    private Optional<EventType> hentEventTypePåSamtalereferat(AktivitetData originalAktivitet, AktivitetData oppdatertAktivitet) {
+        var forrigeReferat = Optional.ofNullable(originalAktivitet.getMoteData()).map(it -> it.getReferat()).orElse("");
+        var nesteReferat = Optional.ofNullable(oppdatertAktivitet.getMoteData()).map(it -> it.getReferat()).orElse("");
+
+        var referatHarNåFåttInnhold = forrigeReferat.isEmpty() && !nesteReferat.isEmpty();
+        var referatHarNåBlittDeltMedBruker = !originalAktivitet.getMoteData().isReferatPublisert() && oppdatertAktivitet.getMoteData().isReferatPublisert();
+
+        if (referatHarNåFåttInnhold && !referatHarNåBlittDeltMedBruker) {
+            return Optional.of(EventType.SAMTALEREFERAT_OPPRETTET);
+        } else if (referatHarNåFåttInnhold && referatHarNåBlittDeltMedBruker) {
+            return Optional.of(EventType.SAMTALEREFERAT_OPPRETTET_OG_DELT_MED_BRUKER);
+        } else if (!referatHarNåFåttInnhold && referatHarNåBlittDeltMedBruker) {
+            return Optional.of(EventType.SAMTALEREFERAT_DELT_MED_BRUKER);
+        } else {
+            return Optional.empty();
+        }
+    }
 }
