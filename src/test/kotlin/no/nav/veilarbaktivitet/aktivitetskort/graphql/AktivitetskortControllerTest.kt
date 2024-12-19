@@ -57,8 +57,8 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
         )
         aktivitetTestService.opprettAktivitet(mockBruker, mockBruker, aktivitet)
         val result = aktivitetTestService.queryAktivitetskort(mockBruker, mockBruker, query)
-        val nyestePeriode = result.data?.perioder?.last()
-        val gammelPeriode = result.data?.perioder?.first()
+        val nyestePeriode = result.data?.perioder?.first()
+        val gammelPeriode = result.data?.perioder?.last()
         assertThat(result.errors).isNull()
         assertThat(result.data?.perioder).hasSize(2)
         assertThat(nyestePeriode?.start).isCloseTo(mockBruker.oppfolgingsperioder.first().startTid, within(1, ChronoUnit.MILLIS))
@@ -129,7 +129,7 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
         val jobbAktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
         aktivitetTestService.opprettAktivitet(kvpBruker, kvpBruker, jobbAktivitet)
         val result = aktivitetTestService.queryAktivitetskort(kvpBruker, veileder, query)
-        assertThat(result.data?.perioder).isEmpty()
+        assertThat(result.data?.perioder?.firstOrNull()?.aktiviteter).isEmpty()
         assertThat(result.errors).isNull()
     }
 
