@@ -53,10 +53,7 @@ public class VarselDAO {
     }
 
     public List<SkalSendes> hentVarselSomSkalSendes(int maxAntall) {
-        List<String> oppgavetyper = VarselType.varslerForBrukernotifikasjonstype(BrukernotifikasjonsType.OPPGAVE).stream().map(VarselType::name).toList();
-
         SqlParameterSource parameterSource = new MapSqlParameterSource()
-                .addValue("oppgavetyper", oppgavetyper)
                 .addValue("limit", maxAntall);
 
         return jdbcTemplate
