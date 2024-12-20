@@ -8,12 +8,10 @@ import no.nav.veilarbaktivitet.aktivitet.AktivitetId
 import no.nav.veilarbaktivitet.oversikten.OversiktenMelding.Kategori.UDELT_SAMTALEREFERAT
 import no.nav.veilarbaktivitet.person.Person.AktorId
 import org.slf4j.LoggerFactory
-import org.springframework.boot.autoconfigure.couchbase.CouchbaseProperties.Env
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import java.util.*
 import kotlin.jvm.optionals.getOrElse
-import kotlin.jvm.optionals.getOrNull
 
 @Service
 open class OversiktenService(

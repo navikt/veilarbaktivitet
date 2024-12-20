@@ -5,8 +5,6 @@ import lombok.Value;
 import lombok.With;
 import no.nav.veilarbaktivitet.aktivitet.dto.KanalDTO;
 
-import java.util.UUID;
-
 @With
 @Value
 @Builder
