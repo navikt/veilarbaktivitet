@@ -53,26 +53,22 @@ public class VarselDAO {
     }
 
     public List<SkalSendes> hentVarselSomSkalSendes(int maxAntall) {
-        List<String> oppgavetyper = VarselType.varslerForBrukernotifikasjonstype(BrukernotifikasjonsType.OPPGAVE).stream().map(VarselType::name).toList();
 
         SqlParameterSource parameterSource = new MapSqlParameterSource()
-                .addValue("status", VarselStatus.PENDING.name())
-                .addValue("finalAktivitetStatus", List.of(AktivitetStatus.FULLFORT.name(), AktivitetStatus.AVBRUTT.name()))
-                .addValue("oppgavetyper", oppgavetyper)
                 .addValue("limit", maxAntall);
 
         return jdbcTemplate
                 .query("""
                                  select ID, BRUKERNOTIFIKASJON_ID, MELDING, OPPFOLGINGSPERIODE, FOEDSELSNUMMER, TYPE, SMSTEKST, EPOSTTITTEL, EPOSTBODY, URL
                                  from BRUKERNOTIFIKASJON B
-                                 where STATUS = :status
+                                 where STATUS = 'PENDING'
                                  and not exists(
                                     Select * from AKTIVITET A
                                     inner join AKTIVITET_BRUKERNOTIFIKASJON AB on A.AKTIVITET_ID = AB.AKTIVITET_ID
                                     where AB.BRUKERNOTIFIKASJON_ID = B.ID
                                     and A.GJELDENDE = 1
-                                    and B.TYPE in (:oppgavetyper)
-                                    and (A.HISTORISK_DATO is not null or A.LIVSLOPSTATUS_KODE in(:finalAktivitetStatus))
+                                    and B.TYPE = 'OPPGAVE'
+                                    and (A.HISTORISK_DATO is not null or A.LIVSLOPSTATUS_KODE in('FULLFORT', 'AVBRUTT'))
                                  )
                                  fetch first :limit rows only
                                 """,
