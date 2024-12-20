@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.oversikten
 
 import no.nav.veilarbaktivitet.aktivitet.AktivitetId
+import org.springframework.dao.EmptyResultDataAccessException
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
@@ -32,7 +33,11 @@ open class OversiktenMeldingAktivitetMappingDAO(private val template: NamedParam
 
         val params = mapOf("aktivitetId" to aktivitetId, "kategori" to kategori.name)
 
-        return template.queryForObject(sql, params, rowMapper)
+        return try {
+            template.queryForObject(sql, params, rowMapper)
+        } catch (e: EmptyResultDataAccessException) {
+            null
+        }
     }
 
     open val rowMapper = RowMapper { rs: ResultSet, rowNum: Int ->

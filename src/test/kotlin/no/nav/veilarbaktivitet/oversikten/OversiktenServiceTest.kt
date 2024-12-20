@@ -3,6 +3,7 @@ package no.nav.veilarbaktivitet.oversikten
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarbaktivitet.SpringBootTestBase
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker
+import no.nav.veilarbaktivitet.person.Person
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.BeforeEach
@@ -90,6 +91,16 @@ open class OversiktenServiceTest: SpringBootTestBase() {
             ChronoUnit.MILLIS))
         assertThat(førsteMelding.utsendingStatus).isEqualTo(førsteMeldingEtterAndreMeldingErSendt.utsendingStatus)
         assertThat(førsteMelding.meldingKey).isEqualTo(førsteMeldingEtterAndreMeldingErSendt.meldingKey)
+    }
+
+    @Test
+    fun `Skal ikke opprette stoppmelding når man ikke har sendt startmelding`() {
+        val bruker = navMockService.createHappyBruker()
+        val dummyAktivitetId = 5L
+
+        oversiktenService.lagreStoppMeldingOmUdeltSamtalereferatIUtboks(aktivitetId = dummyAktivitetId, aktorId = bruker.aktorId)
+
+        assertThat(oversiktenMeldingMedMetadataDAO.hentAlleSomSkalSendes()).isEmpty()
     }
 
     private fun melding(bruker: MockBruker, meldingKey: UUID = UUID.randomUUID(), utsendingStatus: UtsendingStatus = UtsendingStatus.SKAL_SENDES) =
