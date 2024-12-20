@@ -2,7 +2,6 @@ package no.nav.veilarbaktivitet.oversikten
 
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
-import no.nav.veilarbaktivitet.aktivitet.AktivitetId
 import no.nav.veilarbaktivitet.config.database.Database
 import no.nav.veilarbaktivitet.veilarbdbutil.VeilarbAktivitetSqlParameterSource
 import org.springframework.jdbc.core.RowMapper
@@ -74,7 +73,7 @@ open class OversiktenMeldingMedMetadataDAO(
         return jdbc.queryForObject(sql, params, rowMapper)
     }
 
-    open fun hentUdelteSamtalereferatDerViIkkeHarSendtMeldingTilOversikten(): List<Pair<AktorId, AktivitetId>> {
+    open fun hentUdelteSamtalereferatDerViIkkeHarSendtMeldingTilOversikten(): List<UdeltSamtalereferatUtenMelding> {
         val sql = """
             WITH oversikten_meldinger_gruppert_per_key_og_rangert AS (
                 SELECT
@@ -110,9 +109,14 @@ open class OversiktenMeldingMedMetadataDAO(
         """.trimIndent()
 
         return jdbc.query(sql) { rs: ResultSet, rowNum: Int ->
-            Pair(AktorId.of(rs.getString("aktor_id")), rs.getLong("aktivitet_id"))
+           UdeltSamtalereferatUtenMelding(AktorId.of(rs.getString("aktor_id")), rs.getLong("aktivitet_id"))
         }
     }
+
+    data class UdeltSamtalereferatUtenMelding(
+        val aktorId: AktorId,
+        val aktivitetId: Long,
+    )
 
 
     open val rowMapper = RowMapper { rs: ResultSet, rowNum: Int ->
