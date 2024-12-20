@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.oversikten
 
+import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarbaktivitet.config.database.Database
 import no.nav.veilarbaktivitet.veilarbdbutil.VeilarbAktivitetSqlParameterSource
@@ -71,6 +72,52 @@ open class OversiktenMeldingMedMetadataDAO(
 
         return jdbc.queryForObject(sql, params, rowMapper)
     }
+
+    open fun hentUdelteSamtalereferatDerViIkkeHarSendtMeldingTilOversikten(): List<UdeltSamtalereferatUtenMelding> {
+        val sql = """
+            WITH oversikten_meldinger_gruppert_per_key_og_rangert AS (
+                SELECT
+                    melding_key,
+                    operasjon,
+                    kategori,
+                    ROW_NUMBER() OVER (PARTITION BY melding_key ORDER BY opprettet DESC) AS rank
+                FROM oversikten_melding_med_metadata
+                WHERE operasjon = 'START'
+                  AND kategori = 'UDELT_SAMTALEREFERAT'
+            ),
+            aktivitet_id_sendt_til_oversikten AS (
+                SELECT DISTINCT ma.aktivitet_id
+                FROM oversikten_melding_aktivitet_mapping ma
+                JOIN oversikten_meldinger_gruppert_per_key_og_rangert me
+                    ON ma.oversikten_melding_key = me.melding_key
+                WHERE me.rank = 1
+            )
+            SELECT
+                a.aktivitet_id,
+                a.aktor_id
+            FROM aktivitet a
+            LEFT JOIN mote m
+                ON a.aktivitet_id = m.aktivitet_id
+                AND m.versjon = a.versjon
+            WHERE a.gjeldende = 1
+              AND (a.aktivitet_type_kode IN ('MOTE', 'SAMTALEREFERAT'))
+              AND (m.referat_publisert = 0 AND m.referat IS NOT NULL)
+              AND a.historisk_dato IS NULL
+              AND a.fra_dato < NOW()
+              AND a.aktivitet_id NOT IN (SELECT aktivitet_id FROM aktivitet_id_sendt_til_oversikten)
+            ORDER BY a.aktivitet_id;
+        """.trimIndent()
+
+        return jdbc.query(sql) { rs: ResultSet, rowNum: Int ->
+           UdeltSamtalereferatUtenMelding(AktorId.of(rs.getString("aktor_id")), rs.getLong("aktivitet_id"))
+        }
+    }
+
+    data class UdeltSamtalereferatUtenMelding(
+        val aktorId: AktorId,
+        val aktivitetId: Long,
+    )
+
 
     open val rowMapper = RowMapper { rs: ResultSet, rowNum: Int ->
         LagretOversiktenMeldingMedMetadata(
