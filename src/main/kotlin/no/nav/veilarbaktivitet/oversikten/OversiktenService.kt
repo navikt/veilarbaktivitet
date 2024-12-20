@@ -44,8 +44,11 @@ open class OversiktenService(
         }
     }
 
-    @Scheduled(cron = "0 50 13 * * ?")
-    @SchedulerLock(name = "oversikten_melding_gamle_udelte_scheduledTask", lockAtMostFor = "PT15M")
+// Brukt til å hente gamle udelte samtalereferater der det ikke allerede er sendt melding.
+// Dette er en engangsjobb som ble kjørt i PROD 20.12.24 kl 13:50
+// Koden skal stå inntil videre, i tilfelle det dukker opp noen bugs
+//    @Scheduled(cron = "0 50 13 * * ?")
+//    @SchedulerLock(name = "oversikten_melding_gamle_udelte_scheduledTask", lockAtMostFor = "PT15M")
     open fun sendAlleGamleUdelte() {
         val alleUdelte = oversiktenMeldingMedMetadataRepository.hentUdelteSamtalereferatDerViIkkeHarSendtMeldingTilOversikten()
         log.info("antall udelte referat", alleUdelte.size)
