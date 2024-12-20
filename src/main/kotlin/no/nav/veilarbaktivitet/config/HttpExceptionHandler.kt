@@ -34,15 +34,6 @@ class HttpExceptionHandler : ResponseEntityExceptionHandler() {
             .body(Response(statusCode = e.statusCode.value(), message = e.reason))
     }
 
-    @ExceptionHandler(value = [RuntimeException::class])
-    fun handleRuntimeException(e: RuntimeException, request: WebRequest): ResponseEntity<Response> {
-        val statusKode = HttpStatus.INTERNAL_SERVER_ERROR.value()
-        log.error("Feil i håndtering av kall", e)
-        return ResponseEntity
-            .status(statusKode)
-            .body(Response(statusCode = statusKode, message = "Noe gikk galt"))
-    }
-
     @JsonInclude(JsonInclude.Include.NON_NULL)
     data class Response(
         val message: String?,
