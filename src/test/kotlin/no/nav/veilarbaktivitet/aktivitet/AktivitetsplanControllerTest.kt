@@ -3,24 +3,12 @@ package no.nav.veilarbaktivitet.aktivitet
 import no.nav.common.json.JsonUtils
 import no.nav.veilarbaktivitet.SpringBootTestBase
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO
-import no.nav.veilarbaktivitet.oversikten.OversiktenMelding
-import no.nav.veilarbaktivitet.oversikten.OversiktenMeldingMedMetadataDAO
-import no.nav.veilarbaktivitet.oversikten.UtsendingStatus
 import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder
-import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
-import java.time.ZonedDateTime
-import java.time.temporal.ChronoUnit
 
-internal class AktivitetsplanControllerTest: SpringBootTestBase() {
-
-    @Autowired
-    lateinit var oversiktenMeldingMedMetadataRepository: OversiktenMeldingMedMetadataDAO;
-
+internal class AktivitetsplanControllerTest : SpringBootTestBase() {
     @Test
     fun veileder_skal_kunne_oprette_aktivitet() {
         val happyBruker = navMockService.createBruker()
@@ -187,130 +175,5 @@ internal class AktivitetsplanControllerTest: SpringBootTestBase() {
             .then()
             .assertThat()
             .statusCode(HttpStatus.FORBIDDEN.value())
-    }
-
-    @Test
-    fun når_udelt_referat_opprettes_så_sendes_melding_til_oversikten() {
-        val happyBruker = navMockService.createBruker()
-        val veileder = navMockService.createVeileder(happyBruker)
-        val aktivitet = aktivitetTestService.opprettAktivitet(
-            happyBruker,
-            veileder,
-            AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE).setErReferatPublisert(false).setReferat("")
-        )
-        val oppdatertAktivitet = aktivitet
-        oppdatertAktivitet.setReferat("Et referat")
-        val aktivitetPayloadJson = JsonUtils.toJson(oppdatertAktivitet)
-
-        veileder
-            .createRequest(happyBruker)
-            .body(aktivitetPayloadJson)
-            .put("http://localhost:$port/veilarbaktivitet/api/aktivitet/${aktivitet.id}/referat")
-            .then()
-            .assertThat()
-            .statusCode(HttpStatus.OK.value())
-
-        val meldingerTilOversikten = oversiktenMeldingMedMetadataRepository.hentAlleSomSkalSendes()
-        assertThat(meldingerTilOversikten).hasSize(1)
-        val melding = meldingerTilOversikten.first()
-        assertThat(melding.fnr.get()).isEqualTo(happyBruker.fnr)
-        assertThat(melding.kategori).isEqualTo(OversiktenMelding.Kategori.UDELT_SAMTALEREFERAT)
-        assertThat(melding.opprettet).isCloseTo(ZonedDateTime.now(), within(1, ChronoUnit.SECONDS))
-        assertThat(melding.tidspunktSendt).isNull()
-        assertThat(melding.utsendingStatus).isEqualTo(UtsendingStatus.SKAL_SENDES)
-    }
-
-    @Test
-    fun skal_ikke_sende_startmelding_når_referat_oppdateres() {
-        val happyBruker = navMockService.createBruker()
-        val veileder = navMockService.createVeileder(happyBruker)
-        val aktivitet = aktivitetTestService.opprettAktivitet(
-            happyBruker,
-            veileder,
-            AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE).setErReferatPublisert(false).setReferat("Et referat")
-        )
-        val oppdatertAktivitet = aktivitet
-        oppdatertAktivitet.setReferat("Et oppdatert referat")
-        val aktivitetPayloadJson = JsonUtils.toJson(oppdatertAktivitet)
-        val antallMeldingerTilOversiktenFørOppdatering = oversiktenMeldingMedMetadataRepository.hentAlleSomSkalSendes().size
-
-        veileder
-            .createRequest(happyBruker)
-            .body(aktivitetPayloadJson)
-            .put("http://localhost:$port/veilarbaktivitet/api/aktivitet/${aktivitet.id}/referat")
-            .then()
-            .assertThat()
-            .statusCode(HttpStatus.OK.value())
-
-        val antallMeldingerTilOversiktenEtterOppdatering = oversiktenMeldingMedMetadataRepository.hentAlleSomSkalSendes().size
-        assertThat(antallMeldingerTilOversiktenEtterOppdatering).isEqualTo(antallMeldingerTilOversiktenFørOppdatering)
-    }
-
-    @Test
-    fun når_samtalereferat_opprettes_med_referat_sendes_melding_til_oversikten() {
-        val happyBruker = navMockService.createBruker()
-        val veileder = navMockService.createVeileder(happyBruker)
-
-        aktivitetTestService.opprettAktivitet(
-            happyBruker,
-            veileder,
-            AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.SAMTALEREFERAT).setErReferatPublisert(false).setReferat("Et referat")
-        )
-
-        val antallMeldingerTilOversikten = oversiktenMeldingMedMetadataRepository.hentAlleSomSkalSendes().size
-        assertThat(antallMeldingerTilOversikten).isEqualTo(1)
-    }
-
-    @Test
-    fun når_samtalereferat_deles_med_bruker_sendes_stoppmelding_til_oversikten(){
-        val happyBruker = navMockService.createBruker()
-        val veileder = navMockService.createVeileder(happyBruker)
-        val aktivitet = aktivitetTestService.opprettAktivitet(
-            happyBruker,
-            veileder,
-            AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.SAMTALEREFERAT).setErReferatPublisert(false).setReferat("Et referat")
-        )
-        assertThat(oversiktenMeldingMedMetadataRepository.hentAlleSomSkalSendes().size).isEqualTo(1)
-
-        aktivitetTestService.publiserReferat(aktivitet, veileder)
-
-        val meldingerTilOversikten = oversiktenMeldingMedMetadataRepository.hentAlleSomSkalSendes()
-        assertThat(meldingerTilOversikten.size).isEqualTo(2)
-        val sisteMelding = meldingerTilOversikten.maxBy { it.opprettet }
-        assertThat(sisteMelding.operasjon).isEqualTo(OversiktenMelding.Operasjon.STOPP)
-    }
-
-    @Test
-    fun når_referat_på_møte_opprettes_sendes_melding_til_oversikten() {
-        val happyBruker = navMockService.createBruker()
-        val veileder = navMockService.createVeileder(happyBruker)
-        val aktivitet = aktivitetTestService.opprettAktivitet(
-            happyBruker,
-            veileder,
-            AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE).setReferat(null)
-        )
-
-        aktivitet.setReferat("Et referat")
-        aktivitetTestService.oppdaterReferat(aktivitet, veileder)
-
-        val meldingerTilOversikten = oversiktenMeldingMedMetadataRepository.hentAlleSomSkalSendes()
-        assertThat(meldingerTilOversikten.size).isEqualTo(1)
-        val sisteMelding = meldingerTilOversikten.maxBy { it.opprettet }
-        assertThat(sisteMelding.operasjon).isEqualTo(OversiktenMelding.Operasjon.START)
-    }
-
-    @Test
-    fun `Ikke send melding til oversikten når samtalereferat deles når det opprettes`() {
-        val happyBruker = navMockService.createBruker()
-        val veileder = navMockService.createVeileder(happyBruker)
-
-        aktivitetTestService.opprettAktivitet(
-            happyBruker,
-            veileder,
-            AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.SAMTALEREFERAT).setErReferatPublisert(true).setReferat("Et referat")
-        )
-
-        val meldingerTilOversikten = oversiktenMeldingMedMetadataRepository.hentAlleSomSkalSendes()
-        assertThat(meldingerTilOversikten).isEmpty()
     }
 }

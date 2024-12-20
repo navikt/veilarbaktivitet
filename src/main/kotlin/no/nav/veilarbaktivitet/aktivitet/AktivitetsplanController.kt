@@ -80,6 +80,10 @@ class AktivitetsplanController(
         @RequestBody aktivitet: AktivitetDTO,
         @RequestParam(required = false, defaultValue = "false") automatisk: Boolean
     ): AktivitetDTO {
+        return internOpprettAktivitet(aktivitet, automatisk)
+    }
+
+    fun internOpprettAktivitet(aktivitet: AktivitetDTO, automatisk: Boolean): AktivitetDTO {
         return aktivitetDataMapperService.mapTilAktivitetData(aktivitet)
             .withAutomatiskOpprettet(automatisk)
             .let { aktivitetData -> appService.opprettNyAktivitet(aktivitetData) }

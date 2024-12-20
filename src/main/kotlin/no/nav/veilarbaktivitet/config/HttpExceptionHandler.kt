@@ -2,7 +2,6 @@ package no.nav.veilarbaktivitet.config
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import no.nav.veilarbaktivitet.aktivitet.feil.*
-import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ControllerAdvice
@@ -14,7 +13,6 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 @ControllerAdvice
 class HttpExceptionHandler : ResponseEntityExceptionHandler() {
-    val log = LoggerFactory.getLogger(HttpExceptionHandler::class.java)
 
     @ExceptionHandler(value = [EndringAvAktivitetException::class])
     fun handleException(e: EndringAvAktivitetException, request: WebRequest): ResponseEntity<Response> {
@@ -32,15 +30,6 @@ class HttpExceptionHandler : ResponseEntityExceptionHandler() {
         return ResponseEntity
             .status(e.statusCode)
             .body(Response(statusCode = e.statusCode.value(), message = e.reason))
-    }
-
-    @ExceptionHandler(value = [RuntimeException::class])
-    fun handleRuntimeException(e: RuntimeException, request: WebRequest): ResponseEntity<Response> {
-        val statusKode = HttpStatus.INTERNAL_SERVER_ERROR.value()
-        log.error("Feil i håndtering av kall", e)
-        return ResponseEntity
-            .status(statusKode)
-            .body(Response(statusCode = statusKode, message = "Noe gikk galt"))
     }
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
