@@ -53,8 +53,10 @@ public class VarselDAO {
     }
 
     public List<SkalSendes> hentVarselSomSkalSendes(int maxAntall) {
+        List<String> oppgavetyper = VarselType.varslerForBrukernotifikasjonstype(BrukernotifikasjonsType.OPPGAVE).stream().map(VarselType::name).toList();
 
         SqlParameterSource parameterSource = new MapSqlParameterSource()
+                .addValue("oppgavetyper", oppgavetyper)
                 .addValue("limit", maxAntall);
 
         return jdbcTemplate
@@ -67,10 +69,10 @@ public class VarselDAO {
                                     inner join AKTIVITET_BRUKERNOTIFIKASJON AB on A.AKTIVITET_ID = AB.AKTIVITET_ID
                                     where AB.BRUKERNOTIFIKASJON_ID = B.ID
                                     and A.GJELDENDE = 1
-                                    and B.TYPE = 'OPPGAVE'
+                                    and TYPE in ('STILLING_FRA_NAV', 'FORHAANDSORENTERING')
                                     and (A.HISTORISK_DATO is not null or A.LIVSLOPSTATUS_KODE in('FULLFORT', 'AVBRUTT'))
                                  )
-                                 fetch first :limit rows only
+                                 limit :limit
                                 """,
                         parameterSource, rowMapper);
     }
