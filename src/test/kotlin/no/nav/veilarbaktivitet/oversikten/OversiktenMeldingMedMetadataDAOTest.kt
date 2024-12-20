@@ -36,17 +36,6 @@ open class OversiktenMeldingMedMetadataDAOTest: SpringBootTestBase() {
     }
 
     @Test
-    fun `UdeltSamtalereferatForMøte SendtMelding ReturnererIngen`() {
-        val (happyBruker, aktivitet) = settOppUdeltSamtalereferatUtenMelding(AktivitetTypeDTO.MOTE)
-        oversiktenService.lagreStartMeldingOmUdeltSamtalereferatIUtboks(happyBruker.aktorId, aktivitet.id.toLong())
-        oversiktenService.sendUsendteMeldingerTilOversikten()
-
-        val resultat = oversiktenMeldingMedMetadataDAO.hentUdelteSamtalereferatDerViIkkeHarSendtMeldingTilOversikten()
-
-        assertThat(resultat).isEmpty()
-    }
-
-    @Test
     fun `UdeltSamtalereferatForSamtalereferat IkkeSendtMelding ReturnererEttResultat`() {
         val (happyBruker, aktivitet) = settOppUdeltSamtalereferatUtenMelding(AktivitetTypeDTO.SAMTALEREFERAT)
 
@@ -58,7 +47,18 @@ open class OversiktenMeldingMedMetadataDAOTest: SpringBootTestBase() {
     }
 
     @Test
-    fun `UdeltSamtalereferatForSamtalereferat SendtMelding ReturnererIngen`() {
+    fun `UdeltSamtalereferatForMøte SendtStartMelding ReturnererIngen`() {
+        val (happyBruker, aktivitet) = settOppUdeltSamtalereferatUtenMelding(AktivitetTypeDTO.MOTE)
+        oversiktenService.lagreStartMeldingOmUdeltSamtalereferatIUtboks(happyBruker.aktorId, aktivitet.id.toLong())
+        oversiktenService.sendUsendteMeldingerTilOversikten()
+
+        val resultat = oversiktenMeldingMedMetadataDAO.hentUdelteSamtalereferatDerViIkkeHarSendtMeldingTilOversikten()
+
+        assertThat(resultat).isEmpty()
+    }
+
+    @Test
+    fun `UdeltSamtalereferatForSamtalereferat SendtStartMelding ReturnererIngen`() {
         val (happyBruker, aktivitet) = settOppUdeltSamtalereferatUtenMelding(AktivitetTypeDTO.SAMTALEREFERAT)
         oversiktenService.lagreStartMeldingOmUdeltSamtalereferatIUtboks(happyBruker.aktorId, aktivitet.id.toLong())
         oversiktenService.sendUsendteMeldingerTilOversikten()
@@ -68,7 +68,23 @@ open class OversiktenMeldingMedMetadataDAOTest: SpringBootTestBase() {
         assertThat(resultat).isEmpty()
     }
 
+    @Test
+    fun `DeltSamtalereferatForMøte IkkeSendtMelding ReturnererIngen`() {
+        settOppDeltSamtalereferatUtenMelding(AktivitetTypeDTO.MOTE)
 
+        val resultat = oversiktenMeldingMedMetadataDAO.hentUdelteSamtalereferatDerViIkkeHarSendtMeldingTilOversikten()
+
+        assertThat(resultat).isEmpty()
+    }
+
+    @Test
+    fun `DeltSamtalereferatForSamtalereferat IkkeSendtMelding ReturnererIngen`() {
+        settOppDeltSamtalereferatUtenMelding(AktivitetTypeDTO.SAMTALEREFERAT)
+
+        val resultat = oversiktenMeldingMedMetadataDAO.hentUdelteSamtalereferatDerViIkkeHarSendtMeldingTilOversikten()
+
+        assertThat(resultat).isEmpty()
+    }
 
     private fun settOppUdeltSamtalereferatUtenMelding(aktivitetType: AktivitetTypeDTO): Pair<MockBruker, AktivitetDTO> {
         val happyBruker = navMockService.createBruker()
@@ -86,4 +102,19 @@ open class OversiktenMeldingMedMetadataDAOTest: SpringBootTestBase() {
         return Pair(happyBruker, aktivitet)
     }
 
+    private fun settOppDeltSamtalereferatUtenMelding(aktivitetType: AktivitetTypeDTO): Pair<MockBruker, AktivitetDTO> {
+        val happyBruker = navMockService.createBruker()
+        val veileder = navMockService.createVeileder(happyBruker)
+        val aktivitet = aktivitetTestService.opprettAktivitet(
+            happyBruker,
+            veileder,
+            AktivitetDtoTestBuilder.nyAktivitet(aktivitetType).setErReferatPublisert(true)
+                .setReferat("Et referat")
+        )
+
+        jdbcTemplate.execute("TRUNCATE OVERSIKTEN_MELDING_AKTIVITET_MAPPING")
+        jdbcTemplate.execute("TRUNCATE OVERSIKTEN_MELDING_MED_METADATA")
+
+        return Pair(happyBruker, aktivitet)
+    }
 }
