@@ -17,7 +17,7 @@ open class OversiktenMeldingMedMetadataDAOTest: SpringBootTestBase() {
     lateinit var oversiktenService: OversiktenService
 
     @Autowired
-    lateinit var oversiktenMeldingMedMetadataDAO: OversiktenMeldingMedMetadataDAO
+    private lateinit var oversiktenMeldingMedMetadataDAO: OversiktenMeldingMedMetadataDAO
 
     @BeforeEach
     fun beforeEach() {

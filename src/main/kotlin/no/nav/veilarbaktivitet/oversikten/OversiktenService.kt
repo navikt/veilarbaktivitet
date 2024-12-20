@@ -24,7 +24,7 @@ open class OversiktenService(
     private val log = LoggerFactory.getLogger(OversiktenService::class.java)
     private val erProd = EnvironmentUtils.isProduction().orElse(false)
 
-    @Scheduled(cron = "0 0 * * * *") // Hvert minutt
+    @Scheduled(cron = "0 0 * * * *") // Hver time
     @SchedulerLock(name = "oversikten_melding_med_metadata_scheduledTask", lockAtMostFor = "PT3M")
     open fun sendUsendteMeldingerTilOversikten() {
         val kanPublisereMeldinger = !EnvironmentUtils.isProduction().getOrElse { false } && !EnvironmentUtils.isDevelopment().getOrElse { false }
@@ -41,6 +41,16 @@ open class OversiktenService(
             }
         } else {
             log.info("OBO er ikke klare til å ta imot meldinger om udelte samtalereferat")
+        }
+    }
+
+    @Scheduled(cron = "0 40 13 * * ?")
+    @SchedulerLock(name = "oversikten_melding_gamle_udelte_scheduledTask", lockAtMostFor = "PT15M")
+    open fun sendAlleGamleUdelte() {
+        val alleUdelte = oversiktenMeldingMedMetadataRepository.hentUdelteSamtalereferatDerViIkkeHarSendtMeldingTilOversikten()
+        log.info("antall udelte referat", alleUdelte.size)
+        alleUdelte.forEach {
+            lagreStartMeldingOmUdeltSamtalereferatIUtboks(AktorId(it.aktorId.get()), it.aktivitetId)
         }
     }
 
