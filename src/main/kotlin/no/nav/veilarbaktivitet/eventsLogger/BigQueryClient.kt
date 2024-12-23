@@ -11,7 +11,7 @@ import java.time.ZoneOffset
 import java.time.ZonedDateTime
 
 enum class EventType {
-    SAMTALEREFERAT_OPPRETTET,
+    SAMTALEREFERAT_OPPRETTET, // TODO: Endre navn, dette er referat opprettet, ikke aktivitet med type samtalereferat
     SAMTALEREFERAT_FIKK_INNHOLD,
     SAMTALEREFERAT_DELT_MED_BRUKER,
     SAMTALEREFERAT_OPPRETTET_OG_DELT_MED_BRUKER,
