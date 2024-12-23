@@ -196,7 +196,7 @@ internal class AktivitetsplanControllerTest: SpringBootTestBase() {
         val aktivitet = aktivitetTestService.opprettAktivitet(
             happyBruker,
             veileder,
-            AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE).setErReferatPublisert(false).setReferat("")
+            AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE).setErReferatPublisert(false).setReferat(null)
         )
         val oppdatertAktivitet = aktivitet
         oppdatertAktivitet.setReferat("Et referat")
