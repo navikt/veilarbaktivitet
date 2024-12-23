@@ -58,18 +58,31 @@ public class VarselDAO {
 
         return jdbcTemplate
                 .query("""
-                                 select ID, BRUKERNOTIFIKASJON_ID, MELDING, OPPFOLGINGSPERIODE, FOEDSELSNUMMER, TYPE, SMSTEKST, EPOSTTITTEL, EPOSTBODY, URL
-                                 from BRUKERNOTIFIKASJON B
-                                 where STATUS = 'PENDING'
-                                 and not exists(
-                                    Select * from AKTIVITET A
-                                    inner join AKTIVITET_BRUKERNOTIFIKASJON AB on A.AKTIVITET_ID = AB.AKTIVITET_ID
-                                    where AB.BRUKERNOTIFIKASJON_ID = B.ID
-                                    and A.GJELDENDE = 1
-                                    and TYPE in ('STILLING_FRA_NAV', 'FORHAANDSORENTERING')
-                                    and (A.HISTORISK_DATO is not null or A.LIVSLOPSTATUS_KODE in('FULLFORT', 'AVBRUTT'))
-                                 )
-                                 limit :limit
+                                 SELECT
+                                     B.ID,
+                                     B.BRUKERNOTIFIKASJON_ID,
+                                     B.MELDING,
+                                     B.OPPFOLGINGSPERIODE,
+                                     B.FOEDSELSNUMMER,
+                                     B.TYPE,
+                                     B.SMSTEKST,
+                                     B.EPOSTTITTEL,
+                                     B.EPOSTBODY,
+                                     B.URL
+                                 FROM
+                                     BRUKERNOTIFIKASJON B
+                                         LEFT JOIN
+                                     AKTIVITET_BRUKERNOTIFIKASJON AB ON B.ID = AB.BRUKERNOTIFIKASJON_ID
+                                         LEFT JOIN
+                                     AKTIVITET A ON A.AKTIVITET_ID = AB.AKTIVITET_ID
+                                         AND A.GJELDENDE = 1
+                                         AND B.TYPE IN ('STILLING_FRA_NAV', 'FORHAANDSORENTERING')
+                                         AND (A.HISTORISK_DATO IS NOT NULL
+                                             OR A.LIVSLOPSTATUS_KODE IN('FULLFORT', 'AVBRUTT'))
+                                 WHERE
+                                     B.STATUS = 'PENDING' AND
+                                     A.AKTIVITET_ID IS NULL
+                                 LIMIT :limit;
                                 """,
                         parameterSource, rowMapper);
     }
