@@ -1,5 +1,5 @@
 
-val spring_boot_version = "3.4.0"
+val spring_boot_version = "3.4.1"
 val common_version = "3.2024.11.26_16.35-432a29107830"
 val dab_common_version = "2024.11.14-10.46.174740baf5c7"
 val poao_tilgang_version = "2024.11.26_08.36-ad014162ce23"
@@ -16,8 +16,8 @@ plugins {
     id("com.github.davidmc24.gradle.plugin.avro") version "1.9.1"
     id("project-report")
     id("jacoco")
-    id("org.sonarqube") version "6.0.0.5145"
-    id("org.springframework.boot") version "3.4.0"
+    id("org.sonarqube") version "6.0.1.5171"
+    id("org.springframework.boot") version "3.4.1"
     kotlin("plugin.lombok") version "2.1.0"
     id("io.freefair.lombok") version "8.11"
 }
@@ -136,7 +136,7 @@ dependencies {
     implementation(enforcedPlatform("org.springframework.boot:spring-boot-dependencies:$spring_boot_version"))
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:$spring_boot_version")
 
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
 
     implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:$shedlock_version")
     implementation("net.javacrumbs.shedlock:shedlock-spring:$shedlock_version")
@@ -171,12 +171,12 @@ dependencies {
     implementation("org.springframework.kafka:spring-kafka")
     implementation("com.squareup.okhttp3:okhttp")
     implementation("io.micrometer:micrometer-registry-prometheus-simpleclient")
-    implementation("org.flywaydb:flyway-database-postgresql:11.0.0")
+    implementation("org.flywaydb:flyway-database-postgresql:11.1.0")
     implementation("org.postgresql:postgresql:42.7.4")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.18.2")
 
     // BigQuery
-    implementation(platform("com.google.cloud:libraries-bom:26.51.0"))
+    implementation(platform("com.google.cloud:libraries-bom:26.52.0"))
     implementation("com.google.cloud:google-cloud-bigquery")
 
     implementation("io.getunleash:unleash-client-java:9.2.6")
