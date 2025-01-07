@@ -5,6 +5,8 @@ metadata:
   namespace: dab
   labels:
     team: dab
+  annotations:
+    config.linkerd.io/proxy-cpu-limit: 500m
 spec:
   image: {{image}}
   ingresses:
