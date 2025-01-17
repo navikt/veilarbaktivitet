@@ -140,7 +140,6 @@ dependencies {
 
     implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:$shedlock_version")
     implementation("net.javacrumbs.shedlock:shedlock-spring:$shedlock_version")
-    implementation("no.nav.common:abac:$common_version")
     implementation("no.nav.common:kafka:$common_version")
     implementation("no.nav.common:token-client:$common_version")
     implementation("no.nav.common:auth:$common_version")
