@@ -74,6 +74,9 @@ spec:
         - application: arbeidsrettet-dialog
           namespace: pto
           cluster: prod-gcp
+        - application: inngar
+          namespace: dab
+          cluster: prod-gcp
     outbound:
       external:
         - host: veilarbarena.prod-fss-pub.nais.io

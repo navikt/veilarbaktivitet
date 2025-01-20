@@ -77,6 +77,9 @@ spec:
         - application: ida
           namespace: traktor
           cluster: prod-fss # Dette er med vilje
+        - application: inngar
+          namespace: dab
+          cluster: dev-gcp
     outbound:
       external:
         - host: veilarbarena.dev-fss-pub.nais.io
