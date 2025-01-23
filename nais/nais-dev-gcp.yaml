@@ -80,6 +80,9 @@ spec:
         - application: inngar
           namespace: dab
           cluster: dev-gcp
+        - application: veilarbarena
+          cluster: dev-fss
+          namespace: pto
     outbound:
       external:
         - host: veilarbarena.dev-fss-pub.nais.io

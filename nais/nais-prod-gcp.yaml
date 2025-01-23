@@ -77,6 +77,9 @@ spec:
         - application: inngar
           namespace: dab
           cluster: prod-gcp
+        - application: veilarbarena
+          cluster: prod-fss
+          namespace: pto
     outbound:
       external:
         - host: veilarbarena.prod-fss-pub.nais.io
