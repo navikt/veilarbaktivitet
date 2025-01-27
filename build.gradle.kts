@@ -1,5 +1,5 @@
 
-val spring_boot_version = "3.4.1"
+val spring_boot_version = "3.4.2"
 val common_version = "3.2025.01.14_14.19-79b3041cae56"
 val dab_common_version = "2024.11.14-10.46.174740baf5c7"
 val poao_tilgang_version = "2025.01.10_06.33-afbc6bc84eed"
@@ -12,14 +12,14 @@ plugins {
     id("application")
     id("maven-publish")
     kotlin("jvm") version "2.1.0"
-    id("org.openapi.generator") version "7.10.0"
+    id("org.openapi.generator") version "7.11.0"
     id("com.github.davidmc24.gradle.plugin.avro") version "1.9.1"
     id("project-report")
     id("jacoco")
     id("org.sonarqube") version "6.0.1.5171"
-    id("org.springframework.boot") version "3.4.1"
+    id("org.springframework.boot") version "3.4.2"
     kotlin("plugin.lombok") version "2.1.0"
-    id("io.freefair.lombok") version "8.11"
+    id("io.freefair.lombok") version "8.12"
 }
 
 java {
@@ -178,7 +178,7 @@ dependencies {
     implementation(platform("com.google.cloud:libraries-bom:26.53.0"))
     implementation("com.google.cloud:google-cloud-bigquery")
 
-    implementation("io.getunleash:unleash-client-java:9.2.6")
+    implementation("io.getunleash:unleash-client-java:9.3.1")
 
     runtimeOnly("org.springframework.boot:spring-boot-devtools")
 
