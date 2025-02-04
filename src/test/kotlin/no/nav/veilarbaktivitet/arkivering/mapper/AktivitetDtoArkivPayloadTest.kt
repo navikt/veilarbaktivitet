@@ -83,11 +83,11 @@ class AktivitetDtoArkivPayloadTest {
 
         val svarDetalj = stillingFraNavDetaljer.find { it.tittel == "Du svarte at du er interessert" }
         assertThat(svarDetalj!!.tekst).isEqualTo("""
-            NAV var i kontakt med deg 4. oktober 2022. Du sa Ja til at CV-en din deles med arbeidsgiver.
+            Nav var i kontakt med deg 4. oktober 2022. Du sa Ja til at CV-en din deles med arbeidsgiver.
   
-            NAV svarte på vegne av deg 6. oktober 2022.
+            Nav svarte på vegne av deg 6. oktober 2022.
   
-            Arbeidsgiveren eller NAV vil kontakte deg hvis du er aktuell for stillingen.
+            Arbeidsgiveren eller Nav vil kontakte deg hvis du er aktuell for stillingen.
         """.trimIndent())
     }
 
@@ -107,11 +107,11 @@ class AktivitetDtoArkivPayloadTest {
 
         val svarDetalj = stillingFraNavDetaljer.find { it.tittel == "Du svarte at du er interessert" }
         assertThat(svarDetalj!!.tekst).isEqualTo("""
-            Ja, og NAV kan dele CV-en min med denne arbeidsgiveren.
+            Ja, og Nav kan dele CV-en min med denne arbeidsgiveren.
   
             Du svarte 6. oktober 2022.
   
-            Arbeidsgiveren eller NAV vil kontakte deg hvis du er aktuell for stillingen.
+            Arbeidsgiveren eller Nav vil kontakte deg hvis du er aktuell for stillingen.
         """.trimIndent())
     }
 
@@ -131,9 +131,9 @@ class AktivitetDtoArkivPayloadTest {
 
         val svarDetalj = stillingFraNavDetaljer.find { it.tittel == "Du svarte at du ikke er interessert" }
         assertThat(svarDetalj!!.tekst).isEqualTo("""
-            NAV var i kontakt med deg 4. oktober 2022. Du sa Nei til at CV-en din deles med arbeidsgiver.
+            Nav var i kontakt med deg 4. oktober 2022. Du sa Nei til at CV-en din deles med arbeidsgiver.
   
-            NAV svarte på vegne av deg 6. oktober 2022.
+            Nav svarte på vegne av deg 6. oktober 2022.
         """.trimIndent())
     }
 
@@ -153,7 +153,7 @@ class AktivitetDtoArkivPayloadTest {
 
         val svarDetalj = stillingFraNavDetaljer.find { it.tittel == "Du svarte at du ikke er interessert" }
         assertThat(svarDetalj!!.tekst).isEqualTo("""
-            Nei, og jeg vil ikke at NAV skal dele CV-en min med arbeidsgiveren.
+            Nei, og jeg vil ikke at Nav skal dele CV-en min med arbeidsgiveren.
   
             Du svarte 6. oktober 2022.
         """.trimIndent())
@@ -196,7 +196,7 @@ class AktivitetDtoArkivPayloadTest {
                 "Fra dato",
                 "Til dato",
                 "Mål for behandlingen",
-                "Oppfølging fra NAV",
+                "Oppfølging fra Nav",
                 "Beskrivelse",
             )
     }

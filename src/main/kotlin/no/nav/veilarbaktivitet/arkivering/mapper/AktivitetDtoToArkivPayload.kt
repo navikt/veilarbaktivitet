@@ -50,12 +50,12 @@ fun AktivitetData.toArkivTypeTekst(): String {
         SOKEAVTALE -> "Jobbsøking"
         IJOBB -> "Jobb jeg har nå"
         BEHANDLING -> "Behandling"
-        MOTE -> "Møte med NAV"
+        MOTE -> "Møte med Nav"
         SAMTALEREFERAT -> "Samtalereferat"
-        STILLING_FRA_NAV -> "Stilling fra NAV"
+        STILLING_FRA_NAV -> "Stilling fra Nav"
         EKSTERNAKTIVITET -> {
             when (this.eksternAktivitetData.type!!) {
-                AktivitetskortType.ARENA_TILTAK -> "Tiltak gjennom NAV"
+                AktivitetskortType.ARENA_TILTAK -> "Tiltak gjennom Nav"
                 AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD -> "Avtale midlertidig lønnstilskudd"
                 AktivitetskortType.VARIG_LONNSTILSKUDD -> "Avtale varig lønnstilskudd"
                 AktivitetskortType.ARBEIDSTRENING -> "Arbeidstrening"
@@ -165,7 +165,7 @@ fun AktivitetData.toStillingFraNavDetaljer(): List<Detalj> {
         val cvKanDelesData = stillingFraNavData.cvKanDelesData
         val tittel = if (stillingFraNavData.cvKanDelesData.kanDeles) "Du svarte at du er interessert" else "Du svarte at du ikke er interessert"
         val svarOgEndretTekst = if(stillingFraNavData.cvKanDelesData.endretAvType == Innsender.BRUKER) cvKanDelesData.svarOgEndretTekstBruker() else cvKanDelesData.svarOgEndretTekstVeileder()
-        val oppfolgingsTekst = if(cvKanDelesData.kanDeles) "Arbeidsgiveren eller NAV vil kontakte deg hvis du er aktuell for stillingen." else null
+        val oppfolgingsTekst = if(cvKanDelesData.kanDeles) "Arbeidsgiveren eller Nav vil kontakte deg hvis du er aktuell for stillingen." else null
         val fullTekst = oppfolgingsTekst?.let { "$svarOgEndretTekst\n\n$it" } ?: svarOgEndretTekst
 
         val svarDetalj = Detalj(stil = PARAGRAF, tittel = tittel, tekst = fullTekst)
@@ -177,16 +177,16 @@ fun AktivitetData.toStillingFraNavDetaljer(): List<Detalj> {
 
 private fun CvKanDelesData.svarOgEndretTekstBruker(): String {
     val svarTekst = if (this.kanDeles) {
-        "Ja, og NAV kan dele CV-en min med denne arbeidsgiveren."
+        "Ja, og Nav kan dele CV-en min med denne arbeidsgiveren."
     } else {
-        "Nei, og jeg vil ikke at NAV skal dele CV-en min med arbeidsgiveren."
+        "Nei, og jeg vil ikke at Nav skal dele CV-en min med arbeidsgiveren."
     }
     return "$svarTekst\n\nDu svarte ${norskDato(this.endretTidspunkt)}."
 }
 
 private fun CvKanDelesData.svarOgEndretTekstVeileder(): String {
-    val svarTekst = "NAV var i kontakt med deg ${norskDato(this.avtaltDato)}. Du sa ${if (this.kanDeles) "Ja" else "Nei"} til at CV-en din deles med arbeidsgiver."
-    return "$svarTekst\n\nNAV svarte på vegne av deg ${norskDato(this.endretTidspunkt)}."
+    val svarTekst = "Nav var i kontakt med deg ${norskDato(this.avtaltDato)}. Du sa ${if (this.kanDeles) "Ja" else "Nei"} til at CV-en din deles med arbeidsgiver."
+    return "$svarTekst\n\nNav svarte på vegne av deg ${norskDato(this.endretTidspunkt)}."
 }
 
 fun AktivitetData.toSokeAvtaleDetaljer() = listOf(
@@ -211,7 +211,7 @@ fun AktivitetData.toBehandlingDetaljer() = listOf(
     Detalj(stil = HALV_LINJE, tittel = "Fra dato", tekst = norskDato(fraDato)),
     Detalj(stil = HALV_LINJE, tittel = "Til dato", tekst = norskDato(tilDato)),
     Detalj(stil = HEL_LINJE, tittel = "Mål for behandlingen", tekst = behandlingAktivitetData?.effekt),
-    Detalj(stil = HEL_LINJE, tittel = "Oppfølging fra NAV", tekst = behandlingAktivitetData?.behandlingOppfolging),
+    Detalj(stil = HEL_LINJE, tittel = "Oppfølging fra Nav", tekst = behandlingAktivitetData?.behandlingOppfolging),
     Detalj(stil = PARAGRAF, tittel = "Beskrivelse", tekst = beskrivelse),
 )
 

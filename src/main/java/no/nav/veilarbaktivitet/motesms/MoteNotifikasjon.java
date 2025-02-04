@@ -29,7 +29,7 @@ record MoteNotifikasjon(long aktivitetId, long aktitetVersion, Person.AktorId ak
     }
 
     String getEpostBody() {
-        return getTekst() + " \nVennlig hilsen NAV";
+        return getTekst() + " \nVennlig hilsen Nav";
     }
 
     String getDitNavTekst() {
