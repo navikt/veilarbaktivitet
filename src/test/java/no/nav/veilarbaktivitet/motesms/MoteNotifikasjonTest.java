@@ -39,7 +39,7 @@ class MoteNotifikasjonTest {
         assertEquals("Vi minner om at du har et møte mandag 14. februar kl. 14:42", oppmote.getSmsTekst());
         assertEquals("Vi minner om at du har et møte mandag 14. februar kl. 14:42", oppmote.getDitNavTekst());
         assertEquals("Påminnelse om møte", oppmote.getEpostTitel());
-        assertEquals("Vi minner om at du har et møte mandag 14. februar kl. 14:42 \nVennlig hilsen NAV", oppmote.getEpostBody());
+        assertEquals("Vi minner om at du har et møte mandag 14. februar kl. 14:42 \nVennlig hilsen Nav", oppmote.getEpostBody());
     }
 
     @Test
@@ -48,7 +48,7 @@ class MoteNotifikasjonTest {
         assertEquals("Vi minner om at du har et telefonmøte mandag 14. februar kl. 14:42", oppmote.getSmsTekst());
         assertEquals("Vi minner om at du har et telefonmøte mandag 14. februar kl. 14:42", oppmote.getDitNavTekst());
         assertEquals("Påminnelse om møte", oppmote.getEpostTitel());
-        assertEquals("Vi minner om at du har et telefonmøte mandag 14. februar kl. 14:42 \nVennlig hilsen NAV", oppmote.getEpostBody());
+        assertEquals("Vi minner om at du har et telefonmøte mandag 14. februar kl. 14:42 \nVennlig hilsen Nav", oppmote.getEpostBody());
     }
 
     @Test
@@ -57,6 +57,6 @@ class MoteNotifikasjonTest {
         assertEquals("Vi minner om at du har et videomøte mandag 14. februar kl. 14:42", oppmote.getSmsTekst());
         assertEquals("Vi minner om at du har et videomøte mandag 14. februar kl. 14:42", oppmote.getDitNavTekst());
         assertEquals("Påminnelse om møte", oppmote.getEpostTitel());
-        assertEquals("Vi minner om at du har et videomøte mandag 14. februar kl. 14:42 \nVennlig hilsen NAV", oppmote.getEpostBody());
+        assertEquals("Vi minner om at du har et videomøte mandag 14. februar kl. 14:42 \nVennlig hilsen Nav", oppmote.getEpostBody());
     }
 }
