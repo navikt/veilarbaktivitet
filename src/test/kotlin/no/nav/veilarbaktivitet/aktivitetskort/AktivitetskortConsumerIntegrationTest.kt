@@ -414,7 +414,7 @@ class AktivitetskortConsumerIntegrationTest(
         val funksjonellId = UUID.randomUUID()
         val tiltaksaktivitet = KafkaAktivitetskortWrapperDTO(
             aktivitetskort(funksjonellId, AktivitetskortStatus.PLANLAGT),
-            AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD,
+            AktivitetskortType.VARIG_TILRETTELAGT_ARBEID_I_ORDINAER_VIRKSOMHET,
             MessageSource.TEAM_TILTAK
         )
         val tiltaksaktivitetEndret = KafkaAktivitetskortWrapperDTO(
@@ -426,7 +426,7 @@ class AktivitetskortConsumerIntegrationTest(
                             "Nytt navn"
                         )
                     )
-                ), AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD, MessageSource.TEAM_TILTAK
+                ), AktivitetskortType.VARIG_TILRETTELAGT_ARBEID_I_ORDINAER_VIRKSOMHET, MessageSource.TEAM_TILTAK
         )
         aktivitetTestService.opprettEksterntAktivitetsKort(
             listOf(
