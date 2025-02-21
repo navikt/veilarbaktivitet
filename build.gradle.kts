@@ -178,7 +178,7 @@ dependencies {
     implementation(platform("com.google.cloud:libraries-bom:26.54.0"))
     implementation("com.google.cloud:google-cloud-bigquery")
 
-    implementation("io.getunleash:unleash-client-java:9.2.6")
+    implementation("io.getunleash:unleash-client-java:10.0.1")
 
     runtimeOnly("org.springframework.boot:spring-boot-devtools")
 
