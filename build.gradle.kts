@@ -3,7 +3,7 @@ val spring_boot_version = "3.4.2"
 val common_version = "3.2025.01.14_14.19-79b3041cae56"
 val dab_common_version = "2024.11.14-10.46.174740baf5c7"
 val poao_tilgang_version = "2025.02.06_13.37-958e35e7373d"
-val shedlock_version = "6.2.0"
+val shedlock_version = "6.3.0"
 val _version: String by project
 
 plugins {
@@ -170,7 +170,7 @@ dependencies {
     implementation("org.springframework.kafka:spring-kafka")
     implementation("com.squareup.okhttp3:okhttp")
     implementation("io.micrometer:micrometer-registry-prometheus-simpleclient")
-    implementation("org.flywaydb:flyway-database-postgresql:11.3.1")
+    implementation("org.flywaydb:flyway-database-postgresql:11.3.2")
     implementation("org.postgresql:postgresql:42.7.5")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.18.2")
 
