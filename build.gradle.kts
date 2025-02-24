@@ -1,9 +1,9 @@
 
-val spring_boot_version = "3.4.2"
+val spring_boot_version = "3.4.3"
 val common_version = "3.2025.01.14_14.19-79b3041cae56"
 val dab_common_version = "2024.11.14-10.46.174740baf5c7"
-val poao_tilgang_version = "2025.02.06_13.37-958e35e7373d"
-val shedlock_version = "6.2.0"
+val poao_tilgang_version = "2025.02.18_14.13-ac4265f31ef3"
+val shedlock_version = "6.3.0"
 val _version: String by project
 
 plugins {
@@ -17,9 +17,9 @@ plugins {
     id("project-report")
     id("jacoco")
     id("org.sonarqube") version "6.0.1.5171"
-    id("org.springframework.boot") version "3.4.2"
+    id("org.springframework.boot") version "3.4.3"
     kotlin("plugin.lombok") version "2.1.10"
-    id("io.freefair.lombok") version "8.12.1"
+    id("io.freefair.lombok") version "8.12.2"
 }
 
 java {
@@ -170,12 +170,12 @@ dependencies {
     implementation("org.springframework.kafka:spring-kafka")
     implementation("com.squareup.okhttp3:okhttp")
     implementation("io.micrometer:micrometer-registry-prometheus-simpleclient")
-    implementation("org.flywaydb:flyway-database-postgresql:11.3.1")
+    implementation("org.flywaydb:flyway-database-postgresql:11.3.3")
     implementation("org.postgresql:postgresql:42.7.5")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.18.2")
 
     // BigQuery
-    implementation(platform("com.google.cloud:libraries-bom:26.54.0"))
+    implementation(platform("com.google.cloud:libraries-bom:26.55.0"))
     implementation("com.google.cloud:google-cloud-bigquery")
 
     implementation("io.getunleash:unleash-client-java:9.2.6")
@@ -185,13 +185,13 @@ dependencies {
 //test dependencies
     testImplementation("no.nav.poao-tilgang:poao-tilgang-test-wiremock:$poao_tilgang_version")
 
-    testImplementation("org.awaitility:awaitility:4.2.2")
+    testImplementation("org.awaitility:awaitility:4.3.0")
 //    testImplementation("com.github.tomakehurst:wiremock:3.0.0-beta-2")
 //    testImplementation("org.springframework.cloud:spring-cloud-starter-contract-stub-runner:4.0.1")
     
 //    testImplementation("org.springframework.cloud:spring-cloud-contract-wiremock:4.1.3")
 
-    testImplementation("com.networknt:json-schema-validator:1.5.5")
+    testImplementation("com.networknt:json-schema-validator:1.5.6")
 
 //    testImplementation("de.mkammerer.wiremock-junit5:wiremock-junit5:1.1.0")
 //    testImplementation("io.github.ricall.junit5-wiremock:junit5-wiremock:2.0.0")
