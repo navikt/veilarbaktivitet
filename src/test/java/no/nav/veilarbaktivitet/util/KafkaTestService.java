@@ -147,7 +147,7 @@ public class KafkaTestService {
 
         long commitedOffset = offsetAndMetadata.offset();
         // Consumer-group offsets er på meldinger som ikke er committet/behandlet enda
-        return (commitedOffset - 1) >= producerOffset;
+        return commitedOffset>= producerOffset + 1;
     }
 
     @SneakyThrows
