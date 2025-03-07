@@ -1,9 +1,11 @@
 
 val spring_boot_version = "3.4.2"
-val common_version = "3.2025.01.14_14.19-79b3041cae56"
+val common_version = "3.2025.03.06_11.40-cbc2a0783de9"
 val dab_common_version = "2024.11.14-10.46.174740baf5c7"
 val poao_tilgang_version = "2025.02.06_13.37-958e35e7373d"
 val shedlock_version = "6.2.0"
+val avroVersion = "1.12.0"
+val confluentKafkaAvroVersion = "7.9.0"
 val _version: String by project
 
 plugins {
@@ -141,6 +143,10 @@ dependencies {
     implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:$shedlock_version")
     implementation("net.javacrumbs.shedlock:shedlock-spring:$shedlock_version")
     implementation("no.nav.common:kafka:$common_version")
+    implementation("org.apache.avro:avro:$avroVersion") // skriver avro til pto.deling-av-stilling-fra-nav-forespurt-v2
+    implementation("io.confluent:kafka-avro-serializer:$confluentKafkaAvroVersion") {
+        exclude(group = "io.swagger.core.v3")
+    }
     implementation("no.nav.common:token-client:$common_version")
     implementation("no.nav.common:auth:$common_version")
     implementation("no.nav.common:log:$common_version")
