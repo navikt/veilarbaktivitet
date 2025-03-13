@@ -91,7 +91,7 @@ private fun hentEndringstekst(forrigeVersjon: AktivitetData?, oppdatertVersjon: 
 
 fun endretAvTekstTilArkiv(innsender: Innsender, endretAv: String?) = when(innsender) {
     Innsender.BRUKER -> "Bruker"
-    Innsender.ARBEIDSGIVER -> "Arbeidsgiver${endretAv?.let { " $it" } ?: ""}"
+    Innsender.ARBEIDSGIVER -> "Arbeidsgiver"
     Innsender.TILTAKSARRANGOER -> "Tiltaksarrangør${endretAv?.let { " $it" } ?: ""}"
     Innsender.NAV, Innsender.ARENAIDENT -> "NAV"
     Innsender.SYSTEM -> "NAV"
@@ -99,7 +99,7 @@ fun endretAvTekstTilArkiv(innsender: Innsender, endretAv: String?) = when(innsen
 
 fun endretAvTekstTilVeileder(innsender: Innsender, endretAv: String?) = when(innsender) {
     Innsender.BRUKER -> "Bruker"
-    Innsender.ARBEIDSGIVER -> "Arbeidsgiver${endretAv?.let { " $it" } ?: ""}"
+    Innsender.ARBEIDSGIVER -> "Arbeidsgiver"
     Innsender.TILTAKSARRANGOER -> "Tiltaksarrangør${endretAv?.let { " $it" } ?: ""}"
     Innsender.NAV, Innsender.ARENAIDENT -> endretAv?.let { "$endretAv" } ?: "NAV"
     Innsender.SYSTEM -> "NAV"
