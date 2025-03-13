@@ -29,7 +29,7 @@ fun lagHistorikkForAktiviteter(aktivitetVersjoner: Map<AktivitetId, List<Aktivit
         val endringer = sorterteAktivitetVersjoner.mapIndexed { index, aktivitetData ->
                 Endring(
                     endretAvType = aktivitetData.endretAvType,
-                    endretAv = aktivitetData.endretAv,
+                    endretAv = if(aktivitetData.endretAvType == Innsender.ARBEIDSGIVER) "Arbeidsgiver" else aktivitetData.endretAv,
                     tidspunkt = DateUtils.dateToZonedDateTime(aktivitetData.endretDato),
                     beskrivelseForVeileder = hentEndringstekst(sorterteAktivitetVersjoner.getOrNull(index-1), aktivitetData, VEILEDER),
                     beskrivelseForBruker = hentEndringstekst(sorterteAktivitetVersjoner.getOrNull(index-1), aktivitetData, BRUKER),

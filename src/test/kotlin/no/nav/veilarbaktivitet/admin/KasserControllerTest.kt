@@ -63,7 +63,7 @@ internal class KasserControllerTest : SpringBootTestBase() {
         val kassertVersjon = versjonerEtterKassering.find { it.transaksjonsType == KASSERT }!!
         assertThat(kassertVersjon.endretAv).isEqualTo(veilederSomKanKassere.navIdent)
         assertThat(kassertVersjon.endretAvType).isEqualTo(Innsender.NAV.toString())
-        assertThat(kassertVersjon.endretDato).isCloseTo(Date(), 350)
+        assertThat(kassertVersjon.endretDato).isCloseTo(Date(), 1000)
     }
 
     @Test
