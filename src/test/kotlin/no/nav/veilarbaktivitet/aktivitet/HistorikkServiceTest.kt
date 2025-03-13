@@ -3,7 +3,6 @@ package no.nav.veilarbaktivitet.aktivitet
 import no.nav.veilarbaktivitet.aktivitet.domain.*
 import no.nav.veilarbaktivitet.person.Innsender
 import no.nav.veilarbaktivitet.stilling_fra_nav.Soknadsstatus
-import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.*
 import no.nav.veilarbaktivitet.testutils.AktivitetTypeDataTestBuilder
 import no.nav.veilarbaktivitet.util.DateUtils
@@ -307,8 +306,8 @@ class HistorikkServiceTest {
         assertThat(endretAvTekstTilArkiv(Innsender.BRUKER, "")).isEqualTo("Bruker")
 
         assertThat(endretAvTekstTilBruker(Innsender.ARBEIDSGIVER)).isEqualTo("Arbeidsgiver")
-        assertThat(endretAvTekstTilVeileder(Innsender.ARBEIDSGIVER, "Bedrift")).isEqualTo("Arbeidsgiver Bedrift")
-        assertThat(endretAvTekstTilArkiv(Innsender.ARBEIDSGIVER, "Bedrift")).isEqualTo("Arbeidsgiver Bedrift")
+        assertThat(endretAvTekstTilVeileder(Innsender.ARBEIDSGIVER, "Bedrift")).isEqualTo("Arbeidsgiver")
+        assertThat(endretAvTekstTilArkiv(Innsender.ARBEIDSGIVER, "Bedrift")).isEqualTo("Arbeidsgiver")
 
         assertThat(endretAvTekstTilBruker(Innsender.TILTAKSARRANGOER)).isEqualTo("Tiltaksarrangør")
         assertThat(endretAvTekstTilVeileder(Innsender.TILTAKSARRANGOER, "Bedrift")).isEqualTo("Tiltaksarrangør Bedrift")
