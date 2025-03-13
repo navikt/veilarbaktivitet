@@ -29,7 +29,7 @@ fun lagHistorikkForAktiviteter(aktivitetVersjoner: Map<AktivitetId, List<Aktivit
         val endringer = sorterteAktivitetVersjoner.mapIndexed { index, aktivitetData ->
                 Endring(
                     endretAvType = aktivitetData.endretAvType,
-                    endretAv = if(aktivitetData.endretAvType == Innsender.ARBEIDSGIVER) "Arbeidsgiver" else aktivitetData.endretAv,
+                    endretAv = aktivitetData.endretAv,
                     tidspunkt = DateUtils.dateToZonedDateTime(aktivitetData.endretDato),
                     beskrivelseForVeileder = hentEndringstekst(sorterteAktivitetVersjoner.getOrNull(index-1), aktivitetData, VEILEDER),
                     beskrivelseForBruker = hentEndringstekst(sorterteAktivitetVersjoner.getOrNull(index-1), aktivitetData, BRUKER),
@@ -99,7 +99,7 @@ fun endretAvTekstTilArkiv(innsender: Innsender, endretAv: String?) = when(innsen
 
 fun endretAvTekstTilVeileder(innsender: Innsender, endretAv: String?) = when(innsender) {
     Innsender.BRUKER -> "Bruker"
-    Innsender.ARBEIDSGIVER -> "Arbeidsgiver"
+    Innsender.ARBEIDSGIVER -> "Arbeidsgiver${endretAv?.let { " $it" } ?: ""}"
     Innsender.TILTAKSARRANGOER -> "Tiltaksarrangør${endretAv?.let { " $it" } ?: ""}"
     Innsender.NAV, Innsender.ARENAIDENT -> endretAv?.let { "$endretAv" } ?: "NAV"
     Innsender.SYSTEM -> "NAV"

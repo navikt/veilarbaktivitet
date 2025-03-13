@@ -306,8 +306,8 @@ class HistorikkServiceTest {
         assertThat(endretAvTekstTilArkiv(Innsender.BRUKER, "")).isEqualTo("Bruker")
 
         assertThat(endretAvTekstTilBruker(Innsender.ARBEIDSGIVER)).isEqualTo("Arbeidsgiver")
-        assertThat(endretAvTekstTilVeileder(Innsender.ARBEIDSGIVER, "Bedrift")).isEqualTo("Arbeidsgiver")
-        assertThat(endretAvTekstTilArkiv(Innsender.ARBEIDSGIVER, "Bedrift")).isEqualTo("Arbeidsgiver")
+        assertThat(endretAvTekstTilVeileder(Innsender.ARBEIDSGIVER, "Bedrift")).isEqualTo("Arbeidsgiver Bedrift")
+        assertThat(endretAvTekstTilArkiv(Innsender.ARBEIDSGIVER, "Bedrift")).isEqualTo("Arbeidsgiver Bedrift")
 
         assertThat(endretAvTekstTilBruker(Innsender.TILTAKSARRANGOER)).isEqualTo("Tiltaksarrangør")
         assertThat(endretAvTekstTilVeileder(Innsender.TILTAKSARRANGOER, "Bedrift")).isEqualTo("Tiltaksarrangør Bedrift")
