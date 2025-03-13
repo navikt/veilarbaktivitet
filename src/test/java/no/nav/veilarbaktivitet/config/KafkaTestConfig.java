@@ -4,11 +4,8 @@ import io.micrometer.core.instrument.MeterRegistry;
 import no.nav.common.kafka.producer.KafkaProducerClient;
 import no.nav.common.kafka.producer.util.KafkaProducerClientBuilder;
 import no.nav.common.kafka.util.KafkaPropertiesBuilder;
-import no.nav.veilarbaktivitet.aktivitetskort.service.AktivitetskortService;
 import no.nav.veilarbaktivitet.config.kafka.NavCommonKafkaConfig;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaJsonTemplate;
-import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringAvroTemplate;
-import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringTemplate;
 import no.nav.veilarbaktivitet.util.NavCommonKafkaSerialized;
 import org.apache.kafka.clients.admin.Admin;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -19,8 +16,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.boot.ssl.DefaultSslBundleRegistry;
-import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.boot.test.mock.mockito.SpyBeans;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -38,12 +33,6 @@ import java.util.Map;
 import java.util.Properties;
 
 @Configuration
-@SpyBeans({
-        @SpyBean(KafkaStringTemplate.class),
-        @SpyBean(KafkaStringAvroTemplate.class),
-        @SpyBean(KafkaJsonTemplate.class),
-        @SpyBean(AktivitetskortService.class)
-})
 public class KafkaTestConfig {
     @Bean
     public EmbeddedKafkaKraftBroker embeddedKafka(
