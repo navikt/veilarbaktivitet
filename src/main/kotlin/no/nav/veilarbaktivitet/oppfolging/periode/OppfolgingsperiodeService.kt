@@ -29,6 +29,7 @@ class OppfolgingsperiodeService(
     }
 
     fun avsluttOppfolgingsperiode(oppfolgingsperiode: UUID, sluttDato: ZonedDateTime) {
+        log.info("avsluttOppfolgingsperiode: {}", oppfolgingsperiode)
         minsideVarselService.setDoneGrupperingsID(oppfolgingsperiode)
         aktivitetService.settAktiviteterTilHistoriske(oppfolgingsperiode, sluttDato)
     }
