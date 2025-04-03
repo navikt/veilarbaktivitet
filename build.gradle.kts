@@ -1,27 +1,27 @@
 
-val spring_boot_version = "3.4.3"
+val spring_boot_version = "3.4.4"
 val common_version = "3.2025.03.06_11.40-cbc2a0783de9"
 val dab_common_version = "2024.11.14-10.46.174740baf5c7"
-val poao_tilgang_version = "2025.02.18_14.13-ac4265f31ef3"
-val shedlock_version = "6.3.0"
+val poao_tilgang_version = "2025.03.17_10.46-e6359712fa6d"
+val shedlock_version = "6.3.1"
 val avroVersion = "1.12.0"
 val confluentKafkaAvroVersion = "7.9.0"
 val _version: String by project
 
 plugins {
     id("java")
-    id("org.jetbrains.kotlin.plugin.spring") version "2.1.10"
+    id("org.jetbrains.kotlin.plugin.spring") version "2.1.20"
     id("application")
     id("maven-publish")
-    kotlin("jvm") version "2.1.10"
+    kotlin("jvm") version "2.1.20"
     id("org.openapi.generator") version "7.12.0"
     id("com.github.davidmc24.gradle.plugin.avro") version "1.9.1"
     id("project-report")
     id("jacoco")
-    id("org.sonarqube") version "6.0.1.5171"
-    id("org.springframework.boot") version "3.4.3"
-    kotlin("plugin.lombok") version "2.1.10"
-    id("io.freefair.lombok") version "8.12.2"
+    id("org.sonarqube") version "6.1.0.5360"
+    id("org.springframework.boot") version "3.4.4"
+    kotlin("plugin.lombok") version "2.1.20"
+    id("io.freefair.lombok") version "8.13.1"
 }
 
 java {
@@ -176,12 +176,12 @@ dependencies {
     implementation("org.springframework.kafka:spring-kafka")
     implementation("com.squareup.okhttp3:okhttp")
     implementation("io.micrometer:micrometer-registry-prometheus-simpleclient")
-    implementation("org.flywaydb:flyway-database-postgresql:11.3.4")
+    implementation("org.flywaydb:flyway-database-postgresql:11.5.0")
     implementation("org.postgresql:postgresql:42.7.5")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.18.3")
 
     // BigQuery
-    implementation(platform("com.google.cloud:libraries-bom:26.55.0"))
+    implementation(platform("com.google.cloud:libraries-bom:26.58.0"))
     implementation("com.google.cloud:google-cloud-bigquery")
 
     implementation("io.getunleash:unleash-client-java:9.2.6")
