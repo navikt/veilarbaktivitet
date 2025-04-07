@@ -120,7 +120,7 @@ class AktivitetskortConsumer (
     @Throws(DuplikatMeldingFeil::class)
     private fun ignorerHvisSettFor(messageId: UUID, funksjonellId: UUID) =
         if (aktivitetskortService.harSettMelding(messageId)) {
-            log.warn("Previously handled message seen {} , ignoring", messageId)
+            log.warn("Previously handled message seen {} , ignoring. Funksjonell id: {}", messageId, funksjonellId)
             throw DuplikatMeldingFeil()
         } else {
             aktivitetskortService.lagreMeldingsId(messageId, funksjonellId)
