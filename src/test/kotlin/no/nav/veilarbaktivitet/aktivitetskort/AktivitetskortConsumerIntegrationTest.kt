@@ -696,7 +696,7 @@ class AktivitetskortConsumerIntegrationTest(
         val runtimeException = assertThrows(
             RuntimeException::class.java
         ) { aktivitetskortConsumer!!.consume(record) }
-        assertThat(runtimeException.message).isEqualTo("Mangler Arena Header for arena-id aktivitetskort")
+        assertThat(runtimeException.message).isEqualTo("java.lang.RuntimeException: Mangler Arena Header for arena-id aktivitetskort")
     }
 
     @Test
@@ -803,7 +803,7 @@ class AktivitetskortConsumerIntegrationTest(
         /* NB får ikke testet med checked exception */
         Mockito.doThrow(IllegalArgumentException("RunTimeException"))
             .`when`(aktivitetskortService).oppdaterStatus(any(), any())
-        assertThrows(IllegalArgumentException::class.java) {
+        assertThrows(RuntimeException::class.java) {
             aktivitetskortConsumer.consume(recordOppdatert)
         }
 
