@@ -91,7 +91,9 @@ class AktivitetskortConsumer (
             ConsumeStatus.OK
         } catch (e: Exception) {
             aktivitetskortMetrikker.countAktivitetskortTekniskFeil(traceFields?.source ?: MessageSource.UNKNOWN)
-            throw e
+            // Kotlin treats all exceptions as checked, so we need to wrap it in a RuntimeException.
+            // This ensures that the transaction is rolled back.
+            throw RuntimeException(e)
         } finally {
             MDC.remove(MetricService.SOURCE)
         }
