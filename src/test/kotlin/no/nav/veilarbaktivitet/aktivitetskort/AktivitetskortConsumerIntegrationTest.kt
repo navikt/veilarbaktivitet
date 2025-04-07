@@ -53,6 +53,7 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
+import javax.net.ssl.SSLHandshakeException
 import kotlin.random.Random
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -799,9 +800,10 @@ class AktivitetskortConsumerIntegrationTest(
 
         /* Simulate technical error after DETALJER_ENDRET processing */
 
-        Mockito.doThrow(IllegalStateException("Ikke lov"))
+        /* NB får ikke testet med checked exception */
+        Mockito.doThrow(IllegalArgumentException("RunTimeException"))
             .`when`(aktivitetskortService).oppdaterStatus(any(), any())
-        assertThrows(IllegalStateException::class.java) {
+        assertThrows(IllegalArgumentException::class.java) {
             aktivitetskortConsumer.consume(recordOppdatert)
         }
 
