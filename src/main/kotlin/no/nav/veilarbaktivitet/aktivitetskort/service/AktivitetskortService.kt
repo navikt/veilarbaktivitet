@@ -6,6 +6,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
 import no.nav.veilarbaktivitet.aktivitet.domain.Ident
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetsMessageDAO
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortCompareUtil
+import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortConsumer.OffsetAndPartition
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMapper.toAktivitetsDataInsert
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMapper.toAktivitetsDataUpdate
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.AktivitetskortBestilling
@@ -132,8 +133,8 @@ class AktivitetskortService(
         return aktivitetsMessageDAO.exist(messageId)
     }
 
-    fun lagreMeldingsId(messageId: UUID, funksjonellId: UUID) {
-        aktivitetsMessageDAO.insert(messageId, funksjonellId)
+    fun lagreMeldingsId(messageId: UUID, funksjonellId: UUID, offsetAndPartition: OffsetAndPartition) {
+        aktivitetsMessageDAO.insert(messageId, funksjonellId, offsetAndPartition)
     }
 
     fun oppdaterMeldingResultat(messageId: UUID, upsertActionResult: UpsertActionResult, reason: String?) {
