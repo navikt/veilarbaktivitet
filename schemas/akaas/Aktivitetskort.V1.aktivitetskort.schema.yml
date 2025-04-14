@@ -149,7 +149,13 @@ definitions:
             type: string
             examples:
               - Z999999
-            description: Id til bruker som oppretter eller endrer aktiviteten
+            description: |
+              Id til bruker som oppretter eller endrer aktiviteten.
+              Tiltaksarrangør og arbeidsgiver er orgNr.
+              Personbruker er norsk-ident (dnr eller fnr).
+              Navident er ident til navansatt: feks Z999999.
+              Arenaident: kun til intern bruk.
+              System: Systembruker
           identType:
             type: string
             enum:
@@ -159,12 +165,6 @@ definitions:
               - TILTAKSARRAGOER
               - ARBEIDSGIVER
               - SYSTEM
-            description: |
-              Tiltaksarrangør og arbeidsgiver er orgNr.
-              Personbruker er norsk-ident (dnr eller fnr).
-              Navident er ident til navansatt: feks Z999999.
-              Arenaident: kun til intern bruk.
-              System: Systembruker
         examples:
           - ident: AAA123
             identType: ARENAIDENT

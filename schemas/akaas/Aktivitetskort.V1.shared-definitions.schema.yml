@@ -14,6 +14,7 @@ definitions:
     enum:
       - MIDLERTIDIG_LONNSTILSKUDD
       - VARIG_LONNSTILSKUDD
+      - ARBEIDSTRENING
       - INDOPPFAG
       - ARBFORB
       - AVKLARAG
@@ -28,6 +29,7 @@ definitions:
       Aktivitetskort typer som er tillatt å opprette via tjenesten. Denne enumereringen vil utvides etterhvert.
       MIDLERTIDIG_LONNSTILSKUDD - Midlertidig lønnstilskudd
       VARIG_LONNSTILSKUDD - Varig lønnstilskudd
+      ARBEIDSTRENING - Arbeidstrening
       INDOPPFAG - Oppfølging
       ARBFORB - Arbeidsforberedende trening (AFT)
       AVKLARAG  - Avklaring
