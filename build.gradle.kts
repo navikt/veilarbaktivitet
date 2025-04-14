@@ -1,6 +1,6 @@
 
 val spring_boot_version = "3.4.4"
-val common_version = "3.2025.03.06_11.40-cbc2a0783de9"
+val common_version = "3.2025.04.01_09.46-936a3ae3d5d9"
 val dab_common_version = "2024.11.14-10.46.174740baf5c7"
 val poao_tilgang_version = "2025.03.17_10.46-e6359712fa6d"
 val shedlock_version = "6.3.1"
@@ -132,13 +132,13 @@ if (hasProperty("buildScan")) {
 }
 
 dependencies {
-    annotationProcessor("org.projectlombok:lombok:1.18.36")
-    testAnnotationProcessor("org.projectlombok:lombok:1.18.36")
+    annotationProcessor("org.projectlombok:lombok:1.18.38")
+    testAnnotationProcessor("org.projectlombok:lombok:1.18.38")
 
     implementation(enforcedPlatform("org.springframework.boot:spring-boot-dependencies:$spring_boot_version"))
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:$spring_boot_version")
 
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
 
     implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:$shedlock_version")
     implementation("net.javacrumbs.shedlock:shedlock-spring:$shedlock_version")
@@ -176,12 +176,12 @@ dependencies {
     implementation("org.springframework.kafka:spring-kafka")
     implementation("com.squareup.okhttp3:okhttp")
     implementation("io.micrometer:micrometer-registry-prometheus-simpleclient")
-    implementation("org.flywaydb:flyway-database-postgresql:11.5.0")
+    implementation("org.flywaydb:flyway-database-postgresql:11.7.0")
     implementation("org.postgresql:postgresql:42.7.5")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.18.3")
 
     // BigQuery
-    implementation(platform("com.google.cloud:libraries-bom:26.58.0"))
+    implementation(platform("com.google.cloud:libraries-bom:26.59.0"))
     implementation("com.google.cloud:google-cloud-bigquery")
 
     implementation("io.getunleash:unleash-client-java:9.2.6")
