@@ -87,6 +87,7 @@
                     "enum": [
                       "MIDLERTIDIG_LONNSTILSKUDD",
                       "VARIG_LONNSTILSKUDD",
+                      "ARBEIDSTRENING",
                       "INDOPPFAG",
                       "ARBFORB",
                       "AVKLARAG",
@@ -98,7 +99,7 @@
                       "GRUFAGYRKE",
                       "ARENA_TILTAK"
                     ],
-                    "description": "Aktivitetskort typer som er tillatt å opprette via tjenesten. Denne enumereringen vil utvides etterhvert.\nMIDLERTIDIG_LONNSTILSKUDD - Midlertidig lønnstilskudd\nVARIG_LONNSTILSKUDD - Varig lønnstilskudd\nINDOPPFAG - Oppfølging\nARBFORB - Arbeidsforberedende trening (AFT)\nAVKLARAG  - Avklaring\nVASV  - Varig tilrettelagt arbeid i skjermet virksomhet\nARBRRHDAG” - Arbeidsrettet rehabilitering (dag)\nDIGIOPPARB - Digitalt jobbsøkerkurs for arbeidsledige (jobbklubb)\nJOBBK - Jobbklubb\nGRUPPEAMO Gruppe AMO (arbeidsmarkedsopplæring)\nGRUFAGYRKE  - Gruppe Fag- og yrkesopplæring VGS og høyere yrkesfaglig utdanning\nARENA_TILTAK - Resten av arbeidsmarkedstiltakene i arena (>100)\n"
+                    "description": "Aktivitetskort typer som er tillatt å opprette via tjenesten. Denne enumereringen vil utvides etterhvert.\nMIDLERTIDIG_LONNSTILSKUDD - Midlertidig lønnstilskudd\nVARIG_LONNSTILSKUDD - Varig lønnstilskudd\nARBEIDSTRENING - Arbeidstrening\nINDOPPFAG - Oppfølging\nARBFORB - Arbeidsforberedende trening (AFT)\nAVKLARAG  - Avklaring\nVASV  - Varig tilrettelagt arbeid i skjermet virksomhet\nARBRRHDAG” - Arbeidsrettet rehabilitering (dag)\nDIGIOPPARB - Digitalt jobbsøkerkurs for arbeidsledige (jobbklubb)\nJOBBK - Jobbklubb\nGRUPPEAMO Gruppe AMO (arbeidsmarkedsopplæring)\nGRUFAGYRKE  - Gruppe Fag- og yrkesopplæring VGS og høyere yrkesfaglig utdanning\nARENA_TILTAK - Resten av arbeidsmarkedstiltakene i arena (>100)\n"
                   },
                   "actionType": {
                     "type": "string",
@@ -199,7 +200,7 @@
                             "examples": [
                               "Z999999"
                             ],
-                            "description": "Id til bruker som oppretter eller endrer aktiviteten",
+                            "description": "Id til bruker som oppretter eller endrer aktiviteten.\nTiltaksarrangør og arbeidsgiver er orgNr.\nPersonbruker er norsk-ident (dnr eller fnr).\nNavident er ident til navansatt: feks Z999999.\nArenaident: kun til intern bruk.\nSystem: Systembruker\n",
                             "x-parser-schema-id": "<anonymous-schema-14>"
                           },
                           "identType": {
@@ -212,7 +213,6 @@
                               "ARBEIDSGIVER",
                               "SYSTEM"
                             ],
-                            "description": "Tiltaksarrangør og arbeidsgiver er orgNr.\nPersonbruker er norsk-ident (dnr eller fnr).\nNavident er ident til navansatt: feks Z999999.\nArenaident: kun til intern bruk.\nSystem: Systembruker\n",
                             "x-parser-schema-id": "<anonymous-schema-15>"
                           }
                         },
