@@ -199,6 +199,22 @@ class AktivitetskortConsumerIntegrationTest(
     }
 
     @Test
+    fun rekrutteringstreff_fra_rekrutteringsbistand_skal_behandles() {
+        val funksjonellId = UUID.randomUUID()
+        val actual = aktivitetskort(funksjonellId, AktivitetskortStatus.PLANLAGT)
+        val wrapperDTO = KafkaAktivitetskortWrapperDTO(
+            aktivitetskortType = AktivitetskortType.REKRUTTERINGSTREFF,
+            aktivitetskort = actual,
+            source = MessageSource.REKRUTTERINGSBISTAND.name,
+            messageId = UUID.randomUUID()
+        )
+        aktivitetTestService.opprettEksterntAktivitetsKort(listOf(wrapperDTO))
+        val aktivitet = hentAktivitet(funksjonellId)
+        assertEquals(AktivitetTypeDTO.EKSTERNAKTIVITET, aktivitet.type)
+        assertEquals(AktivitetskortType.REKRUTTERINGSTREFF, aktivitet.eksternAktivitet.type)
+    }
+
+    @Test
     fun lonnstilskudd_på_bruker_som_ikke_er_under_oppfolging_skal_feile() {
         val brukerUtenOppfolging =
             navMockService.createBruker(BrukerOptions.happyBruker().toBuilder().underOppfolging(false).build())

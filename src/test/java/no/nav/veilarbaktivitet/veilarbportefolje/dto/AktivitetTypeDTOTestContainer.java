@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.util.Arrays;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -39,7 +40,7 @@ class AktivitetTypeDTOTestContainer {
     @Nested
     class AktivitetskortTilArenaTiltakskoderTest {
         static Stream<AktivitetskortType> aktivitetskortTyper() {
-            return Stream.of(AktivitetskortType.values());
+            return Arrays.stream(AktivitetskortType.values()).filter(type -> type != AktivitetskortType.REKRUTTERINGSTREFF);
         }
 
         @ParameterizedTest

@@ -48,6 +48,7 @@ public enum AktivitetTypeDTO {
             case SAMTALEREFERAT -> SAMTALEREFERAT;
             case STILLING_FRA_NAV -> STILLING_FRA_NAV;
             // Foreløpig er alle eksternaktiviteter tiltak.
+            // TODO Hvis rekrutteringtreff blir en egen aktivitetstype, så må vi modellere det inn, og OBO må være klar til å ta i mot.
             case EKSTERNAKTIVITET -> TILTAK;
         };
 
