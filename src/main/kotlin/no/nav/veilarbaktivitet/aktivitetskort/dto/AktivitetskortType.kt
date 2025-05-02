@@ -29,5 +29,6 @@ enum class AktivitetskortType {
     DIGIOPPARB,
     JOBBK,
     GRUPPEAMO,
-    GRUFAGYRKE
+    GRUFAGYRKE,
+    REKRUTTERINGSTREFF
 }
