@@ -77,7 +77,8 @@
                     "enum": [
                       "ARENA_TILTAK_AKTIVITET_ACL",
                       "TEAM_TILTAK",
-                      "TEAM_KOMET"
+                      "TEAM_KOMET",
+                      "REKRUTTERINGSBISTAND"
                     ],
                     "x-parser-schema-id": "<anonymous-schema-3>"
                   },
@@ -97,9 +98,10 @@
                       "JOBBK",
                       "GRUPPEAMO",
                       "GRUFAGYRKE",
+                      "REKRUTTERINGSTREFF",
                       "ARENA_TILTAK"
                     ],
-                    "description": "Aktivitetskort typer som er tillatt å opprette via tjenesten. Denne enumereringen vil utvides etterhvert.\nMIDLERTIDIG_LONNSTILSKUDD - Midlertidig lønnstilskudd\nVARIG_LONNSTILSKUDD - Varig lønnstilskudd\nARBEIDSTRENING - Arbeidstrening\nINDOPPFAG - Oppfølging\nARBFORB - Arbeidsforberedende trening (AFT)\nAVKLARAG  - Avklaring\nVASV  - Varig tilrettelagt arbeid i skjermet virksomhet\nARBRRHDAG” - Arbeidsrettet rehabilitering (dag)\nDIGIOPPARB - Digitalt jobbsøkerkurs for arbeidsledige (jobbklubb)\nJOBBK - Jobbklubb\nGRUPPEAMO Gruppe AMO (arbeidsmarkedsopplæring)\nGRUFAGYRKE  - Gruppe Fag- og yrkesopplæring VGS og høyere yrkesfaglig utdanning\nARENA_TILTAK - Resten av arbeidsmarkedstiltakene i arena (>100)\n"
+                    "description": "Aktivitetskort typer som er tillatt å opprette via tjenesten. Denne enumereringen vil utvides etterhvert.\nMIDLERTIDIG_LONNSTILSKUDD - Midlertidig lønnstilskudd (Team Tiltak)\nVARIG_LONNSTILSKUDD - Varig lønnstilskudd (Team Tiltak)\nARBEIDSTRENING - Arbeidstrening (Team Tiltak)\nINDOPPFAG - Oppfølging (Team Komet)\nARBFORB - Arbeidsforberedende trening - AFT (Team Komet)\nAVKLARAG  - Avklaring (Team Komet)\nVASV  - Varig tilrettelagt arbeid i skjermet virksomhet (Team Komet)\nARBRRHDAG” - Arbeidsrettet rehabilitering - dag (Team Komet)\nDIGIOPPARB - Digitalt jobbsøkerkurs for arbeidsledige - jobbklubb (Team Komet)\nJOBBK - Jobbklubb (Team Komet)\nGRUPPEAMO Gruppe AMO - arbeidsmarkedsopplæring (Team Komet)\nGRUFAGYRKE  - Gruppe Fag- og yrkesopplæring VGS og høyere yrkesfaglig utdanning (Team Komet)\nREKRUTTERINGSTREFF - Rekrutteringstreff mellom arbeidsgivere og potensielle arbeidstakere (Team Toi)\nARENA_TILTAK - Resten av arbeidsmarkedstiltakene i arena (>100)\n"
                   },
                   "actionType": {
                     "type": "string",
