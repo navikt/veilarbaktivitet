@@ -24,7 +24,7 @@ class ByEnhetStrategy(
         return "byEnhet"
     }
 
-    override fun isEnabled(parameters: Map<String, String>): Boolean {
+    fun isEnabled(parameters: Map<String, String>): Boolean {
         return false
     }
 
