@@ -68,6 +68,8 @@ spec:
         - application: veilarbdirigent
           namespace: pto
           cluster: dev-fss
+        - application: veilarbdirigent
+          namespace: dab
         - application: aktivitetsplan
           namespace: pto
           cluster: dev-gcp
