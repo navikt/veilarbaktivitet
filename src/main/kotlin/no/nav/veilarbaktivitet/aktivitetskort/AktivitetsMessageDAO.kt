@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.aktivitetskort
 
+import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortConsumer.OffsetAndPartition
 import no.nav.veilarbaktivitet.aktivitetskort.service.UpsertActionResult
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
@@ -11,14 +12,16 @@ class AktivitetsMessageDAO (
     private val template: NamedParameterJdbcTemplate
 ) {
 
-    fun insert(messageId: UUID, funksjonellId: UUID) {
+    fun insert(messageId: UUID, funksjonellId: UUID, offsetAndPartition: OffsetAndPartition) {
         val params = MapSqlParameterSource()
             .addValue("messageId", messageId.toString())
             .addValue("funksjonellId", funksjonellId.toString())
+            .addValue("offset", offsetAndPartition.offset)
+            .addValue("partition", offsetAndPartition.partition)
         template.update(
             """
-                INSERT INTO AKTIVITETSKORT_MSG_ID(MESSAGE_ID, FUNKSJONELL_ID) 
-                VALUES (:messageId, :funksjonellId)
+                INSERT INTO AKTIVITETSKORT_MSG_ID(MESSAGE_ID, FUNKSJONELL_ID, OFFSET, PARTITION) 
+                VALUES (:messageId, :funksjonellId, :offset, :partition)
                 
                 """.trimIndent(), params
         )
