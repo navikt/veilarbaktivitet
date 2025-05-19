@@ -10,17 +10,17 @@ val _version: String by project
 
 plugins {
     id("java")
-    id("org.jetbrains.kotlin.plugin.spring") version "2.1.20"
+    id("org.jetbrains.kotlin.plugin.spring") version "2.1.21"
     id("application")
     id("maven-publish")
-    kotlin("jvm") version "2.1.20"
+    kotlin("jvm") version "2.1.21"
     id("org.openapi.generator") version "7.13.0"
     id("com.github.davidmc24.gradle.plugin.avro") version "1.9.1"
     id("project-report")
     id("jacoco")
-    id("org.sonarqube") version "6.1.0.5360"
+    id("org.sonarqube") version "6.2.0.5505"
     id("org.springframework.boot") version "3.4.5"
-    kotlin("plugin.lombok") version "2.1.20"
+    kotlin("plugin.lombok") version "2.1.21"
     id("io.freefair.lombok") version "8.13.1"
 }
 
@@ -176,7 +176,7 @@ dependencies {
     implementation("org.springframework.kafka:spring-kafka")
     implementation("com.squareup.okhttp3:okhttp")
     implementation("io.micrometer:micrometer-registry-prometheus-simpleclient")
-    implementation("org.flywaydb:flyway-database-postgresql:11.8.1")
+    implementation("org.flywaydb:flyway-database-postgresql:11.8.2")
     implementation("org.postgresql:postgresql:42.7.5")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.19.0")
 
