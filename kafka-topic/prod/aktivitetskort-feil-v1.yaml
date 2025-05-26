@@ -34,3 +34,6 @@ spec:
     - team: amt
       application: amt-aktivitetskort-publisher
       access: read
+    - team: toi
+      application: rekrutteringsbistand-aktivitetskort
+      access: read
