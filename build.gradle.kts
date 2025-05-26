@@ -1,9 +1,9 @@
 
-val spring_boot_version = "3.4.5"
+val spring_boot_version = "3.5.0"
 val common_version = "3.2025.04.01_09.46-936a3ae3d5d9"
 val dab_common_version = "2024.11.14-10.46.174740baf5c7"
-val poao_tilgang_version = "2025.03.17_10.46-e6359712fa6d"
-val shedlock_version = "6.6.1"
+val poao_tilgang_version = "2025.05.22_11.16-06c841fea2ec"
+val shedlock_version = "6.7.0"
 val avroVersion = "1.12.0"
 val confluentKafkaAvroVersion = "7.9.1"
 val _version: String by project
@@ -19,7 +19,7 @@ plugins {
     id("project-report")
     id("jacoco")
     id("org.sonarqube") version "6.2.0.5505"
-    id("org.springframework.boot") version "3.4.5"
+    id("org.springframework.boot") version "3.5.0"
     kotlin("plugin.lombok") version "2.1.21"
     id("io.freefair.lombok") version "8.13.1"
 }
@@ -181,7 +181,7 @@ dependencies {
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.19.0")
 
     // BigQuery
-    implementation(platform("com.google.cloud:libraries-bom:26.60.0"))
+    implementation(platform("com.google.cloud:libraries-bom:26.61.0"))
     implementation("com.google.cloud:google-cloud-bigquery")
 
     implementation("io.getunleash:unleash-client-java:10.2.2")
@@ -197,7 +197,7 @@ dependencies {
     
 //    testImplementation("org.springframework.cloud:spring-cloud-contract-wiremock:4.1.3")
 
-    testImplementation("com.networknt:json-schema-validator:1.5.6")
+    testImplementation("com.networknt:json-schema-validator:1.5.7")
 
 //    testImplementation("de.mkammerer.wiremock-junit5:wiremock-junit5:1.1.0")
 //    testImplementation("io.github.ricall.junit5-wiremock:junit5-wiremock:2.0.0")
