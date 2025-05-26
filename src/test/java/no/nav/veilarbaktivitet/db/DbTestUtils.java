@@ -64,7 +64,6 @@ public class DbTestUtils {
                 .dataSource(dataSource)
                 .table("schema_version")
                 .configuration(properties)
-                .cleanOnValidationError(true)
                 .validateMigrationNaming(true);
         Flyway flyway = new Flyway(config);
         flyway.clean();

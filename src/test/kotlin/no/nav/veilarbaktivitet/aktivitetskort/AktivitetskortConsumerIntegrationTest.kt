@@ -45,6 +45,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.mockito.Mockito
 import org.mockito.kotlin.any
 import org.springframework.beans.factory.annotation.Autowired
@@ -53,7 +54,6 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
-import javax.net.ssl.SSLHandshakeException
 import kotlin.random.Random
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
