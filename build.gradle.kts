@@ -1,9 +1,9 @@
 
 val spring_boot_version = "3.5.0"
-val common_version = "3.2025.04.01_09.46-936a3ae3d5d9"
+val common_version = "3.2025.05.30_07.00-bef2e550fb22"
 val dab_common_version = "2024.11.14-10.46.174740baf5c7"
 val poao_tilgang_version = "2025.05.22_11.16-06c841fea2ec"
-val shedlock_version = "6.7.0"
+val shedlock_version = "6.8.0"
 val avroVersion = "1.12.0"
 val confluentKafkaAvroVersion = "7.9.1"
 val _version: String by project
@@ -177,7 +177,7 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp")
     implementation("io.micrometer:micrometer-registry-prometheus-simpleclient")
     implementation("org.flywaydb:flyway-database-postgresql:11.8.2")
-    implementation("org.postgresql:postgresql:42.7.5")
+    implementation("org.postgresql:postgresql:42.7.6")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.19.0")
 
     // BigQuery
