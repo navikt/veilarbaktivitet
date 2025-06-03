@@ -17,7 +17,6 @@ object ArkiveringspayloadMapper {
         arkiveringsData: ArkiveringsController.ArkiveringsData,
         sakDTO: SakDTO,
         journalførendeEnhet: String,
-        tema: String
     ): ArkivPayload {
         val (arkivaktiviteter, arkivdialoger) = lagDataTilOrkivar(arkiveringsData.aktiviteter, arkiveringsData.dialoger, arkiveringsData.historikkForAktiviteter, arkiveringsData.arenaAktiviteter)
         return ArkivPayload(
@@ -27,7 +26,7 @@ object ArkiveringspayloadMapper {
             oppfølgingsperiodeSlutt = arkiveringsData.oppfølgingsperiode.sluttDato?.let { norskDato(it) },
             sakId = sakDTO.sakId,
             fagsaksystem = sakDTO.fagsaksystem,
-            tema = tema,
+            tema = sakDTO.tema,
             oppfølgingsperiodeId = arkiveringsData.oppfølgingsperiode.uuid,
             journalførendeEnhet = journalførendeEnhet,
             aktiviteter = arkivaktiviteter.groupBy { it.status },
