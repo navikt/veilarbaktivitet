@@ -288,7 +288,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                       "oppfølgingsperiodeSlutt": ${sisteOppfølgingsperiode?.sluttTid?.let { norskDato(it) } ?: null},
                       "sakId": ${bruker.sakId},
                       "fagsaksystem": "ARBEIDSOPPFOLGING",
-                      "tema": "OPP",
+                      "tema": "AKT",
                       "oppfølgingsperiodeId": "${oppfølgingsperiodeId}",
                       "journalførendeEnhet": "$journalførendeEnhet",
                       "aktiviteter" : {
@@ -730,7 +730,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                               "oppfølgingsperiodeSlutt" : null,
                               "sakId" : 1000,
                               "fagsaksystem" : "ARBEIDSOPPFOLGING",
-                              "tema" : "OPP",
+                              "tema" : "AKT",
                               "oppfølgingsperiodeId" : "${oppfølgingsperiode.oppfolgingsperiodeId}",
                               "journalførendeEnhet" : "dummyEnhet",
                               "aktiviteter" : {
