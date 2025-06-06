@@ -59,6 +59,7 @@ spec:
     logging:
       destinations:
         - id: elastic
+        - id: loki
   accessPolicy:
     inbound:
       rules:
