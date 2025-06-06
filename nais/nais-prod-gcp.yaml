@@ -85,6 +85,9 @@ spec:
         - application: veilarbarena
           cluster: prod-fss
           namespace: pto
+        - application: poao-admin
+          cluster: prod-gcp
+          namespace: poao
     outbound:
       external:
         - host: veilarbarena.prod-fss-pub.nais.io
