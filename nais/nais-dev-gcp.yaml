@@ -88,6 +88,9 @@ spec:
         - application: veilarbarena
           cluster: dev-fss
           namespace: pto
+        - application: poao-admin
+          cluster: dev-gcp
+          namespace: poao
     outbound:
       external:
         - host: veilarbarena.dev-fss-pub.nais.io
