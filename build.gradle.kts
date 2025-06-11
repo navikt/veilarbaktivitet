@@ -177,7 +177,7 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp")
     implementation("io.micrometer:micrometer-registry-prometheus-simpleclient")
     implementation("org.flywaydb:flyway-database-postgresql:11.9.1")
-    implementation("org.postgresql:postgresql:42.7.6")
+    implementation("org.postgresql:postgresql:42.7.7")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.19.0")
 
     // BigQuery
