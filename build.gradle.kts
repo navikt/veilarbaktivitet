@@ -5,7 +5,7 @@ val dab_common_version = "2024.11.14-10.46.174740baf5c7"
 val poao_tilgang_version = "2025.06.06_07.18-71cefb1c2699"
 val shedlock_version = "6.9.0"
 val avroVersion = "1.12.0"
-val confluentKafkaAvroVersion = "7.9.1"
+val confluentKafkaAvroVersion = "8.0.0"
 val _version: String by project
 
 plugins {
@@ -177,14 +177,14 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp")
     implementation("io.micrometer:micrometer-registry-prometheus-simpleclient")
     implementation("org.flywaydb:flyway-database-postgresql:11.9.1")
-    implementation("org.postgresql:postgresql:42.7.6")
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.19.0")
+    implementation("org.postgresql:postgresql:42.7.7")
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.19.1")
 
     // BigQuery
-    implementation(platform("com.google.cloud:libraries-bom:26.61.0"))
+    implementation(platform("com.google.cloud:libraries-bom:26.62.0"))
     implementation("com.google.cloud:google-cloud-bigquery")
 
-    implementation("io.getunleash:unleash-client-java:10.2.2")
+    implementation("io.getunleash:unleash-client-java:11.0.0")
 
     runtimeOnly("org.springframework.boot:spring-boot-devtools")
 
