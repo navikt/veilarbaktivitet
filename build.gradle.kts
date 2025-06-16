@@ -5,7 +5,7 @@ val dab_common_version = "2024.11.14-10.46.174740baf5c7"
 val poao_tilgang_version = "2025.06.06_07.18-71cefb1c2699"
 val shedlock_version = "6.9.0"
 val avroVersion = "1.12.0"
-val confluentKafkaAvroVersion = "7.9.1"
+val confluentKafkaAvroVersion = "8.0.0"
 val _version: String by project
 
 plugins {
