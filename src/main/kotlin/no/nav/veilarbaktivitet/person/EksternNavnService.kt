@@ -39,14 +39,14 @@ data class PdlPerson(
     fun hentNavn(): Navn = when {
         navn.size == 1 -> navn.first().tilNavn()
         navn.size > 1 ->
-            navn.firstOrNull { it.metadata.master == PDL }?.tilNavn() ?:
-            navn.first { it.metadata.master == FREG }.tilNavn()
+            navn.firstOrNull { it.metadata.master.lowercase() == PDL.name.lowercase() }?.tilNavn() ?:
+            navn.first { it.metadata.master.lowercase() == FREG.name.lowercase() }.tilNavn()
             else -> throw IllegalStateException("Personen har ikke navn - dette skal aldri skje")
         }
 }
 
 data class NavnMetadata(
-    val master: NavnMaster
+    val master: String // Forskjellig casing i dev og prod hos pdl
 )
 
 enum class NavnMaster {

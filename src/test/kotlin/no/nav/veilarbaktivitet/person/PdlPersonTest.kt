@@ -10,8 +10,8 @@ class PdlPersonTest {
 
     @Test
     fun `Skal bruke navn med PDL som master når navn fra både PDL og FREG finnes`() {
-        val pdlNavn = PdlNavn("Ole", null, "Johansen", metadata = NavnMetadata(master = PDL))
-        val fregNav = PdlNavn("Jens", null, "Olsen", metadata = NavnMetadata(master = FREG))
+        val pdlNavn = PdlNavn("Ole", null, "Johansen", metadata = NavnMetadata(master = PDL.name))
+        val fregNav = PdlNavn("Jens", null, "Olsen", metadata = NavnMetadata(master = FREG.name))
         val person = PdlPerson(listOf(pdlNavn, fregNav).shuffled())
 
         val navn = person.hentNavn()
@@ -22,7 +22,7 @@ class PdlPersonTest {
 
     @Test
     fun `Skal bruke navn med FREG som master når det ikke finnes navn med PDL som master`() {
-        val fregNav = PdlNavn("Jens", null, "Olsen", metadata = NavnMetadata(master = FREG))
+        val fregNav = PdlNavn("Jens", null, "Olsen", metadata = NavnMetadata(master = FREG.name))
         val person = PdlPerson(listOf(fregNav).shuffled())
 
         val navn = person.hentNavn()
