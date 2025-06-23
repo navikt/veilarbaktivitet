@@ -47,8 +47,8 @@ public class OkHttpClientConfig {
 
     @Bean OkHttpClient orkivarHttpClient(MeterRegistry meterRegistry, AzureAdOnBehalfOfTokenClient azureAdOnBehalfOfTokenClient) {
         return RestClient.baseClientBuilder()
-            .connectTimeout(10, TimeUnit.SECONDS) // Dokark and pdf-gen is very slow
-            .writeTimeout(10, TimeUnit.SECONDS)
+            .connectTimeout(15, TimeUnit.SECONDS) // Dokark and pdf-gen is very slow
+            .writeTimeout(15, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
             .addInterceptor(azureAdInterceptor(() ->
                     azureAdOnBehalfOfTokenClient.exchangeOnBehalfOfToken(orkivarScope, authService.getInnloggetBrukerToken())
