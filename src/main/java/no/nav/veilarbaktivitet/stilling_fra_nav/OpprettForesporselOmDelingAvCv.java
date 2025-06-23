@@ -46,7 +46,7 @@ public class OpprettForesporselOmDelingAvCv {
     private final StillingFraNavMetrikker metrikker;
 
     private final Logger secureLogs = LoggerFactory.getLogger("SecureLog");
-    private static final String BRUKERNOTIFIKASJON_TEKST = "Kan denne stillingen passe for deg? Vi leter etter jobbsøkere for en arbeidsgiver.";
+    private static final String BRUKERNOTIFIKASJON_TEKST = "Vi søker etter kandidater til denne stillingen. Kan denne stillingen passe for deg?";
 
     @Transactional
     @KafkaListener(topics = "${topic.inn.stillingFraNav}", containerFactory = "stringAvroKafkaListenerContainerFactory", autoStartup = "${app.kafka.enabled:false}")

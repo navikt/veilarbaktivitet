@@ -81,7 +81,7 @@ class DelingAvCvITest extends SpringBootTestBase {
         var oppgave = brukernotifikasjonAsserts.assertOppgaveSendt(mockBruker.getFnrAsFnr());
 
         SoftAssertions.assertSoftly(assertions -> {
-            assertions.assertThat(oppgave.getTekster().getFirst().getTekst()).isEqualTo("Kan denne stillingen passe for deg? Vi leter etter jobbsøkere for en arbeidsgiver.");
+            assertions.assertThat(oppgave.getTekster().getFirst().getTekst()).isEqualTo("Vi søker etter kandidater til denne stillingen. Kan denne stillingen passe for deg?");
             assertions.assertThat(oppgave.getEksternVarsling()).isNotNull();
             assertions.assertThat(oppgave.getIdent()).isEqualTo(mockBruker.getFnr());
             assertions.assertThat(oppgave.getLink()).isEqualTo(aktivitetsplanBasepath + "/aktivitet/vis/" + aktivitetDTO.getId());
@@ -101,7 +101,7 @@ class DelingAvCvITest extends SpringBootTestBase {
         var oppgave = brukernotifikasjonAsserts.assertOppgaveSendt(mockBruker.getFnrAsFnr());
 
         SoftAssertions.assertSoftly(assertions -> {
-            assertions.assertThat(oppgave.getTekster().getFirst().getTekst()).isEqualTo("Kan denne stillingen passe for deg? Vi leter etter jobbsøkere for en arbeidsgiver.");
+            assertions.assertThat(oppgave.getTekster().getFirst().getTekst()).isEqualTo("Vi søker etter kandidater til denne stillingen. Kan denne stillingen passe for deg?");
             assertions.assertThat(oppgave.getEksternVarsling()).isNotNull();
             assertions.assertThat(oppgave.getIdent()).isEqualTo(mockBruker.getFnr());
             assertions.assertThat(oppgave.getLink()).isEqualTo(aktivitetsplanBasepath + "/aktivitet/vis/" + aktivitetDTO.getId());
@@ -120,7 +120,7 @@ class DelingAvCvITest extends SpringBootTestBase {
         var oppgave = brukernotifikasjonAsserts.assertOppgaveSendt(mockBruker.getFnrAsFnr());
 
         SoftAssertions.assertSoftly(assertions -> { //todo tenkpå cpy paste fra testen over
-            assertions.assertThat(oppgave.getTekster().getFirst().getTekst()).isEqualTo("Kan denne stillingen passe for deg? Vi leter etter jobbsøkere for en arbeidsgiver.");
+            assertions.assertThat(oppgave.getTekster().getFirst().getTekst()).isEqualTo("Vi søker etter kandidater til denne stillingen. Kan denne stillingen passe for deg?");
             assertions.assertThat(oppgave.getEksternVarsling()).isNotNull();
             assertions.assertThat(oppgave.getIdent()).isEqualTo(mockBruker.getFnr());
             assertions.assertThat(oppgave.getLink()).isEqualTo(aktivitetsplanBasepath + "/aktivitet/vis/" + aktivitetDTO.getId());

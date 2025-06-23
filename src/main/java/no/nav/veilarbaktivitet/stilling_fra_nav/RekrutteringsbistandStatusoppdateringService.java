@@ -20,8 +20,8 @@ import static java.util.Arrays.asList;
 @RequiredArgsConstructor
 @Slf4j
 public class RekrutteringsbistandStatusoppdateringService {
-    public static final String CV_DELT_DITT_NAV_TEKST = "NAV har delt din CV med arbeidsgiver på denne stillingen";
-    public static final String IKKE_FATT_JOBBEN_TEKST = "NAV har gjort en oppdatering på denne stillingen";
+    public static final String CV_DELT_DITT_NAV_TEKST = "Nav har delt din CV med arbeidsgiver på denne stillingen";
+    public static final String IKKE_FATT_JOBBEN_TEKST = "Nav har oppdatert denne stillingsannonsen";
     private final AktivitetDAO aktivitetDAO;
     private final StillingFraNavMetrikker stillingFraNavMetrikker;
     private final MinsideVarselService brukernotifikasjonService;
