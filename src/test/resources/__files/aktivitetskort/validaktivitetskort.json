@@ -2,7 +2,7 @@
   "messageId": "2edf9ba0-b195-49ff-a5cd-939c7f26826f",
   "source": "TEAM_TILTAK",
   "actionType": "UPSERT_AKTIVITETSKORT_V1",
-  "aktivitetskortType": "MIDLERTIDIG_LONNSTILSKUDD",
+  "aktivitetskortType": "MENTOR",
   "aktivitetskort": {
     "id": "56155242-6481-43b5-9eac-4d7af695bf9d",
     "personIdent": "48507582368",

@@ -15,6 +15,7 @@ definitions:
       - MIDLERTIDIG_LONNSTILSKUDD
       - VARIG_LONNSTILSKUDD
       - ARBEIDSTRENING
+      - MENTOR
       - INDOPPFAG
       - ARBFORB
       - AVKLARAG
@@ -31,6 +32,7 @@ definitions:
       MIDLERTIDIG_LONNSTILSKUDD - Midlertidig lønnstilskudd (Team Tiltak)
       VARIG_LONNSTILSKUDD - Varig lønnstilskudd (Team Tiltak)
       ARBEIDSTRENING - Arbeidstrening (Team Tiltak)
+      MENTOR - Mentor (Team Tiltak)
       INDOPPFAG - Oppfølging (Team Komet)
       ARBFORB - Arbeidsforberedende trening - AFT (Team Komet)
       AVKLARAG  - Avklaring (Team Komet)

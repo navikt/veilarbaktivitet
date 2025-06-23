@@ -118,7 +118,7 @@ class AktivitetsbestillingCreatorTest {
         EksternAktivitetskortBestilling aktivitetskortBestilling = (EksternAktivitetskortBestilling)aktivitetsbestillingCreator.lagBestilling(consumerRecord, UUID.randomUUID()) ;
         assertThat(aktivitetskortBestilling).isInstanceOf(AktivitetskortBestilling.class);
         assertThat(aktivitetskortBestilling.getSource()).isEqualTo(MessageSource.TEAM_TILTAK.name());
-        assertThat(aktivitetskortBestilling.getAktivitetskortType()).isEqualTo(AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD);
+        assertThat(aktivitetskortBestilling.getAktivitetskortType()).isEqualTo(AktivitetskortType.MENTOR);
         var aktivitetskort = aktivitetskortBestilling.getAktivitetskort();
         assertThat(aktivitetskort.getAktivitetStatus()).isEqualTo(AktivitetskortStatus.PLANLAGT);
         assertThat(aktivitetskort.getTittel()).isEqualTo("The Elder Scrolls");

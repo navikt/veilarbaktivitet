@@ -21,6 +21,7 @@ public enum AktivitetTypeDTO {
         aktivitetskortTypeTilArenaTiltakskode.put(AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD, "MIDLONTIL");
         aktivitetskortTypeTilArenaTiltakskode.put(AktivitetskortType.VARIG_LONNSTILSKUDD, "VARLONTIL");
         aktivitetskortTypeTilArenaTiltakskode.put(AktivitetskortType.ARBEIDSTRENING, "ARBTREN");
+        aktivitetskortTypeTilArenaTiltakskode.put(AktivitetskortType.MENTOR, "MENTOR");
         aktivitetskortTypeTilArenaTiltakskode.put(AktivitetskortType.VARIG_TILRETTELAGT_ARBEID_I_ORDINAER_VIRKSOMHET, "VATIAROR");
         aktivitetskortTypeTilArenaTiltakskode.put(AktivitetskortType.INDOPPFAG, "INDOPPFAG");
         aktivitetskortTypeTilArenaTiltakskode.put(AktivitetskortType.ARBFORB, "ARBFORB");
