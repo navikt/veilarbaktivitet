@@ -1,5 +1,5 @@
 
-val spring_boot_version = "3.5.0"
+val spring_boot_version = "3.5.3"
 val common_version = "3.2025.05.30_07.00-bef2e550fb22"
 val dab_common_version = "2024.11.14-10.46.174740baf5c7"
 val poao_tilgang_version = "2025.06.06_07.18-71cefb1c2699"
@@ -19,9 +19,9 @@ plugins {
     id("project-report")
     id("jacoco")
     id("org.sonarqube") version "6.2.0.5505"
-    id("org.springframework.boot") version "3.5.0"
+    id("org.springframework.boot") version "3.5.3"
     kotlin("plugin.lombok") version "2.1.21"
-    id("io.freefair.lombok") version "8.13.1"
+    id("io.freefair.lombok") version "8.14"
 }
 
 java {
@@ -176,7 +176,7 @@ dependencies {
     implementation("org.springframework.kafka:spring-kafka")
     implementation("com.squareup.okhttp3:okhttp")
     implementation("io.micrometer:micrometer-registry-prometheus-simpleclient")
-    implementation("org.flywaydb:flyway-database-postgresql:11.9.1")
+    implementation("org.flywaydb:flyway-database-postgresql:11.9.2")
     implementation("org.postgresql:postgresql:42.7.7")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.19.1")
 
