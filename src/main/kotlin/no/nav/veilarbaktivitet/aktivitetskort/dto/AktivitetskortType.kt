@@ -3,6 +3,7 @@ package no.nav.veilarbaktivitet.aktivitetskort.dto
       MIDLERTIDIG_LONNSTILSKUDD - Midlertidig lønnstilskudd
       VARIG_LONNSTILSKUDD - Varig lønnstilskudd
       ARBEIDSTRENING - Arbeidstrening
+      Mentor - Mentor
       VARIG_TILRETTELAGT_ARBEID_I_ORDINAER_VIRKSOMHET - Varig tilrettelagt arbeid i ordinær virksomhet
       INDOPPFAG - Oppfølging
       ARBFORB - Arbeidsforberedende trening (AFT)
@@ -19,6 +20,7 @@ enum class AktivitetskortType {
     MIDLERTIDIG_LONNSTILSKUDD,
     VARIG_LONNSTILSKUDD,
     ARBEIDSTRENING,
+    MENTOR,
     VARIG_TILRETTELAGT_ARBEID_I_ORDINAER_VIRKSOMHET,
     ARENA_TILTAK,
     INDOPPFAG,
