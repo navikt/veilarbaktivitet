@@ -43,7 +43,7 @@ class DialogClient(private val dialogHttpClient: OkHttpClient) {
     data class DialogTråd(
         val id: String,
         val aktivitetId: String?,
-        val overskrift: String,
+        val overskrift: String?,
         @JsonProperty("oppfolgingsperiode")
         val oppfolgingsperiodeId: UUID,
         @JsonProperty("henvendelser")
