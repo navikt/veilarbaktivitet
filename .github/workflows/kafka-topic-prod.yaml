@@ -11,6 +11,8 @@ jobs:
   deploy-topics-prod:
     name: Deploy kafka topics to prod
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -19,7 +21,6 @@ jobs:
       - name: Deploy kafka topics
         uses: nais/deploy/actions/deploy@v2
         env:
-          APIKEY: ${{ secrets.DAB_NAIS_DEPLOY_APIKEY }}
           CLUSTER: prod-gcp
           RESOURCE: ${{ env.RESOURCE_FILES }}
           PRINT_PAYLOAD: true
