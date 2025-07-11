@@ -1,8 +1,7 @@
-
-val spring_boot_version = "3.5.0"
-val common_version = "3.2025.05.30_07.00-bef2e550fb22"
+val spring_boot_version = "3.5.3"
+val common_version = "3.2025.06.23_14.50-3af3985d8555"
 val dab_common_version = "2024.11.14-10.46.174740baf5c7"
-val poao_tilgang_version = "2025.06.06_07.18-71cefb1c2699"
+val poao_tilgang_version = "2025.07.04_08.56-814fa50f6740"
 val shedlock_version = "6.9.0"
 val avroVersion = "1.12.0"
 val confluentKafkaAvroVersion = "8.0.0"
@@ -14,14 +13,14 @@ plugins {
     id("application")
     id("maven-publish")
     kotlin("jvm") version "2.1.21"
-    id("org.openapi.generator") version "7.13.0"
+    id("org.openapi.generator") version "7.14.0"
     id("com.github.davidmc24.gradle.plugin.avro") version "1.9.1"
     id("project-report")
     id("jacoco")
     id("org.sonarqube") version "6.2.0.5505"
-    id("org.springframework.boot") version "3.5.0"
+    id("org.springframework.boot") version "3.5.3"
     kotlin("plugin.lombok") version "2.1.21"
-    id("io.freefair.lombok") version "8.13.1"
+    id("io.freefair.lombok") version "8.14"
 }
 
 java {
@@ -108,7 +107,9 @@ openApiGenerate {
     outputDir.set("$buildDir/generated")
 }
 
-kotlin.sourceSets["main"].kotlin.srcDir("$buildDir/generated/src/main/kotlin")
+kotlin.sourceSets["main"].kotlin.srcDir(
+    project.layout.buildDirectory.dir("generated/src/main/kotlin")
+)
 
 group = "no.nav"
 description = "veilarbaktivitet"
@@ -176,32 +177,22 @@ dependencies {
     implementation("org.springframework.kafka:spring-kafka")
     implementation("com.squareup.okhttp3:okhttp")
     implementation("io.micrometer:micrometer-registry-prometheus-simpleclient")
-    implementation("org.flywaydb:flyway-database-postgresql:11.9.1")
+    implementation("org.flywaydb:flyway-database-postgresql:11.10.1")
     implementation("org.postgresql:postgresql:42.7.7")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.19.1")
 
     // BigQuery
-    implementation(platform("com.google.cloud:libraries-bom:26.62.0"))
+    implementation(platform("com.google.cloud:libraries-bom:26.63.0"))
     implementation("com.google.cloud:google-cloud-bigquery")
 
-    implementation("io.getunleash:unleash-client-java:11.0.0")
+    implementation("io.getunleash:unleash-client-java:11.0.2")
 
     runtimeOnly("org.springframework.boot:spring-boot-devtools")
 
 //test dependencies
     testImplementation("no.nav.poao-tilgang:poao-tilgang-test-wiremock:$poao_tilgang_version")
-
     testImplementation("org.awaitility:awaitility:4.3.0")
-//    testImplementation("com.github.tomakehurst:wiremock:3.0.0-beta-2")
-//    testImplementation("org.springframework.cloud:spring-cloud-starter-contract-stub-runner:4.0.1")
-    
-//    testImplementation("org.springframework.cloud:spring-cloud-contract-wiremock:4.1.3")
-
-    testImplementation("com.networknt:json-schema-validator:1.5.7")
-
-//    testImplementation("de.mkammerer.wiremock-junit5:wiremock-junit5:1.1.0")
-//    testImplementation("io.github.ricall.junit5-wiremock:junit5-wiremock:2.0.0")
-
+    testImplementation("com.networknt:json-schema-validator:1.5.8")
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
 
 //spring managed test dependencies
