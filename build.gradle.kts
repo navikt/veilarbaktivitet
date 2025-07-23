@@ -176,7 +176,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-graphql")
     implementation("org.springframework.kafka:spring-kafka")
     implementation("com.squareup.okhttp3:okhttp")
-    implementation("io.micrometer:micrometer-registry-prometheus-simpleclient")
+    implementation("io.micrometer:micrometer-registry-prometheus")
     implementation("org.flywaydb:flyway-database-postgresql:11.10.1")
     implementation("org.postgresql:postgresql:42.7.7")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.19.1")
