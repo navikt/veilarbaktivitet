@@ -2,24 +2,24 @@ val spring_boot_version = "3.5.3"
 val common_version = "3.2025.06.23_14.50-3af3985d8555"
 val dab_common_version = "2024.11.14-10.46.174740baf5c7"
 val poao_tilgang_version = "2025.07.04_08.56-814fa50f6740"
-val shedlock_version = "6.9.0"
+val shedlock_version = "6.9.2"
 val avroVersion = "1.12.0"
 val confluentKafkaAvroVersion = "8.0.0"
 val _version: String by project
 
 plugins {
     id("java")
-    id("org.jetbrains.kotlin.plugin.spring") version "2.1.21"
+    id("org.jetbrains.kotlin.plugin.spring") version "2.2.0"
     id("application")
     id("maven-publish")
-    kotlin("jvm") version "2.1.21"
+    kotlin("jvm") version "2.2.0"
     id("org.openapi.generator") version "7.14.0"
     id("com.github.davidmc24.gradle.plugin.avro") version "1.9.1"
     id("project-report")
     id("jacoco")
     id("org.sonarqube") version "6.2.0.5505"
     id("org.springframework.boot") version "3.5.3"
-    kotlin("plugin.lombok") version "2.1.21"
+    kotlin("plugin.lombok") version "2.2.0"
     id("io.freefair.lombok") version "8.14"
 }
 
@@ -177,12 +177,12 @@ dependencies {
     implementation("org.springframework.kafka:spring-kafka")
     implementation("com.squareup.okhttp3:okhttp")
     implementation("io.micrometer:micrometer-registry-prometheus")
-    implementation("org.flywaydb:flyway-database-postgresql:11.10.1")
+    implementation("org.flywaydb:flyway-database-postgresql:11.10.3")
     implementation("org.postgresql:postgresql:42.7.7")
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.19.1")
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.19.2")
 
     // BigQuery
-    implementation(platform("com.google.cloud:libraries-bom:26.63.0"))
+    implementation(platform("com.google.cloud:libraries-bom:26.64.0"))
     implementation("com.google.cloud:google-cloud-bigquery")
 
     implementation("io.getunleash:unleash-client-java:11.0.2")
