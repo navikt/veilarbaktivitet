@@ -8,18 +8,19 @@ val confluentKafkaAvroVersion = "8.0.0"
 val _version: String by project
 
 plugins {
+    val kotlinVersion = "2.1.21"
     id("java")
-    id("org.jetbrains.kotlin.plugin.spring") version "2.2.0"
+    kotlin("jvm") version kotlinVersion
+    id("org.jetbrains.kotlin.plugin.spring") version kotlinVersion
+    kotlin("plugin.lombok") version kotlinVersion
     id("application")
     id("maven-publish")
-    kotlin("jvm") version "2.2.0"
     id("org.openapi.generator") version "7.14.0"
     id("com.github.davidmc24.gradle.plugin.avro") version "1.9.1"
     id("project-report")
     id("jacoco")
     id("org.sonarqube") version "6.2.0.5505"
     id("org.springframework.boot") version "3.5.3"
-    kotlin("plugin.lombok") version "2.2.0"
     id("io.freefair.lombok") version "8.14"
 }
 
@@ -139,7 +140,7 @@ dependencies {
     implementation(enforcedPlatform("org.springframework.boot:spring-boot-dependencies:$spring_boot_version"))
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:$spring_boot_version")
 
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core") // Versjon 1.8.0 enforced by spring-boot-dependencies
 
     implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:$shedlock_version")
     implementation("net.javacrumbs.shedlock:shedlock-spring:$shedlock_version")
