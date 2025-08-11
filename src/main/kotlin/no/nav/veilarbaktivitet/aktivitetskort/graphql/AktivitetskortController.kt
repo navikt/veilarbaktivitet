@@ -12,16 +12,17 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper
 import no.nav.veilarbaktivitet.aktivitetskort.MigreringService
+import no.nav.veilarbaktivitet.arena.ArenaService
 import no.nav.veilarbaktivitet.config.ownerProviders.AktivitetOwnerProvider
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeService
 import no.nav.veilarbaktivitet.person.Person
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.graphql.data.method.annotation.Argument
 import org.springframework.graphql.data.method.annotation.QueryMapping
 import org.springframework.graphql.data.method.annotation.SchemaMapping
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Controller
 import org.springframework.web.server.ResponseStatusException
-
 
 @Controller
 class AktivitetskortController(
@@ -33,8 +34,17 @@ class AktivitetskortController(
     val aktivitetAppService: AktivitetAppService,
     val oppfolgingsperiodeService: OppfolgingsperiodeService,
     val aktorOppslagClient: AktorOppslagClient,
-    val authService: IAuthService
+    val authService: IAuthService,
+    val arenaService: ArenaService,
 ) {
+    @Value("\${app.env.poaoAdminIdenter}")
+    var godkjenteAdminIdenterInput: String? = null
+    val godkjenteAdminIndenter by lazy {
+        godkjenteAdminIdenterInput
+            ?.split(",".toRegex())
+            ?.dropLastWhile { it.isEmpty() }
+            ?: emptyList()
+    }
 
     @QueryMapping
     fun perioder(@Argument fnr: String): List<OppfolgingsPeriode> {
@@ -78,6 +88,16 @@ class AktivitetskortController(
         return Eier(eksternBrukerId.get())
     }
 
+    @QueryMapping
+    fun tiltaksaktiviteter(@Argument fnr: String) {
+        val adminIdent = authService.getInnloggetVeilederIdent()
+        if (!godkjenteAdminIndenter.contains(adminIdent.get())) {
+            throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
+        }
+        val eksternBrukerId = getContextUserIdent(fnr)
+        arenaService.hentAktiviteterRaw(eksternBrukerId)
+    }
+
     @SchemaMapping(typeName="AktivitetDTO", field="historikk")
     fun getHistorikk(aktivitet: AktivitetDTO): Historikk {
         val aktivitetId = aktivitet.id.toLong()
@@ -88,7 +108,7 @@ class AktivitetskortController(
         return when {
             authService.erEksternBruker() -> Person.fnr(authService.getLoggedInnUser().get())
             fnr.isNotBlank() -> Person.fnr(fnr)
-            else -> throw throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
+            else -> throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
         }
     }
 
