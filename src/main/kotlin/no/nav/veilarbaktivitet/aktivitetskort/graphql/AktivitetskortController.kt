@@ -92,7 +92,7 @@ class AktivitetskortController(
     fun tiltaksaktiviteter(@Argument fnr: String) {
         val adminIdent = authService.getInnloggetVeilederIdent()
         if (!godkjenteAdminIndenter.contains(adminIdent.get())) {
-            throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
+            throw ResponseStatusException(HttpStatus.FORBIDDEN)
         }
         val eksternBrukerId = getContextUserIdent(fnr)
         arenaService.hentAktiviteterRaw(eksternBrukerId)
