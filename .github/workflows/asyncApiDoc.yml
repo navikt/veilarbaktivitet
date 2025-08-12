@@ -26,11 +26,11 @@ jobs:
           node-version: 19
 
       - name: install generator
-        run: npm install -g @asyncapi/generator
+        run: npm install -g @asyncapi/cli
 
       - name: generate documentaion (denne tar litt tid)
         working-directory: src/main/resources/schemas/akaas
-        run: ag AktivitetskortV1.asyncapi.yml @asyncapi/html-template -o ./aktivitetskortV1-doc
+        run: asyncapi generate fromTemplate AktivitetskortV1.asyncapi.yml @asyncapi/html-template@0.7.0 -o ./aktivitetskortV1-doc
 
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@v4
