@@ -23,7 +23,7 @@ jobs:
       telemetry: ${{ steps.docker-build-push.outputs.telemetry }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
@@ -58,7 +58,7 @@ jobs:
       id-token: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Deploy application to dev
         uses: nais/deploy/actions/deploy@v2
         env:
@@ -74,7 +74,7 @@ jobs:
       id-token: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Deploy application to prod
         uses: nais/deploy/actions/deploy@v2
         env:
