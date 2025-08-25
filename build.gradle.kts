@@ -1,14 +1,14 @@
-val spring_boot_version = "3.5.3"
-val common_version = "3.2025.06.23_14.50-3af3985d8555"
+val spring_boot_version = "3.5.5"
+val common_version = "3.2025.08.19_06.12-48301d0f4239"
 val dab_common_version = "2024.11.14-10.46.174740baf5c7"
 val poao_tilgang_version = "2025.07.04_08.56-814fa50f6740"
-val shedlock_version = "6.9.2"
+val shedlock_version = "6.10.0"
 val avroVersion = "1.12.0"
 val confluentKafkaAvroVersion = "8.0.0"
 val _version: String by project
 
 plugins {
-    val kotlinVersion = "2.1.21"
+    val kotlinVersion = "2.2.10"
     id("java")
     kotlin("jvm") version kotlinVersion
     id("org.jetbrains.kotlin.plugin.spring") version kotlinVersion
@@ -20,8 +20,8 @@ plugins {
     id("project-report")
     id("jacoco")
     id("org.sonarqube") version "6.2.0.5505"
-    id("org.springframework.boot") version "3.5.3"
-    id("io.freefair.lombok") version "8.14"
+    id("org.springframework.boot") version "3.5.5"
+    id("io.freefair.lombok") version "8.14.2"
 }
 
 java {
@@ -178,15 +178,15 @@ dependencies {
     implementation("org.springframework.kafka:spring-kafka")
     implementation("com.squareup.okhttp3:okhttp")
     implementation("io.micrometer:micrometer-registry-prometheus")
-    implementation("org.flywaydb:flyway-database-postgresql:11.10.3")
+    implementation("org.flywaydb:flyway-database-postgresql:11.11.2")
     implementation("org.postgresql:postgresql:42.7.7")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.19.2")
 
     // BigQuery
-    implementation(platform("com.google.cloud:libraries-bom:26.64.0"))
+    implementation(platform("com.google.cloud:libraries-bom:26.66.0"))
     implementation("com.google.cloud:google-cloud-bigquery")
 
-    implementation("io.getunleash:unleash-client-java:11.0.2")
+    implementation("io.getunleash:unleash-client-java:11.1.0")
 
     runtimeOnly("org.springframework.boot:spring-boot-devtools")
 
@@ -204,5 +204,5 @@ dependencies {
     testImplementation("org.springframework.kafka:spring-kafka-test")
     testImplementation("org.mockito:mockito-core")
     testImplementation("io.zonky.test:embedded-database-spring-test:2.6.0")
-    testImplementation("io.zonky.test:embedded-postgres:2.1.0")
+    testImplementation("io.zonky.test:embedded-postgres:2.1.1")
 }
