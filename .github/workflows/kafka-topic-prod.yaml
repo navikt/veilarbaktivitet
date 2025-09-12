@@ -15,7 +15,7 @@ jobs:
       id-token: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: List resource files
         run: echo "RESOURCE_FILES=$(find kafka-topic/prod -type f | tr '\n' ',' | sed 's/,$/\n/')" >> $GITHUB_ENV
       - name: Deploy kafka topics
