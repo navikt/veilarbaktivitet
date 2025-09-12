@@ -8,7 +8,7 @@ val confluentKafkaAvroVersion = "8.0.0"
 val _version: String by project
 
 plugins {
-    val kotlinVersion = "2.1.21"
+    val kotlinVersion = "2.2.20"
     id("java")
     kotlin("jvm") version kotlinVersion
     id("org.jetbrains.kotlin.plugin.spring") version kotlinVersion
@@ -178,7 +178,7 @@ dependencies {
     implementation("org.springframework.kafka:spring-kafka")
     implementation("com.squareup.okhttp3:okhttp")
     implementation("io.micrometer:micrometer-registry-prometheus")
-    implementation("org.flywaydb:flyway-database-postgresql:11.10.3")
+    implementation("org.flywaydb:flyway-database-postgresql:11.12.0")
     implementation("org.postgresql:postgresql:42.7.7")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.20.0")
 
