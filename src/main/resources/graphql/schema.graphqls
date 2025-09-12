@@ -2,6 +2,7 @@ type Query {
     perioder(fnr: String!): [OppfolgingsPeriode]
     aktivitet(aktivitetId: String): AktivitetDTO
     eier(aktivitetId: String): Eier
+    tiltaksaktiviteter(fnr: String!): [TiltaksAktivitet]
 }
 
 type Eier {
@@ -284,4 +285,29 @@ enum AktivitetTransaksjonsType {
     IKKE_FATT_JOBBEN
     FATT_JOBBEN
     KASSERT
+}
+
+
+type TiltaksAktivitet {
+    # hvis migrert: teknisk id, hvis ikke: arenaid
+    id: String
+    status: AktivitetStatus
+    type: ArenaAktivitetTypeDTO
+    fraDato: Date
+    tilDato: Date
+    opprettetDato: Date
+    avtalt: Boolean
+    forhaandsorientering: ForhaandsorienteringDTO
+    versjon: Int
+    oppfolgingsperiodeId: String
+
+    # Tiltaksaktivitet
+    antallDagerPerUke: Float
+    statusSistEndret: Date
+}
+
+enum ArenaAktivitetTypeDTO {
+    TILTAKSAKTIVITET,
+    GRUPPEAKTIVITET,
+    UTDANNINGSAKTIVITET
 }
