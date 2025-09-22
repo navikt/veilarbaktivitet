@@ -13,6 +13,7 @@ import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper
 import no.nav.veilarbaktivitet.aktivitetskort.MigreringService
 import no.nav.veilarbaktivitet.arena.ArenaService
+import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO
 import no.nav.veilarbaktivitet.config.ownerProviders.AktivitetOwnerProvider
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeService
 import no.nav.veilarbaktivitet.person.Person
@@ -89,13 +90,13 @@ class AktivitetskortController(
     }
 
     @QueryMapping
-    fun tiltaksaktiviteter(@Argument fnr: String) {
+    fun tiltaksaktiviteter(@Argument fnr: String): List<ArenaAktivitetDTO> {
         val adminIdent = authService.getInnloggetVeilederIdent()
         if (!godkjenteAdminIndenter.contains(adminIdent.get())) {
             throw ResponseStatusException(HttpStatus.FORBIDDEN)
         }
         val eksternBrukerId = getContextUserIdent(fnr)
-        arenaService.hentAktiviteterRaw(eksternBrukerId)
+        return arenaService.hentAktiviteterRaw(eksternBrukerId)
     }
 
     @SchemaMapping(typeName="AktivitetDTO", field="historikk")
