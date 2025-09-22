@@ -1,14 +1,14 @@
-val spring_boot_version = "3.5.5"
+val spring_boot_version = "3.5.6"
 val common_version = "3.2025.09.03_08.33-728ff4acbfdb"
 val dab_common_version = "2024.11.14-10.46.174740baf5c7"
-val poao_tilgang_version = "2025.07.04_08.56-814fa50f6740"
+val poao_tilgang_version = "2025.09.15_11.12-54be8ac278c0"
 val shedlock_version = "6.10.0"
 val avroVersion = "1.12.0"
 val confluentKafkaAvroVersion = "8.0.0"
 val _version: String by project
 
 plugins {
-    val kotlinVersion = "2.1.21"
+    val kotlinVersion = "2.2.20"
     id("java")
     kotlin("jvm") version kotlinVersion
     id("org.jetbrains.kotlin.plugin.spring") version kotlinVersion
@@ -20,7 +20,7 @@ plugins {
     id("project-report")
     id("jacoco")
     id("org.sonarqube") version "6.3.1.5724"
-    id("org.springframework.boot") version "3.5.5"
+    id("org.springframework.boot") version "3.5.6"
     id("io.freefair.lombok") version "8.14.2"
 }
 
@@ -134,8 +134,8 @@ if (hasProperty("buildScan")) {
 }
 
 dependencies {
-    annotationProcessor("org.projectlombok:lombok:1.18.40")
-    testAnnotationProcessor("org.projectlombok:lombok:1.18.40")
+    annotationProcessor("org.projectlombok:lombok:1.18.42")
+    testAnnotationProcessor("org.projectlombok:lombok:1.18.42")
 
     implementation(enforcedPlatform("org.springframework.boot:spring-boot-dependencies:$spring_boot_version"))
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:$spring_boot_version")
@@ -178,12 +178,12 @@ dependencies {
     implementation("org.springframework.kafka:spring-kafka")
     implementation("com.squareup.okhttp3:okhttp")
     implementation("io.micrometer:micrometer-registry-prometheus")
-    implementation("org.flywaydb:flyway-database-postgresql:11.10.3")
-    implementation("org.postgresql:postgresql:42.7.7")
+    implementation("org.flywaydb:flyway-database-postgresql:11.13.1")
+    implementation("org.postgresql:postgresql:42.7.8")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.20.0")
 
     // BigQuery
-    implementation(platform("com.google.cloud:libraries-bom:26.67.0"))
+    implementation(platform("com.google.cloud:libraries-bom:26.68.0"))
     implementation("com.google.cloud:google-cloud-bigquery")
 
     implementation("io.getunleash:unleash-client-java:11.1.0")
@@ -193,7 +193,7 @@ dependencies {
 //test dependencies
     testImplementation("no.nav.poao-tilgang:poao-tilgang-test-wiremock:$poao_tilgang_version")
     testImplementation("org.awaitility:awaitility:4.3.0")
-    testImplementation("com.networknt:json-schema-validator:1.5.8")
+    testImplementation("com.networknt:json-schema-validator:1.5.9")
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
 
 //spring managed test dependencies
