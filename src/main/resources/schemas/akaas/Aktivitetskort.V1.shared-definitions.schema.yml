@@ -27,8 +27,8 @@ definitions:
       - GRUFAGYRKE
       - REKRUTTERINGSTREFF
       - ARENA_TILTAK
-      - ENKELAMO,
-      - ENKFAGYRKE,
+      - ENKELAMO
+      - ENKFAGYRKE
       - HOYERE_UTDANNING
     description: |
       Aktivitetskort typer som er tillatt å opprette via tjenesten. Denne enumereringen vil utvides etterhvert.
