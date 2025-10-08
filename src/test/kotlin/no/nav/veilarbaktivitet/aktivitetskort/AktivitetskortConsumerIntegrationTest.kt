@@ -215,6 +215,22 @@ class AktivitetskortConsumerIntegrationTest(
     }
 
     @Test
+    fun `aktivitetskort med type ENKELAMO skal behandles`() {
+        val funksjonellId = UUID.randomUUID()
+        val actual = aktivitetskort(funksjonellId, AktivitetskortStatus.PLANLAGT)
+        val wrapperDTO = KafkaAktivitetskortWrapperDTO(
+            aktivitetskortType = AktivitetskortType.ENKELAMO,
+            aktivitetskort = actual,
+            source = MessageSource.TEAM_KOMET.name,
+            messageId = UUID.randomUUID()
+        )
+        aktivitetTestService.opprettEksterntAktivitetsKort(listOf(wrapperDTO))
+        val aktivitet = hentAktivitet(funksjonellId)
+        assertEquals(AktivitetTypeDTO.EKSTERNAKTIVITET, aktivitet.type)
+        assertEquals(AktivitetskortType.ENKELAMO, aktivitet.eksternAktivitet.type)
+    }
+
+    @Test
     fun lonnstilskudd_på_bruker_som_ikke_er_under_oppfolging_skal_feile() {
         val brukerUtenOppfolging =
             navMockService.createBruker(BrukerOptions.happyBruker().toBuilder().underOppfolging(false).build())
