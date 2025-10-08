@@ -160,6 +160,9 @@ enum AktivitetskortType {
     GRUPPEAMO
     GRUFAGYRKE
     REKRUTTERINGSTREFF
+    ENKELAMO
+    ENKFAGYRKE
+    HOYERE_UTDANNING
 }
 
 
