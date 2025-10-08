@@ -278,6 +278,25 @@ class AktivitetskortConsumerIntegrationTest(
     }
 
     @Test
+    fun `aktiviteter med for lang tittel skal feile`() {
+        val funksjonellId = UUID.randomUUID()
+        val actual = aktivitetskort(funksjonellId, AktivitetskortStatus.PLANLAGT)
+            .copy(tittel = (1..1000).map { ('a'..'z').random() }.joinToString(""))
+        val wrapperDTO = KafkaAktivitetskortWrapperDTO(
+            aktivitetskortType = AktivitetskortType.HOYERE_UTDANNING,
+            aktivitetskort = actual,
+            source = MessageSource.TEAM_KOMET.name,
+            messageId = UUID.randomUUID()
+        )
+        aktivitetTestService.opprettEksterntAktivitetsKort(listOf(wrapperDTO))
+        assertFeilmeldingPublished(
+            funksjonellId,
+            ErrorType.MANGLER_OPPFOLGINGSPERIODE,
+            MessageSource.TEAM_TILTAK
+        )
+    }
+
+    @Test
     fun historisk_arenatiltak_aktivitet_skal_ha_oppfolgingsperiode() {
         val gammelperiode = SerieOppfolgingsperiode(UUID.randomUUID(), ZonedDateTime.now().minusDays(1))
         val serie = ArenaAktivitetskortSerie(mockBruker, "MIDLONNTIL", gammelperiode)
