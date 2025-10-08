@@ -27,6 +27,9 @@ definitions:
       - GRUFAGYRKE
       - REKRUTTERINGSTREFF
       - ARENA_TILTAK
+      - ENKELAMO
+      - ENKFAGYRKE
+      - HOYERE_UTDANNING
     description: |
       Aktivitetskort typer som er tillatt å opprette via tjenesten. Denne enumereringen vil utvides etterhvert.
       MIDLERTIDIG_LONNSTILSKUDD - Midlertidig lønnstilskudd (Team Tiltak)
@@ -44,6 +47,9 @@ definitions:
       GRUFAGYRKE  - Gruppe Fag- og yrkesopplæring VGS og høyere yrkesfaglig utdanning (Team Komet)
       REKRUTTERINGSTREFF - Rekrutteringstreff mellom arbeidsgivere og potensielle arbeidstakere (Team Toi)
       ARENA_TILTAK - Resten av arbeidsmarkedstiltakene i arena (>100)
+      ENKELAMO - Arbeidsmarkedsopplæring
+      ENKFAGYRKE - Fag- og yrkesopplæring
+      HOYERE_UTDANNING - Høyere utdanning
   errorType:
     description: Alle mulige funksjonelle-feil som kan oppstå under prosessering av aktivitetskort-meldinger og kasserings-meldinger
     type: string

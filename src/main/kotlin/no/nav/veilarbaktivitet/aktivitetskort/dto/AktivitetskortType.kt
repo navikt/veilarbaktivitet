@@ -15,7 +15,11 @@ package no.nav.veilarbaktivitet.aktivitetskort.dto
       GRUPPEAMO Gruppe AMO (arbeidsmarkedsopplæring)
       GRUFAGYRKE  - Gruppe Fag- og yrkesopplæring VGS og høyere yrkesfaglig utdanning
       ARENA_TILTAK - Resten av arbeidsmarkedstiltakene i arena (>100)
- */
+      ENKELAMO -> "Arbeidsmarkedsopplæring"
+      ENKFAGYRKE -> "Fag- og yrkesopplæring"
+      HOYERE_UTDANNING -> "Høyere utdanning"
+*/
+
 enum class AktivitetskortType {
     MIDLERTIDIG_LONNSTILSKUDD,
     VARIG_LONNSTILSKUDD,
@@ -32,5 +36,8 @@ enum class AktivitetskortType {
     JOBBK,
     GRUPPEAMO,
     GRUFAGYRKE,
-    REKRUTTERINGSTREFF
+    REKRUTTERINGSTREFF,
+    ENKELAMO,
+    ENKFAGYRKE,
+    HOYERE_UTDANNING
 }
