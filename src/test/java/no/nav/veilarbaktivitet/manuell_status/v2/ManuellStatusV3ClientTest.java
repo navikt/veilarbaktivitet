@@ -43,7 +43,7 @@ class ManuellStatusV3ClientTest {
     @Test
     void test_manuell_status_ok_response() {
 
-        wireMock.stubFor(get(urlMatching("/veilarboppfolging/api/v2/manuell/status\\?fnr=([0-9]*)"))
+        wireMock.stubFor(post("/veilarboppfolging/api/v3/manuell/hent-status")
                 .willReturn(ok()
                         .withHeader("Content-Type", "text/json")
                         .withBodyFile(MANUELL_STATUS_RESPONS)));
@@ -57,7 +57,7 @@ class ManuellStatusV3ClientTest {
 
     @Test
     void test_manuell_status_kall_feiler() {
-        wireMock.stubFor(get(urlMatching("/veilarboppfolging/api/v2/manuell/status\\?fnr=([0-9]*)"))
+        wireMock.stubFor(post("/veilarboppfolging/api/v3/manuell/hent-status")
                 .willReturn(aResponse()
                         .withStatus(400)
                         .withHeader("Content-Type", "text/json")));

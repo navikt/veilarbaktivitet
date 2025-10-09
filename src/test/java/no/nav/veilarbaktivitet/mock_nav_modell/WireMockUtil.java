@@ -94,7 +94,7 @@ public class WireMockUtil {
     }
 
     private static void manuell(String fnr, boolean erManuell, boolean erReservertKrr, boolean kanVarsles) {
-        wireMock.stubFor(get("/veilarboppfolging/api/v2/manuell/status?fnr=" + fnr)
+        wireMock.stubFor(post("/veilarboppfolging/api/v3/manuell/hent-status")
                 .willReturn(ok()
                         .withHeader("Content-Type", "text/json")
                         .withBody("{\"erUnderManuellOppfolging\":" + erManuell + ",\"krrStatus\":{\"kanVarsles\":" + kanVarsles + ",\"erReservert\":" + erReservertKrr + "}}")));
