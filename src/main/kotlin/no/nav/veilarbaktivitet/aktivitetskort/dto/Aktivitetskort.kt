@@ -2,7 +2,6 @@ package no.nav.veilarbaktivitet.aktivitetskort.dto
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
-import jakarta.validation.constraints.Size
 import lombok.Singular
 import no.nav.veilarbaktivitet.aktivitet.domain.Ident
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Attributt
@@ -20,7 +19,6 @@ data class Aktivitetskort(
     @JsonProperty(required = true)
     val personIdent: String,
     @JsonProperty(required = true)
-    @Size(max = 255, message = "Maks lengde på tittel i et aktivitetskort er 255")
     val tittel: String,
     val beskrivelse: String?,
     @JsonProperty(required = true)

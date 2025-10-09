@@ -10,10 +10,7 @@ import no.nav.veilarbaktivitet.aktivitetskort.bestilling.EksternAktivitetskortBe
 import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType
 import no.nav.veilarbaktivitet.aktivitetskort.dto.BestillingBase
 import no.nav.veilarbaktivitet.aktivitetskort.dto.KafkaAktivitetskortWrapperDTO
-import no.nav.veilarbaktivitet.aktivitetskort.feil.DeserialiseringsFeil
-import no.nav.veilarbaktivitet.aktivitetskort.feil.ErrorMessage
-import no.nav.veilarbaktivitet.aktivitetskort.feil.KeyErIkkeFunksjonellIdFeil
-import no.nav.veilarbaktivitet.aktivitetskort.feil.UgyldigIdentFeil
+import no.nav.veilarbaktivitet.aktivitetskort.feil.*
 import no.nav.veilarbaktivitet.arena.model.ArenaId
 import no.nav.veilarbaktivitet.person.Person
 import no.nav.veilarbaktivitet.person.PersonService
@@ -38,7 +35,7 @@ class AktivitetsbestillingCreator (
         }
     }
 
-    @Throws(DeserialiseringsFeil::class, UgyldigIdentFeil::class, KeyErIkkeFunksjonellIdFeil::class)
+    @Throws(DeserialiseringsFeil::class, UgyldigIdentFeil::class, KeyErIkkeFunksjonellIdFeil::class, ValideringFeil::class)
     fun lagBestilling(consumerRecord: ConsumerRecord<String, String>, messageId: UUID?): BestillingBase {
         val melding = deserialiser(consumerRecord)
         val resolvedMessageId = (melding.messageId ?: messageId) ?: throw RuntimeException("Mangler påkrevet messageId på aktivitetskort melding")
