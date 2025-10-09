@@ -10,7 +10,8 @@ enum class ErrorType {
     MANGLER_OPPFOLGINGSPERIODE,
     MESSAGEID_LIK_AKTIVITETSID,
     UGYLDIG_IDENT,
-    ULOVLIG_ENDRING;
+    ULOVLIG_ENDRING,
+    VALIDERINGSFEIL;
 
     companion object {
         fun of(exception: AktivitetsKortFunksjonellException): ErrorType {
@@ -23,6 +24,7 @@ enum class ErrorType {
                 is ManglerOppfolgingsperiodeFeil -> MANGLER_OPPFOLGINGSPERIODE
                 is UgyldigIdentFeil -> UGYLDIG_IDENT
                 is UlovligEndringFeil -> ULOVLIG_ENDRING
+                is ValideringFeil -> VALIDERINGSFEIL
             }
         }
     }

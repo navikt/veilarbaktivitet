@@ -10,10 +10,7 @@ import no.nav.veilarbaktivitet.aktivitetskort.bestilling.EksternAktivitetskortBe
 import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType
 import no.nav.veilarbaktivitet.aktivitetskort.dto.BestillingBase
 import no.nav.veilarbaktivitet.aktivitetskort.dto.KafkaAktivitetskortWrapperDTO
-import no.nav.veilarbaktivitet.aktivitetskort.feil.DeserialiseringsFeil
-import no.nav.veilarbaktivitet.aktivitetskort.feil.ErrorMessage
-import no.nav.veilarbaktivitet.aktivitetskort.feil.KeyErIkkeFunksjonellIdFeil
-import no.nav.veilarbaktivitet.aktivitetskort.feil.UgyldigIdentFeil
+import no.nav.veilarbaktivitet.aktivitetskort.feil.*
 import no.nav.veilarbaktivitet.arena.model.ArenaId
 import no.nav.veilarbaktivitet.person.Person
 import no.nav.veilarbaktivitet.person.PersonService
@@ -24,7 +21,7 @@ import java.time.ZonedDateTime
 import java.util.*
 
 @Component
-class AktivitetsbestillingCreator (
+class AktivitetsbestillingCreator(
     private val personService: PersonService
 ) {
 
@@ -38,10 +35,16 @@ class AktivitetsbestillingCreator (
         }
     }
 
-    @Throws(DeserialiseringsFeil::class, UgyldigIdentFeil::class, KeyErIkkeFunksjonellIdFeil::class)
+    @Throws(
+        DeserialiseringsFeil::class,
+        UgyldigIdentFeil::class,
+        KeyErIkkeFunksjonellIdFeil::class,
+        ValideringFeil::class
+    )
     fun lagBestilling(consumerRecord: ConsumerRecord<String, String>, messageId: UUID?): BestillingBase {
         val melding = deserialiser(consumerRecord)
-        val resolvedMessageId = (melding.messageId ?: messageId) ?: throw RuntimeException("Mangler påkrevet messageId på aktivitetskort melding")
+        val resolvedMessageId = (melding.messageId ?: messageId)
+            ?: throw RuntimeException("Mangler påkrevet messageId på aktivitetskort melding")
         if (melding.getAktivitetskortId().toString() != consumerRecord.key()) throw KeyErIkkeFunksjonellIdFeil(
             ErrorMessage(
                 String.format(
@@ -52,6 +55,8 @@ class AktivitetsbestillingCreator (
             ), null
         )
         return if (melding is KafkaAktivitetskortWrapperDTO) {
+            if (!erAktivitetskortTittelGyldig(melding)) throw ValideringFeil("Tittelen er for lang (over 255 tegn)")
+
             val aktorId = hentAktorId(Person.fnr(melding.aktivitetskort.personIdent))
             val erArenaAktivitet = AktivitetskortType.ARENA_TILTAK == melding.aktivitetskortType
             if (erArenaAktivitet) {
@@ -81,6 +86,8 @@ class AktivitetsbestillingCreator (
             melding
         }
     }
+
+    private fun erAktivitetskortTittelGyldig(melding: KafkaAktivitetskortWrapperDTO): Boolean = melding.aktivitetskort.tittel.length <= 255
 
     companion object {
         private val log = LoggerFactory.getLogger(javaClass)
