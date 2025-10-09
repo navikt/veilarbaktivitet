@@ -55,7 +55,8 @@ class AktivitetsbestillingCreator(
             ), null
         )
         return if (melding is KafkaAktivitetskortWrapperDTO) {
-            if (!erAktivitetskortTittelGyldig(melding)) throw ValideringFeil("Tittelen er for lang (over 255 tegn)")
+            if (!erAktivitetskortTittelGyldig(melding))
+                throw ValideringFeil("Tittel kan ikke være lenger enn 255 chars men var: ${melding.aktivitetskort.tittel.length}")
 
             val aktorId = hentAktorId(Person.fnr(melding.aktivitetskort.personIdent))
             val erArenaAktivitet = AktivitetskortType.ARENA_TILTAK == melding.aktivitetskortType
