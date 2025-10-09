@@ -287,7 +287,9 @@ class AktivitetskortConsumerIntegrationTest(
             source = MessageSource.TEAM_KOMET.name,
             messageId = UUID.randomUUID()
         )
+
         aktivitetTestService.opprettEksterntAktivitetsKort(listOf(wrapperDTO))
+
         assertFeilmeldingPublished(
             aktivitetskortMedForLangTittel.id,
             ErrorType.VALIDERINGSFEIL,
