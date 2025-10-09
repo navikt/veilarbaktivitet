@@ -20,7 +20,7 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
-class ManuellStatusV2ClientTest {
+class ManuellStatusV3ClientTest {
     private static final Person.AktorId AKTORID = Person.aktorId("1234");
     private static final Person.Fnr FNR = Person.fnr("10108000398");
     private static final String MANUELL_STATUS_RESPONS = "manuell_status/v2/manuellStatusRespons.json";
@@ -32,18 +32,18 @@ class ManuellStatusV2ClientTest {
             .options(wireMockConfig().dynamicPort()).build();
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         OkHttpClient okHttpClient = new OkHttpClient();
         PersonService authService = Mockito.mock(PersonService.class);
         when(authService.getFnrForAktorId(AKTORID)).thenReturn(FNR);
-        manuellStatusV2Client = new ManuellStatusV2ClientImpl(okHttpClient, authService);
+        manuellStatusV2Client = new ManuellStatusV3ClientImpl(okHttpClient, authService);
         manuellStatusV2Client.setBaseUrl(wireMock.baseUrl());
     }
 
     @Test
     void test_manuell_status_ok_response() {
 
-        wireMock.stubFor(get(urlMatching("/veilarboppfolging/api/v2/manuell/status\\?fnr=([0-9]*)"))
+        wireMock.stubFor(post("/veilarboppfolging/api/v3/manuell/hent-status")
                 .willReturn(ok()
                         .withHeader("Content-Type", "text/json")
                         .withBodyFile(MANUELL_STATUS_RESPONS)));
@@ -57,7 +57,7 @@ class ManuellStatusV2ClientTest {
 
     @Test
     void test_manuell_status_kall_feiler() {
-        wireMock.stubFor(get(urlMatching("/veilarboppfolging/api/v2/manuell/status\\?fnr=([0-9]*)"))
+        wireMock.stubFor(post("/veilarboppfolging/api/v3/manuell/hent-status")
                 .willReturn(aResponse()
                         .withStatus(400)
                         .withHeader("Content-Type", "text/json")));
