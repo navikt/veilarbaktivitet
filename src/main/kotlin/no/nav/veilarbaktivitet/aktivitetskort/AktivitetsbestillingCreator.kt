@@ -39,10 +39,6 @@ class AktivitetsbestillingCreator (
     @Throws(DeserialiseringsFeil::class, UgyldigIdentFeil::class, KeyErIkkeFunksjonellIdFeil::class, ValideringFeil::class)
     fun lagBestilling(consumerRecord: ConsumerRecord<String, String>, messageId: UUID?): BestillingBase {
         val melding = deserialiser(consumerRecord)
-        val tittelErGyldig = ((melding as? AktivitetskortBestilling)?.aktivitetskort?.tittel?.length ?:0) <= 255;
-        if(!tittelErGyldig) {
-            throw ValideringFeil("Tittelen er for lang")
-        }
         val resolvedMessageId = (melding.messageId ?: messageId) ?: throw RuntimeException("Mangler påkrevet messageId på aktivitetskort melding")
         if (melding.getAktivitetskortId().toString() != consumerRecord.key()) throw KeyErIkkeFunksjonellIdFeil(
             ErrorMessage(
@@ -54,6 +50,11 @@ class AktivitetsbestillingCreator (
             ), null
         )
         return if (melding is KafkaAktivitetskortWrapperDTO) {
+            val tittelErGyldig = melding.aktivitetskort.tittel.length <= 255
+            if(!tittelErGyldig) {
+                throw ValideringFeil("Tittelen er for lang")
+            }
+
             val aktorId = hentAktorId(Person.fnr(melding.aktivitetskort.personIdent))
             val erArenaAktivitet = AktivitetskortType.ARENA_TILTAK == melding.aktivitetskortType
             if (erArenaAktivitet) {
