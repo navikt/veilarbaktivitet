@@ -291,7 +291,7 @@ class AktivitetskortConsumerIntegrationTest(
         aktivitetTestService.opprettEksterntAktivitetsKort(listOf(wrapperDTO))
         assertFeilmeldingPublished(
             funksjonellId,
-            ErrorType.DESERIALISERINGSFEIL,
+            ErrorType.VALIDERINGSFEIL,
             MessageSource.TEAM_KOMET
         )
     }

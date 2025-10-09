@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import no.nav.common.client.aktorregister.IngenGjeldendeIdentException
 import no.nav.common.json.JsonMapper
+import no.nav.veilarbaktivitet.aktivitetskort.bestilling.AktivitetskortBestilling
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.ArenaAktivitetskortBestilling
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.EksternAktivitetskortBestilling
 import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType
@@ -38,6 +39,10 @@ class AktivitetsbestillingCreator (
     @Throws(DeserialiseringsFeil::class, UgyldigIdentFeil::class, KeyErIkkeFunksjonellIdFeil::class, ValideringFeil::class)
     fun lagBestilling(consumerRecord: ConsumerRecord<String, String>, messageId: UUID?): BestillingBase {
         val melding = deserialiser(consumerRecord)
+        val tittelErGyldig = ((melding as? AktivitetskortBestilling)?.aktivitetskort?.tittel?.length ?:0) <= 255;
+        if(!tittelErGyldig) {
+            throw ValideringFeil("Tittelen er for lang")
+        }
         val resolvedMessageId = (melding.messageId ?: messageId) ?: throw RuntimeException("Mangler påkrevet messageId på aktivitetskort melding")
         if (melding.getAktivitetskortId().toString() != consumerRecord.key()) throw KeyErIkkeFunksjonellIdFeil(
             ErrorMessage(
