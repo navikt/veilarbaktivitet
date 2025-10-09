@@ -32,7 +32,7 @@ class ManuellStatusV3ClientTest {
             .options(wireMockConfig().dynamicPort()).build();
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         OkHttpClient okHttpClient = new OkHttpClient();
         PersonService authService = Mockito.mock(PersonService.class);
         when(authService.getFnrForAktorId(AKTORID)).thenReturn(FNR);

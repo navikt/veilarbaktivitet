@@ -32,7 +32,7 @@ public class WireMockUtil {
         String mål = mockBruker.getBrukerOptions().getMål();
 
         oppfolging(fnr, aktorId, underOppfolging, oppfolgingFeiler, nyesteOppfølgingsperiode);
-        manuell(fnr, erManuell, erReservertKrr, kanVarsles);
+        manuell(erManuell, erReservertKrr, kanVarsles);
         kvp(aktorId, erUnderKvp, kontorsperreEnhet);
         aktor(fnr, aktorId);
         hentPerson(fnr, navn);
@@ -93,7 +93,7 @@ public class WireMockUtil {
         }
     }
 
-    private static void manuell(String fnr, boolean erManuell, boolean erReservertKrr, boolean kanVarsles) {
+    private static void manuell(boolean erManuell, boolean erReservertKrr, boolean kanVarsles) {
         wireMock.stubFor(post("/veilarboppfolging/api/v3/manuell/hent-status")
                 .willReturn(ok()
                         .withHeader("Content-Type", "text/json")
