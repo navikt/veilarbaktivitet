@@ -20,7 +20,7 @@ import java.util.Optional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ManuellStatusV2ClientImpl implements ManuellStatusV2Client {
+public class ManuellStatusV3ClientImpl implements ManuellStatusV2Client {
     private final OkHttpClient veilarboppfolgingHttpClient;
     private final PersonService personService;
 
