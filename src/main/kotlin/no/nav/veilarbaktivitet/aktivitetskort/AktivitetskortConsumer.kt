@@ -67,6 +67,7 @@ class AktivitetskortConsumer (
                 is ManglerOppfolgingsperiodeFeil -> log::warn
                 is UlovligEndringFeil -> log::warn
                 is DuplikatMeldingFeil -> log::warn
+                is ValideringFeil -> log::warn
                 else -> log::error
             }
             logMedPassendeNivå(
