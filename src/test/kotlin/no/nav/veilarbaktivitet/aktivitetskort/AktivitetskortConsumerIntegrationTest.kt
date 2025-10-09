@@ -279,18 +279,17 @@ class AktivitetskortConsumerIntegrationTest(
 
     @Test
     fun `aktiviteter med for lang tittel skal feile`() {
-        val funksjonellId = UUID.randomUUID()
-        val actual = aktivitetskort(funksjonellId, AktivitetskortStatus.PLANLAGT)
-            .copy(tittel = (1..1000).map { ('a'..'z').random() }.joinToString(""))
+        val aktivitetskortMedForLangTittel = aktivitetskort(UUID.randomUUID(), AktivitetskortStatus.PLANLAGT)
+            .copy(tittel = (1..256).map { ('a'..'z').random() }.joinToString(""))
         val wrapperDTO = KafkaAktivitetskortWrapperDTO(
             aktivitetskortType = AktivitetskortType.HOYERE_UTDANNING,
-            aktivitetskort = actual,
+            aktivitetskort = aktivitetskortMedForLangTittel,
             source = MessageSource.TEAM_KOMET.name,
             messageId = UUID.randomUUID()
         )
         aktivitetTestService.opprettEksterntAktivitetsKort(listOf(wrapperDTO))
         assertFeilmeldingPublished(
-            funksjonellId,
+            aktivitetskortMedForLangTittel.id,
             ErrorType.VALIDERINGSFEIL,
             MessageSource.TEAM_KOMET
         )
