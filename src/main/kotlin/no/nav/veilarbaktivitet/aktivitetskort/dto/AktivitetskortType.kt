@@ -42,19 +42,17 @@ enum class AktivitetskortType {
     REKRUTTERINGSTREFF,
     ENKELAMO,
     ENKFAGYRKE,
-    HOYERE_UTDANNING,
-    UKJENT_VERDI;
+    HOYERE_UTDANNING;
 
     companion object {
         private val logger = LoggerFactory.getLogger(this::class.java)
 
-        fun tilAktivitetskortType(string: String?): AktivitetskortType {
-            require(string != null) { "AktivitetskortType must not be null" }
+        fun tilAktivitetskortType(string: String): AktivitetskortType {
             try {
                 return AktivitetskortType.valueOf(string.uppercase())
             } catch (exception: IllegalArgumentException) {
                 logger.error("AktivitetskortType er ukjent verdi: $string", exception)
-                return UKJENT_VERDI
+                throw exception
             }
         }
     }

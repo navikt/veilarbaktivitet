@@ -74,7 +74,6 @@ fun AktivitetData.toArkivTypeTekst(): String {
                 AktivitetskortType.ENKELAMO -> "Arbeidsmarkedsopplæring"
                 AktivitetskortType.ENKFAGYRKE -> "Fag- og yrkesopplæring"
                 AktivitetskortType.HOYERE_UTDANNING -> "Høyere utdanning"
-                AktivitetskortType.UKJENT_VERDI -> "Ukjent verdi"
             }
         }
     }
