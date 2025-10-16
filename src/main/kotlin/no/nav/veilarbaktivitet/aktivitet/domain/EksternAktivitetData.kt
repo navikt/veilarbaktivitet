@@ -16,7 +16,7 @@ data class EksternAktivitetData(
     val opprettetSomHistorisk: Boolean = false,
     val oppfolgingsperiodeSlutt: LocalDateTime? = null,
     val arenaId: ArenaId? = null,
-    val type: AktivitetskortType? = null,
+    val type: AktivitetskortType,
     val oppgave: Oppgaver? = null,
     @Singular("handling")
     val handlinger: List<LenkeSeksjon>? = null,
