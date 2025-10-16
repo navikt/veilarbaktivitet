@@ -68,7 +68,7 @@ jobs:
           TELEMETRY: ${{ needs.test-build-and-push.outputs.telemetry }}
   deploy-prod:
     name: Deploy application to prod
-    needs: [test-build-and-push, deploy-dev]
+    needs: test-build-and-push
     runs-on: ubuntu-latest
     permissions:
       id-token: write

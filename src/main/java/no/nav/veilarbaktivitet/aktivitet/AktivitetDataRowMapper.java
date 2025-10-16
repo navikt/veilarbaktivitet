@@ -176,7 +176,7 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
             rs.getBoolean("OPPRETTET_SOM_HISTORISK"),
             Database.hentLocalDateTime(rs, "OPPFOLGINGSPERIODE_SLUTT"),
             arenaId != null ? new ArenaId(arenaId) : null,
-            EnumUtils.valueOf(AktivitetskortType.class, rs.getString("AKTIVITETKORT_TYPE")),
+            AktivitetskortType.Companion.tilAktivitetskortType(rs.getString("AKTIVITETKORT_TYPE")),
             Database.hentObjectFromJsonString(rs, "OPPGAVE", Oppgaver.class),
             Database.hentListObjectFromJsonString(rs, "HANDLINGER", LenkeSeksjon.class),
             Database.hentListObjectFromJsonString(rs, "EKSTERNAKTIVITET.DETALJER", Attributt.class),
