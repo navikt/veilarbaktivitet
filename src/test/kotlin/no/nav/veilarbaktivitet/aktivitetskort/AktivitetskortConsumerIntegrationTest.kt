@@ -247,11 +247,11 @@ class AktivitetskortConsumerIntegrationTest(
     }
 
     @Test
-    fun `aktivitetskort med type HOYERE_UTDANNING skal behandles`() {
+    fun `aktivitetskort med type HOYEREUTD skal behandles`() {
         val funksjonellId = UUID.randomUUID()
         val actual = aktivitetskort(funksjonellId, AktivitetskortStatus.PLANLAGT)
         val wrapperDTO = KafkaAktivitetskortWrapperDTO(
-            aktivitetskortType = AktivitetskortType.HOYERE_UTDANNING,
+            aktivitetskortType = AktivitetskortType.HOYEREUTD,
             aktivitetskort = actual,
             source = MessageSource.TEAM_KOMET.name,
             messageId = UUID.randomUUID()
@@ -259,7 +259,7 @@ class AktivitetskortConsumerIntegrationTest(
         aktivitetTestService.opprettEksterntAktivitetsKort(listOf(wrapperDTO))
         val aktivitet = hentAktivitet(funksjonellId)
         assertEquals(AktivitetTypeDTO.EKSTERNAKTIVITET, aktivitet.type)
-        assertEquals(AktivitetskortType.HOYERE_UTDANNING, aktivitet.eksternAktivitet.type)
+        assertEquals(AktivitetskortType.HOYEREUTD, aktivitet.eksternAktivitet.type)
     }
 
     @Test
