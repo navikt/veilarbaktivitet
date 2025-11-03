@@ -4,9 +4,11 @@ import io.getunleash.UnleashContext
 import io.getunleash.strategy.Strategy
 import lombok.RequiredArgsConstructor
 import lombok.extern.slf4j.Slf4j
-import no.nav.common.client.axsys.AxsysClient
-import no.nav.common.types.identer.NavIdent
+import no.nav.common.client.msgraph.AdGroupFilter
+import no.nav.common.client.msgraph.MsGraphClient
+import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.util.*
 
@@ -14,19 +16,17 @@ import java.util.*
 @RequiredArgsConstructor
 @Slf4j
 class ByEnhetStrategy(
-    private val axsysClient: AxsysClient
+    private val msGraphClient: MsGraphClient,
+    private val azureAdMachineToMachineTokenClient: AzureAdMachineToMachineTokenClient,
+    @param:Value("\${msgraph.scope}")
+    val msGraphScope: String
 ) : Strategy {
     private val log = LoggerFactory.getLogger(javaClass)
     private val PARAM = "valgtEnhet"
-    private val TEMA_OPPFOLGING = "OPP"
+    val ENHET_PREFIKS = "0000-GA-ENHET_"
 
-    override fun getName(): String {
-        return "byEnhet"
-    }
-
-    fun isEnabled(parameters: Map<String, String>): Boolean {
-        return false
-    }
+    override fun getName() =  "byEnhet"
+    fun isEnabled(parameters: Map<String, String>) = false
 
     override fun isEnabled(parameters: Map<String, String>, context: UnleashContext): Boolean {
         return context.userId
@@ -46,9 +46,9 @@ class ByEnhetStrategy(
     }
 
     private fun hentEnheter(navIdent: String): List<String> {
-        return axsysClient.hentTilganger(NavIdent(navIdent))
-                .filter { it.temaer.contains(TEMA_OPPFOLGING) }
-                .map { it.enhetId.get() }
+        val accessToken = azureAdMachineToMachineTokenClient.createMachineToMachineToken(msGraphScope)
+        val groups = msGraphClient.hentAdGroupsForUser(accessToken, navIdent, AdGroupFilter.ENHET)
+        return groups.mapNotNull { it.displayName.split(ENHET_PREFIKS)[1] }
     }
 
     private fun erNavIdent(verdi: String): Boolean {

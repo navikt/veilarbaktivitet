@@ -1,5 +1,5 @@
 val spring_boot_version = "3.5.5"
-val common_version = "3.2025.09.03_08.33-728ff4acbfdb"
+val common_version = "3.2025.10.10_08.21-bb7c7830d93c"
 val dab_common_version = "2024.11.14-10.46.174740baf5c7"
 val poao_tilgang_version = "2025.07.04_08.56-814fa50f6740"
 val shedlock_version = "6.10.0"
