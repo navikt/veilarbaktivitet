@@ -6,9 +6,8 @@ import jakarta.servlet.http.Cookie
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import lombok.extern.slf4j.Slf4j
+import no.nav.common.auth.context.AuthContextHolder
 import no.nav.common.auth.utils.CookieUtils
-import no.nav.common.types.identer.NavIdent
-import no.nav.poao.dab.spring_auth.IAuthService
 import okhttp3.internal.toHexString
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
@@ -24,7 +23,7 @@ import java.util.*
 @RequestMapping("/api/feature")
 class FeatureController(
     private val unleash: Unleash,
-    private val authService: IAuthService,
+    private val authContextHolder: AuthContextHolder,
     private val request: HttpServletRequest,
     private val response: HttpServletResponse,
 ) {
@@ -39,10 +38,13 @@ class FeatureController(
             .orElse(generateSessionId(response))
 
         // TODO Hva med eksternbruker?
-        val id = authService.getLoggedInnUser().takeIf { it is NavIdent }?.get()
+        val erInternBruker = authContextHolder.erInternBruker()
+        val navAnsattAzureId =
+            if (erInternBruker) authContextHolder.idTokenClaims.get().getStringClaim("oid")
+            else null
 
         val unleashContext = UnleashContext(
-            id,
+            navAnsattAzureId,
             sessionId,
             request.remoteAddr,
             emptyMap()

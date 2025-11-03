@@ -150,7 +150,3 @@ spec:
       value: "api://dev-fss.pdl.pdl-api/.default"
     - name: FSS_PROXY_ENABLED
       value: "false"
-    - name: MICROSOFT_GRAPH_URI
-      value: "https://graph.microsoft.com/v1.0"
-    - name: MICROSOFT_GRAPH_SCOPE
-      value: "https://graph.microsoft.com/.default"

@@ -1,35 +1,31 @@
 package no.nav.veilarbaktivitet.unleash.strategies
 
 import io.getunleash.UnleashContext
-import no.nav.common.client.msgraph.AdGroupData
-import no.nav.common.client.msgraph.MsGraphClient
-import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient
-import no.nav.common.types.identer.AzureObjectId
+import no.nav.poao_tilgang.client.AdGruppe
+import no.nav.poao_tilgang.client.PoaoTilgangClient
+import no.nav.poao_tilgang.client.api.ApiResult
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
+import java.util.*
 
 class ByEnhetStrategyTest {
-    private lateinit var msGraphClient: MsGraphClient
+    private lateinit var poaoTilgangClient: PoaoTilgangClient
     private lateinit var byEnhetStrategy: ByEnhetStrategy
-    private lateinit var azureAdMachineToMachineTokenClient: AzureAdMachineToMachineTokenClient
 
     @BeforeEach
     fun setup() {
-        msGraphClient = mock<MsGraphClient> {
-            on { hentAdGroupsForUser(any(), any(), any()) } doReturn listOf(
-                AdGroupData(AzureObjectId("1"), "0000-GA-ENHET_1111"),
-                AdGroupData(AzureObjectId("2"), "0000-GA-ENHET_2222")
-            )
-        }
-        azureAdMachineToMachineTokenClient = mock<AzureAdMachineToMachineTokenClient> {
-            on { createMachineToMachineToken(any()) } doReturn "token"
+        poaoTilgangClient = mock<PoaoTilgangClient> {
+            on { hentAdGrupper(any()) } doReturn ApiResult.success(listOf(
+                AdGruppe(UUID.randomUUID(), "0000-GA-ENHET_1111"),
+                AdGruppe(UUID.randomUUID(), "0000-GA-ENHET_2222")
+            ))
         }
 
-        byEnhetStrategy = ByEnhetStrategy(msGraphClient, azureAdMachineToMachineTokenClient, "MS-scope")
+        byEnhetStrategy = ByEnhetStrategy(poaoTilgangClient)
     }
 
     @Test
@@ -42,7 +38,7 @@ class ByEnhetStrategyTest {
     fun `skal returnere false når brukers enhet ikke finnes i listen med påskrudde enheter`() {
         val enabled = byEnhetStrategy.isEnabled(
             mapOf("valgtEnhet" to "1234,4565"),
-            UnleashContext("M123456", "", "", emptyMap()),
+            UnleashContext(UUID.randomUUID().toString(), "", "", emptyMap()),
         )
         assertThat(enabled).isFalse()
     }
@@ -51,7 +47,7 @@ class ByEnhetStrategyTest {
     fun `skal returnere true når brukers enhet finnes i listen over påskrudde enheter`() {
         val enabled = byEnhetStrategy.isEnabled(
             mapOf("valgtEnhet" to "1234,1111"),
-            UnleashContext("M123456", "", "", emptyMap()),
+            UnleashContext(UUID.randomUUID().toString(), "", "", emptyMap()),
         )
         assertThat(enabled).isTrue()
     }
