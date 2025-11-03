@@ -282,7 +282,7 @@ class AktivitetskortConsumerIntegrationTest(
         val aktivitetskortMedForLangTittel = aktivitetskort(UUID.randomUUID(), AktivitetskortStatus.PLANLAGT)
             .copy(tittel = (1..256).map { ('a'..'z').random() }.joinToString(""))
         val wrapperDTO = KafkaAktivitetskortWrapperDTO(
-            aktivitetskortType = AktivitetskortType.HOYERE_UTDANNING,
+            aktivitetskortType = AktivitetskortType.HOYEREUTD,
             aktivitetskort = aktivitetskortMedForLangTittel,
             source = MessageSource.TEAM_KOMET.name,
             messageId = UUID.randomUUID()

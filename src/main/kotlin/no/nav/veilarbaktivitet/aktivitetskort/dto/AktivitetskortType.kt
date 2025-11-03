@@ -42,7 +42,7 @@ enum class AktivitetskortType {
     REKRUTTERINGSTREFF,
     ENKELAMO,
     ENKFAGYRKE,
-    HOYERE_UTDANNING;
+    HOYEREUTD;
 
     companion object {
         private val logger = LoggerFactory.getLogger(this::class.java)
