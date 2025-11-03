@@ -71,9 +71,9 @@ fun AktivitetData.toArkivTypeTekst(): String {
                 AktivitetskortType.GRUPPEAMO -> "Arbeidsmarkedsopplæring (Gruppe)"
                 AktivitetskortType.GRUFAGYRKE -> "Fag- og yrkesopplæring (Gruppe)"
                 AktivitetskortType.REKRUTTERINGSTREFF -> "Rekrutteringstreff"
-                AktivitetskortType.ENKELAMO -> "Arbeidsmarkedsopplæring"
+                AktivitetskortType.ENKELAMO -> "Arbeidsmarkedsopplæring (enkeltplass)"
                 AktivitetskortType.ENKFAGYRKE -> "Fag- og yrkesopplæring"
-                AktivitetskortType.HOYERE_UTDANNING -> "Høyere utdanning"
+                AktivitetskortType.HOYEREUTD -> "Høyere utdanning"
             }
         }
     }

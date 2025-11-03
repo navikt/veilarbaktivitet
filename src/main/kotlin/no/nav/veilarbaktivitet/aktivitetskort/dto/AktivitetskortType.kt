@@ -18,9 +18,9 @@ import org.slf4j.LoggerFactory
       GRUPPEAMO Gruppe AMO (arbeidsmarkedsopplæring)
       GRUFAGYRKE  - Gruppe Fag- og yrkesopplæring VGS og høyere yrkesfaglig utdanning
       ARENA_TILTAK - Resten av arbeidsmarkedstiltakene i arena (>100)
-      ENKELAMO -> "Arbeidsmarkedsopplæring"
+      ENKELAMO -> "Arbeidsmarkedsopplæring (enkeltplass)"
       ENKFAGYRKE -> "Fag- og yrkesopplæring"
-      HOYERE_UTDANNING -> "Høyere utdanning"
+      HOYEREUTD -> "Høyere utdanning"
 */
 
 enum class AktivitetskortType {
@@ -42,7 +42,7 @@ enum class AktivitetskortType {
     REKRUTTERINGSTREFF,
     ENKELAMO,
     ENKFAGYRKE,
-    HOYERE_UTDANNING;
+    HOYEREUTD;
 
     companion object {
         private val logger = LoggerFactory.getLogger(this::class.java)

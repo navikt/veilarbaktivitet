@@ -162,7 +162,7 @@ enum AktivitetskortType {
     REKRUTTERINGSTREFF
     ENKELAMO
     ENKFAGYRKE
-    HOYERE_UTDANNING
+    HOYEREUTD
 }
 
 
