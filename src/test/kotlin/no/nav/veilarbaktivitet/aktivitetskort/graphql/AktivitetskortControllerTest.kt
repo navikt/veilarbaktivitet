@@ -40,7 +40,7 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
         """.trimIndent().replace("\n", "")
 
         val gammelPeriodeId = UUID.randomUUID()
-        val gammelperiodeStart = ZonedDateTime.now().minusYears(4)
+        val gammelperiodeStart = ZonedDateTime.now().minusYears(5)
         val gammelperiodeSlutt = gammelperiodeStart
         val nyPeriode = mockBruker.oppfolgingsperiodeId
         val jobbAktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
