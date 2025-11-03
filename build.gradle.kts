@@ -1,10 +1,10 @@
 val spring_boot_version = "3.5.5"
-val common_version = "3.2025.09.03_08.33-728ff4acbfdb"
+val common_version = "3.2025.10.10_08.21-bb7c7830d93c"
 val dab_common_version = "2024.11.14-10.46.174740baf5c7"
 val poao_tilgang_version = "2025.07.04_08.56-814fa50f6740"
 val shedlock_version = "6.10.0"
-val avroVersion = "1.12.0"
-val confluentKafkaAvroVersion = "8.0.0"
+val avroVersion = "1.12.1"
+val confluentKafkaAvroVersion = "8.1.0"
 val _version: String by project
 
 plugins {
@@ -15,7 +15,7 @@ plugins {
     kotlin("plugin.lombok") version kotlinVersion
     id("application")
     id("maven-publish")
-    id("org.openapi.generator") version "7.15.0"
+    id("org.openapi.generator") version "7.17.0"
     id("com.github.davidmc24.gradle.plugin.avro") version "1.9.1"
     id("project-report")
     id("jacoco")
@@ -134,8 +134,8 @@ if (hasProperty("buildScan")) {
 }
 
 dependencies {
-    annotationProcessor("org.projectlombok:lombok:1.18.40")
-    testAnnotationProcessor("org.projectlombok:lombok:1.18.40")
+    annotationProcessor("org.projectlombok:lombok:1.18.42")
+    testAnnotationProcessor("org.projectlombok:lombok:1.18.42")
 
     implementation(enforcedPlatform("org.springframework.boot:spring-boot-dependencies:$spring_boot_version"))
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:$spring_boot_version")
@@ -178,15 +178,15 @@ dependencies {
     implementation("org.springframework.kafka:spring-kafka")
     implementation("com.squareup.okhttp3:okhttp")
     implementation("io.micrometer:micrometer-registry-prometheus")
-    implementation("org.flywaydb:flyway-database-postgresql:11.10.3")
-    implementation("org.postgresql:postgresql:42.7.7")
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.20.0")
+    implementation("org.flywaydb:flyway-database-postgresql:11.15.0")
+    implementation("org.postgresql:postgresql:42.7.8")
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.20.1")
 
     // BigQuery
-    implementation(platform("com.google.cloud:libraries-bom:26.67.0"))
+    implementation(platform("com.google.cloud:libraries-bom:26.71.0"))
     implementation("com.google.cloud:google-cloud-bigquery")
 
-    implementation("io.getunleash:unleash-client-java:11.1.0")
+    implementation("io.getunleash:unleash-client-java:11.1.1")
 
     runtimeOnly("org.springframework.boot:spring-boot-devtools")
 
