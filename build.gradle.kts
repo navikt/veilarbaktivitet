@@ -21,7 +21,7 @@ plugins {
     id("jacoco")
     id("org.sonarqube") version "6.3.1.5724"
     id("org.springframework.boot") version "3.5.5"
-    id("io.freefair.lombok") version "8.14.2"
+    id("io.freefair.lombok") version "9.1.0"
 }
 
 java {
