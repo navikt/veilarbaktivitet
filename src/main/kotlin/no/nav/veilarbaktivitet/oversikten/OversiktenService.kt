@@ -27,7 +27,7 @@ open class OversiktenService(
     @Scheduled(cron = "0 0 * * * *") // Hver time
     @SchedulerLock(name = "oversikten_melding_med_metadata_scheduledTask", lockAtMostFor = "PT3M")
     open fun sendUsendteMeldingerTilOversikten() {
-        val kanPublisereMeldinger = !EnvironmentUtils.isProduction().getOrElse { false } && !EnvironmentUtils.isDevelopment().getOrElse { false }
+        val kanPublisereMeldinger = !erProd
 
         if (kanPublisereMeldinger) {
             val meldingerMedMetadata = oversiktenMeldingMedMetadataRepository.hentAlleSomSkalSendes()
