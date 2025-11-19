@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import java.util.*
-import kotlin.jvm.optionals.getOrElse
 
 @Service
 open class OversiktenService(
