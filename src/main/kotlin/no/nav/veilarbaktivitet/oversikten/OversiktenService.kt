@@ -30,11 +30,14 @@ open class OversiktenService(
 
         if (kanPublisereMeldinger) {
             val meldingerMedMetadata = oversiktenMeldingMedMetadataRepository.hentAlleSomSkalSendes()
-            if(meldingerMedMetadata.isNotEmpty()) {
+            if (meldingerMedMetadata.isNotEmpty()) {
                 log.info("Sender ${meldingerMedMetadata.size} meldinger til oversikten")
             }
             meldingerMedMetadata.forEach { meldingMedMetadata ->
-                oversiktenProducer.sendMelding(meldingMedMetadata.meldingKey.toString(), meldingMedMetadata.meldingSomJson)
+                oversiktenProducer.sendMelding(
+                    meldingMedMetadata.meldingKey.toString(),
+                    meldingMedMetadata.meldingSomJson
+                )
                 oversiktenMeldingMedMetadataRepository.markerSomSendt(meldingMedMetadata.id)
                 meldingMedMetadata.fnr
             }
@@ -50,7 +53,8 @@ open class OversiktenService(
     //    @Scheduled(cron = "0 50 13 * * ?")
     //    @SchedulerLock(name = "oversikten_melding_gamle_udelte_scheduledTask", lockAtMostFor = "PT15M")
     open fun sendAlleGamleUdelte() {
-        val alleUdelte = oversiktenMeldingMedMetadataRepository.hentUdelteSamtalereferatDerViIkkeHarSendtMeldingTilOversikten()
+        val alleUdelte =
+            oversiktenMeldingMedMetadataRepository.hentUdelteSamtalereferatDerViIkkeHarSendtMeldingTilOversikten()
         log.info("antall udelte referat", alleUdelte.size)
         alleUdelte.forEach {
             lagreStartMeldingOmUdeltSamtalereferatIUtboks(AktorId(it.aktorId.get()), it.aktivitetId)
@@ -78,8 +82,10 @@ open class OversiktenService(
 
     open fun lagreStoppMeldingOmUdeltSamtalereferatIUtboks(aktorId: AktorId, aktivitetId: AktivitetId) {
         val fnr = aktorOppslagClient.hentFnr(no.nav.common.types.identer.AktorId.of(aktorId.get()))
-        val sluttmelding = OversiktenMelding.forUdeltSamtalereferat(fnr.toString(), OversiktenMelding.Operasjon.STOPP, erProd)
-        val meldingKey = oversiktenMeldingAktivitetMappingDao.hentMeldingKeyForAktivitet(aktivitetId, UDELT_SAMTALEREFERAT)
+        val sluttmelding =
+            OversiktenMelding.forUdeltSamtalereferat(fnr.toString(), OversiktenMelding.Operasjon.STOPP, erProd)
+        val meldingKey =
+            oversiktenMeldingAktivitetMappingDao.hentMeldingKeyForAktivitet(aktivitetId, UDELT_SAMTALEREFERAT)
 
         if (meldingKey == null) {
             log.warn("Finner ikke meldingKey for aktivitet med id $aktivitetId og kategori $UDELT_SAMTALEREFERAT")
