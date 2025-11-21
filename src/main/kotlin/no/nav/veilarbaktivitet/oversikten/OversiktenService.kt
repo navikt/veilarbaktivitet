@@ -26,23 +26,17 @@ open class OversiktenService(
     @Scheduled(cron = "0 0 * * * *") // Hver time
     @SchedulerLock(name = "oversikten_melding_med_metadata_scheduledTask", lockAtMostFor = "PT3M")
     open fun sendUsendteMeldingerTilOversikten() {
-        val kanPublisereMeldinger = !erProd
-
-        if (kanPublisereMeldinger) {
-            val meldingerMedMetadata = oversiktenMeldingMedMetadataRepository.hentAlleSomSkalSendes()
-            if (meldingerMedMetadata.isNotEmpty()) {
-                log.info("Sender ${meldingerMedMetadata.size} meldinger til oversikten")
-            }
-            meldingerMedMetadata.forEach { meldingMedMetadata ->
-                oversiktenProducer.sendMelding(
-                    meldingMedMetadata.meldingKey.toString(),
-                    meldingMedMetadata.meldingSomJson
-                )
-                oversiktenMeldingMedMetadataRepository.markerSomSendt(meldingMedMetadata.id)
-                meldingMedMetadata.fnr
-            }
-        } else {
-            log.info("OBO er ikke klare til å ta imot meldinger om udelte samtalereferat")
+        val meldingerMedMetadata = oversiktenMeldingMedMetadataRepository.hentAlleSomSkalSendes()
+        if (meldingerMedMetadata.isNotEmpty()) {
+            log.info("Sender ${meldingerMedMetadata.size} meldinger til oversikten")
+        }
+        meldingerMedMetadata.forEach { meldingMedMetadata ->
+            oversiktenProducer.sendMelding(
+                meldingMedMetadata.meldingKey.toString(),
+                meldingMedMetadata.meldingSomJson
+            )
+            oversiktenMeldingMedMetadataRepository.markerSomSendt(meldingMedMetadata.id)
+            meldingMedMetadata.fnr
         }
     }
 
