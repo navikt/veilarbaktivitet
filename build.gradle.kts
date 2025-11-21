@@ -1,14 +1,14 @@
-val spring_boot_version = "3.5.5"
+val spring_boot_version = "3.5.7"
 val common_version = "3.2025.10.10_08.21-bb7c7830d93c"
 val dab_common_version = "2024.11.14-10.46.174740baf5c7"
-val poao_tilgang_version = "2025.07.04_08.56-814fa50f6740"
+val poao_tilgang_version = "2025.11.03_13.40-18456d0598be"
 val shedlock_version = "6.10.0"
 val avroVersion = "1.12.1"
 val confluentKafkaAvroVersion = "8.1.0"
 val _version: String by project
 
 plugins {
-    val kotlinVersion = "2.1.21"
+    val kotlinVersion = "2.2.21"
     id("java")
     kotlin("jvm") version kotlinVersion
     id("org.jetbrains.kotlin.plugin.spring") version kotlinVersion
@@ -20,7 +20,7 @@ plugins {
     id("project-report")
     id("jacoco")
     id("org.sonarqube") version "6.3.1.5724"
-    id("org.springframework.boot") version "3.5.5"
+    id("org.springframework.boot") version "3.5.7"
     id("io.freefair.lombok") version "8.14.2"
 }
 
@@ -178,7 +178,7 @@ dependencies {
     implementation("org.springframework.kafka:spring-kafka")
     implementation("com.squareup.okhttp3:okhttp")
     implementation("io.micrometer:micrometer-registry-prometheus")
-    implementation("org.flywaydb:flyway-database-postgresql:11.15.0")
+    implementation("org.flywaydb:flyway-database-postgresql:11.16.0")
     implementation("org.postgresql:postgresql:42.7.8")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.20.1")
 
