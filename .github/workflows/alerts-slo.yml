@@ -30,7 +30,7 @@ jobs:
           team: dab
           name: veilarbaktivitet-alarm
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: alerts
           path: alerts-feilrate-slo.yaml
