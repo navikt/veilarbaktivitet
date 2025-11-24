@@ -194,7 +194,7 @@ dependencies {
     testImplementation("no.nav.poao-tilgang:poao-tilgang-test-wiremock:$poao_tilgang_version")
     testImplementation("org.awaitility:awaitility:4.3.0")
     testImplementation("com.networknt:json-schema-validator:2.0.0")
-    testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:6.1.0")
 
 //spring managed test dependencies
     testImplementation("io.rest-assured:rest-assured")
