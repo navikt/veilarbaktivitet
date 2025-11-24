@@ -148,5 +148,3 @@ spec:
       value: "https://pdl-api.prod-fss-pub.nais.io"
     - name: PDL_SCOPE
       value: "api://prod-fss.pdl.pdl-api/.default"
-    - name: AXSYS_URL
-      value: "https://axsys.prod-fss-pub.nais.io"

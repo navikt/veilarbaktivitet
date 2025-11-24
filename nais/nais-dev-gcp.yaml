@@ -150,5 +150,3 @@ spec:
       value: "api://dev-fss.pdl.pdl-api/.default"
     - name: FSS_PROXY_ENABLED
       value: "false"
-    - name: AXSYS_URL
-      value: "https://axsys.dev-fss-pub.nais.io"
