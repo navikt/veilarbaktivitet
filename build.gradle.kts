@@ -19,7 +19,7 @@ plugins {
     id("com.github.davidmc24.gradle.plugin.avro") version "1.9.1"
     id("project-report")
     id("jacoco")
-    id("org.sonarqube") version "6.3.1.5724"
+    id("org.sonarqube") version "7.0.1.6134"
     id("org.springframework.boot") version "3.5.5"
     id("io.freefair.lombok") version "9.1.0"
 }
