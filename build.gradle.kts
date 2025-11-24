@@ -21,7 +21,7 @@ plugins {
     id("jacoco")
     id("org.sonarqube") version "7.1.0.6387"
     id("org.springframework.boot") version "3.5.5"
-    id("io.freefair.lombok") version "8.14.2"
+    id("io.freefair.lombok") version "9.1.0"
 }
 
 java {
@@ -194,7 +194,7 @@ dependencies {
     testImplementation("no.nav.poao-tilgang:poao-tilgang-test-wiremock:$poao_tilgang_version")
     testImplementation("org.awaitility:awaitility:4.3.0")
     testImplementation("com.networknt:json-schema-validator:1.5.8")
-    testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:6.1.0")
 
 //spring managed test dependencies
     testImplementation("io.rest-assured:rest-assured")
