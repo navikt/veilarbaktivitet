@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.oversikten
 
+import no.nav.common.types.identer.Fnr
 import no.nav.veilarbaktivitet.aktivitet.AktivitetId
 import no.nav.veilarbaktivitet.person.Person
 import org.springframework.dao.EmptyResultDataAccessException
@@ -45,28 +46,30 @@ open class OversiktenMeldingAktivitetMappingDAO(private val template: NamedParam
         }
     }
 
-    fun hentAktivitetsIdForMeldingerSomSkalAvsluttes(fnr: Person.Fnr): List<UUID> {
+    fun hentAktivitetsIdForMeldingerSomSkalAvsluttes(fnr: Fnr): List<AktivitetId> {
         val sql = """
-        SELECT oversikten_melding_aktivitet_mapping.aktivitet_id
-        FROM oversikten_melding_med_metadata
-        join oversikten_melding_aktivitet_mapping 
-            ON oversikten_melding_med_metadata.melding_key = oversikten_melding_aktivitet_mapping.oversikten_melding_key
-        WHERE fnr = :fnr
-          AND utsending_status = 'SENDT'
-        GROUP BY melding_key
-        HAVING
-            COUNT(*) FILTER (WHERE operasjon = 'START') = 1
-            AND COUNT(*) FILTER (WHERE operasjon = 'STOPP') = 0
+            SELECT oma.aktivitet_id
+            FROM oversikten_melding_med_metadata omm
+                JOIN oversikten_melding_aktivitet_mapping oma ON omm.melding_key = oma.oversikten_melding_key
+            WHERE fnr = :fnr
+              AND utsending_status = 'SENDT'
+            GROUP BY oma.aktivitet_id
+            HAVING
+                        COUNT(*) FILTER (WHERE operasjon = 'START') = 1
+               AND COUNT(*) FILTER (WHERE operasjon = 'STOPP') = 0;
     """.trimIndent()
 
         val param = MapSqlParameterSource()
             .addValue("fnr", fnr.toString())
 
-        return template.query(sql, param, rowMapper)
+        return template.query(sql, param, aktivitetIdRowMapper)
     }
 
-    private val rowMapper = RowMapper { rs: ResultSet, _: Int ->
+    val aktivitetIdRowMapper = RowMapper { rs: ResultSet, _: Int ->
+        rs.getObject("aktivitet_id", AktivitetId::class.java)
+    }
+
+    val rowMapper = RowMapper { rs: ResultSet, _: Int ->
         rs.getObject("melding_key", UUID::class.java)
     }
-
 }

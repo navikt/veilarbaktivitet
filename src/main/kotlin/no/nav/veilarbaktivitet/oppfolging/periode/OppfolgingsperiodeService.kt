@@ -34,7 +34,7 @@ class OppfolgingsperiodeService(
         log.info("avsluttOppfolgingsperiode: {}", oppfolgingsperiode)
         minsideVarselService.setDoneGrupperingsID(oppfolgingsperiode)
         aktivitetService.settAktiviteterTilHistoriske(oppfolgingsperiode, sluttDato)
-        oversiktenService.lagreStoppMeldingOmUdeltSamtalereferatIUtboks()
+        oversiktenService.lagreStoppMeldingVedAvsluttOppfolging(oppfolgingsperiode)
     }
 
     fun upsertOppfolgingsperiode(sisteOppfolgingsperiodeV1: SisteOppfolgingsperiodeV1) {

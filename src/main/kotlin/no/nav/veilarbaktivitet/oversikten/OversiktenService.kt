@@ -101,7 +101,7 @@ open class OversiktenService(
 
     fun lagreStoppMeldingVedAvsluttOppfolging(oppfolgingsperiodeId: UUID) {
         val oppfolgingsperiode = oppfolgingsperiodeService.hentOppfolgingsperiode(oppfolgingsperiodeId)
-        if(oppfolgingsperiode == null) {
+        if (oppfolgingsperiode == null) {
             log.warn("Finner ikke oppfølgingsperiode med id $oppfolgingsperiodeId")
             return
         }
@@ -109,8 +109,11 @@ open class OversiktenService(
         val aktorId = AktorId(oppfolgingsperiode.aktorid())
         val fnr = aktorOppslagClient.hentFnr(no.nav.common.types.identer.AktorId.of(aktorId.get()))
 
-        val meldingerSomSkalAvsluttes = oversiktenMeldingAktivitetMappingDao.hentAktivitetsIdForMeldingerSomSkalAvsluttes(fnr)
+        val meldingerSomSkalAvsluttes =
+            oversiktenMeldingAktivitetMappingDao.hentAktivitetsIdForMeldingerSomSkalAvsluttes(fnr)
 
-        lagreStoppMeldingOmUdeltSamtalereferatIUtboks(aktorId, aktivitetId)
+        for (aktivitetId in meldingerSomSkalAvsluttes) {
+            lagreStoppMeldingOmUdeltSamtalereferatIUtboks(aktorId, aktivitetId)
+        }
     }
 }

@@ -4,6 +4,7 @@ import no.nav.veilarbaktivitet.aktivitet.AktivitetService
 import no.nav.veilarbaktivitet.brukernotifikasjon.MinsideVarselService
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingClient
 import no.nav.veilarbaktivitet.oppfolging.periode.*
+import no.nav.veilarbaktivitet.oversikten.OversiktenService
 import no.nav.veilarbaktivitet.person.Person
 import no.nav.veilarbaktivitet.person.Person.AktorId
 import org.assertj.core.api.Assertions.assertThat
@@ -19,6 +20,7 @@ class OppfolgingsperiodeServiceTest {
     private lateinit var minsideVarselService: MinsideVarselService
     private lateinit var sistePeriodeDAO: SistePeriodeDAO
     private lateinit var oppfolgingsperiodeDAO: OppfolgingsperiodeDAO
+    private lateinit var oversiktenService: OversiktenService
 
 
     private lateinit var oppfolgingsperiodeService: OppfolgingsperiodeService
@@ -35,7 +37,8 @@ class OppfolgingsperiodeServiceTest {
         minsideVarselService = Mockito.mock(MinsideVarselService::class.java)
         sistePeriodeDAO = Mockito.mock(SistePeriodeDAO::class.java)
         oppfolgingsperiodeDAO = Mockito.mock(OppfolgingsperiodeDAO::class.java)
-        oppfolgingsperiodeService = OppfolgingsperiodeService(aktivitetService, minsideVarselService, sistePeriodeDAO, oppfolgingsperiodeDAO, oppfolgingClient)
+        oversiktenService = Mockito.mock(OversiktenService::class.java)
+        oppfolgingsperiodeService = OppfolgingsperiodeService(aktivitetService, minsideVarselService, sistePeriodeDAO, oppfolgingsperiodeDAO, oppfolgingClient, oversiktenService)
     }
 
     @Test
