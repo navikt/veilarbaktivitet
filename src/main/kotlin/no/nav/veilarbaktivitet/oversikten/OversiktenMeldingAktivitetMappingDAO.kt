@@ -70,6 +70,6 @@ open class OversiktenMeldingAktivitetMappingDAO(private val template: NamedParam
     }
 
     val rowMapper = RowMapper { rs: ResultSet, _: Int ->
-        rs.getObject("melding_key", UUID::class.java)
+        rs.getObject("oversikten_melding_key", UUID::class.java)
     }
 }

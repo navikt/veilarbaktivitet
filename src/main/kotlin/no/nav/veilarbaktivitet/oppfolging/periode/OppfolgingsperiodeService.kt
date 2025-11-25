@@ -30,11 +30,17 @@ class OppfolgingsperiodeService(
         val SLACK_FOER: Duration = Duration.ofDays(7)
     }
 
-    fun avsluttOppfolgingsperiode(oppfolgingsperiode: UUID, sluttDato: ZonedDateTime) {
-        log.info("avsluttOppfolgingsperiode: {}", oppfolgingsperiode)
-        minsideVarselService.setDoneGrupperingsID(oppfolgingsperiode)
-        aktivitetService.settAktiviteterTilHistoriske(oppfolgingsperiode, sluttDato)
-        oversiktenService.lagreStoppMeldingVedAvsluttOppfolging(oppfolgingsperiode)
+    fun avsluttOppfolgingsperiode(oppfolgingsperiodeId: UUID, sluttDato: ZonedDateTime) {
+        log.info("avsluttOppfolgingsperiode: {}", oppfolgingsperiodeId)
+        minsideVarselService.setDoneGrupperingsID(oppfolgingsperiodeId)
+        aktivitetService.settAktiviteterTilHistoriske(oppfolgingsperiodeId, sluttDato)
+
+        val aktorId = hentOppfolgingsperiode(oppfolgingsperiodeId)?.aktorid
+        if(aktorId == null) {
+            log.warn("Fant ikke aktorId for oppfolgingsperiode: {}", oppfolgingsperiodeId)
+            return
+        }
+        oversiktenService.lagreStoppMeldingVedAvsluttOppfolging(AktorId(aktorId))
     }
 
     fun upsertOppfolgingsperiode(sisteOppfolgingsperiodeV1: SisteOppfolgingsperiodeV1) {
@@ -52,9 +58,6 @@ class OppfolgingsperiodeService(
         return oppfolgingClient.hentOppfolgingsperioder(aktorId).find { it.uuid.equals(oppfolgingsperiode) }
     }
 
-    fun hentOppfolgingsperiode(oppfolgingsperiodeId: UUID): Oppfolgingsperiode? {
-        return oppfolgingsperiodeDAO.getOppfolgingsperiode(oppfolgingsperiodeId)
-    }
 
     fun hentSak(oppfolgingsperiodeId: UUID): SakDTO? {
         return oppfolgingClient.hentSak(oppfolgingsperiodeId).orElseGet(null)
@@ -66,5 +69,9 @@ class OppfolgingsperiodeService(
 
     fun hentOppfolgingsPerioder(aktorId: AktorId): List<Oppfolgingsperiode> {
         return oppfolgingsperiodeDAO.getByAktorId(aktorId)
+    }
+
+    private fun hentOppfolgingsperiode(oppfolgingsperiodeId: UUID): Oppfolgingsperiode? {
+        return oppfolgingsperiodeDAO.getOppfolgingsperiode(oppfolgingsperiodeId)
     }
 }
