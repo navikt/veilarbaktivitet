@@ -6,6 +6,7 @@ import no.nav.veilarbaktivitet.oppfolging.client.MålDTO
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingClient
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO
 import no.nav.veilarbaktivitet.oppfolging.client.SakDTO
+import no.nav.veilarbaktivitet.oversikten.OversiktenService
 import no.nav.veilarbaktivitet.person.Person.AktorId
 import no.nav.veilarbaktivitet.person.Person.Fnr
 import org.slf4j.LoggerFactory
@@ -20,7 +21,8 @@ class OppfolgingsperiodeService(
     private val minsideVarselService: MinsideVarselService,
     private val sistePeriodeDAO: SistePeriodeDAO,
     private val oppfolgingsperiodeDAO: OppfolgingsperiodeDAO,
-    private val oppfolgingClient: OppfolgingClient
+    private val oppfolgingClient: OppfolgingClient,
+    private val oversiktenService: OversiktenService
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
@@ -28,10 +30,17 @@ class OppfolgingsperiodeService(
         val SLACK_FOER: Duration = Duration.ofDays(7)
     }
 
-    fun avsluttOppfolgingsperiode(oppfolgingsperiode: UUID, sluttDato: ZonedDateTime) {
-        log.info("avsluttOppfolgingsperiode: {}", oppfolgingsperiode)
-        minsideVarselService.setDoneGrupperingsID(oppfolgingsperiode)
-        aktivitetService.settAktiviteterTilHistoriske(oppfolgingsperiode, sluttDato)
+    fun avsluttOppfolgingsperiode(oppfolgingsperiodeId: UUID, sluttDato: ZonedDateTime) {
+        log.info("avsluttOppfolgingsperiode: {}", oppfolgingsperiodeId)
+        minsideVarselService.setDoneGrupperingsID(oppfolgingsperiodeId)
+        aktivitetService.settAktiviteterTilHistoriske(oppfolgingsperiodeId, sluttDato)
+
+        val aktorId = hentOppfolgingsperiode(oppfolgingsperiodeId)?.aktorid
+        if(aktorId == null) {
+            log.warn("Fant ikke aktorId for oppfolgingsperiode: {}", oppfolgingsperiodeId)
+            return
+        }
+        oversiktenService.lagreStoppMeldingVedAvsluttOppfolging(AktorId(aktorId))
     }
 
     fun upsertOppfolgingsperiode(sisteOppfolgingsperiodeV1: SisteOppfolgingsperiodeV1) {
@@ -49,6 +58,7 @@ class OppfolgingsperiodeService(
         return oppfolgingClient.hentOppfolgingsperioder(aktorId).find { it.uuid.equals(oppfolgingsperiode) }
     }
 
+
     fun hentSak(oppfolgingsperiodeId: UUID): SakDTO? {
         return oppfolgingClient.hentSak(oppfolgingsperiodeId).orElseGet(null)
     }
@@ -59,5 +69,9 @@ class OppfolgingsperiodeService(
 
     fun hentOppfolgingsPerioder(aktorId: AktorId): List<Oppfolgingsperiode> {
         return oppfolgingsperiodeDAO.getByAktorId(aktorId)
+    }
+
+    private fun hentOppfolgingsperiode(oppfolgingsperiodeId: UUID): Oppfolgingsperiode? {
+        return oppfolgingsperiodeDAO.getOppfolgingsperiode(oppfolgingsperiodeId)
     }
 }

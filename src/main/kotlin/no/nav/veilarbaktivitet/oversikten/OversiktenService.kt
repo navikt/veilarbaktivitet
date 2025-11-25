@@ -26,7 +26,7 @@ open class OversiktenService(
     @Scheduled(cron = "0 * * * * *") // Hvert minutt
     @SchedulerLock(name = "oversikten_melding_med_metadata_scheduledTask", lockAtMostFor = "PT3M")
     open fun sendUsendteMeldingerTilOversikten() {
-        val meldingerMedMetadata = oversiktenMeldingMedMetadataRepository.hentAlleSomSkalSendes()
+        val meldingerMedMetadata = oversiktenMeldingMedMetadataRepository.hentAlleSomSkalSendes().sortedBy { it.opprettet }
         if (meldingerMedMetadata.isNotEmpty()) {
             log.info("Sender ${meldingerMedMetadata.size} meldinger til oversikten")
         }
@@ -94,5 +94,16 @@ open class OversiktenService(
             operasjon = sluttmelding.operasjon,
         )
         oversiktenMeldingMedMetadataRepository.lagre(oversiktenMeldingMedMetadata)
+    }
+
+    fun lagreStoppMeldingVedAvsluttOppfolging(aktorId: AktorId) {
+        val fnr = aktorOppslagClient.hentFnr(no.nav.common.types.identer.AktorId.of(aktorId.get()))
+
+        val meldingerSomSkalAvsluttes =
+            oversiktenMeldingAktivitetMappingDao.hentAktivitetsIdForMeldingerSomSkalAvsluttes(fnr)
+
+        for (aktivitetId in meldingerSomSkalAvsluttes) {
+            lagreStoppMeldingOmUdeltSamtalereferatIUtboks(aktorId, aktivitetId)
+        }
     }
 }

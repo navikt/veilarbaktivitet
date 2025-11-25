@@ -1,6 +1,8 @@
 package no.nav.veilarbaktivitet.oversikten
 
+import no.nav.common.types.identer.Fnr
 import no.nav.veilarbaktivitet.aktivitet.AktivitetId
+import no.nav.veilarbaktivitet.person.Person
 import org.springframework.dao.EmptyResultDataAccessException
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
@@ -12,7 +14,11 @@ import java.util.*
 @Repository
 open class OversiktenMeldingAktivitetMappingDAO(private val template: NamedParameterJdbcTemplate) {
 
-    open fun lagreKoblingMellomOversiktenMeldingOgAktivitet(oversiktenMeldingKey: MeldingKey, aktivitetId: AktivitetId, kategori: OversiktenMelding.Kategori) {
+    open fun lagreKoblingMellomOversiktenMeldingOgAktivitet(
+        oversiktenMeldingKey: MeldingKey,
+        aktivitetId: AktivitetId,
+        kategori: OversiktenMelding.Kategori
+    ) {
         val sql = """
             insert into oversikten_melding_aktivitet_mapping (oversikten_melding_key, aktivitet_id, kategori)
             values (:oversiktenMeldingKey, :aktivitetId, :kategori::OVERSIKTEN_KATEGORI)
@@ -24,7 +30,7 @@ open class OversiktenMeldingAktivitetMappingDAO(private val template: NamedParam
         template.update(sql, params)
     }
 
-    open fun hentMeldingKeyForAktivitet(aktivitetId: AktivitetId, kategori: OversiktenMelding.Kategori) : UUID? {
+    open fun hentMeldingKeyForAktivitet(aktivitetId: AktivitetId, kategori: OversiktenMelding.Kategori): UUID? {
         val sql = """
         select oversikten_melding_key 
         from oversikten_melding_aktivitet_mapping
@@ -40,7 +46,31 @@ open class OversiktenMeldingAktivitetMappingDAO(private val template: NamedParam
         }
     }
 
-    open val rowMapper = RowMapper { rs: ResultSet, rowNum: Int ->
+    fun hentAktivitetsIdForMeldingerSomSkalAvsluttes(fnr: Fnr): List<AktivitetId> {
+        val sql = """
+            SELECT oma.aktivitet_id
+            FROM oversikten_melding_med_metadata omm
+                JOIN oversikten_melding_aktivitet_mapping oma ON omm.melding_key = oma.oversikten_melding_key
+            WHERE fnr = :fnr
+              AND utsending_status = 'SENDT'
+            GROUP BY oma.aktivitet_id
+            HAVING
+                        COUNT(*) FILTER (WHERE operasjon = 'START') = 1
+               AND COUNT(*) FILTER (WHERE operasjon = 'STOPP') = 0;
+    """.trimIndent()
+
+        val param = MapSqlParameterSource()
+            .addValue("fnr", fnr.toString())
+
+        return template.query(sql, param, aktivitetIdRowMapper)
+    }
+
+    val aktivitetIdRowMapper = RowMapper { rs: ResultSet, _: Int ->
+        rs.getLong("aktivitet_id")
+    }
+
+
+    val rowMapper = RowMapper { rs: ResultSet, _: Int ->
         rs.getObject("oversikten_melding_key", UUID::class.java)
     }
 }

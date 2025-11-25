@@ -51,4 +51,21 @@ open class OppfolgingsperiodeDAO(val jdbc: NamedParameterJdbcTemplate) {
             )
         }
     }
+
+    fun getOppfolgingsperiode(oppfolgingsperiodeId: UUID): Oppfolgingsperiode? {
+        val params = MapSqlParameterSource()
+            .addValue("id", oppfolgingsperiodeId.toString(), Types.VARCHAR)
+        val sql = """
+            SELECT * FROM oppfolgingsperiode WHERE id = :id
+        """.trimIndent()
+
+        return jdbc.query(sql, params) { row, _ ->
+            Oppfolgingsperiode(
+                row.getString("aktorid"),
+                UUID.fromString(row.getString("id")),
+                row.getTimestamp("fra").toLocalDateTime().atZone(ZoneOffset.systemDefault()),
+                row.getTimestamp("til")?.toLocalDateTime()?.atZone(ZoneOffset.systemDefault())
+            )
+        }.firstOrNull()
+    }
 }
