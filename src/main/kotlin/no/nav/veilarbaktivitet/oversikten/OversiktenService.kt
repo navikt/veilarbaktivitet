@@ -5,6 +5,8 @@ import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.json.JsonUtils
 import no.nav.common.utils.EnvironmentUtils
 import no.nav.veilarbaktivitet.aktivitet.AktivitetId
+import no.nav.veilarbaktivitet.oppfolging.periode.Oppfolgingsperiode
+import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeService
 import no.nav.veilarbaktivitet.oversikten.OversiktenMelding.Kategori.UDELT_SAMTALEREFERAT
 import no.nav.veilarbaktivitet.person.Person.AktorId
 import org.slf4j.LoggerFactory
@@ -17,7 +19,8 @@ open class OversiktenService(
     private val aktorOppslagClient: AktorOppslagClient,
     private val oversiktenMeldingMedMetadataRepository: OversiktenMeldingMedMetadataDAO,
     private val oversiktenMeldingAktivitetMappingDao: OversiktenMeldingAktivitetMappingDAO,
-    private val oversiktenProducer: OversiktenProducer
+    private val oversiktenProducer: OversiktenProducer,
+    private val oppfolgingsperiodeService: OppfolgingsperiodeService
 
 ) {
     private val log = LoggerFactory.getLogger(OversiktenService::class.java)
@@ -94,5 +97,20 @@ open class OversiktenService(
             operasjon = sluttmelding.operasjon,
         )
         oversiktenMeldingMedMetadataRepository.lagre(oversiktenMeldingMedMetadata)
+    }
+
+    fun lagreStoppMeldingVedAvsluttOppfolging(oppfolgingsperiodeId: UUID) {
+        val oppfolgingsperiode = oppfolgingsperiodeService.hentOppfolgingsperiode(oppfolgingsperiodeId)
+        if(oppfolgingsperiode == null) {
+            log.warn("Finner ikke oppfølgingsperiode med id $oppfolgingsperiodeId")
+            return
+        }
+
+        val aktorId = AktorId(oppfolgingsperiode.aktorid())
+        val fnr = aktorOppslagClient.hentFnr(no.nav.common.types.identer.AktorId.of(aktorId.get()))
+
+        val meldingerSomSkalAvsluttes = oversiktenMeldingAktivitetMappingDao.hentAktivitetsIdForMeldingerSomSkalAvsluttes(fnr)
+
+        lagreStoppMeldingOmUdeltSamtalereferatIUtboks(aktorId, aktivitetId)
     }
 }

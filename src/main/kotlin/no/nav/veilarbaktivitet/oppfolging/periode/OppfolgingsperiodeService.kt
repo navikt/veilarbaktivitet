@@ -6,6 +6,7 @@ import no.nav.veilarbaktivitet.oppfolging.client.MålDTO
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingClient
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO
 import no.nav.veilarbaktivitet.oppfolging.client.SakDTO
+import no.nav.veilarbaktivitet.oversikten.OversiktenService
 import no.nav.veilarbaktivitet.person.Person.AktorId
 import no.nav.veilarbaktivitet.person.Person.Fnr
 import org.slf4j.LoggerFactory
@@ -20,7 +21,8 @@ class OppfolgingsperiodeService(
     private val minsideVarselService: MinsideVarselService,
     private val sistePeriodeDAO: SistePeriodeDAO,
     private val oppfolgingsperiodeDAO: OppfolgingsperiodeDAO,
-    private val oppfolgingClient: OppfolgingClient
+    private val oppfolgingClient: OppfolgingClient,
+    private val oversiktenService: OversiktenService
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
@@ -32,6 +34,7 @@ class OppfolgingsperiodeService(
         log.info("avsluttOppfolgingsperiode: {}", oppfolgingsperiode)
         minsideVarselService.setDoneGrupperingsID(oppfolgingsperiode)
         aktivitetService.settAktiviteterTilHistoriske(oppfolgingsperiode, sluttDato)
+        oversiktenService.lagreStoppMeldingOmUdeltSamtalereferatIUtboks()
     }
 
     fun upsertOppfolgingsperiode(sisteOppfolgingsperiodeV1: SisteOppfolgingsperiodeV1) {
@@ -47,6 +50,10 @@ class OppfolgingsperiodeService(
 
     fun hentOppfolgingsperiode(aktorId: AktorId, oppfolgingsperiode: UUID): OppfolgingPeriodeMinimalDTO? {
         return oppfolgingClient.hentOppfolgingsperioder(aktorId).find { it.uuid.equals(oppfolgingsperiode) }
+    }
+
+    fun hentOppfolgingsperiode(oppfolgingsperiodeId: UUID): Oppfolgingsperiode? {
+        return oppfolgingsperiodeDAO.getOppfolgingsperiode(oppfolgingsperiodeId)
     }
 
     fun hentSak(oppfolgingsperiodeId: UUID): SakDTO? {
