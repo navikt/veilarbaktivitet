@@ -24,7 +24,7 @@ open class OversiktenService(
     private val erProd = EnvironmentUtils.isProduction().orElse(false)
 
     @Scheduled(cron = "0 * * * * *") // Hvert minutt
-    @SchedulerLock(name = "oversikten_melding_med_metadata_scheduledTask", lockAtMostFor = "PT15M")
+    @SchedulerLock(name = "oversikten_melding_med_metadata_scheduledTask", lockAtMostFor = "PT2M")
     open fun sendUsendteMeldingerTilOversikten() {
         val meldingerMedMetadata = oversiktenMeldingMedMetadataRepository.hentAlleSomSkalSendes().sortedBy { it.opprettet }
         if (meldingerMedMetadata.isNotEmpty()) {
@@ -38,7 +38,6 @@ open class OversiktenService(
             oversiktenMeldingMedMetadataRepository.markerSomSendt(meldingMedMetadata.id)
             meldingMedMetadata.fnr
         }
-        log.info("Ferdig med sending")
     }
 
     //    Brukt til å hente gamle udelte samtalereferater der det ikke allerede er sendt melding.
