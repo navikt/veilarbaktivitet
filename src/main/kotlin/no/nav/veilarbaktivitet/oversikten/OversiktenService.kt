@@ -23,7 +23,7 @@ open class OversiktenService(
     private val log = LoggerFactory.getLogger(OversiktenService::class.java)
     private val erProd = EnvironmentUtils.isProduction().orElse(false)
 
-    @Scheduled(cron = "0 * * * * *") // Hvert minutt
+//    @Scheduled(cron = "0 * * * * *") // Hvert minutt
     @SchedulerLock(name = "oversikten_melding_med_metadata_scheduledTask", lockAtMostFor = "PT3M")
     open fun sendUsendteMeldingerTilOversikten() {
         val meldingerMedMetadata = oversiktenMeldingMedMetadataRepository.hentAlleSomSkalSendes().sortedBy { it.opprettet }
@@ -43,13 +43,14 @@ open class OversiktenService(
     //    Brukt til å hente gamle udelte samtalereferater der det ikke allerede er sendt melding.
     //    Dette er en engangsjobb som ble kjørt i PROD 20.12.24 kl 13:50
     //    Koden skal stå inntil videre, i tilfelle det dukker opp noen bugs
-    //
-    //    @Scheduled(cron = "0 50 13 * * ?")
-    //    @SchedulerLock(name = "oversikten_melding_gamle_udelte_scheduledTask", lockAtMostFor = "PT15M")
+    //    Kjørt igjen 26.11.25 kl 13
+        @Scheduled(cron = "0 0 13 * * ?")
+        @SchedulerLock(name = "oversikten_melding_gamle_udelte_scheduledTask", lockAtMostFor = "PT15M")
     open fun sendAlleGamleUdelte() {
+        log.info("Starter henting av udelte samtalereferater i åpen periode")
         val alleUdelte =
-            oversiktenMeldingMedMetadataRepository.hentUdelteSamtalereferatDerViIkkeHarSendtMeldingTilOversikten()
-        log.info("antall udelte referat", alleUdelte.size)
+            oversiktenMeldingMedMetadataRepository.hentAlleUdelteSamtalereferaterIÅpenPeriode()
+        log.info("antall udelte referat i åpen periode: ", alleUdelte.size)
         alleUdelte.forEach {
             lagreStartMeldingOmUdeltSamtalereferatIUtboks(AktorId(it.aktorId.get()), it.aktivitetId)
         }

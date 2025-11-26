@@ -61,7 +61,7 @@ open class OversiktenMeldingMedMetadataDAO(
         jdbc.update(sql, params)
     }
 
-    open fun hent(id : Long) : LagretOversiktenMeldingMedMetadata? {
+    open fun hent(id: Long): LagretOversiktenMeldingMedMetadata? {
         val sql = """
             SELECT * FROM oversikten_melding_med_metadata WHERE id = :id
         """.trimIndent()
@@ -109,7 +109,27 @@ open class OversiktenMeldingMedMetadataDAO(
         """.trimIndent()
 
         return jdbc.query(sql) { rs: ResultSet, rowNum: Int ->
-           UdeltSamtalereferatUtenMelding(AktorId.of(rs.getString("aktor_id")), rs.getLong("aktivitet_id"))
+            UdeltSamtalereferatUtenMelding(AktorId.of(rs.getString("aktor_id")), rs.getLong("aktivitet_id"))
+        }
+    }
+
+    open fun hentAlleUdelteSamtalereferaterIÅpenPeriode(): List<UdeltSamtalereferatUtenMelding> {
+        val sql = """
+            SELECT
+                a.aktivitet_id,
+                a.aktor_id
+            FROM aktivitet a
+            LEFT JOIN mote m
+            on m.aktivitet_id = a.aktivitet_id and m.versjon = a.versjon
+            where m.referat is not null
+              and m.referat_publisert = 0
+              and a.gjeldende =  1 
+              and a.historisk_dato is null 
+
+        """.trimIndent()
+
+        return jdbc.query(sql) { rs: ResultSet, rowNum: Int ->
+            UdeltSamtalereferatUtenMelding(AktorId.of(rs.getString("aktor_id")), rs.getLong("aktivitet_id"))
         }
     }
 
