@@ -8,6 +8,7 @@ import no.nav.veilarbaktivitet.aktivitet.AktivitetId
 import no.nav.veilarbaktivitet.oversikten.OversiktenMelding.Kategori.UDELT_SAMTALEREFERAT
 import no.nav.veilarbaktivitet.person.Person.AktorId
 import org.slf4j.LoggerFactory
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import java.util.*
 
@@ -43,8 +44,8 @@ open class OversiktenService(
     //    Dette er en engangsjobb som ble kjørt i PROD 20.12.24 kl 13:50
     //    Koden skal stå inntil videre, i tilfelle det dukker opp noen bugs
     //
-    //    @Scheduled(cron = "0 50 13 * * ?")
-    //    @SchedulerLock(name = "oversikten_melding_gamle_udelte_scheduledTask", lockAtMostFor = "PT15M")
+        @Scheduled(cron = "0 37 12 * * ?")
+        @SchedulerLock(name = "oversikten_melding_gamle_udelte_scheduledTask", lockAtMostFor = "PT15M")
     open fun sendAlleGamleUdelte() {
         val alleUdelte =
             oversiktenMeldingMedMetadataRepository.hentAlleUdelteSamtalereferaterIÅpenPeriode()
