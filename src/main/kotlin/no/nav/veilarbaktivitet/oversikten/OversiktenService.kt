@@ -43,10 +43,11 @@ open class OversiktenService(
     //    Brukt til å hente gamle udelte samtalereferater der det ikke allerede er sendt melding.
     //    Dette er en engangsjobb som ble kjørt i PROD 20.12.24 kl 13:50
     //    Koden skal stå inntil videre, i tilfelle det dukker opp noen bugs
-    //
-        @Scheduled(cron = "0 37 12 * * ?")
+    //    Kjørt igjen 26.11.25 kl 13
+        @Scheduled(cron = "0 0 13 * * ?")
         @SchedulerLock(name = "oversikten_melding_gamle_udelte_scheduledTask", lockAtMostFor = "PT15M")
     open fun sendAlleGamleUdelte() {
+        log.info("Starter henting av udelte samtalereferater i åpen periode")
         val alleUdelte =
             oversiktenMeldingMedMetadataRepository.hentAlleUdelteSamtalereferaterIÅpenPeriode()
         log.info("antall udelte referat i åpen periode: ", alleUdelte.size)
