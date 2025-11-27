@@ -56,6 +56,17 @@ open class OversiktenService(
         }
     }
 
+        @Scheduled(cron = "0 26 10 * * ?")
+        @SchedulerLock(name = "oversikten_melding_gamle_udelte_scheduledTask", lockAtMostFor = "PT15M")
+    open fun sendStoppMeldingPåAlleUdelteSamtalereferatIAvbruttAktivitet() {
+        log.info("Starter henting av udelte samtalereferater i avbrutt aktivitet")
+        val alleUdelte = oversiktenMeldingMedMetadataRepository.hentAlleUdelteSamtalereferaterIAvbruttAktivitet()
+        log.info("antall udelte referat i avbrutt periode: ", alleUdelte.size)
+        alleUdelte.forEach {
+            lagreStoppMeldingOmUdeltSamtalereferatIUtboks(AktorId(it.aktorId.get()), it.aktivitetId)
+        }
+    }
+
     open fun lagreStartMeldingOmUdeltSamtalereferatIUtboks(aktorId: AktorId, aktivitetId: AktivitetId) {
         val fnr = aktorOppslagClient.hentFnr(no.nav.common.types.identer.AktorId.of(aktorId.get()))
         val melding =
