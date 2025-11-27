@@ -6,6 +6,7 @@ import no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavService;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.oppfolging.periode.IngenGjeldendePeriodeException;
 import no.nav.veilarbaktivitet.oppfolging.periode.SistePeriodeService;
+import no.nav.veilarbaktivitet.oversikten.OversiktenService;
 import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.stilling_fra_nav.CvKanDelesData;
@@ -34,6 +35,7 @@ public class AktivitetService {
     private final AvtaltMedNavService avtaltMedNavService;
     private final MetricService metricService;
     private final SistePeriodeService sistePeriodeService;
+    private final OversiktenService oversiktenService;
 
     public List<AktivitetData> hentAktiviteterForAktorId(Person.AktorId aktorId) {
         var aktiviteter = aktivitetDAO.hentAktiviteterForAktorId(aktorId);
@@ -98,6 +100,9 @@ public class AktivitetService {
 
         if(nyAktivitet.getStatus() == AktivitetStatus.AVBRUTT || nyAktivitet.getStatus() == AktivitetStatus.FULLFORT){
             avtaltMedNavService.settVarselFerdig(originalAktivitet.getFhoId());
+        }
+        if(nyAktivitet.getStatus() == AktivitetStatus.AVBRUTT){
+            oversiktenService.lagreStoppMeldingOmUdeltSamtalereferatIUtboks(nyAktivitet.getAktorId(), nyAktivitet.getId());
         }
         return aktivitetDAO.oppdaterAktivitet(nyAktivitet);
     }

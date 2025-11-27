@@ -8,6 +8,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavService;
 import no.nav.veilarbaktivitet.kvp.v2.KvpV2DTO;
 import no.nav.veilarbaktivitet.oppfolging.periode.SistePeriodeService;
+import no.nav.veilarbaktivitet.oversikten.OversiktenService;
 import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import org.joda.time.LocalDateTime;
@@ -53,6 +54,9 @@ class AktivitetServiceTest {
     @Mock
     private SistePeriodeService sistePeriodeService;
 
+    @Mock
+    private OversiktenService oversiktenService;
+
     @Captor
     private ArgumentCaptor<AktivitetData> argumentCaptor;
 
@@ -60,7 +64,7 @@ class AktivitetServiceTest {
 
     @BeforeEach
     public void setup() {
-        aktivitetService = new AktivitetService(aktivitetDAO, avtaltMedNavService, metricService, sistePeriodeService);
+        aktivitetService = new AktivitetService(aktivitetDAO, avtaltMedNavService, metricService, sistePeriodeService, oversiktenService);
     }
 
     @Test

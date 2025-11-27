@@ -56,8 +56,8 @@ open class OversiktenService(
         }
     }
 
-        @Scheduled(cron = "0 19 11 * * ?")
-        @SchedulerLock(name = "oversikten_melding_gamle_udelte_scheduledTask", lockAtMostFor = "PT15M")
+//        @Scheduled(cron = "0 19 11 * * ?")
+//        @SchedulerLock(name = "oversikten_melding_gamle_udelte_scheduledTask", lockAtMostFor = "PT15M")
     open fun sendStoppMeldingPåAlleUdelteSamtalereferatIAvbruttAktivitet() {
         log.info("Starter henting av udelte samtalereferater i avbrutt aktivitet")
         val alleUdelte = oversiktenMeldingMedMetadataRepository.hentAlleUdelteSamtalereferaterIAvbruttAktivitet()
