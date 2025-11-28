@@ -249,7 +249,7 @@ public class AktivitetAppService {
 
         var oppdatertAktivitet = aktivitetService.oppdaterReferat(originalAktivitet, aktivitet);
 
-        var maybeEventType = hentEventType(originalAktivitet, aktivitet);
+        var maybeEventType = hentEventTypeForReferat(originalAktivitet, aktivitet);
         maybeEventType.ifPresent(eventType -> {
             bigQueryClient.logEvent(oppdatertAktivitet, eventType);
             sendMeldingTilOversikten(oppdatertAktivitet, eventType);
@@ -265,13 +265,11 @@ public class AktivitetAppService {
         }
     }
 
-    private Optional<EventType> hentEventType(AktivitetData originalAktivitet, AktivitetData oppdatertAktivitet) {
-        var forrigeReferat = Optional.ofNullable(originalAktivitet.getMoteData()).map(it -> it.getReferat()).orElse(null);
+    private Optional<EventType> hentEventTypeForReferat(AktivitetData originalAktivitet, AktivitetData oppdatertAktivitet) {
+        var forrigeReferat = Optional.ofNullable(originalAktivitet.getMoteData()).map(it -> it.getReferat()).orElse("");
         var nesteReferat = Optional.ofNullable(oppdatertAktivitet.getMoteData()).map(it -> it.getReferat()).orElse("");
 
-        /* Hvis samtalereferatet har fått innhold men det hviskes bort så vil forreigeReferat være "",
-        * i samtalereferat er feltet referat obligatoprisk, dvs ikke sjekk mot null ikke isEmpty her */
-        var referatHarNåFåttInnhold = forrigeReferat == null && !nesteReferat.isEmpty();
+        var referatHarNåFåttInnhold = forrigeReferat.isEmpty() && !nesteReferat.isEmpty();
         var referatHarNåBlittDeltMedBruker = !originalAktivitet.getMoteData().isReferatPublisert() && oppdatertAktivitet.getMoteData().isReferatPublisert();
 
         if (referatHarNåFåttInnhold && !referatHarNåBlittDeltMedBruker) {
