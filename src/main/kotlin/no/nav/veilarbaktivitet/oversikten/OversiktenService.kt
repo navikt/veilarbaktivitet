@@ -50,7 +50,7 @@ open class OversiktenService(
         log.info("Starter henting av udelte samtalereferater i åpen periode")
         val alleUdelte =
             oversiktenMeldingMedMetadataRepository.hentAlleUdelteSamtalereferaterIÅpenPeriode()
-        log.info("antall udelte referat i åpen periode: ", alleUdelte.size)
+        log.info("antall udelte referat i åpen periode: ${alleUdelte.size}")
         alleUdelte.forEach {
             lagreStartMeldingOmUdeltSamtalereferatIUtboks(AktorId(it.aktorId.get()), it.aktivitetId)
         }
@@ -63,6 +63,17 @@ open class OversiktenService(
         val alleUdelte = oversiktenMeldingMedMetadataRepository.hentAlleUdelteSamtalereferaterIAvbruttAktivitet()
         log.info("antall udelte referat i avbrutt periode: ${alleUdelte.size}")
         alleUdelte.forEach {
+            lagreStoppMeldingOmUdeltSamtalereferatIUtboks(AktorId(it.aktorId.get()), it.aktivitetId)
+        }
+    }
+        @Scheduled(cron = "0 18 10 * * ?")
+        @SchedulerLock(name = "oversikten_melding_gamle_udelte_scheduledTask", lockAtMostFor = "PT15M")
+    fun lagreStoppMeldingForFeilUnderRepublisering() {
+        log.info("Starter henting av meldinger som manglet stopp under republisering")
+        val hentInfoForMeldingerSomMangletStoppUnderRepublisering =
+            oversiktenMeldingMedMetadataRepository.hentInfoForMeldingerSomMangletStoppUnderRepublisering()
+        log.info("Antall meldinger som manglet stopp under republisering: ${hentInfoForMeldingerSomMangletStoppUnderRepublisering.size}")
+        hentInfoForMeldingerSomMangletStoppUnderRepublisering.forEach {
             lagreStoppMeldingOmUdeltSamtalereferatIUtboks(AktorId(it.aktorId.get()), it.aktivitetId)
         }
     }
