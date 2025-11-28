@@ -101,10 +101,17 @@ public class AktivitetService {
         if(nyAktivitet.getStatus() == AktivitetStatus.AVBRUTT || nyAktivitet.getStatus() == AktivitetStatus.FULLFORT){
             avtaltMedNavService.settVarselFerdig(originalAktivitet.getFhoId());
         }
-        if(nyAktivitet.getStatus() == AktivitetStatus.AVBRUTT){
+
+        if(erAvbruttMoteEllerSamtalereferat(nyAktivitet)){
             oversiktenService.lagreStoppMeldingOmUdeltSamtalereferatIUtboks(nyAktivitet.getAktorId(), nyAktivitet.getId());
         }
         return aktivitetDAO.oppdaterAktivitet(nyAktivitet);
+    }
+
+    private boolean erAvbruttMoteEllerSamtalereferat(AktivitetData aktivitet){
+        return (aktivitet.getAktivitetType() == AktivitetTypeData.MOTE ||
+                aktivitet.getAktivitetType() == AktivitetTypeData.SAMTALEREFERAT) &&
+                aktivitet.getStatus() == AktivitetStatus.AVBRUTT;
     }
 
     public AktivitetData avsluttStillingFraNav(AktivitetData originalAktivitet, Ident endretAv) {
