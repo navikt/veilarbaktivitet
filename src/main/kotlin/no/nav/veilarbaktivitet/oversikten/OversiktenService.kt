@@ -66,17 +66,6 @@ open class OversiktenService(
             lagreStoppMeldingOmUdeltSamtalereferatIUtboks(AktorId(it.aktorId.get()), it.aktivitetId)
         }
     }
-        @Scheduled(cron = "0 18 10 * * ?")
-        @SchedulerLock(name = "oversikten_melding_gamle_udelte_scheduledTask", lockAtMostFor = "PT15M")
-    fun lagreStoppMeldingForFeilUnderRepublisering() {
-        log.info("Starter henting av meldinger som manglet stopp under republisering")
-        val hentInfoForMeldingerSomMangletStoppUnderRepublisering =
-            oversiktenMeldingMedMetadataRepository.hentInfoForMeldingerSomMangletStoppUnderRepublisering()
-        log.info("Antall meldinger som manglet stopp under republisering: ${hentInfoForMeldingerSomMangletStoppUnderRepublisering.size}")
-        hentInfoForMeldingerSomMangletStoppUnderRepublisering.forEach {
-            lagreStoppMeldingOmUdeltSamtalereferatIUtboks(AktorId(it.aktorId.get()), it.aktivitetId)
-        }
-    }
 
     open fun lagreStartMeldingOmUdeltSamtalereferatIUtboks(aktorId: AktorId, aktivitetId: AktivitetId) {
         val fnr = aktorOppslagClient.hentFnr(no.nav.common.types.identer.AktorId.of(aktorId.get()))
