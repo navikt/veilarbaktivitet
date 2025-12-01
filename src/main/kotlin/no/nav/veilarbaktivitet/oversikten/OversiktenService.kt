@@ -87,16 +87,15 @@ open class OversiktenService(
     }
 
     open fun lagreStoppMeldingOmUdeltSamtalereferatIUtboks(aktorId: AktorId, aktivitetId: AktivitetId) {
+        val meldingKey = oversiktenMeldingAktivitetMappingDao.hentMeldingKeyForAktivitet(aktivitetId, UDELT_SAMTALEREFERAT)
+        if (meldingKey == null) {
+            log.info("Ikke behov for stopp-melding for aktivitet med id $aktivitetId og kategori $UDELT_SAMTALEREFERAT")
+            return
+        }
+
         val fnr = aktorOppslagClient.hentFnr(no.nav.common.types.identer.AktorId.of(aktorId.get()))
         val sluttmelding =
             OversiktenMelding.forUdeltSamtalereferat(fnr.toString(), OversiktenMelding.Operasjon.STOPP, erProd)
-        val meldingKey =
-            oversiktenMeldingAktivitetMappingDao.hentMeldingKeyForAktivitet(aktivitetId, UDELT_SAMTALEREFERAT)
-
-        if (meldingKey == null) {
-            log.warn("Finner ikke meldingKey for aktivitet med id $aktivitetId og kategori $UDELT_SAMTALEREFERAT")
-            return
-        }
 
         val oversiktenMeldingMedMetadata = OversiktenMeldingMedMetadata(
             meldingSomJson = JsonUtils.toJson(sluttmelding),
