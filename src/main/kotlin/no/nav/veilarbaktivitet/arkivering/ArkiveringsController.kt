@@ -54,9 +54,10 @@ class ArkiveringsController(
 
     @GetMapping("/forhaandsvisning")
     @AuthorizeFnr(auditlogMessage = "lag forhåndsvisning av aktivitetsplan og dialog", resourceType = OppfolgingsperiodeResource::class, resourceIdParamName = "oppfolgingsperiodeId")
-    fun forhaandsvisAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID): ForhaandsvisningOutboundDTO {
+    fun forhaandsvisAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID, @RequestBody filtrering: Filter?): ForhaandsvisningOutboundDTO {
         val dataHentet = ZonedDateTime.now()
         val arkiveringsdata = hentArkiveringsData(oppfølgingsperiodeId)
+
         val forhåndsvisningPayload = mapTilForhåndsvisningsPayload(arkiveringsdata)
 
         val timedForhaandsvisningResultat = measureTimedValue {
@@ -189,4 +190,14 @@ class ArkiveringsController(
     data class JournalførtOutboundDTO(
         val sistJournalført: LocalDateTime
     )
+
+    data class Filter(
+        val inkluderHistorikk: Boolean,
+        val avtaltMedNav: AvtaltMedNav? = null,
+    )
+
+    enum class AvtaltMedNav {
+        AVTALT_MED_NAV,
+        IKKE_AVTALT_MED_NAV
+    }
 }
