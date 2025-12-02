@@ -1,5 +1,7 @@
 package no.nav.veilarbaktivitet.arkivering
 
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
+
 fun filtrerArkiveringsData(arkiveringsData: ArkiveringsController.ArkiveringsData, filter: ArkiveringsController.Filter): ArkiveringsController.ArkiveringsData {
     return arkiveringsData
         .filtrerPåHistorikk(filter)
@@ -15,10 +17,16 @@ private fun ArkiveringsController.ArkiveringsData.filtrerPåHistorikk(filter: Ar
 }
 
 private fun ArkiveringsController.ArkiveringsData.filtrerPåAvtaltMedNavn(filter: ArkiveringsController.Filter): ArkiveringsController.ArkiveringsData {
-    val aktiviteter = when (filter.avtaltMedNav) {
-        ArkiveringsController.AvtaltMedNav.AVTALT_MED_NAV -> this.aktiviteter.filter { it.isAvtalt }
-        ArkiveringsController.AvtaltMedNav.IKKE_AVTALT_MED_NAV -> this.aktiviteter.filter { !it.isAvtalt}
-        null -> this.aktiviteter
+    if (filter.aktivitetAvtaltMedNav.isEmpty()) return this
+
+    val predikater = ArkiveringsController.AvtaltMedNav.entries.map {
+        when (it) {
+            ArkiveringsController.AvtaltMedNav.AVTALT_MED_NAV -> { aktivitetData: AktivitetData -> aktivitetData.isAvtalt }
+            ArkiveringsController.AvtaltMedNav.IKKE_AVTALT_MED_NAV -> { aktivitetData: AktivitetData -> !aktivitetData.isAvtalt }
+        }
     }
-    return this.copy(aktiviteter = aktiviteter)
+    val filtrerteAktiviteter = this.aktiviteter.filter { aktivitetData ->
+        predikater.any { it(aktivitetData) }
+    }
+    return this.copy(aktiviteter = filtrerteAktiviteter)
 }

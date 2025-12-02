@@ -215,7 +215,7 @@ class ArkiveringsController(
 
     data class Filter(
         val inkluderHistorikk: Boolean,
-        val avtaltMedNav: AvtaltMedNav? = null,
+        val aktivitetAvtaltMedNav: Set<AvtaltMedNav>
     )
 
     enum class AvtaltMedNav {
