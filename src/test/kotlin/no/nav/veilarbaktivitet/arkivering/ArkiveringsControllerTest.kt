@@ -73,7 +73,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         // When
         val forhaandsvisning = veileder
             .createRequest(bruker)
-            .get(arkiveringsUrl)
+            .post(arkiveringsUrl)
             .then()
             .assertThat()
             .statusCode(HttpStatus.OK.value())
@@ -439,7 +439,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             "http://localhost:$port/veilarbaktivitet/api/arkivering/forhaandsvisning?oppfolgingsperiodeId=$oppfølgingsperiodeForArkivering&journalforendeEnhet=0909"
         veileder
             .createRequest(bruker)
-            .get(arkiveringsUrl)
+            .post(arkiveringsUrl)
 
         val journalforingsrequest =
             wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/forhaandsvisning") }.first()
@@ -849,7 +849,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
 
         veileder
             .createRequest(bruker)
-            .get(arkiveringsUrl)
+            .post(arkiveringsUrl)
             .then()
             .assertThat()
             .statusCode(HttpStatus.FORBIDDEN.value())

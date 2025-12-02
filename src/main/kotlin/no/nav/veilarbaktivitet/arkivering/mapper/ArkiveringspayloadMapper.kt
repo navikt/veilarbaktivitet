@@ -63,7 +63,7 @@ object ArkiveringspayloadMapper {
         val arkivAktiviteter = aktiviteter.map {
             it.toArkivPayload(
                 dialogtråd = dialogTilhørendeAktiviteten(aktivitetDialoger, it.id.toString()),
-                historikk = historikkForAktiviteter[it.id] ?: throw RuntimeException("Fant ikke historikk på aktivitet med id ${it.id}")
+                historikk = historikkForAktiviteter[it.id] ?: Historikk(emptyList())
             )
         }
 
