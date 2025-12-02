@@ -54,11 +54,33 @@ class ArkiveringsController(
 
     @GetMapping("/forhaandsvisning")
     @AuthorizeFnr(auditlogMessage = "lag forhåndsvisning av aktivitetsplan og dialog", resourceType = OppfolgingsperiodeResource::class, resourceIdParamName = "oppfolgingsperiodeId")
-    fun forhaandsvisAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID, @RequestBody filtrering: Filter?): ForhaandsvisningOutboundDTO {
+    fun forhaandsvisAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID): ForhaandsvisningOutboundDTO {
         val dataHentet = ZonedDateTime.now()
         val arkiveringsdata = hentArkiveringsData(oppfølgingsperiodeId)
 
         val forhåndsvisningPayload = mapTilForhåndsvisningsPayload(arkiveringsdata)
+
+        val timedForhaandsvisningResultat = measureTimedValue {
+            orkivarClient.hentPdfForForhaandsvisning(forhåndsvisningPayload)
+        }
+        logger.info("Henting av PDF tok ${timedForhaandsvisningResultat.duration.inWholeMilliseconds} ms")
+        val forhaandsvisningResultat = timedForhaandsvisningResultat.value
+
+        return ForhaandsvisningOutboundDTO(
+            forhaandsvisningResultat.pdf,
+            dataHentet,
+            forhaandsvisningResultat.sistJournalført
+        )
+    }
+
+
+    @PostMapping("/forhaandsvisning")
+    @AuthorizeFnr(auditlogMessage = "lag forhåndsvisning av aktivitetsplan og dialog", resourceType = OppfolgingsperiodeResource::class, resourceIdParamName = "oppfolgingsperiodeId")
+    fun forhaandsvisAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID, @RequestBody filter: Filter?): ForhaandsvisningOutboundDTO {
+        val dataHentet = ZonedDateTime.now()
+        val arkiveringsdata = hentArkiveringsData(oppfølgingsperiodeId)
+        val filtrertArkiveringsdata = if (filter != null) filtrerArkiveringsData(arkiveringsdata, filter) else arkiveringsdata
+        val forhåndsvisningPayload = mapTilForhåndsvisningsPayload(filtrertArkiveringsdata)
 
         val timedForhaandsvisningResultat = measureTimedValue {
             orkivarClient.hentPdfForForhaandsvisning(forhåndsvisningPayload)
