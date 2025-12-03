@@ -1,15 +1,17 @@
 package no.nav.veilarbaktivitet.arkivering
 
 import no.nav.veilarbaktivitet.aktivitet.Historikk
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData
 import no.nav.veilarbaktivitet.oppfolging.client.MålDTO
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO
 import no.nav.veilarbaktivitet.person.Navn
 import no.nav.veilarbaktivitet.person.Person.fnr
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder
+import no.nav.veilarbaktivitet.testutils.AktivitetTypeDataTestBuilder
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.time.ZonedDateTime
-import java.util.UUID
+import java.util.*
 
 class ArkiveringsFiltrererTest {
 
@@ -35,7 +37,7 @@ class ArkiveringsFiltrererTest {
             AktivitetDataTestBuilder.nyAktivitet().avtalt(true).build(),
             AktivitetDataTestBuilder.nyAktivitet().avtalt(false).build(),
         ))
-        val tomtFilter = defaultFilter.copy(aktivitetAvtaltMedNav = emptyList())
+        val tomtFilter = defaultFilter.copy(aktivitetAvtaltMedNavFilter = emptyList())
         val filtrertData = filtrerArkiveringsData(arkiveringsData, tomtFilter)
         assertThat(filtrertData.aktiviteter).hasSize(2)
     }
@@ -46,7 +48,7 @@ class ArkiveringsFiltrererTest {
             AktivitetDataTestBuilder.nyAktivitet().avtalt(true).build(),
             AktivitetDataTestBuilder.nyAktivitet().avtalt(false).build(),
         ))
-        val filter = defaultFilter.copy(aktivitetAvtaltMedNav = listOf(ArkiveringsController.AvtaltMedNav.AVTALT_MED_NAV))
+        val filter = defaultFilter.copy(aktivitetAvtaltMedNavFilter = listOf(ArkiveringsController.AvtaltMedNavFilter.AVTALT_MED_NAV))
         val filtrertData = filtrerArkiveringsData(arkiveringsData, filter)
         assertThat(filtrertData.aktiviteter).hasSize(1)
         assertThat(filtrertData.aktiviteter.first().isAvtalt).isTrue()
@@ -58,7 +60,18 @@ class ArkiveringsFiltrererTest {
             AktivitetDataTestBuilder.nyAktivitet().avtalt(true).build(),
             AktivitetDataTestBuilder.nyAktivitet().avtalt(false).build(),
         ))
-        val filter = defaultFilter.copy(aktivitetAvtaltMedNav = listOf(ArkiveringsController.AvtaltMedNav.IKKE_AVTALT_MED_NAV))
+        val filter = defaultFilter.copy(aktivitetAvtaltMedNavFilter = listOf(ArkiveringsController.AvtaltMedNavFilter.IKKE_AVTALT_MED_NAV))
+        val filtrertData = filtrerArkiveringsData(arkiveringsData, filter)
+        assertThat(filtrertData.aktiviteter).hasSize(1)
+        assertThat(filtrertData.aktiviteter.first().isAvtalt).isFalse()
+    }
+
+    @Test
+    fun `Skal kunne filtrere på stillingsstatus`() {
+        val arkiveringsData = defaultArkiveringsData.copy(aktiviteter = listOf(
+
+        ))
+        val filter = defaultFilter.copy(aktivitetAvtaltMedNavFilter = listOf(ArkiveringsController.AvtaltMedNavFilter.IKKE_AVTALT_MED_NAV))
         val filtrertData = filtrerArkiveringsData(arkiveringsData, filter)
         assertThat(filtrertData.aktiviteter).hasSize(1)
         assertThat(filtrertData.aktiviteter.first().isAvtalt).isFalse()
@@ -66,7 +79,8 @@ class ArkiveringsFiltrererTest {
 
     val defaultFilter = ArkiveringsController.Filter(
         inkluderHistorikk = true,
-        aktivitetAvtaltMedNav = emptyList()
+        aktivitetAvtaltMedNavFilter = emptyList(),
+        stillingsstatusFilter = emptyList()
     )
 
     val defaultArkiveringsData = ArkiveringsController.ArkiveringsData(
