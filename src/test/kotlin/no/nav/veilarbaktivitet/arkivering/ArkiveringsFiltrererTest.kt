@@ -1,11 +1,14 @@
 package no.nav.veilarbaktivitet.arkivering
 
 import no.nav.veilarbaktivitet.aktivitet.Historikk
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData
 import no.nav.veilarbaktivitet.oppfolging.client.MålDTO
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO
 import no.nav.veilarbaktivitet.person.Navn
 import no.nav.veilarbaktivitet.person.Person.fnr
+import no.nav.veilarbaktivitet.stilling_fra_nav.Soknadsstatus
+import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder
 import no.nav.veilarbaktivitet.testutils.AktivitetTypeDataTestBuilder
 import org.assertj.core.api.Assertions.assertThat
@@ -69,12 +72,15 @@ class ArkiveringsFiltrererTest {
     @Test
     fun `Skal kunne filtrere på stillingsstatus`() {
         val arkiveringsData = defaultArkiveringsData.copy(aktiviteter = listOf(
-
+            AktivitetDataTestBuilder.nyStillingFraNav().withStillingFraNavData(StillingFraNavData.builder().soknadsstatus(
+                Soknadsstatus.CV_DELT).build()),
+                    AktivitetDataTestBuilder.nyStillingFraNav().withStillingFraNavData(StillingFraNavData.builder().soknadsstatus(
+                Soknadsstatus.FATT_JOBBEN).build())
         ))
-        val filter = defaultFilter.copy(aktivitetAvtaltMedNavFilter = listOf(ArkiveringsController.AvtaltMedNavFilter.IKKE_AVTALT_MED_NAV))
+        val filter = defaultFilter.copy(stillingsstatusFilter = listOf(Soknadsstatus.FATT_JOBBEN))
         val filtrertData = filtrerArkiveringsData(arkiveringsData, filter)
         assertThat(filtrertData.aktiviteter).hasSize(1)
-        assertThat(filtrertData.aktiviteter.first().isAvtalt).isFalse()
+        assertThat(filtrertData.aktiviteter.first().stillingFraNavData.soknadsstatus).isEqualTo(Soknadsstatus.FATT_JOBBEN)
     }
 
     val defaultFilter = ArkiveringsController.Filter(
