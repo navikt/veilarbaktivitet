@@ -12,6 +12,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData.SAMTALEREFERAT
 import no.nav.veilarbaktivitet.arena.ArenaService
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO
+import no.nav.veilarbaktivitet.arena.model.ArenaStatusEtikettDTO
 import no.nav.veilarbaktivitet.arkivering.mapper.ArkiveringspayloadMapper.mapTilArkivPayload
 import no.nav.veilarbaktivitet.arkivering.mapper.ArkiveringspayloadMapper.mapTilForhåndsvisningsPayload
 import no.nav.veilarbaktivitet.config.OppfolgingsperiodeResource
@@ -22,7 +23,6 @@ import no.nav.veilarbaktivitet.person.EksternNavnService
 import no.nav.veilarbaktivitet.person.Navn
 import no.nav.veilarbaktivitet.person.Person.Fnr
 import no.nav.veilarbaktivitet.person.UserInContext
-import no.nav.veilarbaktivitet.stilling_fra_nav.Soknadsstatus
 import no.nav.veilarbaktivitet.util.DateUtils
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
@@ -219,6 +219,8 @@ class ArkiveringsController(
         val inkluderHistorikk: Boolean,
         val aktivitetAvtaltMedNavFilter: List<AvtaltMedNavFilter>,
         val stillingsstatusFilter: List<SøknadsstatusFilter>,
+        val arenaAktivitetStatusFilter: List<ArenaStatusEtikettDTO>,
+        val aktivitetTypeFilter: List<AktivitetTypeFilter>
     )
 
     enum class AvtaltMedNavFilter {
@@ -237,5 +239,29 @@ class ArkiveringsController(
         SOKNAD_SENDT,
         VENTER,
         FATT_JOBBEN
+    }
+
+    enum class AktivitetTypeFilter {
+        ARENA_TILTAK,
+        BEHANDLING,
+        EGEN,
+        GRUPPEAKTIVITET,
+        IJOBB,
+        MOTE,
+        SAMTALEREFERAT,
+        SOKEAVTALE,
+        STILLING,
+        STILLING_FRA_NAV,
+        TILTAKSAKTIVITET,
+        UTDANNINGSAKTIVITET,
+        MIDLERTIDIG_LONNSTILSKUDD,
+        VARIG_LONNSTILSKUDD,
+        ARBEIDSTRENING,
+        VARIG_TILRETTELAGT_ARBEID_I_ORDINAER_VIRKSOMHET,
+        MENTOR,
+        REKRUTTERINGSTREFF,
+        ENKELAMO,
+        ENKFAGYRKE,
+        HOYEREUTD,
     }
 }
