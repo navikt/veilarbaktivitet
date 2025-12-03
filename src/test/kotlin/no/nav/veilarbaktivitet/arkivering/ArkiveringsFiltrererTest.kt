@@ -69,7 +69,7 @@ class ArkiveringsFiltrererTest {
     }
 
     @Test
-    fun `Skal kunne filtrere på ikkeaAvtaltMedNav`() {
+    fun `Skal kunne filtrere på ikkeAvtaltMedNav`() {
         val arkiveringsData = defaultArkiveringsData.copy(
             aktiviteter = listOf(
                 AktivitetDataTestBuilder.nyAktivitet().avtalt(true).build(),
@@ -189,6 +189,7 @@ class ArkiveringsFiltrererTest {
         stillingsstatusFilter = emptyList(),
         arenaAktivitetStatusFilter = emptyList(),
         aktivitetTypeFilter = emptyList(),
+        inkluderAktiviteterIKvpPeriode = false,
     )
 
     val defaultArkiveringsData = ArkiveringsController.ArkiveringsData(
