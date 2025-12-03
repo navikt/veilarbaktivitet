@@ -3,6 +3,8 @@ package no.nav.veilarbaktivitet.arkivering
 import no.nav.veilarbaktivitet.aktivitet.Historikk
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData
+import no.nav.veilarbaktivitet.aktivitet.domain.StillingsoekAktivitetData
+import no.nav.veilarbaktivitet.aktivitet.domain.StillingsoekEtikettData
 import no.nav.veilarbaktivitet.oppfolging.client.MålDTO
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO
 import no.nav.veilarbaktivitet.person.Navn
@@ -75,11 +77,14 @@ class ArkiveringsFiltrererTest {
             AktivitetDataTestBuilder.nyStillingFraNav().withStillingFraNavData(StillingFraNavData.builder().soknadsstatus(
                 Soknadsstatus.CV_DELT).build()),
                     AktivitetDataTestBuilder.nyStillingFraNav().withStillingFraNavData(StillingFraNavData.builder().soknadsstatus(
-                Soknadsstatus.FATT_JOBBEN).build())
+                Soknadsstatus.FATT_JOBBEN).build()),
+            AktivitetDataTestBuilder.nyttStillingssok().withStillingsSoekAktivitetData(StillingsoekAktivitetData.builder().stillingsoekEtikett(
+                StillingsoekEtikettData.SOKNAD_SENDT).build())
+
         ))
-        val filter = defaultFilter.copy(stillingsstatusFilter = listOf(Soknadsstatus.FATT_JOBBEN))
+        val filter = defaultFilter.copy(stillingsstatusFilter = listOf(ArkiveringsController.SøknadsstatusFilter.SOKNAD_SENDT, ArkiveringsController.SøknadsstatusFilter.FATT_JOBBEN))
         val filtrertData = filtrerArkiveringsData(arkiveringsData, filter)
-        assertThat(filtrertData.aktiviteter).hasSize(1)
+        assertThat(filtrertData.aktiviteter).hasSize(2)
         assertThat(filtrertData.aktiviteter.first().stillingFraNavData.soknadsstatus).isEqualTo(Soknadsstatus.FATT_JOBBEN)
     }
 

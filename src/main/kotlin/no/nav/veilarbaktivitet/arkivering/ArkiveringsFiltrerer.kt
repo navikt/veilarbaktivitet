@@ -34,10 +34,12 @@ private fun ArkiveringsController.ArkiveringsData.filtrerPåAvtaltMedNavn(filter
 
 private fun ArkiveringsController.ArkiveringsData.filtrerPåStillingsstatus(filter: ArkiveringsController.Filter): ArkiveringsController.ArkiveringsData {
     if (filter.stillingsstatusFilter.isEmpty()) return this
+    val stillingsstatusFilterSomTekst = filter.stillingsstatusFilter.map { it.name }
 
     val filtrerteAktiviteter = aktiviteter.filter { aktivitet ->
-        if (aktivitet.stillingFraNavData == null) true
-        else aktivitet.stillingFraNavData.soknadsstatus in filter.stillingsstatusFilter
+        if (aktivitet.stillingFraNavData == null && aktivitet.stillingsSoekAktivitetData == null) true
+        else if (aktivitet.stillingFraNavData != null) aktivitet.stillingFraNavData.soknadsstatus.name in stillingsstatusFilterSomTekst
+        else aktivitet.stillingsSoekAktivitetData.stillingsoekEtikett.name in stillingsstatusFilterSomTekst
     }
     return this.copy(aktiviteter = filtrerteAktiviteter)
 }
