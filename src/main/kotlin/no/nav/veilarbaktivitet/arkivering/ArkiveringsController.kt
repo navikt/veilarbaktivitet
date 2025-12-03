@@ -79,7 +79,7 @@ class ArkiveringsController(
     @AuthorizeFnr(auditlogMessage = "lag forhåndsvisning av aktivitetsplan og dialog", resourceType = OppfolgingsperiodeResource::class, resourceIdParamName = "oppfolgingsperiodeId")
     fun forhaandsvisAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID, @RequestBody filter: Filter?): ForhaandsvisningOutboundDTO {
         val dataHentet = ZonedDateTime.now()
-        val arkiveringsdata = hentArkiveringsData(oppfølgingsperiodeId)
+        val arkiveringsdata = hentArkiveringsData(oppfølgingsperiodeId, filter?.inkluderAktiviteterIKvpPeriode ?: false)
         val filtrertArkiveringsdata = if (filter != null) filtrerArkiveringsData(arkiveringsdata, filter) else arkiveringsdata
         val forhåndsvisningPayload = mapTilForhåndsvisningsPayload(filtrertArkiveringsdata)
 
@@ -118,7 +118,7 @@ class ArkiveringsController(
         )
     }
 
-    private fun hentArkiveringsData(oppfølgingsperiodeId: UUID): ArkiveringsData {
+    private fun hentArkiveringsData(oppfølgingsperiodeId: UUID, inkluderDataIKvpPeriode: Boolean = false): ArkiveringsData {
         val timedArkiveringsdata = measureTimedValue {
             val fnr = userInContext.fnr.get()
             val aktorId = userInContext.aktorId
@@ -129,7 +129,10 @@ class ArkiveringsController(
 
             runBlocking(Dispatchers.IO) {
                 val aktiviteterDeferred = hentDataAsync {
-                    appService.hentAktiviteterUtenKontorsperre(fnr)
+                    val aktiviteter =
+                        if (inkluderDataIKvpPeriode) appService.hentAktiviteterForIdent(fnr)
+                        else appService.hentAktiviteterUtenKontorsperre(fnr)
+                    aktiviteter
                         .asSequence()
                         .filter { it.oppfolgingsperiodeId == oppfølgingsperiodeId }
                         .filterNot { it.aktivitetType == SAMTALEREFERAT && it.moteData?.isReferatPublisert == false }
@@ -216,6 +219,7 @@ class ArkiveringsController(
 
     data class Filter(
         val inkluderHistorikk: Boolean,
+        val inkluderAktiviteterIKvpPeriode: Boolean,
         val aktivitetAvtaltMedNavFilter: List<AvtaltMedNavFilter>,
         val stillingsstatusFilter: List<SøknadsstatusFilter>,
         val arenaAktivitetStatusFilter: List<ArenaStatusEtikettDTO>,
