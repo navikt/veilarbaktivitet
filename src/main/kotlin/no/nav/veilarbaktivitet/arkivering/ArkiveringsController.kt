@@ -217,11 +217,24 @@ class ArkiveringsController(
     data class Filter(
         val inkluderHistorikk: Boolean,
         val aktivitetAvtaltMedNavFilter: List<AvtaltMedNavFilter>,
-        val stillingsstatusFilter: List<Soknadsstatus>,
+        val stillingsstatusFilter: List<SøknadsstatusFilter>,
     )
 
     enum class AvtaltMedNavFilter {
         AVTALT_MED_NAV,
         IKKE_AVTALT_MED_NAV,
+    }
+
+    enum class SøknadsstatusFilter {
+        AVSLAG,
+        CV_DELT,
+        IKKE_FATT_JOBBEN,
+        INGEN_VALGT,
+        INNKALT_TIL_INTERVJU,
+        JOBBTILBUD,
+        SKAL_PAA_INTERVJU,
+        SOKNAD_SENDT,
+        VENTER,
+        FATT_JOBBEN
     }
 }
