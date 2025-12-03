@@ -19,8 +19,8 @@ private fun ArkiveringsController.ArkiveringsData.filtrerPåHistorikk(filter: Ar
 private fun ArkiveringsController.ArkiveringsData.filtrerPåAvtaltMedNavn(filter: ArkiveringsController.Filter): ArkiveringsController.ArkiveringsData {
     if (filter.aktivitetAvtaltMedNav.isEmpty()) return this
 
-    val predikater = ArkiveringsController.AvtaltMedNav.entries.map {
-        when (it) {
+    val predikater = filter.aktivitetAvtaltMedNav.map { filter ->
+        when (filter) {
             ArkiveringsController.AvtaltMedNav.AVTALT_MED_NAV -> { aktivitetData: AktivitetData -> aktivitetData.isAvtalt }
             ArkiveringsController.AvtaltMedNav.IKKE_AVTALT_MED_NAV -> { aktivitetData: AktivitetData -> !aktivitetData.isAvtalt }
         }
