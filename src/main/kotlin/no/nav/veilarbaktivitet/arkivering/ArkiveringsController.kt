@@ -22,6 +22,7 @@ import no.nav.veilarbaktivitet.person.EksternNavnService
 import no.nav.veilarbaktivitet.person.Navn
 import no.nav.veilarbaktivitet.person.Person.Fnr
 import no.nav.veilarbaktivitet.person.UserInContext
+import no.nav.veilarbaktivitet.stilling_fra_nav.Soknadsstatus
 import no.nav.veilarbaktivitet.util.DateUtils
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
@@ -216,11 +217,12 @@ class ArkiveringsController(
 
     data class Filter(
         val inkluderHistorikk: Boolean,
-        val aktivitetAvtaltMedNav: List<AvtaltMedNav>
+        val aktivitetAvtaltMedNavFilter: List<AvtaltMedNavFilter>,
+        val stillingsstatusFilter: List<Soknadsstatus>,
     )
 
-    enum class AvtaltMedNav {
+    enum class AvtaltMedNavFilter {
         AVTALT_MED_NAV,
-        IKKE_AVTALT_MED_NAV
+        IKKE_AVTALT_MED_NAV,
     }
 }
