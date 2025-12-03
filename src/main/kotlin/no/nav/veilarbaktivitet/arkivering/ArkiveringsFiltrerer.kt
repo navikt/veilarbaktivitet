@@ -7,6 +7,8 @@ fun filtrerArkiveringsData(arkiveringsData: ArkiveringsController.ArkiveringsDat
         .filtrerPåHistorikk(filter)
         .filtrerPåAvtaltMedNavn(filter)
         .filtrerPåStillingsstatus(filter)
+        .filtrerPåArenaAktivitetStatus(filter)
+        .filtrerPaAktivitetType(filter)
 }
 
 private fun ArkiveringsController.ArkiveringsData.filtrerPåHistorikk(filter: ArkiveringsController.Filter): ArkiveringsController.ArkiveringsData {
@@ -42,4 +44,27 @@ private fun ArkiveringsController.ArkiveringsData.filtrerPåStillingsstatus(filt
         else aktivitet.stillingsSoekAktivitetData.stillingsoekEtikett.name in stillingsstatusFilterSomTekst
     }
     return this.copy(aktiviteter = filtrerteAktiviteter)
+}
+
+private fun ArkiveringsController.ArkiveringsData.filtrerPåArenaAktivitetStatus(filter: ArkiveringsController.Filter): ArkiveringsController.ArkiveringsData {
+    if (filter.arenaAktivitetStatusFilter.isEmpty()) return this
+
+    val oppdaterteArenaAktiviteter = arenaAktiviteter.filter { aktivitet ->
+        aktivitet.etikett in filter.arenaAktivitetStatusFilter
+    }
+    return this.copy(arenaAktiviteter = oppdaterteArenaAktiviteter)
+}
+
+private fun ArkiveringsController.ArkiveringsData.filtrerPaAktivitetType(filter: ArkiveringsController.Filter): ArkiveringsController.ArkiveringsData {
+    if (filter.aktivitetTypeFilter.isEmpty()) return this
+
+    val aktivitetTypeFilterSomTekst = filter.aktivitetTypeFilter.map { it.name }
+
+    val filtrerteAktiviteter = aktiviteter.filter { aktivitet ->
+        aktivitet.aktivitetType.name in aktivitetTypeFilterSomTekst
+                || aktivitet.eksternAktivitetData?.type?.name in aktivitetTypeFilterSomTekst
+    }
+    val filtrerteArenaAktiviteter = if (filter.aktivitetTypeFilter.contains(ArkiveringsController.AktivitetTypeFilter.ARENA_TILTAK)) this.arenaAktiviteter else emptyList()
+
+    return this.copy(aktiviteter = filtrerteAktiviteter, arenaAktiviteter = filtrerteArenaAktiviteter)
 }
