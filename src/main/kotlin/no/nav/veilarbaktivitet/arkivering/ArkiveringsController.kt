@@ -4,7 +4,9 @@ import kotlinx.coroutines.*
 import no.nav.common.auth.context.AuthContext
 import no.nav.common.auth.context.AuthContextHolder
 import no.nav.common.auth.context.AuthContextHolderThreadLocal
+import no.nav.common.types.identer.EnhetId
 import no.nav.poao.dab.spring_a2_annotations.auth.AuthorizeFnr
+import no.nav.poao.dab.spring_auth.AuthService
 import no.nav.veilarbaktivitet.aktivitet.AktivitetAppService
 import no.nav.veilarbaktivitet.aktivitet.Historikk
 import no.nav.veilarbaktivitet.aktivitet.HistorikkService
@@ -45,6 +47,7 @@ class ArkiveringsController(
     private val historikkService: HistorikkService,
     private val arenaService: ArenaService,
     private val authContextHolder: AuthContextHolder,
+    private val authService: AuthService,
 ) {
     private val logger = LoggerFactory.getLogger(this::class.java)
 
@@ -132,6 +135,7 @@ class ArkiveringsController(
                     val aktiviteter =
                         if (inkluderDataIKvpPeriode) appService.hentAktiviteterForIdent(fnr)
                         else appService.hentAktiviteterUtenKontorsperre(fnr) //TODO: Ta bort til slutt
+                    val kontorIder = aktiviteter.map {}
                     aktiviteter
                         .asSequence()
                         .filter { it.oppfolgingsperiodeId == oppfølgingsperiodeId }
@@ -189,6 +193,10 @@ class ArkiveringsController(
         val sistOppdatert =
             (aktiviteterTidspunkt + dialogerTidspunkt).maxOrNull() ?: ZonedDateTime.now().minusYears(100)
         return sistOppdatert > tidspunkt
+    }
+
+    private fun filtrerEnheterMedLesetilgang(enhetIder: List<EnhetId>): List<EnhetId> {
+        return enhetIder.distinct().filter { authService.harTilgangTilEnhet(it)}
     }
 
     data class ArkiveringsData(
