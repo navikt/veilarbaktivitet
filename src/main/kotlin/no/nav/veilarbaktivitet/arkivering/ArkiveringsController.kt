@@ -15,6 +15,8 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData.SAMTALEREFERAT
 import no.nav.veilarbaktivitet.arena.ArenaService
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO
 import no.nav.veilarbaktivitet.arena.model.ArenaStatusEtikettDTO
+import no.nav.veilarbaktivitet.arkivering.ArkiveringsController.KvpUtvalgskriterieAlternativ.EKSLUDER_KVP_AKTIVITETER
+import no.nav.veilarbaktivitet.arkivering.ArkiveringsController.KvpUtvalgskriterieAlternativ.INKLUDER_KVP_AKTIVITETER
 import no.nav.veilarbaktivitet.arkivering.mapper.ArkiveringspayloadMapper.mapTilArkivPayload
 import no.nav.veilarbaktivitet.arkivering.mapper.ArkiveringspayloadMapper.mapTilForhåndsvisningsPayload
 import no.nav.veilarbaktivitet.config.OppfolgingsperiodeResource
@@ -33,6 +35,7 @@ import org.springframework.web.server.ResponseStatusException
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.util.*
+import kotlin.collections.distinct
 import kotlin.time.measureTimedValue
 
 @RestController
@@ -82,7 +85,11 @@ class ArkiveringsController(
     @AuthorizeFnr(auditlogMessage = "lag forhåndsvisning av aktivitetsplan og dialog", resourceType = OppfolgingsperiodeResource::class, resourceIdParamName = "oppfolgingsperiodeId")
     fun forhaandsvisAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID, @RequestBody filter: Filter?): ForhaandsvisningOutboundDTO {
         val dataHentet = ZonedDateTime.now()
-        val arkiveringsdata = hentArkiveringsData(oppfølgingsperiodeId, filter?.kvpFilter != null ?: false)
+        val hentKvpAktiviteter = filter?.kvpUtvalgskriterie?.alternativ in listOf(
+            INKLUDER_KVP_AKTIVITETER,
+            KvpUtvalgskriterieAlternativ.KUN_KVP_AKTIVITETER
+        )
+        val arkiveringsdata = hentArkiveringsData(oppfølgingsperiodeId, hentKvpAktiviteter)
         val filtrertArkiveringsdata = if (filter != null) filtrerArkiveringsData(arkiveringsdata, filter) else arkiveringsdata
         val forhåndsvisningPayload = mapTilForhåndsvisningsPayload(filtrertArkiveringsdata)
 
@@ -198,8 +205,8 @@ class ArkiveringsController(
         return sistOppdatert > tidspunkt
     }
 
-    private fun filtrerEnheterMedLesetilgang(enhetIder: List<EnhetId>): List<EnhetId> {
-        return enhetIder.distinct().filter { authService.harTilgangTilEnhet(it)}
+    private fun filtrerEnheterMedLesetilgang(enhetIder: List<String>): List<String> {
+        return enhetIder.distinct().filter { authService.harTilgangTilEnhet(EnhetId(it))}
     }
 
     data class ArkiveringsData(
@@ -230,7 +237,7 @@ class ArkiveringsController(
 
     data class Filter(
         val inkluderHistorikk: Boolean,
-        val kvpFilter: KvpFilter?,
+        val kvpUtvalgskriterie: KvpUtvalgskriterie,
         val inkluderDialoger: Boolean,
         val aktivitetAvtaltMedNavFilter: List<AvtaltMedNavFilter>,
         val stillingsstatusFilter: List<SøknadsstatusFilter>,
@@ -238,11 +245,17 @@ class ArkiveringsController(
         val aktivitetTypeFilter: List<AktivitetTypeFilter>,
     )
 
-    data class KvpFilter(
-        val inkluderKunKvpAktiviteter: Boolean,
-        val start: ZonedDateTime,
-        val slutt: ZonedDateTime
+    data class KvpUtvalgskriterie(
+        val alternativ: KvpUtvalgskriterieAlternativ,
+        val start: ZonedDateTime? = null,
+        val slutt: ZonedDateTime? = null
     )
+
+    enum class KvpUtvalgskriterieAlternativ {
+        EKSLUDER_KVP_AKTIVITETER,
+        INKLUDER_KVP_AKTIVITETER,
+        KUN_KVP_AKTIVITETER
+    }
 
     enum class AvtaltMedNavFilter {
         AVTALT_MED_NAV,

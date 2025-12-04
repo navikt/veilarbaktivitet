@@ -19,27 +19,26 @@ fun filtrerArkiveringsData(
 }
 
 private fun ArkiveringsController.ArkiveringsData.filtrerPåKvpPeriode(filter: ArkiveringsController.Filter): ArkiveringsController.ArkiveringsData {
-    val ekskluderKvpAktiviteter = filter.kvpFilter == null
-    if (ekskluderKvpAktiviteter) {
-        val aktiviteterUtenKvp = this.aktiviteter.filter { it.kontorsperreEnhetId == null }
-        return this.copy(aktiviteter = aktiviteterUtenKvp)
-    }
-
-    val inkluderKunKvpAktiviteterSomErIEtGittTidsrom = filter.kvpFilter != null && filter.kvpFilter.inkluderKunKvpAktiviteter
-    if (inkluderKunKvpAktiviteterSomErIEtGittTidsrom) {
-        val kunKvpAktiviteterITidsrom = this.aktiviteter.filter { aktivitet ->
-            val opprettetDato = DateUtils.dateToZonedDateTime(aktivitet.opprettetDato)
-            val erKvpAktivitetITidsrom = aktivitet.kontorsperreEnhetId != null &&
-                    opprettetDato.isAfter(filter.kvpFilter.start) &&
-                    opprettetDato.isBefore(filter.kvpFilter.slutt)
-
-            erKvpAktivitetITidsrom
+    return when (filter.kvpUtvalgskriterie.alternativ) {
+        ArkiveringsController.KvpUtvalgskriterieAlternativ.EKSLUDER_KVP_AKTIVITETER -> {
+            val aktiviteterUtenKvp = this.aktiviteter.filter { it.kontorsperreEnhetId == null }
+            this.copy(aktiviteter = aktiviteterUtenKvp)
         }
-        return this.copy(aktiviteter = kunKvpAktiviteterITidsrom)
-    }
+        ArkiveringsController.KvpUtvalgskriterieAlternativ.INKLUDER_KVP_AKTIVITETER -> {
+            this
+        }
+        ArkiveringsController.KvpUtvalgskriterieAlternativ.KUN_KVP_AKTIVITETER -> {
+            val kunKvpAktiviteterITidsrom = this.aktiviteter.filter { aktivitet ->
+                val opprettetDato = DateUtils.dateToZonedDateTime(aktivitet.opprettetDato)
+                val erKvpAktivitetITidsrom = aktivitet.kontorsperreEnhetId != null &&
+                        opprettetDato.isAfter(filter.kvpUtvalgskriterie.start) &&
+                        opprettetDato.isBefore(filter.kvpUtvalgskriterie.slutt)
 
-    val alleAktiviteterInkludertKvp = this.aktiviteter
-    return this.copy(aktiviteter = alleAktiviteterInkludertKvp)
+                erKvpAktivitetITidsrom
+            }
+            this.copy(aktiviteter = kunKvpAktiviteterITidsrom)
+        }
+    }
 }
 
 private fun ArkiveringsController.ArkiveringsData.filtrerPåHistorikk(filter: ArkiveringsController.Filter): ArkiveringsController.ArkiveringsData {
