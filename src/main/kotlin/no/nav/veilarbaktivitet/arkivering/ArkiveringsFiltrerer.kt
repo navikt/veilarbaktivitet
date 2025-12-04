@@ -10,6 +10,7 @@ fun filtrerArkiveringsData(arkiveringsData: ArkiveringsController.ArkiveringsDat
         .filtrerPåStillingsstatus(filter)
         .filtrerPåArenaAktivitetStatus(filter)
         .filtrerPaAktivitetType(filter)
+        .filtrerDialoger(filter)
 }
 
 private fun ArkiveringsController.ArkiveringsData.filtrerPåHistorikk(filter: ArkiveringsController.Filter): ArkiveringsController.ArkiveringsData {
@@ -69,4 +70,9 @@ private fun ArkiveringsController.ArkiveringsData.filtrerPaAktivitetType(filter:
     val filtrerteArenaAktiviteter = if (filter.aktivitetTypeFilter.contains(ArkiveringsController.AktivitetTypeFilter.ARENA_TILTAK)) this.arenaAktiviteter else emptyList()
 
     return this.copy(aktiviteter = filtrerteAktiviteter, arenaAktiviteter = filtrerteArenaAktiviteter)
+}
+
+private fun ArkiveringsController.ArkiveringsData.filtrerDialoger(filter: ArkiveringsController.Filter): ArkiveringsController.ArkiveringsData {
+    if (filter.inkluderDialoger) return this
+    return this.copy(dialoger = emptyList())
 }
