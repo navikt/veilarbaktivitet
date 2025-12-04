@@ -79,7 +79,7 @@ class ArkiveringsController(
     @AuthorizeFnr(auditlogMessage = "lag forhåndsvisning av aktivitetsplan og dialog", resourceType = OppfolgingsperiodeResource::class, resourceIdParamName = "oppfolgingsperiodeId")
     fun forhaandsvisAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID, @RequestBody filter: Filter?): ForhaandsvisningOutboundDTO {
         val dataHentet = ZonedDateTime.now()
-        val arkiveringsdata = hentArkiveringsData(oppfølgingsperiodeId, filter?.inkluderAktiviteterIKvpPeriode ?: false)
+        val arkiveringsdata = hentArkiveringsData(oppfølgingsperiodeId, filter?.kvpFilter != null ?: false)
         val filtrertArkiveringsdata = if (filter != null) filtrerArkiveringsData(arkiveringsdata, filter) else arkiveringsdata
         val forhåndsvisningPayload = mapTilForhåndsvisningsPayload(filtrertArkiveringsdata)
 
@@ -131,7 +131,7 @@ class ArkiveringsController(
                 val aktiviteterDeferred = hentDataAsync {
                     val aktiviteter =
                         if (inkluderDataIKvpPeriode) appService.hentAktiviteterForIdent(fnr)
-                        else appService.hentAktiviteterUtenKontorsperre(fnr)
+                        else appService.hentAktiviteterUtenKontorsperre(fnr) //TODO: Ta bort til slutt
                     aktiviteter
                         .asSequence()
                         .filter { it.oppfolgingsperiodeId == oppfølgingsperiodeId }
@@ -219,7 +219,7 @@ class ArkiveringsController(
 
     data class Filter(
         val inkluderHistorikk: Boolean,
-        val visKvpAktiviteterITidsrommet: PeriodeForVisningAvKvpAktiviteter?,
+        val kvpFilter: KvpFilter?,
         val inkluderDialoger: Boolean,
         val aktivitetAvtaltMedNavFilter: List<AvtaltMedNavFilter>,
         val stillingsstatusFilter: List<SøknadsstatusFilter>,
@@ -227,7 +227,8 @@ class ArkiveringsController(
         val aktivitetTypeFilter: List<AktivitetTypeFilter>,
     )
 
-    data class PeriodeForVisningAvKvpAktiviteter(
+    data class KvpFilter(
+        val inkluderKunKvpAktiviteter: Boolean,
         val start: ZonedDateTime,
         val slutt: ZonedDateTime
     )
