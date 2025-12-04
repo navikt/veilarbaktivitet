@@ -220,12 +220,17 @@ class ArkiveringsController(
 
     data class Filter(
         val inkluderHistorikk: Boolean,
-        val inkluderAktiviteterIKvpPeriode: Boolean,
+        val visKvpAktiviteterITidsrommet: PeriodeForVisningAvKvpAktiviteter?,
         val inkluderDialoger: Boolean,
         val aktivitetAvtaltMedNavFilter: List<AvtaltMedNavFilter>,
         val stillingsstatusFilter: List<SøknadsstatusFilter>,
         val arenaAktivitetStatusFilter: List<ArenaStatusEtikettDTO>,
         val aktivitetTypeFilter: List<AktivitetTypeFilter>,
+    )
+
+    data class PeriodeForVisningAvKvpAktiviteter(
+        val start: ZonedDateTime,
+        val slutt: ZonedDateTime
     )
 
     enum class AvtaltMedNavFilter {
