@@ -135,10 +135,13 @@ class ArkiveringsController(
                     val aktiviteter =
                         if (inkluderDataIKvpPeriode) appService.hentAktiviteterForIdent(fnr)
                         else appService.hentAktiviteterUtenKontorsperre(fnr) //TODO: Ta bort til slutt
-                    val kontorIder = aktiviteter.map {}
+                    val kontorsperreEnhetIder = aktiviteter.mapNotNull { it.kontorsperreEnhetId } // TODO: Skal ikke gjøres for privatpersoner
+                    val kontorIderMedTilgang = filtrerEnheterMedLesetilgang(kontorsperreEnhetIder)
+
                     aktiviteter
                         .asSequence()
                         .filter { it.oppfolgingsperiodeId == oppfølgingsperiodeId }
+                        .filter { it.kontorsperreEnhetId == null || kontorIderMedTilgang.contains(it.kontorsperreEnhetId) }
                         .filterNot { it.aktivitetType == SAMTALEREFERAT && it.moteData?.isReferatPublisert == false }
                         .toList()
                 }
