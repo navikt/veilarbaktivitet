@@ -2,8 +2,12 @@ package no.nav.veilarbaktivitet.arkivering
 
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
 import no.nav.veilarbaktivitet.aktivitet.mappers.Helpers
+import no.nav.veilarbaktivitet.util.DateUtils
 
-fun filtrerArkiveringsData(arkiveringsData: ArkiveringsController.ArkiveringsData, filter: ArkiveringsController.Filter): ArkiveringsController.ArkiveringsData {
+fun filtrerArkiveringsData(
+    arkiveringsData: ArkiveringsController.ArkiveringsData,
+    filter: ArkiveringsController.Filter
+): ArkiveringsController.ArkiveringsData {
     return arkiveringsData
         .filtrerPåHistorikk(filter)
         .filtrerPåAvtaltMedNavn(filter)
@@ -11,10 +15,35 @@ fun filtrerArkiveringsData(arkiveringsData: ArkiveringsController.ArkiveringsDat
         .filtrerPåArenaAktivitetStatus(filter)
         .filtrerPaAktivitetType(filter)
         .filtrerDialoger(filter)
+        .filtrerPåKvpPeriode(filter)
+}
+
+private fun ArkiveringsController.ArkiveringsData.filtrerPåKvpPeriode(filter: ArkiveringsController.Filter): ArkiveringsController.ArkiveringsData {
+    val ekskluderKvpAktiviteter = filter.kvpFilter == null
+    if (ekskluderKvpAktiviteter) {
+        val aktiviteterUtenKvp = this.aktiviteter.filter { it.kontorsperreEnhetId == null }
+        return this.copy(aktiviteter = aktiviteterUtenKvp)
+    }
+
+    val inkluderKunKvpAktiviteterSomErIEtGittTidsrom = filter.kvpFilter != null && filter.kvpFilter.inkluderKunKvpAktiviteter
+    if (inkluderKunKvpAktiviteterSomErIEtGittTidsrom) {
+        val kunKvpAktiviteterITidsrom = this.aktiviteter.filter { aktivitet ->
+            val opprettetDato = DateUtils.dateToZonedDateTime(aktivitet.opprettetDato)
+            val erKvpAktivitetITidsrom = aktivitet.kontorsperreEnhetId != null &&
+                    opprettetDato.isAfter(filter.kvpFilter.start) &&
+                    opprettetDato.isBefore(filter.kvpFilter.slutt)
+
+            erKvpAktivitetITidsrom
+        }
+        return this.copy(aktiviteter = kunKvpAktiviteterITidsrom)
+    }
+
+    val alleAktiviteterInkludertKvp = this.aktiviteter
+    return this.copy(aktiviteter = alleAktiviteterInkludertKvp)
 }
 
 private fun ArkiveringsController.ArkiveringsData.filtrerPåHistorikk(filter: ArkiveringsController.Filter): ArkiveringsController.ArkiveringsData {
-    return if(!filter.inkluderHistorikk) {
+    return if (!filter.inkluderHistorikk) {
         this.copy(historikkForAktiviteter = emptyMap())
     } else {
         this
@@ -67,7 +96,8 @@ private fun ArkiveringsController.ArkiveringsData.filtrerPaAktivitetType(filter:
         Helpers.Type.getDTO(aktivitet.aktivitetType).name in aktivitetTypeFilterSomTekst
                 || aktivitet.eksternAktivitetData?.type?.name in aktivitetTypeFilterSomTekst
     }
-    val filtrerteArenaAktiviteter = if (filter.aktivitetTypeFilter.contains(ArkiveringsController.AktivitetTypeFilter.ARENA_TILTAK)) this.arenaAktiviteter else emptyList()
+    val filtrerteArenaAktiviteter =
+        if (filter.aktivitetTypeFilter.contains(ArkiveringsController.AktivitetTypeFilter.ARENA_TILTAK)) this.arenaAktiviteter else emptyList()
 
     return this.copy(aktiviteter = filtrerteAktiviteter, arenaAktiviteter = filtrerteArenaAktiviteter)
 }
