@@ -221,10 +221,11 @@ class ArkiveringsController(
     data class Filter(
         val inkluderHistorikk: Boolean,
         val inkluderAktiviteterIKvpPeriode: Boolean,
+        val inkluderDialoger: Boolean,
         val aktivitetAvtaltMedNavFilter: List<AvtaltMedNavFilter>,
         val stillingsstatusFilter: List<SøknadsstatusFilter>,
         val arenaAktivitetStatusFilter: List<ArenaStatusEtikettDTO>,
-        val aktivitetTypeFilter: List<AktivitetTypeFilter>
+        val aktivitetTypeFilter: List<AktivitetTypeFilter>,
     )
 
     enum class AvtaltMedNavFilter {

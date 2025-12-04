@@ -7,6 +7,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.StillingsoekEtikettData
 import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO
 import no.nav.veilarbaktivitet.arena.model.ArenaStatusEtikettDTO
+import no.nav.veilarbaktivitet.arkivering.DialogClient.Avsender
 import no.nav.veilarbaktivitet.oppfolging.client.MålDTO
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO
 import no.nav.veilarbaktivitet.person.Navn
@@ -186,6 +187,15 @@ class ArkiveringsFiltrererTest {
         assertThat(filtrertData.aktiviteter[3].eksternAktivitetData.type).isEqualTo(AktivitetskortType.ARENA_TILTAK)
     }
 
+    @Test
+    fun `Skal kunne filtrere vekk dialoger`() {
+        val arkiveringsData = defaultArkiveringsData.copy(dialoger = listOf(defaultDialogtråd))
+        val filter = defaultFilter.copy(inkluderDialoger = false)
+        val filtrertData = filtrerArkiveringsData(arkiveringsData, filter)
+
+        assertThat(filtrertData.dialoger).isEmpty()
+    }
+
     val defaultFilter = ArkiveringsController.Filter(
         inkluderHistorikk = true,
         aktivitetAvtaltMedNavFilter = emptyList(),
@@ -193,6 +203,7 @@ class ArkiveringsFiltrererTest {
         arenaAktivitetStatusFilter = emptyList(),
         aktivitetTypeFilter = emptyList(),
         inkluderAktiviteterIKvpPeriode = false,
+        inkluderDialoger = true
     )
 
     val defaultArkiveringsData = ArkiveringsController.ArkiveringsData(
@@ -208,5 +219,27 @@ class ArkiveringsFiltrererTest {
         mål = MålDTO("Måltekst"),
         historikkForAktiviteter = emptyMap(),
         arenaAktiviteter = emptyList()
+    )
+
+    val defaultDialogtråd = DialogClient.DialogTråd(
+        id = "123",
+        aktivitetId = "1234",
+        overskrift = "Overskrift",
+        oppfolgingsperiodeId = UUID.randomUUID(),
+        meldinger = listOf(
+            DialogClient.Melding(
+                id = "12344",
+                dialogId = "123",
+                avsender = Avsender.VEILEDER,
+                avsenderId = "421",
+                sendt = ZonedDateTime.now(),
+                lest = true,
+                viktig = true,
+                tekst = "Hei",
+            )
+        ),
+        egenskaper = emptyList(),
+        erLestAvBruker = true,
+        lestAvBrukerTidspunkt = ZonedDateTime.now(),
     )
 }
