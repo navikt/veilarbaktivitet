@@ -139,7 +139,7 @@ class ArkiveringsFiltrererTest {
     }
 
     @Test
-    fun `Skal kunne filtrere på eksternAktivitetType`() {
+    fun `Skal kunne filtrere på AktivitetType`() {
         val arkiveringsData = defaultArkiveringsData.copy(
             aktiviteter = listOf(
                 AktivitetDataTestBuilder.nyStillingFraNav().withStillingFraNavData(
@@ -150,6 +150,7 @@ class ArkiveringsFiltrererTest {
                 AktivitetDataTestBuilder.nyAktivitet().aktivitetType(AktivitetTypeData.SAMTALEREFERAT).build(),
                 AktivitetDataTestBuilder.nyAktivitet().aktivitetType(AktivitetTypeData.JOBBSOEKING).build(),
                 AktivitetDataTestBuilder.nyAktivitet().aktivitetType(AktivitetTypeData.BEHANDLING).build(),
+                AktivitetDataTestBuilder.nyAktivitet().aktivitetType(AktivitetTypeData.IJOBB).build(),
                 AktivitetDataTestBuilder.nyEksternAktivitet().withEksternAktivitetData(
                     eksternAktivitetData(
                         AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD
@@ -172,15 +173,17 @@ class ArkiveringsFiltrererTest {
             ArkiveringsController.AktivitetTypeFilter.ARENA_TILTAK,
             ArkiveringsController.AktivitetTypeFilter.MIDLERTIDIG_LONNSTILSKUDD,
             ArkiveringsController.AktivitetTypeFilter.SAMTALEREFERAT,
+            ArkiveringsController.AktivitetTypeFilter.STILLING,
         ))
 
         val filtrertData = filtrerArkiveringsData(arkiveringsData, filter)
 
         assertThat(filtrertData.arenaAktiviteter).hasSize(1)
-        assertThat(filtrertData.aktiviteter).hasSize(3)
+        assertThat(filtrertData.aktiviteter).hasSize(4)
         assertThat(filtrertData.aktiviteter[0].aktivitetType).isEqualTo(AktivitetTypeData.SAMTALEREFERAT)
-        assertThat(filtrertData.aktiviteter[1].eksternAktivitetData.type).isEqualTo(AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD)
-        assertThat(filtrertData.aktiviteter[2].eksternAktivitetData.type).isEqualTo(AktivitetskortType.ARENA_TILTAK)
+        assertThat(filtrertData.aktiviteter[1].aktivitetType).isEqualTo(AktivitetTypeData.JOBBSOEKING) // JOBBSOKING mappes til STILLING
+        assertThat(filtrertData.aktiviteter[2].eksternAktivitetData.type).isEqualTo(AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD)
+        assertThat(filtrertData.aktiviteter[3].eksternAktivitetData.type).isEqualTo(AktivitetskortType.ARENA_TILTAK)
     }
 
     val defaultFilter = ArkiveringsController.Filter(
