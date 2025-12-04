@@ -7,6 +7,8 @@ import no.nav.veilarbaktivitet.aktivitet.domain.StillingsoekEtikettData
 import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO
 import no.nav.veilarbaktivitet.arena.model.ArenaStatusEtikettDTO
+import no.nav.veilarbaktivitet.arkivering.ArkiveringsController.KvpUtvalgskriterieAlternativ.INKLUDER_KVP_AKTIVITETER
+import no.nav.veilarbaktivitet.arkivering.ArkiveringsController.KvpUtvalgskriterieAlternativ.KUN_KVP_AKTIVITETER
 import no.nav.veilarbaktivitet.arkivering.DialogClient.Avsender
 import no.nav.veilarbaktivitet.oppfolging.client.MålDTO
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO
@@ -16,8 +18,10 @@ import no.nav.veilarbaktivitet.stilling_fra_nav.Soknadsstatus
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder
 import no.nav.veilarbaktivitet.testutils.AktivitetTypeDataTestBuilder.eksternAktivitetData
+import no.nav.veilarbaktivitet.util.DateUtils
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import java.time.Instant
 import java.time.ZonedDateTime
 import java.util.*
 
@@ -114,7 +118,9 @@ class ArkiveringsFiltrererTest {
         val filtrertData = filtrerArkiveringsData(arkiveringsData, filter)
         assertThat(filtrertData.aktiviteter).hasSize(2)
         assertThat(filtrertData.aktiviteter[0].stillingFraNavData.soknadsstatus).isEqualTo(Soknadsstatus.FATT_JOBBEN)
-        assertThat(filtrertData.aktiviteter[1].stillingsSoekAktivitetData.stillingsoekEtikett).isEqualTo(StillingsoekEtikettData.SOKNAD_SENDT)
+        assertThat(filtrertData.aktiviteter[1].stillingsSoekAktivitetData.stillingsoekEtikett).isEqualTo(
+            StillingsoekEtikettData.SOKNAD_SENDT
+        )
     }
 
     @Test
@@ -170,12 +176,14 @@ class ArkiveringsFiltrererTest {
             ),
             arenaAktiviteter = listOf(ArenaAktivitetDTO.builder().etikett(ArenaStatusEtikettDTO.AVSLAG).build())
         )
-        val filter = defaultFilter.copy(aktivitetTypeFilter = listOf(
-            ArkiveringsController.AktivitetTypeFilter.ARENA_TILTAK,
-            ArkiveringsController.AktivitetTypeFilter.MIDLERTIDIG_LONNSTILSKUDD,
-            ArkiveringsController.AktivitetTypeFilter.SAMTALEREFERAT,
-            ArkiveringsController.AktivitetTypeFilter.STILLING,
-        ))
+        val filter = defaultFilter.copy(
+            aktivitetTypeFilter = listOf(
+                ArkiveringsController.AktivitetTypeFilter.ARENA_TILTAK,
+                ArkiveringsController.AktivitetTypeFilter.MIDLERTIDIG_LONNSTILSKUDD,
+                ArkiveringsController.AktivitetTypeFilter.SAMTALEREFERAT,
+                ArkiveringsController.AktivitetTypeFilter.STILLING,
+            )
+        )
 
         val filtrertData = filtrerArkiveringsData(arkiveringsData, filter)
 
@@ -192,9 +200,49 @@ class ArkiveringsFiltrererTest {
         val arkiveringsData = defaultArkiveringsData.copy(dialoger = listOf(defaultDialogtråd))
         val filter = defaultFilter.copy(inkluderDialoger = false)
         val filtrertData = filtrerArkiveringsData(arkiveringsData, filter)
-
         assertThat(filtrertData.dialoger).isEmpty()
     }
+
+    @Test
+    fun `Skal kunne inkludere alle aktiviteter inkludert kvpAktiviteter`() {
+        val arkiveringsData = defaultArkiveringsData.copy(
+            aktiviteter = listOf(
+                AktivitetDataTestBuilder.nyAktivitet().kontorsperreEnhetId("1234")
+                    .opprettetDato(Date.from(Instant.now())).build(),
+                AktivitetDataTestBuilder.nyAktivitet().build(),
+            )
+        )
+        val filter =
+            defaultFilter.copy(kvpUtvalgskriterie = ArkiveringsController.KvpUtvalgskriterie(alternativ = INKLUDER_KVP_AKTIVITETER))
+        val filtrertData = filtrerArkiveringsData(arkiveringsData, filter)
+        assertThat(filtrertData.aktiviteter).hasSize(2)
+    }
+
+    @Test
+    fun `Skal kunne inkludere kun kvpAktiviteter i gitt periode`() {
+        val opprettetTidspunktTilInkludertKvpPeriode = Date.from(Instant.now())
+        val arkiveringsData = defaultArkiveringsData.copy(
+            aktiviteter = listOf(
+                AktivitetDataTestBuilder.nyAktivitet().kontorsperreEnhetId("1234")
+                    .opprettetDato(opprettetTidspunktTilInkludertKvpPeriode).build(),
+                AktivitetDataTestBuilder.nyAktivitet().kontorsperreEnhetId("1234")
+                    .opprettetDato(Date.from(Instant.now().minusSeconds(1000))).build(),
+                AktivitetDataTestBuilder.nyAktivitet().build(),
+            )
+        )
+        val filter = defaultFilter.copy(
+            kvpUtvalgskriterie = ArkiveringsController.KvpUtvalgskriterie(
+                alternativ = KUN_KVP_AKTIVITETER,
+                start = DateUtils.dateToZonedDateTime(opprettetTidspunktTilInkludertKvpPeriode).minusSeconds(1),
+                slutt = DateUtils.dateToZonedDateTime(opprettetTidspunktTilInkludertKvpPeriode).plusSeconds(1)
+            )
+        )
+        val filtrertData = filtrerArkiveringsData(arkiveringsData, filter)
+        assertThat(filtrertData.aktiviteter).hasSize(1)
+        assertThat(filtrertData.aktiviteter.first().opprettetDato).isEqualTo(opprettetTidspunktTilInkludertKvpPeriode)
+    }
+
+    // TODO: Flere KVP-tester
 
     val defaultFilter = ArkiveringsController.Filter(
         inkluderHistorikk = true,
@@ -202,8 +250,12 @@ class ArkiveringsFiltrererTest {
         stillingsstatusFilter = emptyList(),
         arenaAktivitetStatusFilter = emptyList(),
         aktivitetTypeFilter = emptyList(),
-        inkluderAktiviteterIKvpPeriode = false,
-        inkluderDialoger = true
+        inkluderDialoger = true,
+        kvpUtvalgskriterie = ArkiveringsController.KvpUtvalgskriterie(
+            alternativ = INKLUDER_KVP_AKTIVITETER,
+            start = null,
+            slutt = null
+        )
     )
 
     val defaultArkiveringsData = ArkiveringsController.ArkiveringsData(
