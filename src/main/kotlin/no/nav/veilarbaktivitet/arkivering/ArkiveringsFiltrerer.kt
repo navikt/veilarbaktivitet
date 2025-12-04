@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.arkivering
 
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
+import no.nav.veilarbaktivitet.aktivitet.mappers.Helpers
 
 fun filtrerArkiveringsData(arkiveringsData: ArkiveringsController.ArkiveringsData, filter: ArkiveringsController.Filter): ArkiveringsController.ArkiveringsData {
     return arkiveringsData
@@ -60,8 +61,9 @@ private fun ArkiveringsController.ArkiveringsData.filtrerPaAktivitetType(filter:
 
     val aktivitetTypeFilterSomTekst = filter.aktivitetTypeFilter.map { it.name }
 
+    // Mapper om aktivitetType til aktivitetTypeDTO pga. STILLING = JOBBSOKING
     val filtrerteAktiviteter = aktiviteter.filter { aktivitet ->
-        aktivitet.aktivitetType.name in aktivitetTypeFilterSomTekst
+        Helpers.Type.getDTO(aktivitet.aktivitetType).name in aktivitetTypeFilterSomTekst
                 || aktivitet.eksternAktivitetData?.type?.name in aktivitetTypeFilterSomTekst
     }
     val filtrerteArenaAktiviteter = if (filter.aktivitetTypeFilter.contains(ArkiveringsController.AktivitetTypeFilter.ARENA_TILTAK)) this.arenaAktiviteter else emptyList()
