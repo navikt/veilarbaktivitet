@@ -20,7 +20,7 @@ fun filtrerArkiveringsData(
 
 private fun ArkiveringsController.ArkiveringsData.filtrerPåKvpPeriode(filter: ArkiveringsController.Filter): ArkiveringsController.ArkiveringsData {
     return when (filter.kvpUtvalgskriterie.alternativ) {
-        ArkiveringsController.KvpUtvalgskriterieAlternativ.EKSLUDER_KVP_AKTIVITETER -> {
+        ArkiveringsController.KvpUtvalgskriterieAlternativ.EKSKLUDER_KVP_AKTIVITETER -> {
             val aktiviteterUtenKvp = this.aktiviteter.filter { it.kontorsperreEnhetId == null }
             this.copy(aktiviteter = aktiviteterUtenKvp)
         }
