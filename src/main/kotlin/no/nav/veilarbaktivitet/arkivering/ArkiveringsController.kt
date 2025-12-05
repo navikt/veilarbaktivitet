@@ -148,7 +148,7 @@ class ArkiveringsController(
                     aktiviteter
                         .asSequence()
                         .filter { it.oppfolgingsperiodeId == oppfølgingsperiodeId }
-                        .filter { it.kontorsperreEnhetId == null || kontorIderMedTilgang.contains(it.kontorsperreEnhetId) }
+                        .filter { it.kontorsperreEnhetId == null || kontorIderMedTilgang.contains(it.kontorsperreEnhetId) } // TODO: Test i integrationTest
                         .filterNot { it.aktivitetType == SAMTALEREFERAT && it.moteData?.isReferatPublisert == false }
                         .toList()
                 }
