@@ -7,7 +7,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.StillingsoekEtikettData
 import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO
 import no.nav.veilarbaktivitet.arena.model.ArenaStatusEtikettDTO
-import no.nav.veilarbaktivitet.arkivering.ArkiveringsController.KvpUtvalgskriterieAlternativ.EKSLUDER_KVP_AKTIVITETER
+import no.nav.veilarbaktivitet.arkivering.ArkiveringsController.KvpUtvalgskriterieAlternativ.EKSKLUDER_KVP_AKTIVITETER
 import no.nav.veilarbaktivitet.arkivering.ArkiveringsController.KvpUtvalgskriterieAlternativ.INKLUDER_KVP_AKTIVITETER
 import no.nav.veilarbaktivitet.arkivering.ArkiveringsController.KvpUtvalgskriterieAlternativ.KUN_KVP_AKTIVITETER
 import no.nav.veilarbaktivitet.arkivering.DialogClient.Avsender
@@ -280,7 +280,7 @@ class ArkiveringsFiltrererTest {
         )
         val filter = defaultFilter.copy(
             kvpUtvalgskriterie = ArkiveringsController.KvpUtvalgskriterie(
-                alternativ = EKSLUDER_KVP_AKTIVITETER,
+                alternativ = EKSKLUDER_KVP_AKTIVITETER,
                 start = DateUtils.dateToZonedDateTime(opprettetTidspunktTilInkludertKvpPeriode).minusSeconds(1),
                 slutt = DateUtils.dateToZonedDateTime(opprettetTidspunktTilInkludertKvpPeriode).plusSeconds(1)
             )
