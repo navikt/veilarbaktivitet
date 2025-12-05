@@ -7,6 +7,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.StillingsoekEtikettData
 import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO
 import no.nav.veilarbaktivitet.arena.model.ArenaStatusEtikettDTO
+import no.nav.veilarbaktivitet.arkivering.ArkiveringsController.KvpUtvalgskriterieAlternativ.EKSLUDER_KVP_AKTIVITETER
 import no.nav.veilarbaktivitet.arkivering.ArkiveringsController.KvpUtvalgskriterieAlternativ.INKLUDER_KVP_AKTIVITETER
 import no.nav.veilarbaktivitet.arkivering.ArkiveringsController.KvpUtvalgskriterieAlternativ.KUN_KVP_AKTIVITETER
 import no.nav.veilarbaktivitet.arkivering.DialogClient.Avsender
@@ -242,7 +243,51 @@ class ArkiveringsFiltrererTest {
         assertThat(filtrertData.aktiviteter.first().opprettetDato).isEqualTo(opprettetTidspunktTilInkludertKvpPeriode)
     }
 
-    // TODO: Flere KVP-tester
+    @Test
+    fun `Skal kunne inkludere kvpAktiviteter og andre aktiviteter i gitt periode`() {
+        val opprettetTidspunktTilInkludertKvpPeriode = Date.from(Instant.now())
+        val arkiveringsData = defaultArkiveringsData.copy(
+            aktiviteter = listOf(
+                AktivitetDataTestBuilder.nyAktivitet().kontorsperreEnhetId("1234")
+                    .opprettetDato(opprettetTidspunktTilInkludertKvpPeriode).build(),
+                AktivitetDataTestBuilder.nyAktivitet().kontorsperreEnhetId("1234")
+                    .opprettetDato(Date.from(Instant.now().minusSeconds(1000))).build(),
+                AktivitetDataTestBuilder.nyAktivitet().build(),
+            )
+        )
+        val filter = defaultFilter.copy(
+            kvpUtvalgskriterie = ArkiveringsController.KvpUtvalgskriterie(
+                alternativ = INKLUDER_KVP_AKTIVITETER,
+                start = DateUtils.dateToZonedDateTime(opprettetTidspunktTilInkludertKvpPeriode).minusSeconds(1),
+                slutt = DateUtils.dateToZonedDateTime(opprettetTidspunktTilInkludertKvpPeriode).plusSeconds(1)
+            )
+        )
+        val filtrertData = filtrerArkiveringsData(arkiveringsData, filter)
+        assertThat(filtrertData.aktiviteter).hasSize(3)
+    }
+
+    @Test
+    fun `Skal kunne ekskludere kvpAktiviteter`() {
+        val opprettetTidspunktTilInkludertKvpPeriode = Date.from(Instant.now())
+        val arkiveringsData = defaultArkiveringsData.copy(
+            aktiviteter = listOf(
+                AktivitetDataTestBuilder.nyAktivitet().kontorsperreEnhetId("1234")
+                    .opprettetDato(opprettetTidspunktTilInkludertKvpPeriode).build(),
+                AktivitetDataTestBuilder.nyAktivitet().kontorsperreEnhetId("1234")
+                    .opprettetDato(Date.from(Instant.now().minusSeconds(1000))).build(),
+                AktivitetDataTestBuilder.nyAktivitet().build(),
+            )
+        )
+        val filter = defaultFilter.copy(
+            kvpUtvalgskriterie = ArkiveringsController.KvpUtvalgskriterie(
+                alternativ = EKSLUDER_KVP_AKTIVITETER,
+                start = DateUtils.dateToZonedDateTime(opprettetTidspunktTilInkludertKvpPeriode).minusSeconds(1),
+                slutt = DateUtils.dateToZonedDateTime(opprettetTidspunktTilInkludertKvpPeriode).plusSeconds(1)
+            )
+        )
+        val filtrertData = filtrerArkiveringsData(arkiveringsData, filter)
+        assertThat(filtrertData.aktiviteter).hasSize(1)
+    }
 
     val defaultFilter = ArkiveringsController.Filter(
         inkluderHistorikk = true,
