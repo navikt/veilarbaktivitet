@@ -15,6 +15,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData.SAMTALEREFERAT
 import no.nav.veilarbaktivitet.arena.ArenaService
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO
 import no.nav.veilarbaktivitet.arena.model.ArenaStatusEtikettDTO
+import no.nav.veilarbaktivitet.arkivering.ArkiveringsController.KvpUtvalgskriterieAlternativ.EKSKLUDER_KVP_AKTIVITETER
 import no.nav.veilarbaktivitet.arkivering.ArkiveringsController.KvpUtvalgskriterieAlternativ.INKLUDER_KVP_AKTIVITETER
 import no.nav.veilarbaktivitet.arkivering.mapper.ArkiveringspayloadMapper.mapTilArkivPayload
 import no.nav.veilarbaktivitet.arkivering.mapper.ArkiveringspayloadMapper.mapTilForhåndsvisningsPayload
@@ -29,6 +30,7 @@ import no.nav.veilarbaktivitet.person.UserInContext
 import no.nav.veilarbaktivitet.util.DateUtils
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
 import java.time.LocalDateTime
@@ -126,6 +128,37 @@ class ArkiveringsController(
             sistJournalført = journalførtResult.sistJournalført
         )
     }
+
+    @PostMapping("/send-til-bruker")
+    @AuthorizeFnr(auditlogMessage = "Send aktivitetsplan til bruker", resourceType = OppfolgingsperiodeResource::class, resourceIdParamName = "oppfolgingsperiodeId")
+    fun sendAktivitetsplanTilBruker(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID, @RequestBody sendTilBrukerInboundDTO: SendTilBrukerInboundDTO): ResponseEntity<Unit> {
+        val inkludererKvpAktiviteter = sendTilBrukerInboundDTO.filter.kvpUtvalgskriterie.alternativ != EKSKLUDER_KVP_AKTIVITETER
+        if (inkludererKvpAktiviteter) {
+            throw ResponseStatusException(HttpStatus.UNAVAILABLE_FOR_LEGAL_REASONS)
+        }
+
+        val filtrertArkiveringsdata = filtrerArkiveringsData(
+            hentArkiveringsData(oppfølgingsperiodeId),
+            sendTilBrukerInboundDTO.filter
+        )
+
+        val oppdatertEtterForhaandsvisning = aktiviteterOgDialogerOppdatertEtter(sendTilBrukerInboundDTO.arkiverInbound.forhaandsvisningOpprettet, filtrertArkiveringsdata.aktiviteter, filtrertArkiveringsdata.dialoger)
+        if (oppdatertEtterForhaandsvisning) throw ResponseStatusException(HttpStatus.CONFLICT)
+
+        val sak = oppfølgingsperiodeService.hentSak(oppfølgingsperiodeId) ?: throw RuntimeException("Kunne ikke hente sak for oppfølgingsperiode: $oppfølgingsperiodeId")
+        val arkivPayload = mapTilArkivPayload(filtrertArkiveringsdata, sak, sendTilBrukerInboundDTO.arkiverInbound.journalforendeEnhet, Tema_AktivitetsplanMedDialog)
+
+        val timedJournalførtResultat = measureTimedValue {
+            orkivarClient.sendTilBruker(arkivPayload)
+        }
+        logger.info("Sending av PDF til bruker tok ${timedJournalførtResultat.duration.inWholeMilliseconds} ms")
+
+        return when (timedJournalførtResultat.value) {
+            is OrkivarClient.SendTilBrukerSuccess -> ResponseEntity.status(200).build()
+            is OrkivarClient.SendTilBrukerFail -> ResponseEntity.status(500).build()
+        }
+    }
+
 
     private fun hentArkiveringsData(oppfølgingsperiodeId: UUID, inkluderDataIKvpPeriode: Boolean = false): ArkiveringsData {
         val timedArkiveringsdata = measureTimedValue {
@@ -233,6 +266,11 @@ class ArkiveringsController(
 
     data class JournalførtOutboundDTO(
         val sistJournalført: LocalDateTime
+    )
+
+    data class SendTilBrukerInboundDTO(
+        val arkiverInbound: ArkiverInboundDTO,
+        val filter: Filter
     )
 
     data class Filter(
