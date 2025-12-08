@@ -308,6 +308,7 @@ class ArkiveringsFiltrererTest {
     val defaultArkiveringsData = ArkiveringsController.ArkiveringsData(
         fnr = fnr("12345678901"),
         navn = Navn(fornavn = "Ola", mellomnavn = "", etternavn = "Nordmann"),
+        tekstTilBruker = "En tekst til bruker",
         oppfølgingsperiode = OppfolgingPeriodeMinimalDTO(
             UUID.randomUUID(),
             ZonedDateTime.now().minusMonths(2),

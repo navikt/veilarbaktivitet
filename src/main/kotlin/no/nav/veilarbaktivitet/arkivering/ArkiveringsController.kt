@@ -59,7 +59,7 @@ class ArkiveringsController(
         private const val Tema_AktivitetsplanMedDialog = "AKT"
     }
 
-
+    @Deprecated("Skal erstattes med tilsvarende POST-endepunkt")
     @GetMapping("/forhaandsvisning")
     @AuthorizeFnr(auditlogMessage = "lag forhåndsvisning av aktivitetsplan og dialog", resourceType = OppfolgingsperiodeResource::class, resourceIdParamName = "oppfolgingsperiodeId")
     fun forhaandsvisAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID): ForhaandsvisningOutboundDTO {
@@ -81,16 +81,18 @@ class ArkiveringsController(
         )
     }
 
-
+    // TODO: Fjern nullability på requestBody
     @PostMapping("/forhaandsvisning")
     @AuthorizeFnr(auditlogMessage = "lag forhåndsvisning av aktivitetsplan og dialog", resourceType = OppfolgingsperiodeResource::class, resourceIdParamName = "oppfolgingsperiodeId")
-    fun forhaandsvisAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID, @RequestBody filter: Filter?): ForhaandsvisningOutboundDTO {
+    fun forhaandsvisAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID, @RequestBody forhaandsvisningInboundDTO: ForhaandsvisningInboundDTO?): ForhaandsvisningOutboundDTO {
         val dataHentet = ZonedDateTime.now()
-        val hentKvpAktiviteter = filter?.kvpUtvalgskriterie?.alternativ in listOf(
+        val valgtKvpAlternativ = forhaandsvisningInboundDTO?.filter?.kvpUtvalgskriterie?.alternativ
+        val hentKvpAktiviteter = valgtKvpAlternativ in listOf(
             INKLUDER_KVP_AKTIVITETER,
             KvpUtvalgskriterieAlternativ.KUN_KVP_AKTIVITETER
         )
-        val arkiveringsdata = hentArkiveringsData(oppfølgingsperiodeId, hentKvpAktiviteter)
+        val filter = forhaandsvisningInboundDTO?.filter
+        val arkiveringsdata = hentArkiveringsData(oppfølgingsperiodeId, forhaandsvisningInboundDTO?.tekstTilBruker,hentKvpAktiviteter)
         val filtrertArkiveringsdata = if (filter != null) filtrerArkiveringsData(arkiveringsdata, filter) else arkiveringsdata
         val forhåndsvisningPayload = mapTilForhåndsvisningsPayload(filtrertArkiveringsdata)
 
@@ -138,15 +140,15 @@ class ArkiveringsController(
         }
 
         val filtrertArkiveringsdata = filtrerArkiveringsData(
-            hentArkiveringsData(oppfølgingsperiodeId),
+            hentArkiveringsData(oppfølgingsperiodeId, sendTilBrukerInboundDTO.tekstTilBruker),
             sendTilBrukerInboundDTO.filter
         )
 
-        val oppdatertEtterForhaandsvisning = aktiviteterOgDialogerOppdatertEtter(sendTilBrukerInboundDTO.arkiverInbound.forhaandsvisningOpprettet, filtrertArkiveringsdata.aktiviteter, filtrertArkiveringsdata.dialoger)
+        val oppdatertEtterForhaandsvisning = aktiviteterOgDialogerOppdatertEtter(sendTilBrukerInboundDTO.forhaandsvisningOpprettet, filtrertArkiveringsdata.aktiviteter, filtrertArkiveringsdata.dialoger)
         if (oppdatertEtterForhaandsvisning) throw ResponseStatusException(HttpStatus.CONFLICT)
 
         val sak = oppfølgingsperiodeService.hentSak(oppfølgingsperiodeId) ?: throw RuntimeException("Kunne ikke hente sak for oppfølgingsperiode: $oppfølgingsperiodeId")
-        val arkivPayload = mapTilArkivPayload(filtrertArkiveringsdata, sak, sendTilBrukerInboundDTO.arkiverInbound.journalforendeEnhet, Tema_AktivitetsplanMedDialog)
+        val arkivPayload = mapTilArkivPayload(filtrertArkiveringsdata, sak, sendTilBrukerInboundDTO.journalforendeEnhet, Tema_AktivitetsplanMedDialog)
 
         val timedJournalførtResultat = measureTimedValue {
             orkivarClient.sendTilBruker(arkivPayload)
@@ -160,7 +162,7 @@ class ArkiveringsController(
     }
 
 
-    private fun hentArkiveringsData(oppfølgingsperiodeId: UUID, inkluderDataIKvpPeriode: Boolean = false): ArkiveringsData {
+    private fun hentArkiveringsData(oppfølgingsperiodeId: UUID, tekstTilBruker: String? = null, inkluderDataIKvpPeriode: Boolean = false): ArkiveringsData {
         val timedArkiveringsdata = measureTimedValue {
             val fnr = userInContext.fnr.get()
             val aktorId = userInContext.aktorId
@@ -205,6 +207,7 @@ class ArkiveringsController(
                 ArkiveringsData(
                     fnr = fnr,
                     navn = navn.await(),
+                    tekstTilBruker = tekstTilBruker,
                     oppfølgingsperiode = oppfølgingsperiode.await(),
                     aktiviteter = aktiviteter,
                     dialoger = dialogerIPerioden.await(),
@@ -245,6 +248,7 @@ class ArkiveringsController(
     data class ArkiveringsData(
         val fnr: Fnr,
         val navn: Navn,
+        val tekstTilBruker: String?,
         val oppfølgingsperiode: OppfolgingPeriodeMinimalDTO,
         val aktiviteter: List<AktivitetData>,
         val dialoger: List<DialogClient.DialogTråd>,
@@ -269,8 +273,15 @@ class ArkiveringsController(
     )
 
     data class SendTilBrukerInboundDTO(
-        val arkiverInbound: ArkiverInboundDTO,
+        val forhaandsvisningOpprettet: ZonedDateTime,
+        val journalforendeEnhet: String,
+        val tekstTilBruker: String,
         val filter: Filter
+    )
+
+    data class ForhaandsvisningInboundDTO(
+        val tekstTilBruker: String,
+        val filter: Filter,
     )
 
     data class Filter(
