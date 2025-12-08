@@ -15,6 +15,7 @@ import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType.MIDLERTIDIG
 import no.nav.veilarbaktivitet.aktivitetskort.dto.KafkaAktivitetskortWrapperDTO
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.LenkeSeksjon
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.LenkeType
+import no.nav.veilarbaktivitet.arkivering.ArkiveringsController.KvpUtvalgskriterieAlternativ.EKSKLUDER_KVP_AKTIVITETER
 import no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavDTO
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO
 import no.nav.veilarbaktivitet.avtalt_med_nav.Type
@@ -463,6 +464,36 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
     }
 
     @Test
+    fun `Skal aldri arkivere kontorsperrede aktiviteter og dialoger når man skal sende aktivitetsplan til bruker`() {
+        val (kvpBruker, veileder) = hentKvpBrukerOgVeileder("Sølvi", "Normalbakke")
+        val oppfølgingsperiode = kvpBruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
+        val kvpAktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
+            .toBuilder().oppfolgingsperiodeId(oppfølgingsperiode).build()
+        aktivitetTestService.opprettAktivitet(kvpBruker, veileder, kvpAktivitet)
+        stubDialogTråder(kvpBruker.fnr, oppfølgingsperiode.toString(), "dummyAktivitetId")
+        stubIngenArenaAktiviteter(kvpBruker.fnr)
+        val sendTilBrukerInbound = ArkiveringsController.SendTilBrukerInboundDTO(
+            arkiverInbound = ArkiveringsController.ArkiverInboundDTO(
+                forhaandsvisningOpprettet = ZonedDateTime.now(),
+                journalforendeEnhet = "dummyEnhet"
+            ),
+            filter = defaultFilter()
+        )
+        val arkiveringsUrl =
+            "http://localhost:$port/veilarbaktivitet/api/arkivering/send-til-bruker?oppfolgingsperiodeId=$oppfølgingsperiode"
+
+        veileder
+            .createRequest(kvpBruker)
+            .body(sendTilBrukerInbound)
+            .post(arkiveringsUrl)
+
+        val journalforingsrequest =
+            wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/send-til-bruker") }.first()
+        val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
+        assertThat(arkivPayload.aktiviteter).isEmpty()
+    }
+
+    @Test
     fun `Når man journalfører på bruker som har vært i KVP skal aktiviteter utenom KVP-perioden inkluderes`() {
         val (bruker, veileder) = hentKvpBrukerOgVeileder("Sølvi", "Normalbakke")
         val oppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
@@ -812,6 +843,49 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             .statusCode(HttpStatus.FORBIDDEN.value())
     }
 
+    @Test
+    fun `Kast feil hvis veileder forsøker å inkludere KVP-aktiviter ved send-til-bruker`() {
+        val (kvpBruker, veileder) = hentKvpBrukerOgVeileder("Sølvi", "Normalbakke")
+        val oppfølgingsperiode = kvpBruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
+        val sendTilBrukerInbound = ArkiveringsController.SendTilBrukerInboundDTO(
+            arkiverInbound = ArkiveringsController.ArkiverInboundDTO(
+                forhaandsvisningOpprettet = ZonedDateTime.now(),
+                journalforendeEnhet = "dummyEnhet"
+            ),
+            filter = defaultFilter(kvpAlternativ = ArkiveringsController.KvpUtvalgskriterieAlternativ.INKLUDER_KVP_AKTIVITETER)
+        )
+        val url =
+            "http://localhost:$port/veilarbaktivitet/api/arkivering/send-til-bruker?oppfolgingsperiodeId=$oppfølgingsperiode"
+
+        val response = veileder
+            .createRequest(kvpBruker)
+            .body(sendTilBrukerInbound)
+            .post(url)
+        assertThat(response.statusCode()).isEqualTo(451)
+    }
+
+
+    @Test
+    fun `Skal aldri inkludere kontorsperrede aktiviteter og dialoger ved forhaandsvisning hvis veileder ikke har tilgang`() {
+        val (kvpBruker, veileder) = hentKvpBrukerOgVeileder("Sølvi", "Normalbakke")
+        val oppfølgingsperiode = kvpBruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
+        val sendTilBrukerInbound = ArkiveringsController.SendTilBrukerInboundDTO(
+            arkiverInbound = ArkiveringsController.ArkiverInboundDTO(
+                forhaandsvisningOpprettet = ZonedDateTime.now(),
+                journalforendeEnhet = "dummyEnhet"
+            ),
+            filter = defaultFilter(kvpAlternativ = ArkiveringsController.KvpUtvalgskriterieAlternativ.KUN_KVP_AKTIVITETER)
+        )
+        val url =
+            "http://localhost:$port/veilarbaktivitet/api/arkivering/send-til-bruker?oppfolgingsperiodeId=$oppfølgingsperiode"
+
+        val response = veileder
+            .createRequest(kvpBruker)
+            .body(sendTilBrukerInbound)
+            .post(url)
+        assertThat(response.statusCode()).isEqualTo(451)
+    }
+
     private fun stubDialogTråder(
         fnr: String,
         oppfølgingsperiodeId: String,
@@ -989,4 +1063,18 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val veileder = navMockService.createVeileder(mockBruker = bruker)
         return Pair(bruker, veileder)
     }
+
+    private fun defaultFilter(kvpAlternativ: ArkiveringsController.KvpUtvalgskriterieAlternativ = EKSKLUDER_KVP_AKTIVITETER) = ArkiveringsController.Filter(
+        inkluderHistorikk = true,
+        inkluderDialoger = true,
+        kvpUtvalgskriterie = ArkiveringsController.KvpUtvalgskriterie(
+            alternativ = kvpAlternativ,
+            start = null,
+            slutt = null,
+        ),
+        aktivitetAvtaltMedNavFilter = emptyList(),
+        stillingsstatusFilter = emptyList(),
+        arenaAktivitetStatusFilter = emptyList(),
+        aktivitetTypeFilter = emptyList()
+    )
 }
