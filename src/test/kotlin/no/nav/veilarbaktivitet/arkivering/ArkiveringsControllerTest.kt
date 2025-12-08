@@ -502,12 +502,13 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
         val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
         assertThat(arkivPayload.aktiviteter).isEmpty()
-        val harHentetDialogerMedKontorsperre = wireMock.allServeEvents.any { it.request.url.contains("ekskluderDialogerMedKontorsperre=false") }
+        val harHentetDialogerMedKontorsperre = wireMock.getAllServeEvents().any { it.request.url.contains("ekskluderDialogerMedKontorsperre=false") }
         assertThat(harHentetDialogerMedKontorsperre).isFalse()
     }
 
     @Test
     fun `Skal aldri arkivere kontorsperrede aktiviteter og dialoger når man skal sende aktivitetsplan til bruker`() {
+        wireMock.resetAll()
         val (kvpBruker, veileder) = hentKvpBrukerOgVeileder("Sølvi", "Normalbakke")
         val oppfølgingsperiode = kvpBruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
         val kvpAktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
@@ -534,7 +535,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/send-til-bruker") }.first()
         val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
         assertThat(arkivPayload.aktiviteter).isEmpty()
-        val harHentetDialogerMedKontorsperre = wireMock.allServeEvents.any { it.request.url.contains("ekskluderDialogerMedKontorsperre=false") }
+        val harHentetDialogerMedKontorsperre = wireMock.getAllServeEvents().any { it.request.url.contains("ekskluderDialogerMedKontorsperre=false") }
         assertThat(harHentetDialogerMedKontorsperre).isFalse()
     }
 
@@ -552,7 +553,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             .post(url)
 
         assertThat(response.statusCode()).isEqualTo(200)
-        val harHentetDialogerMedKontorsperre = wireMock.allServeEvents.any { it.request.url.contains("ekskluderDialogerMedKontorsperre=false") }
+        val harHentetDialogerMedKontorsperre = wireMock.getAllServeEvents().any { it.request.url.contains("ekskluderDialogerMedKontorsperre=false") }
         assertThat(harHentetDialogerMedKontorsperre).isTrue()
     }
 
@@ -651,7 +652,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now(), "dummyEnhet"))
             .post(arkiveringsUrl)
 
-        val journalforingsrequest = wireMock.allServeEvents.first { it.request.url.contains("orkivar/arkiver") }
+        val journalforingsrequest = wireMock.getAllServeEvents().first { it.request.url.contains("orkivar/arkiver") }
         val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
         val aktiviteterSendtTilArkiv = arkivPayload.aktiviteter.values.flatten()
         assertThat(aktiviteterSendtTilArkiv).hasSize(1)
