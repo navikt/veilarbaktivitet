@@ -102,6 +102,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                     {
                       "navn": "${bruker.navn.tilFornavnMellomnavnEtternavn()}",
                       "fnr": "${bruker.fnr}",
+                      "tekstTilBruker" : null,
                       "oppfølgingsperiodeStart": "${norskDato(sisteOppfølgingsperiode.startTid)}",
                       "oppfølgingsperiodeSlutt": ${sisteOppfølgingsperiode.sluttTid?.let { norskDato(it) }},
                       "oppfølgingsperiodeId": "${sisteOppfølgingsperiode.oppfolgingsperiodeId}",
@@ -285,6 +286,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                     {
                       "navn": "${bruker.navn.tilFornavnMellomnavnEtternavn()}",
                       "fnr": "${bruker.fnr}",
+                      "tekstTilBruker" : null,
                       "oppfølgingsperiodeStart": "${norskDato(sisteOppfølgingsperiode.startTid)}",
                       "oppfølgingsperiodeSlutt": ${sisteOppfølgingsperiode?.sluttTid?.let { norskDato(it) } ?: null},
                       "sakId": ${bruker.sakId},
@@ -779,6 +781,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                             {
                               "navn" : "Sølvi Normalbakke",
                               "fnr" : "${bruker.fnr}",
+                              "tekstTilBruker" : null,
                               "oppfølgingsperiodeStart" : "${norskDato(oppfølgingsperiode.startTid)}",
                               "oppfølgingsperiodeSlutt" : null,
                               "sakId" : 1000,
