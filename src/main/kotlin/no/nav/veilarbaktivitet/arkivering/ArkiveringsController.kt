@@ -185,7 +185,7 @@ class ArkiveringsController(
                         .toList()
                 }
                 val dialogerIPerioden = hentDataAsync {
-                    dialogClient.hentDialogerUtenKontorsperre(fnr)
+                    dialogClient.hentDialoger(fnr, inkluderDataIKvpPeriode)
                         .filter { it.oppfolgingsperiodeId == oppfølgingsperiodeId }
                 }
                 val arenaAktiviteter = hentDataAsync {

@@ -205,22 +205,24 @@ class ArkiveringsFiltrererTest {
     }
 
     @Test
-    fun `Skal kunne inkludere alle aktiviteter inkludert kvpAktiviteter`() {
+    fun `Skal kunne inkludere alle aktiviteter og dialoger inkludert aktiviteter og dialoger under KVP`() {
         val arkiveringsData = defaultArkiveringsData.copy(
             aktiviteter = listOf(
                 AktivitetDataTestBuilder.nyAktivitet().kontorsperreEnhetId("1234")
                     .opprettetDato(Date.from(Instant.now())).build(),
                 AktivitetDataTestBuilder.nyAktivitet().build(),
-            )
+            ),
+            dialoger = listOf(defaultDialogtråd)
         )
         val filter =
             defaultFilter.copy(kvpUtvalgskriterie = ArkiveringsController.KvpUtvalgskriterie(alternativ = INKLUDER_KVP_AKTIVITETER))
         val filtrertData = filtrerArkiveringsData(arkiveringsData, filter)
         assertThat(filtrertData.aktiviteter).hasSize(2)
+        assertThat(filtrertData.dialoger).hasSize(1)
     }
 
     @Test
-    fun `Skal kunne inkludere kun kvpAktiviteter i gitt periode`() {
+    fun `Skal kunne inkludere kun kvpAktiviteter og kvpDialoger i gitt periode`() {
         val opprettetTidspunktTilInkludertKvpPeriode = Date.from(Instant.now())
         val arkiveringsData = defaultArkiveringsData.copy(
             aktiviteter = listOf(
