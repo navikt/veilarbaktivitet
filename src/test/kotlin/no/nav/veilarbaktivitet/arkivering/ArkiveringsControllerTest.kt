@@ -480,7 +480,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
     }
 
     @Test
-    fun `Når man journalfører på bruker i KVP skal aktiviteter med kontorsperre ekskluderes`() {
+    fun `Når man journalfører på bruker i KVP skal aktiviteter og dialoger med kontorsperre ekskluderes`() {
         val (kvpBruker, veileder) = hentKvpBrukerOgVeileder("Sølvi", "Normalbakke")
         val oppfølgingsperiode = kvpBruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
         // Aktiviteten vil få satt kontorsperre fordi bruker er under KVP
@@ -502,6 +502,8 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
         val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
         assertThat(arkivPayload.aktiviteter).isEmpty()
+        val harHentetDialogerMedKontorsperre = wireMock.allServeEvents.any { it.request.url.contains("ekskluderDialogerMedKontorsperre=false") }
+        assertThat(harHentetDialogerMedKontorsperre).isFalse()
     }
 
     @Test
@@ -532,6 +534,26 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/send-til-bruker") }.first()
         val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
         assertThat(arkivPayload.aktiviteter).isEmpty()
+        val harHentetDialogerMedKontorsperre = wireMock.allServeEvents.any { it.request.url.contains("ekskluderDialogerMedKontorsperre=false") }
+        assertThat(harHentetDialogerMedKontorsperre).isFalse()
+    }
+
+    @Test
+    fun `Skal kunne hente dialoger med kontorsperre når man forhåndsviser`() {
+        val (kvpBruker, veileder) = hentKvpBrukerOgVeileder("Sølvi", "Normalbakke")
+        val oppfølgingsperiode = kvpBruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
+        stubDialogTråder(kvpBruker.fnr, oppfølgingsperiode.toString(), "dummyAktivitetId", ekskluderDialogerMedKontorsperre = false)
+        stubIngenArenaAktiviteter(kvpBruker.fnr)
+        val url = "http://localhost:$port/veilarbaktivitet/api/arkivering/forhaandsvisning?oppfolgingsperiodeId=$oppfølgingsperiode"
+
+        val response = veileder
+            .createRequest(kvpBruker)
+            .body(defaultFilter(kvpAlternativ = ArkiveringsController.KvpUtvalgskriterieAlternativ.INKLUDER_KVP_AKTIVITETER))
+            .post(url)
+
+        assertThat(response.statusCode()).isEqualTo(200)
+        val harHentetDialogerMedKontorsperre = wireMock.allServeEvents.any { it.request.url.contains("ekskluderDialogerMedKontorsperre=false") }
+        assertThat(harHentetDialogerMedKontorsperre).isTrue()
     }
 
     @Test
@@ -907,7 +929,6 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         assertThat(response.statusCode()).isEqualTo(451)
     }
 
-
     @Test
     fun `Skal aldri inkludere kontorsperrede aktiviteter og dialoger ved forhaandsvisning hvis veileder ikke har tilgang`() {
         val (kvpBruker, veileder) = hentKvpBrukerOgVeileder("Sølvi", "Normalbakke")
@@ -928,18 +949,18 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             .post(url)
         assertThat(response.statusCode()).isEqualTo(451)
     }
-
     private fun stubDialogTråder(
         fnr: String,
         oppfølgingsperiodeId: String,
         aktivitetId: String,
         meldingerSendtTidspunkt: String = "2024-02-05T13:31:22.238+00:00",
-        sistLestTidspunkt: String = "2024-03-05T13:31:22.238+00:00"
+        sistLestTidspunkt: String = "2024-03-05T13:31:22.238+00:00",
+        ekskluderDialogerMedKontorsperre: Boolean = true
     ) {
         wireMock.stubFor(
             get(
                 urlEqualTo(
-                    "/veilarbdialog/api/dialog?fnr=$fnr&ekskluderDialogerMedKontorsperre=true"
+                    "/veilarbdialog/api/dialog?fnr=$fnr&ekskluderDialogerMedKontorsperre=$ekskluderDialogerMedKontorsperre"
                 )
             )
                 .willReturn(
