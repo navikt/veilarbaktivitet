@@ -73,7 +73,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             filter = defaultFilter()
         )
         val arkiveringsUrl =
-            "http://localhost:$port/veilarbaktivitet/api/arkivering/forhaandsvisning?oppfolgingsperiodeId=$oppfølgingsperiodeId"
+            "http://localhost:$port/veilarbaktivitet/api/arkivering/forhaandsvisning-send-til-bruker?oppfolgingsperiodeId=$oppfølgingsperiodeId"
 
         // When
         val forhaandsvisning = veileder
@@ -107,6 +107,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                       "navn": "${bruker.navn.tilFornavnMellomnavnEtternavn()}",
                       "fnr": "${bruker.fnr}",
                       "tekstTilBruker" : "${body.tekstTilBruker}",
+                      "brukteFiltre": { },
                       "oppfølgingsperiodeStart": "${norskDato(sisteOppfølgingsperiode.startTid)}",
                       "oppfølgingsperiodeSlutt": ${sisteOppfølgingsperiode.sluttTid?.let { norskDato(it) }},
                       "oppfølgingsperiodeId": "${sisteOppfølgingsperiode.oppfolgingsperiodeId}",
@@ -291,6 +292,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                       "navn": "${bruker.navn.tilFornavnMellomnavnEtternavn()}",
                       "fnr": "${bruker.fnr}",
                       "tekstTilBruker" : null,
+                      "brukteFiltre": { },
                       "oppfølgingsperiodeStart": "${norskDato(sisteOppfølgingsperiode.startTid)}",
                       "oppfølgingsperiodeSlutt": ${sisteOppfølgingsperiode?.sluttTid?.let { norskDato(it) } ?: null},
                       "sakId": ${bruker.sakId},
@@ -405,7 +407,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             "http://localhost:$port/veilarbaktivitet/api/arkivering/forhaandsvisning?oppfolgingsperiodeId=$oppfølgingsperiodeForArkivering&journalforendeEnhet=0909"
         veileder
             .createRequest(bruker)
-            .post(arkiveringsUrl)
+            .get(arkiveringsUrl)
 
         val journalforingsrequest =
             wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/forhaandsvisning") }.first()
@@ -509,7 +511,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val oppfølgingsperiode = kvpBruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
         stubDialogTråder(kvpBruker.fnr, oppfølgingsperiode.toString(), "dummyAktivitetId", ekskluderDialogerMedKontorsperre = false)
         stubIngenArenaAktiviteter(kvpBruker.fnr)
-        val url = "http://localhost:$port/veilarbaktivitet/api/arkivering/forhaandsvisning?oppfolgingsperiodeId=$oppfølgingsperiode"
+        val url = "http://localhost:$port/veilarbaktivitet/api/arkivering/forhaandsvisning-send-til-bruker?oppfolgingsperiodeId=$oppfølgingsperiode"
         val body = ArkiveringsController.ForhaandsvisningInboundDTO(
             tekstTilBruker = "Tekst til bruker",
             filter = defaultFilter(kvpAlternativ = INKLUDER_KVP_AKTIVITETER)
@@ -790,6 +792,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                               "navn" : "Sølvi Normalbakke",
                               "fnr" : "${bruker.fnr}",
                               "tekstTilBruker" : null,
+                              "brukteFiltre": { }, 
                               "oppfølgingsperiodeStart" : "${norskDato(oppfølgingsperiode.startTid)}",
                               "oppfølgingsperiodeSlutt" : null,
                               "sakId" : 1000,
@@ -870,7 +873,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
 
         veileder
             .createRequest(bruker)
-            .post(arkiveringsUrl)
+            .get(arkiveringsUrl)
             .then()
             .assertThat()
             .statusCode(HttpStatus.FORBIDDEN.value())

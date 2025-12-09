@@ -25,6 +25,7 @@ object ArkiveringspayloadMapper {
             navn = arkiveringsData.navn.tilFornavnMellomnavnEtternavn(),
             fnr = arkiveringsData.fnr.get(),
             tekstTilBruker = arkiveringsData.tekstTilBruker,
+            brukteFiltre = filter?.mapTilBrukteFiltre() ?: emptyMap(),
             oppfølgingsperiodeStart = norskDato(arkiveringsData.oppfølgingsperiode.startDato),
             oppfølgingsperiodeSlutt = arkiveringsData.oppfølgingsperiode.sluttDato?.let { norskDato(it) },
             sakId = sakDTO.sakId,
@@ -44,7 +45,7 @@ object ArkiveringspayloadMapper {
         return ForhåndsvisningPayload(
             navn = arkiveringsData.navn.tilFornavnMellomnavnEtternavn(),
             fnr = arkiveringsData.fnr.get(),
-            brukteFiltre = if (filter == null) emptyMap() else
+            brukteFiltre = filter?.mapTilBrukteFiltre() ?: emptyMap(),
             tekstTilBruker = arkiveringsData.tekstTilBruker,
             oppfølgingsperiodeStart = norskDato(arkiveringsData.oppfølgingsperiode.startDato),
             oppfølgingsperiodeSlutt = arkiveringsData.oppfølgingsperiode.sluttDato?.let { norskDato(it) },
