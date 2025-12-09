@@ -19,6 +19,7 @@ import no.nav.veilarbaktivitet.arkivering.ArkiveringsController.KvpUtvalgskriter
 import no.nav.veilarbaktivitet.arkivering.ArkiveringsController.KvpUtvalgskriterieAlternativ.INKLUDER_KVP_AKTIVITETER
 import no.nav.veilarbaktivitet.arkivering.mapper.ArkiveringspayloadMapper.mapTilArkivPayload
 import no.nav.veilarbaktivitet.arkivering.mapper.ArkiveringspayloadMapper.mapTilForhåndsvisningsPayload
+import no.nav.veilarbaktivitet.arkivering.mapper.toArkivEtikett
 import no.nav.veilarbaktivitet.config.OppfolgingsperiodeResource
 import no.nav.veilarbaktivitet.oppfolging.client.MålDTO
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO
@@ -64,7 +65,7 @@ class ArkiveringsController(
         val dataHentet = ZonedDateTime.now()
         val arkiveringsdata = hentArkiveringsData(oppfølgingsperiodeId)
 
-        val forhåndsvisningPayload = mapTilForhåndsvisningsPayload(arkiveringsdata)
+        val forhåndsvisningPayload = mapTilForhåndsvisningsPayload(arkiveringsdata, null)
 
         val timedForhaandsvisningResultat = measureTimedValue {
             orkivarClient.hentPdfForForhaandsvisning(forhåndsvisningPayload)
@@ -91,7 +92,7 @@ class ArkiveringsController(
         val filter = forhaandsvisningInboundDTO.filter
         val arkiveringsdata = hentArkiveringsData(oppfølgingsperiodeId, forhaandsvisningInboundDTO.tekstTilBruker,hentKvpAktiviteter)
         val filtrertArkiveringsdata = filtrerArkiveringsData(arkiveringsdata, filter)
-        val forhåndsvisningPayload = mapTilForhåndsvisningsPayload(filtrertArkiveringsdata)
+        val forhåndsvisningPayload = mapTilForhåndsvisningsPayload(filtrertArkiveringsdata, filter)
 
         val timedForhaandsvisningResultat = measureTimedValue {
             orkivarClient.hentPdfForForhaandsvisning(forhåndsvisningPayload)
@@ -115,7 +116,7 @@ class ArkiveringsController(
         if (oppdatertEtterForhaandsvisning) throw ResponseStatusException(HttpStatus.CONFLICT)
 
         val sak = oppfølgingsperiodeService.hentSak(oppfølgingsperiodeId) ?: throw RuntimeException("Kunne ikke hente sak for oppfølgingsperiode: $oppfølgingsperiodeId")
-        val arkivPayload = mapTilArkivPayload(arkiveringsdata, sak, arkiverInboundDTO.journalforendeEnhet, Tema_AktivitetsplanMedDialog)
+        val arkivPayload = mapTilArkivPayload(arkiveringsdata, sak, arkiverInboundDTO.journalforendeEnhet, Tema_AktivitetsplanMedDialog, null)
 
         val timedJournalførtResultat = measureTimedValue {
             orkivarClient.journalfor(arkivPayload)
@@ -145,7 +146,7 @@ class ArkiveringsController(
         if (oppdatertEtterForhaandsvisning) throw ResponseStatusException(HttpStatus.CONFLICT)
 
         val sak = oppfølgingsperiodeService.hentSak(oppfølgingsperiodeId) ?: throw RuntimeException("Kunne ikke hente sak for oppfølgingsperiode: $oppfølgingsperiodeId")
-        val arkivPayload = mapTilArkivPayload(filtrertArkiveringsdata, sak, sendTilBrukerInboundDTO.journalforendeEnhet, Tema_AktivitetsplanMedDialog)
+        val arkivPayload = mapTilArkivPayload(filtrertArkiveringsdata, sak, sendTilBrukerInboundDTO.journalforendeEnhet, Tema_AktivitetsplanMedDialog, sendTilBrukerInboundDTO.filter)
 
         val timedJournalførtResultat = measureTimedValue {
             orkivarClient.sendTilBruker(arkivPayload)
@@ -288,7 +289,16 @@ class ArkiveringsController(
         val stillingsstatusFilter: List<SøknadsstatusFilter>,
         val arenaAktivitetStatusFilter: List<ArenaStatusEtikettDTO>,
         val aktivitetTypeFilter: List<AktivitetTypeFilter>,
-    )
+    ) {
+        fun mapTilBrukteFiltre(): Map<String, List<String>> {
+            return mapOf(
+                "Avtalt med Nav" to aktivitetAvtaltMedNavFilter.map { it.tekst },
+                "Stillingsstatus" to stillingsstatusFilter.map { it.tekst },
+                "Status for Arena-aktivitet" to arenaAktivitetStatusFilter.map { it.toArkivEtikett().tekst },
+                "Aktivitetstype" to aktivitetTypeFilter.map { it.tekst}
+            ).filter { it.value.isNotEmpty() }
+        }
+    }
 
     data class KvpUtvalgskriterie(
         val alternativ: KvpUtvalgskriterieAlternativ,
@@ -302,45 +312,45 @@ class ArkiveringsController(
         KUN_KVP_AKTIVITETER
     }
 
-    enum class AvtaltMedNavFilter {
-        AVTALT_MED_NAV,
-        IKKE_AVTALT_MED_NAV,
+    enum class AvtaltMedNavFilter(val tekst: String) {
+        AVTALT_MED_NAV("Avtalt med Nav"),
+        IKKE_AVTALT_MED_NAV("Ikke avtalt med Nav"),
     }
 
-    enum class SøknadsstatusFilter {
-        AVSLAG,
-        CV_DELT,
-        IKKE_FATT_JOBBEN,
-        INGEN_VALGT,
-        INNKALT_TIL_INTERVJU,
-        JOBBTILBUD,
-        SKAL_PAA_INTERVJU,
-        SOKNAD_SENDT,
-        VENTER,
-        FATT_JOBBEN
+    enum class SøknadsstatusFilter(val tekst: String) {
+        AVSLAG("Avslag"),
+        CV_DELT("CV delt"),
+        IKKE_FATT_JOBBEN("Ikke fått jobben"),
+        INGEN_VALGT("Ingen valgt"),
+        INNKALT_TIL_INTERVJU("Innkalt til intervju"),
+        JOBBTILBUD("Jobbtilbud"),
+        SKAL_PAA_INTERVJU("Skal på intervju"),
+        SOKNAD_SENDT("Søknad sendt"),
+        VENTER("Venter på svar"),
+        FATT_JOBBEN("Fått jobben"),
     }
 
-    enum class AktivitetTypeFilter {
-        ARENA_TILTAK,
-        BEHANDLING,
-        EGEN,
-        GRUPPEAKTIVITET,
-        IJOBB,
-        MOTE,
-        SAMTALEREFERAT,
-        SOKEAVTALE,
-        STILLING,
-        STILLING_FRA_NAV,
-        TILTAKSAKTIVITET,
-        UTDANNINGSAKTIVITET,
-        MIDLERTIDIG_LONNSTILSKUDD,
-        VARIG_LONNSTILSKUDD,
-        ARBEIDSTRENING,
-        VARIG_TILRETTELAGT_ARBEID_I_ORDINAER_VIRKSOMHET,
-        MENTOR,
-        REKRUTTERINGSTREFF,
-        ENKELAMO,
-        ENKFAGYRKE,
-        HOYEREUTD,
+    enum class AktivitetTypeFilter(val tekst: String) {
+        ARENA_TILTAK("Tiltak gjennom Nav"),
+        BEHANDLING("Behandling"),
+        EGEN("Jobbrettet egenaktivitet"),
+        GRUPPEAKTIVITET("Gruppeaktivitet"),
+        IJOBB("Jobb jeg har nå"),
+        MOTE("Møte med Nav"),
+        SAMTALEREFERAT("Samtalereferat"),
+        SOKEAVTALE("Jobbsøking"),
+        STILLING("Stilling"),
+        STILLING_FRA_NAV("Stilling fra Nav"),
+        TILTAKSAKTIVITET("Tiltak gjennom Nav"),
+        UTDANNINGSAKTIVITET("Utdanning"),
+        MIDLERTIDIG_LONNSTILSKUDD("Midlertidig lønnstilskudd"),
+        VARIG_LONNSTILSKUDD("Varig lønnstilskudd"),
+        ARBEIDSTRENING("Arbeidstrening"),
+        VARIG_TILRETTELAGT_ARBEID_I_ORDINAER_VIRKSOMHET("Varig tilrettelagt arbeid i ordinær virksomhet"),
+        MENTOR("Mentor"),
+        REKRUTTERINGSTREFF("Rekrutteringstreff"),
+        ENKELAMO("Arbeidsmarkedsopplæring (enkeltplass)"),
+        ENKFAGYRKE("Fag- og yrkesopplæring (enkeltplass)"),
+        HOYEREUTD("Høyere utdanning")
     }
 }

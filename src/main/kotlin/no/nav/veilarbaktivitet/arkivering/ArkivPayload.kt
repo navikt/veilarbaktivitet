@@ -8,6 +8,7 @@ typealias ArkivAktivitetStatus = String
 data class ArkivPayload(
     val navn: String,
     val fnr: String,
+    val brukteFiltre: Map<String, List<String>>,
     val tekstTilBruker: String? = null,
     val oppfølgingsperiodeStart: String,
     val oppfølgingsperiodeSlutt: String?,

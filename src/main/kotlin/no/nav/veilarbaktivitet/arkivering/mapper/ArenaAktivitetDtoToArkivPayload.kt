@@ -16,7 +16,7 @@ fun ArenaAktivitetDTO.toArkivPayload(dialogtråd: ArkivDialogtråd?): ArkivAktiv
         status = this.status.toArkivTekst(),
         detaljer = this.toDetaljer(),
         dialogtråd = dialogtråd,
-        etiketter = this.toArkivEtikett(),
+        etiketter = this.toArkivEtiketter(),
         eksterneHandlinger = emptyList(),
         historikk = AktivitetHistorikk(emptyList()),
         forhaandsorientering = this.forhaandsorientering?.toArkivForhaandsorientering()
@@ -63,9 +63,14 @@ fun ArenaAktivitetDTO.toGruppeaktivitetDetaljer(): List<Detalj> {
     )
 }
 
-fun ArenaAktivitetDTO.toArkivEtikett(): List<ArkivEtikett> {
+fun ArenaAktivitetDTO.toArkivEtiketter(): List<ArkivEtikett> {
     val avtaltEtikett = if(this.isAvtalt) ArkivEtikett(ArkivEtikettStil.AVTALT, "Avtalt med NAV") else null
-    val statusEtikett = when (this.etikett) {
+    val statusEtikett = this.etikett?.toArkivEtikett()
+    return listOfNotNull(avtaltEtikett, statusEtikett)
+}
+
+fun ArenaStatusEtikettDTO.toArkivEtikett(): ArkivEtikett {
+    return when (this) {
         ArenaStatusEtikettDTO.AKTUELL -> ArkivEtikett(ArkivEtikettStil.POSITIVE, "Søkt inn på tiltaket")
         ArenaStatusEtikettDTO.AVSLAG -> ArkivEtikett(ArkivEtikettStil.NEGATIVE, "Fått avslag")
         ArenaStatusEtikettDTO.IKKAKTUELL -> ArkivEtikett(ArkivEtikettStil.NEUTRAL, "Ikke aktuell for tiltaket")
@@ -75,7 +80,5 @@ fun ArenaAktivitetDTO.toArkivEtikett(): List<ArkivEtikett> {
         ArenaStatusEtikettDTO.NEITAKK -> ArkivEtikett(ArkivEtikettStil.NEUTRAL, "Takket nei til tilbud")
         ArenaStatusEtikettDTO.TILBUD -> ArkivEtikett(ArkivEtikettStil.POSITIVE, "Fått plass på tiltaket")
         ArenaStatusEtikettDTO.VENTELISTE -> ArkivEtikett(ArkivEtikettStil.POSITIVE, "På venteliste")
-        else -> null
     }
-    return listOfNotNull(avtaltEtikett, statusEtikett)
 }
