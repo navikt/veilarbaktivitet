@@ -36,7 +36,6 @@ import org.springframework.web.server.ResponseStatusException
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.util.*
-import kotlin.collections.distinct
 import kotlin.time.measureTimedValue
 
 @RestController
@@ -59,7 +58,6 @@ class ArkiveringsController(
         private const val Tema_AktivitetsplanMedDialog = "AKT"
     }
 
-    @Deprecated("Skal erstattes med tilsvarende POST-endepunkt")
     @GetMapping("/forhaandsvisning")
     @AuthorizeFnr(auditlogMessage = "lag forhåndsvisning av aktivitetsplan og dialog", resourceType = OppfolgingsperiodeResource::class, resourceIdParamName = "oppfolgingsperiodeId")
     fun forhaandsvisAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID): ForhaandsvisningOutboundDTO {
@@ -81,19 +79,18 @@ class ArkiveringsController(
         )
     }
 
-    // TODO: Fjern nullability på requestBody
-    @PostMapping("/forhaandsvisning")
+    @PostMapping("/forhaandsvisning-send-til-bruker")
     @AuthorizeFnr(auditlogMessage = "lag forhåndsvisning av aktivitetsplan og dialog", resourceType = OppfolgingsperiodeResource::class, resourceIdParamName = "oppfolgingsperiodeId")
-    fun forhaandsvisAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID, @RequestBody forhaandsvisningInboundDTO: ForhaandsvisningInboundDTO?): ForhaandsvisningOutboundDTO {
+    fun forhaandsvisAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID, @RequestBody forhaandsvisningInboundDTO: ForhaandsvisningInboundDTO): ForhaandsvisningOutboundDTO {
         val dataHentet = ZonedDateTime.now()
-        val valgtKvpAlternativ = forhaandsvisningInboundDTO?.filter?.kvpUtvalgskriterie?.alternativ
+        val valgtKvpAlternativ = forhaandsvisningInboundDTO.filter.kvpUtvalgskriterie.alternativ
         val hentKvpAktiviteter = valgtKvpAlternativ in listOf(
             INKLUDER_KVP_AKTIVITETER,
             KvpUtvalgskriterieAlternativ.KUN_KVP_AKTIVITETER
         )
-        val filter = forhaandsvisningInboundDTO?.filter
-        val arkiveringsdata = hentArkiveringsData(oppfølgingsperiodeId, forhaandsvisningInboundDTO?.tekstTilBruker,hentKvpAktiviteter)
-        val filtrertArkiveringsdata = if (filter != null) filtrerArkiveringsData(arkiveringsdata, filter) else arkiveringsdata
+        val filter = forhaandsvisningInboundDTO.filter
+        val arkiveringsdata = hentArkiveringsData(oppfølgingsperiodeId, forhaandsvisningInboundDTO.tekstTilBruker,hentKvpAktiviteter)
+        val filtrertArkiveringsdata = filtrerArkiveringsData(arkiveringsdata, filter)
         val forhåndsvisningPayload = mapTilForhåndsvisningsPayload(filtrertArkiveringsdata)
 
         val timedForhaandsvisningResultat = measureTimedValue {
