@@ -17,7 +17,8 @@ object ArkiveringspayloadMapper {
         arkiveringsData: ArkiveringsController.ArkiveringsData,
         sakDTO: SakDTO,
         journalførendeEnhet: String,
-        tema: String
+        tema: String,
+        filter: ArkiveringsController.Filter?
     ): ArkivPayload {
         val (arkivaktiviteter, arkivdialoger) = lagDataTilOrkivar(arkiveringsData.aktiviteter, arkiveringsData.dialoger, arkiveringsData.historikkForAktiviteter, arkiveringsData.arenaAktiviteter)
         return ArkivPayload(
@@ -37,12 +38,13 @@ object ArkiveringspayloadMapper {
         )
     }
 
-    fun mapTilForhåndsvisningsPayload(arkiveringsData: ArkiveringsController.ArkiveringsData): ForhåndsvisningPayload {
+    fun mapTilForhåndsvisningsPayload(arkiveringsData: ArkiveringsController.ArkiveringsData, filter: ArkiveringsController.Filter?): ForhåndsvisningPayload {
         val (arkivaktiviteter, arkivdialoger) = lagDataTilOrkivar(arkiveringsData.aktiviteter, arkiveringsData.dialoger, arkiveringsData.historikkForAktiviteter, arkiveringsData.arenaAktiviteter)
 
         return ForhåndsvisningPayload(
             navn = arkiveringsData.navn.tilFornavnMellomnavnEtternavn(),
             fnr = arkiveringsData.fnr.get(),
+            brukteFiltre = if (filter == null) emptyMap() else
             tekstTilBruker = arkiveringsData.tekstTilBruker,
             oppfølgingsperiodeStart = norskDato(arkiveringsData.oppfølgingsperiode.startDato),
             oppfølgingsperiodeSlutt = arkiveringsData.oppfølgingsperiode.sluttDato?.let { norskDato(it) },
