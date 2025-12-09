@@ -25,6 +25,7 @@ data class ArkivPayload(
 data class ForhåndsvisningPayload(
     val navn: String,
     val fnr: String,
+    val brukteFiltre: Map<String, List<String>>,
     val tekstTilBruker: String? = null,
     val journalførendeEnhetNavn: String = "",
     val oppfølgingsperiodeStart: String,
