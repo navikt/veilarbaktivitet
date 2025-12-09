@@ -109,6 +109,7 @@ class ArkiveringsController(
                         .asSequence()
                         .filter { it.oppfolgingsperiodeId == oppfølgingsperiodeId }
                         .filterNot { it.aktivitetType == SAMTALEREFERAT && it.moteData?.isReferatPublisert == false }
+                        .sortedByDescending { it.endretDato }
                         .toList()
                 }
                 val dialogerIPerioden = hentDataAsync {

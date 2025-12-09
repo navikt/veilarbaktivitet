@@ -382,6 +382,43 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
     }
 
     @Test
+    fun `Når man forhåndsviser PDF skal aktiviteter sorteres kronologisk med nyeste øverst`() {
+        val (bruker, veileder) = hentBrukerOgVeileder("Sølvi", "Normalbakke")
+        val oppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
+        val jobbAktivitetGammel = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
+            .toBuilder()
+            .oppfolgingsperiodeId(oppfølgingsperiode)
+            .tittel("Gammel aktivitet")
+            .endretDato(Date.from(Instant.now().minusSeconds(1000)))
+            .build()
+        val jobbAktivitetNy = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
+            .toBuilder()
+            .oppfolgingsperiodeId(oppfølgingsperiode)
+            .tittel("Ny aktivitet")
+            .endretDato(Date.from(Instant.now()))
+            .build()
+        val gamellOpprettetAktivitet = aktivitetTestService.opprettAktivitet(bruker, bruker, jobbAktivitetGammel)
+        val nyOpprettetAktivitet = aktivitetTestService.opprettAktivitet(bruker, bruker, jobbAktivitetNy)
+        stubDialogTråder(fnr = bruker.fnr, oppfølgingsperiodeId = oppfølgingsperiode.toString(), aktivitetId = "dummy")
+        stubIngenArenaAktiviteter(bruker.fnr)
+
+        val arkiveringsUrl =
+            "http://localhost:$port/veilarbaktivitet/api/arkivering/forhaandsvisning?oppfolgingsperiodeId=$oppfølgingsperiode&journalforendeEnhet=0909"
+        veileder
+            .createRequest(bruker)
+            .get(arkiveringsUrl)
+
+        val journalforingsrequest =
+            wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/forhaandsvisning") }.first()
+        val arkivPayload =
+            JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ForhåndsvisningPayload::class.java)
+        arkivPayload.aktiviteter["Planlagt"]?.let { aktiviteter ->
+            assertThat(aktiviteter[0].tittel).isEqualTo(nyOpprettetAktivitet.tittel)
+            assertThat(aktiviteter[1].tittel).isEqualTo(gamellOpprettetAktivitet.tittel)
+        }
+    }
+
+    @Test
     fun `Når man forhåndsviser PDF skal kun riktig oppfølgingsperiode være inkludert`() {
         val (bruker, veileder) = hentBrukerOgVeileder("Sølvi", "Normalbakke")
         val oppfølgingsperiodeForArkivering = bruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
