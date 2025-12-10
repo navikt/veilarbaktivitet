@@ -487,11 +487,12 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val arkiveringsUrl =
             "http://localhost:$port/veilarbaktivitet/api/arkivering/send-til-bruker?oppfolgingsperiodeId=$oppfølgingsperiode"
 
-        veileder
+        val response = veileder
             .createRequest(kvpBruker)
             .body(sendTilBrukerInbound)
             .post(arkiveringsUrl)
 
+        assertThat(response.statusCode).isEqualTo(204)
         val journalforingsrequest =
             wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/send-til-bruker") }.first()
         val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
