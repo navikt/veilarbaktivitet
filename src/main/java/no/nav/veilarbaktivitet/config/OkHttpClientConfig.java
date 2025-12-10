@@ -60,7 +60,7 @@ public class OkHttpClientConfig {
                 .readTimeout(30, TimeUnit.SECONDS)
                 .addInterceptor(tokenInterceptor(() -> {
                     var tokenClient = authService.erInternBruker() ? azureAdOnBehalfOfTokenClient : tokenXOnBehalfOfTokenClient;
-                    return tokenClient.exchangeOnBehalfOfToken(veilarboppfolgingScope, authService.getInnloggetBrukerToken());
+                    return tokenClient.exchangeOnBehalfOfToken(orkivarScope, authService.getInnloggetBrukerToken());
                 }))
                 .eventListener(OkHttpMetricsEventListener.builder(meterRegistry, "okhttp.requests").build())
                 .build();
@@ -71,7 +71,7 @@ public class OkHttpClientConfig {
         return RestClient.baseClientBuilder()
                 .addInterceptor(tokenInterceptor(() -> {
                     var tokenClient = authService.erInternBruker() ? azureAdOnBehalfOfTokenClient : tokenXOnBehalfOfTokenClient;
-                    return tokenClient.exchangeOnBehalfOfToken(veilarboppfolgingScope, authService.getInnloggetBrukerToken());
+                    return tokenClient.exchangeOnBehalfOfToken(dialogScope, authService.getInnloggetBrukerToken());
                 }))
                 .eventListener(OkHttpMetricsEventListener.builder(meterRegistry, "okhttp.requests").build())
                 .build();
