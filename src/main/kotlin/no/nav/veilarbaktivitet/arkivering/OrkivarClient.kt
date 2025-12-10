@@ -15,12 +15,22 @@ class OrkivarClient(private val orkivarHttpClient: OkHttpClient, @Value("\${orki
 
     private val orkivarUrl = "$orkivarBaseUrl"
 
+    fun hentPdfForForhaandsvisningSendTilBruker(forhåndsvisningPayload: ForhåndsvisningPayload): ForhaandsvisningResult {
+        val url = "$orkivarUrl/forhaandsvisning-send-til-bruker"
+        return hentPdfForForhaandsvisning(forhåndsvisningPayload, url)
+    }
+
     fun hentPdfForForhaandsvisning(forhåndsvisningPayload: ForhåndsvisningPayload): ForhaandsvisningResult {
+        val url = "$orkivarUrl/forhaandsvisning"
+        return hentPdfForForhaandsvisning(forhåndsvisningPayload, url)
+    }
+
+    private fun hentPdfForForhaandsvisning(forhåndsvisningPayload: ForhåndsvisningPayload, url: String): ForhaandsvisningResult {
         val request: Request = Request.Builder()
             .addHeader("Content-Type", "application/json")
             .addHeader("Accept", "application/json")
             .post(JsonUtils.toJson(forhåndsvisningPayload).toRequestBody("application/json".toMediaTypeOrNull()))
-            .url("$orkivarUrl/forhaandsvisning")
+            .url(url)
             .build()
 
         val response = orkivarHttpClient.newCall(request).execute()
