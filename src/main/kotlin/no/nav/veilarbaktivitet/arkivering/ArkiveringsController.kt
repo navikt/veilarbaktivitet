@@ -17,6 +17,7 @@ import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO
 import no.nav.veilarbaktivitet.arena.model.ArenaStatusEtikettDTO
 import no.nav.veilarbaktivitet.arkivering.ArkiveringsController.KvpUtvalgskriterieAlternativ.EKSKLUDER_KVP_AKTIVITETER
 import no.nav.veilarbaktivitet.arkivering.ArkiveringsController.KvpUtvalgskriterieAlternativ.INKLUDER_KVP_AKTIVITETER
+import no.nav.veilarbaktivitet.arkivering.OrkivarClient.Journalføringstype.SEND_TIL_BRUKER
 import no.nav.veilarbaktivitet.arkivering.mapper.ArkiveringspayloadMapper.mapTilArkivPayload
 import no.nav.veilarbaktivitet.arkivering.mapper.ArkiveringspayloadMapper.mapTilForhåndsvisningsPayload
 import no.nav.veilarbaktivitet.arkivering.mapper.toArkivEtikett
@@ -82,7 +83,7 @@ class ArkiveringsController(
 
     @PostMapping("/forhaandsvisning-send-til-bruker")
     @AuthorizeFnr(auditlogMessage = "lag forhåndsvisning av aktivitetsplan og dialog", resourceType = OppfolgingsperiodeResource::class, resourceIdParamName = "oppfolgingsperiodeId")
-    fun forhaandsvisAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID, @RequestBody forhaandsvisningInboundDTO: ForhaandsvisningInboundDTO): ForhaandsvisningOutboundDTO {
+    fun forhaandsvisAktivitetsplanOgDialogSendTilBruker(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID, @RequestBody forhaandsvisningInboundDTO: ForhaandsvisningInboundDTO): ForhaandsvisningOutboundDTO {
         val dataHentet = ZonedDateTime.now()
         val valgtKvpAlternativ = forhaandsvisningInboundDTO.filter.kvpUtvalgskriterie.alternativ
         val hentKvpAktiviteter = valgtKvpAlternativ in listOf(
@@ -95,7 +96,7 @@ class ArkiveringsController(
         val forhåndsvisningPayload = mapTilForhåndsvisningsPayload(filtrertArkiveringsdata, filter)
 
         val timedForhaandsvisningResultat = measureTimedValue {
-            orkivarClient.hentPdfForForhaandsvisning(forhåndsvisningPayload)
+            orkivarClient.hentPdfForForhaandsvisningSendTilBruker(forhåndsvisningPayload)
         }
         logger.info("Henting av PDF tok ${timedForhaandsvisningResultat.duration.inWholeMilliseconds} ms")
         val forhaandsvisningResultat = timedForhaandsvisningResultat.value
