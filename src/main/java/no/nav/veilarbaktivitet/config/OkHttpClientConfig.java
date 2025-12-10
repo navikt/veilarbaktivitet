@@ -25,46 +25,55 @@ public class OkHttpClientConfig {
 
     private final IAuthService authService;
 
-    @Bean OkHttpClient veilarboppfolgingHttpClient(MeterRegistry meterRegistry, AzureAdMachineToMachineTokenClient azureAdMachineToMachineTokenClient) {
+    @Bean
+    OkHttpClient veilarboppfolgingHttpClient(MeterRegistry meterRegistry, AzureAdMachineToMachineTokenClient azureAdMachineToMachineTokenClient) {
         return RestClient.baseClientBuilder()
                 .addInterceptor(tokenInterceptor(() -> azureAdMachineToMachineTokenClient.createMachineToMachineToken(veilarboppfolgingScope)))
-            .eventListener(OkHttpMetricsEventListener.builder(meterRegistry, "okhttp.requests").build())
-            .build();
-    }
-
-    @Bean OkHttpClient veilarboppfolgingOnBehalfOfHttpClient(MeterRegistry meterRegistry, AzureAdOnBehalfOfTokenClient azureAdOnBehalfOfTokenClient, TokenXOnBehalfOfTokenClient tokenXOnBehalfOfTokenClient) {
-        var tokenClient = authService.erInternBruker() ? azureAdOnBehalfOfTokenClient : tokenXOnBehalfOfTokenClient;
-        return RestClient.baseClientBuilder()
-                .addInterceptor(tokenInterceptor(() -> tokenClient.exchangeOnBehalfOfToken(veilarboppfolgingScope, authService.getInnloggetBrukerToken())))
                 .eventListener(OkHttpMetricsEventListener.builder(meterRegistry, "okhttp.requests").build())
                 .build();
     }
 
-    @Bean OkHttpClient veilarbarenaHttpClient(MeterRegistry meterRegistry, AzureAdMachineToMachineTokenClient azureAdMachineToMachineTokenClient) {
+    @Bean
+    OkHttpClient veilarboppfolgingOnBehalfOfHttpClient(MeterRegistry meterRegistry, AzureAdOnBehalfOfTokenClient azureAdOnBehalfOfTokenClient, TokenXOnBehalfOfTokenClient tokenXOnBehalfOfTokenClient) {
         return RestClient.baseClientBuilder()
-            .addInterceptor(tokenInterceptor(() -> azureAdMachineToMachineTokenClient.createMachineToMachineToken(veilarbarenaScope)))
-            .eventListener(OkHttpMetricsEventListener.builder(meterRegistry, "okhttp.requests").build())
-            .build();
+                .addInterceptor(tokenInterceptor(() -> {
+                    var tokenClient = authService.erInternBruker() ? azureAdOnBehalfOfTokenClient : tokenXOnBehalfOfTokenClient;
+                    return tokenClient.exchangeOnBehalfOfToken(veilarboppfolgingScope, authService.getInnloggetBrukerToken());
+                }))
+                .eventListener(OkHttpMetricsEventListener.builder(meterRegistry, "okhttp.requests").build())
+                .build();
     }
 
-    @Bean OkHttpClient orkivarHttpClient(MeterRegistry meterRegistry, AzureAdOnBehalfOfTokenClient azureAdOnBehalfOfTokenClient, TokenXOnBehalfOfTokenClient tokenXOnBehalfOfTokenClient) {
-        var tokenClient = authService.erInternBruker() ? azureAdOnBehalfOfTokenClient : tokenXOnBehalfOfTokenClient;
+    @Bean
+    OkHttpClient veilarbarenaHttpClient(MeterRegistry meterRegistry, AzureAdMachineToMachineTokenClient azureAdMachineToMachineTokenClient) {
         return RestClient.baseClientBuilder()
-            .connectTimeout(15, TimeUnit.SECONDS) // Dokark and pdf-gen is very slow
-            .writeTimeout(15, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
-            .addInterceptor(tokenInterceptor(() ->
-                    tokenClient.exchangeOnBehalfOfToken(orkivarScope, authService.getInnloggetBrukerToken())
-            )).eventListener(OkHttpMetricsEventListener.builder(meterRegistry, "okhttp.requests").build())
-            .build();
+                .addInterceptor(tokenInterceptor(() -> azureAdMachineToMachineTokenClient.createMachineToMachineToken(veilarbarenaScope)))
+                .eventListener(OkHttpMetricsEventListener.builder(meterRegistry, "okhttp.requests").build())
+                .build();
     }
 
-    @Bean OkHttpClient dialogHttpClient(MeterRegistry meterRegistry, AzureAdOnBehalfOfTokenClient azureAdOnBehalfOfTokenClient, TokenXOnBehalfOfTokenClient tokenXOnBehalfOfTokenClient) {
-        var tokenClient = authService.erInternBruker() ? azureAdOnBehalfOfTokenClient : tokenXOnBehalfOfTokenClient;
+    @Bean
+    OkHttpClient orkivarHttpClient(MeterRegistry meterRegistry, AzureAdOnBehalfOfTokenClient azureAdOnBehalfOfTokenClient, TokenXOnBehalfOfTokenClient tokenXOnBehalfOfTokenClient) {
         return RestClient.baseClientBuilder()
-                .addInterceptor(tokenInterceptor(() ->
-                        tokenClient.exchangeOnBehalfOfToken(dialogScope, authService.getInnloggetBrukerToken())
-                )).eventListener(OkHttpMetricsEventListener.builder(meterRegistry, "okhttp.requests").build())
+                .connectTimeout(15, TimeUnit.SECONDS) // Dokark and pdf-gen is very slow
+                .writeTimeout(15, TimeUnit.SECONDS)
+                .readTimeout(30, TimeUnit.SECONDS)
+                .addInterceptor(tokenInterceptor(() -> {
+                    var tokenClient = authService.erInternBruker() ? azureAdOnBehalfOfTokenClient : tokenXOnBehalfOfTokenClient;
+                    return tokenClient.exchangeOnBehalfOfToken(veilarboppfolgingScope, authService.getInnloggetBrukerToken());
+                }))
+                .eventListener(OkHttpMetricsEventListener.builder(meterRegistry, "okhttp.requests").build())
+                .build();
+    }
+
+    @Bean
+    OkHttpClient dialogHttpClient(MeterRegistry meterRegistry, AzureAdOnBehalfOfTokenClient azureAdOnBehalfOfTokenClient, TokenXOnBehalfOfTokenClient tokenXOnBehalfOfTokenClient) {
+        return RestClient.baseClientBuilder()
+                .addInterceptor(tokenInterceptor(() -> {
+                    var tokenClient = authService.erInternBruker() ? azureAdOnBehalfOfTokenClient : tokenXOnBehalfOfTokenClient;
+                    return tokenClient.exchangeOnBehalfOfToken(veilarboppfolgingScope, authService.getInnloggetBrukerToken());
+                }))
+                .eventListener(OkHttpMetricsEventListener.builder(meterRegistry, "okhttp.requests").build())
                 .build();
     }
 
