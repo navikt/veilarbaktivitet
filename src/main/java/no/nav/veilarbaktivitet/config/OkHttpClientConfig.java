@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import no.nav.common.rest.client.RestClient;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
+import no.nav.common.token_client.client.TokenXOnBehalfOfTokenClient;
 import no.nav.poao.dab.spring_auth.IAuthService;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
@@ -26,40 +27,43 @@ public class OkHttpClientConfig {
 
     @Bean OkHttpClient veilarboppfolgingHttpClient(MeterRegistry meterRegistry, AzureAdMachineToMachineTokenClient azureAdMachineToMachineTokenClient) {
         return RestClient.baseClientBuilder()
-                .addInterceptor(azureAdInterceptor(() -> azureAdMachineToMachineTokenClient.createMachineToMachineToken(veilarboppfolgingScope)))
+                .addInterceptor(tokenInterceptor(() -> azureAdMachineToMachineTokenClient.createMachineToMachineToken(veilarboppfolgingScope)))
             .eventListener(OkHttpMetricsEventListener.builder(meterRegistry, "okhttp.requests").build())
             .build();
     }
 
-    @Bean OkHttpClient veilarboppfolgingOnBehalfOfHttpClient(MeterRegistry meterRegistry, AzureAdOnBehalfOfTokenClient azureAdOnBehalfOfTokenClient) {
+    @Bean OkHttpClient veilarboppfolgingOnBehalfOfHttpClient(MeterRegistry meterRegistry, AzureAdOnBehalfOfTokenClient azureAdOnBehalfOfTokenClient, TokenXOnBehalfOfTokenClient tokenXOnBehalfOfTokenClient) {
+        var tokenClient = authService.erInternBruker() ? azureAdOnBehalfOfTokenClient : tokenXOnBehalfOfTokenClient;
         return RestClient.baseClientBuilder()
-                .addInterceptor(azureAdInterceptor(() -> azureAdOnBehalfOfTokenClient.exchangeOnBehalfOfToken(veilarboppfolgingScope, authService.getInnloggetBrukerToken())))
+                .addInterceptor(tokenInterceptor(() -> tokenClient.exchangeOnBehalfOfToken(veilarboppfolgingScope, authService.getInnloggetBrukerToken())))
                 .eventListener(OkHttpMetricsEventListener.builder(meterRegistry, "okhttp.requests").build())
                 .build();
     }
 
     @Bean OkHttpClient veilarbarenaHttpClient(MeterRegistry meterRegistry, AzureAdMachineToMachineTokenClient azureAdMachineToMachineTokenClient) {
         return RestClient.baseClientBuilder()
-            .addInterceptor(azureAdInterceptor(() -> azureAdMachineToMachineTokenClient.createMachineToMachineToken(veilarbarenaScope)))
+            .addInterceptor(tokenInterceptor(() -> azureAdMachineToMachineTokenClient.createMachineToMachineToken(veilarbarenaScope)))
             .eventListener(OkHttpMetricsEventListener.builder(meterRegistry, "okhttp.requests").build())
             .build();
     }
 
-    @Bean OkHttpClient orkivarHttpClient(MeterRegistry meterRegistry, AzureAdOnBehalfOfTokenClient azureAdOnBehalfOfTokenClient) {
+    @Bean OkHttpClient orkivarHttpClient(MeterRegistry meterRegistry, AzureAdOnBehalfOfTokenClient azureAdOnBehalfOfTokenClient, TokenXOnBehalfOfTokenClient tokenXOnBehalfOfTokenClient) {
+        var tokenClient = authService.erInternBruker() ? azureAdOnBehalfOfTokenClient : tokenXOnBehalfOfTokenClient;
         return RestClient.baseClientBuilder()
             .connectTimeout(15, TimeUnit.SECONDS) // Dokark and pdf-gen is very slow
             .writeTimeout(15, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
-            .addInterceptor(azureAdInterceptor(() ->
-                    azureAdOnBehalfOfTokenClient.exchangeOnBehalfOfToken(orkivarScope, authService.getInnloggetBrukerToken())
+            .addInterceptor(tokenInterceptor(() ->
+                    tokenClient.exchangeOnBehalfOfToken(orkivarScope, authService.getInnloggetBrukerToken())
             )).eventListener(OkHttpMetricsEventListener.builder(meterRegistry, "okhttp.requests").build())
             .build();
     }
 
-    @Bean OkHttpClient dialogHttpClient(MeterRegistry meterRegistry, AzureAdOnBehalfOfTokenClient azureAdOnBehalfOfTokenClient) {
+    @Bean OkHttpClient dialogHttpClient(MeterRegistry meterRegistry, AzureAdOnBehalfOfTokenClient azureAdOnBehalfOfTokenClient, TokenXOnBehalfOfTokenClient tokenXOnBehalfOfTokenClient) {
+        var tokenClient = authService.erInternBruker() ? azureAdOnBehalfOfTokenClient : tokenXOnBehalfOfTokenClient;
         return RestClient.baseClientBuilder()
-                .addInterceptor(azureAdInterceptor(() ->
-                        azureAdOnBehalfOfTokenClient.exchangeOnBehalfOfToken(dialogScope, authService.getInnloggetBrukerToken())
+                .addInterceptor(tokenInterceptor(() ->
+                        tokenClient.exchangeOnBehalfOfToken(dialogScope, authService.getInnloggetBrukerToken())
                 )).eventListener(OkHttpMetricsEventListener.builder(meterRegistry, "okhttp.requests").build())
                 .build();
     }
@@ -69,7 +73,7 @@ public class OkHttpClientConfig {
     private final String orkivarScope = "api://%s-gcp.dab.orkivar/.default".formatted(isProduction().orElse(false) ? "prod" : "dev");
     private final String dialogScope = "api://%s-gcp.dab.veilarbdialog/.default".formatted(isProduction().orElse(false) ? "prod" : "dev");
 
-    private Interceptor azureAdInterceptor(Supplier<String> getToken) {
+    private Interceptor tokenInterceptor(Supplier<String> getToken) {
         return chain -> {
             Request original = chain.request();
             Request newReq = original.newBuilder()
