@@ -38,6 +38,7 @@ public class WireMockUtil {
         hentPerson(fnr, navn);
         forhaandsvisning();
         journalforing();
+        sendTilBruker();
         hentSak(sakId, nyesteOppfølgingsperiode);
         hentMål(mål);
         hentMålListe(mål);
@@ -228,6 +229,15 @@ public class WireMockUtil {
 
     private static void journalforing() {
         wireMock.stubFor(post("/orkivar/arkiver")
+                .willReturn(aResponse().withStatus(200).withBody("""
+                            {
+                               "sistJournalført": "2024-03-13T14:11:48.478662"
+                            }
+                        """)));
+    }
+
+    private static void sendTilBruker() {
+        wireMock.stubFor(post("/orkivar/send-til-bruker")
                 .willReturn(aResponse().withStatus(200).withBody("""
                             {
                                "sistJournalført": "2024-03-13T14:11:48.478662"

@@ -154,11 +154,10 @@ class ArkiveringsController(
         logger.info("Sending av PDF til bruker tok ${timedJournalførtResultat.duration.inWholeMilliseconds} ms")
 
         return when (timedJournalførtResultat.value) {
-            is OrkivarClient.SendTilBrukerSuccess -> ResponseEntity.status(200).build()
+            is OrkivarClient.SendTilBrukerSuccess -> ResponseEntity.status(204).build()
             is OrkivarClient.SendTilBrukerFail -> ResponseEntity.status(500).build()
         }
     }
-
 
     private fun hentArkiveringsData(oppfølgingsperiodeId: UUID, tekstTilBruker: String? = null, inkluderDataIKvpPeriode: Boolean = false): ArkiveringsData {
         val timedArkiveringsdata = measureTimedValue {
