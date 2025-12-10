@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.service;
 
 import lombok.SneakyThrows;
+import lombok.val;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
 import no.nav.veilarbaktivitet.aktivitet.MetricService;
@@ -10,12 +11,15 @@ import no.nav.veilarbaktivitet.kvp.v2.KvpV2DTO;
 import no.nav.veilarbaktivitet.oppfolging.periode.SistePeriodeService;
 import no.nav.veilarbaktivitet.oversikten.OversiktenService;
 import no.nav.veilarbaktivitet.person.Innsender;
+import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import org.joda.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -25,10 +29,13 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.ZonedDateTime;
 import java.util.Date;
+import java.util.List;
 
 import static no.nav.veilarbaktivitet.mock.TestData.KJENT_KONTORSPERRE_ENHET_ID;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.util.DateUtil.now;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -280,6 +287,28 @@ class AktivitetServiceTest {
         gitt_aktivitet(lagEnNyAktivitet().withId(AKTIVITET_ID));
         aktivitetService.settLestAvBrukerTidspunkt(AKTIVITET_ID);
         verify(aktivitetDAO, times(1)).insertLestAvBrukerTidspunkt(AKTIVITET_ID);
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = AktivitetTypeData.class, names = {"MOTE", "SAMTALEREFERAT"})
+    void skal_lagre_stopp_melding_for_avbrutt_mote_og_samtalereferat(AktivitetTypeData aktivitetType) {
+        val aktorId = new Person.AktorId("1231231231230");
+        val aktivitetId = 123456789L;
+        AktivitetData aktivitet = AktivitetData.builder()
+                .id(aktivitetId)
+                .aktorId(aktorId)
+                .opprettetDato(Date.from(ZonedDateTime.now().minusDays(7).toInstant()))
+                .aktivitetType(aktivitetType)
+                .status(AktivitetStatus.PLANLAGT)
+                .kontorsperreEnhetId("9001")
+                .build();
+
+        //when(aktivitetDAO.hentAktiviteterForAktorId(aktorId)).thenReturn(List.of(aktivitet));
+
+        aktivitetService.oppdaterStatus(aktivitet, aktivitet.withStatus(AktivitetStatus.AVBRUTT).withEndretDato(now()));
+
+        verify(oversiktenService).lagreStoppMeldingOmUdeltSamtalereferatIUtboks(aktorId, aktivitetId);
+        verify(aktivitetDAO).oppdaterAktivitet(any());
     }
 
     private void gitt_aktivitet(AktivitetData aktivitetData) {

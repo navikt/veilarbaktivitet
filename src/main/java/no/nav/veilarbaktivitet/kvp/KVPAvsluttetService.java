@@ -6,6 +6,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
+import no.nav.veilarbaktivitet.oversikten.OversiktenService;
 import no.nav.veilarbaktivitet.person.Person;
 import org.springframework.stereotype.Service;
 
@@ -15,16 +16,24 @@ import java.util.Date;
 @RequiredArgsConstructor
 public class KVPAvsluttetService {
     private final AktivitetDAO aktivitetDAO;
+    private final OversiktenService oversiktenService;
 
     public void settAktiviteterInomKVPPeriodeTilAvbrutt(Person.AktorId aktoerId, String avsluttetBegrunnelse, Date avsluttetDato) {
-        aktivitetDAO.hentAktiviteterForAktorId(aktoerId)
-                .stream()
+        aktivitetDAO.hentAktiviteterForAktorId(aktoerId).stream()
                 .filter(this::filtrerKontorSperretOgStatusErIkkeAvBruttEllerFullfort)
                 .filter(this::filtrerEksterneAktiviteter)
-                .filter(aktitet -> aktitet.getOpprettetDato().before(avsluttetDato))
-                .map(aktivitetData -> settKVPAktivitetTilAvbrutt(aktivitetData, avsluttetBegrunnelse, avsluttetDato))
-                .forEach(aktivitetDAO::oppdaterAktivitet);
+                .filter(aktivitet -> aktivitet.getOpprettetDato().before(avsluttetDato))
+                .map(aktivitet -> settKVPAktivitetTilAvbrutt(aktivitet, avsluttetBegrunnelse, avsluttetDato))
+                .forEach(oppdatertAktivitet -> {
+                    aktivitetDAO.oppdaterAktivitet(oppdatertAktivitet);
+
+                    if (erAvbruttMoteEllerSamtalereferat(oppdatertAktivitet)) {
+                        oversiktenService.lagreStoppMeldingOmUdeltSamtalereferatIUtboks(oppdatertAktivitet.getAktorId(), oppdatertAktivitet.getId()
+                        );
+                    }
+                });
     }
+
 
     private boolean filtrerKontorSperretOgStatusErIkkeAvBruttEllerFullfort(AktivitetData aktivitetData) {
         var aktivitetStatus = aktivitetData.getStatus();
@@ -41,5 +50,11 @@ public class KVPAvsluttetService {
                 .withStatus(AktivitetStatus.AVBRUTT)
                 .withAvsluttetKommentar(avsluttetBegrunnelse)
                 .withEndretDato(avsluttetDato);
+    }
+
+    private boolean erAvbruttMoteEllerSamtalereferat(AktivitetData aktivitet){
+        return (aktivitet.getAktivitetType() == AktivitetTypeData.MOTE ||
+                aktivitet.getAktivitetType() == AktivitetTypeData.SAMTALEREFERAT) &&
+                aktivitet.getStatus() == AktivitetStatus.AVBRUTT;
     }
 }

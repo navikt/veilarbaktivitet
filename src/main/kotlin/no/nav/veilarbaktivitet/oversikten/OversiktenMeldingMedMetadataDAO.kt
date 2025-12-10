@@ -135,18 +135,28 @@ open class OversiktenMeldingMedMetadataDAO(
 
     open fun hentAlleUdelteSamtalereferaterIAvbruttAktivitet(): List<UdeltSamtalereferatUtenMelding> {
         val sql = """
-            SELECT
-                a.aktivitet_id,
-                a.aktor_id
-            FROM aktivitet a
-                     LEFT JOIN mote m
-                               on m.aktivitet_id = a.aktivitet_id and m.versjon = a.versjon
-            where m.referat is not null
-              and m.referat_publisert = 0
-              and a.gjeldende =  1
-            and a.livslopstatus_kode = 'AVBRUTT'
-              and a.historisk_dato is null
-
+            select a.aktivitet_id,
+                       a.aktor_id
+            from veilarbaktivitet.aktivitet a
+                     join veilarbaktivitet.oversikten_melding_aktivitet_mapping map
+                          on map.aktivitet_id = a.aktivitet_id
+                     join veilarbaktivitet.oversikten_melding_med_metadata om
+                          on om.melding_key = map.oversikten_melding_key
+            where (a.aktivitet_type_kode = 'MOTE' OR a.aktivitet_type_kode = 'SAMTALEREFERAT')
+              and a.livslopstatus_kode = 'AVBRUTT'
+              and exists (
+                select 1
+                from veilarbaktivitet.oversikten_melding_med_metadata x
+                where x.melding_key = om.melding_key
+                  and x.operasjon = 'START'
+            )
+              and not exists (
+                select 1
+                from veilarbaktivitet.oversikten_melding_med_metadata y
+                where y.melding_key = om.melding_key
+                  and y.operasjon = 'STOPP'
+            )
+            group by a.aktivitet_id, a.aktor_id, om.melding_key;
         """.trimIndent()
 
         return jdbc.query(sql) { rs: ResultSet, rowNum: Int ->
