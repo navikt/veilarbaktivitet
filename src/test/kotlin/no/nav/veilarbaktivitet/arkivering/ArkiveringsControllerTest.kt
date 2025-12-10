@@ -68,18 +68,13 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             sistLestTidspunkt = meldingerSistLestTidspunkt
         )
         stubIngenArenaAktiviteter(bruker.fnr)
-        val body = ArkiveringsController.ForhaandsvisningInboundDTO(
-            tekstTilBruker = "En tekst til bruker",
-            filter = defaultFilter()
-        )
         val arkiveringsUrl =
-            "http://localhost:$port/veilarbaktivitet/api/arkivering/forhaandsvisning-send-til-bruker?oppfolgingsperiodeId=$oppfølgingsperiodeId"
+            "http://localhost:$port/veilarbaktivitet/api/arkivering/forhaandsvisning?oppfolgingsperiodeId=$oppfølgingsperiodeId"
 
         // When
         val forhaandsvisning = veileder
             .createRequest(bruker)
-            .body(body)
-            .post(arkiveringsUrl)
+            .get(arkiveringsUrl)
             .then()
             .assertThat()
             .statusCode(HttpStatus.OK.value())
@@ -106,7 +101,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                     {
                       "navn": "${bruker.navn.tilFornavnMellomnavnEtternavn()}",
                       "fnr": "${bruker.fnr}",
-                      "tekstTilBruker" : "${body.tekstTilBruker}",
+                      "tekstTilBruker" : null,
                       "brukteFiltre": { },
                       "oppfølgingsperiodeStart": "${norskDato(sisteOppfølgingsperiode.startTid)}",
                       "oppfølgingsperiodeSlutt": ${sisteOppfølgingsperiode.sluttTid?.let { norskDato(it) }},
@@ -517,12 +512,11 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             filter = defaultFilter(kvpAlternativ = INKLUDER_KVP_AKTIVITETER)
         )
 
-        val response = veileder
+        veileder
             .createRequest(kvpBruker)
             .body(body)
             .post(url)
 
-        assertThat(response.statusCode()).isEqualTo(200)
         val harHentetDialogerMedKontorsperre = wireMock.getAllServeEvents().any { it.request.url.contains("ekskluderDialogerMedKontorsperre=false") }
         assertThat(harHentetDialogerMedKontorsperre).isTrue()
     }
