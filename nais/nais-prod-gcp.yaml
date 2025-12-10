@@ -148,3 +148,5 @@ spec:
       value: "https://pdl-api.prod-fss-pub.nais.io"
     - name: PDL_SCOPE
       value: "api://prod-fss.pdl.pdl-api/.default"
+    - name: PDL_SCOPE_TOKENX
+      value: "prod-fss:pdl:pdl-api"

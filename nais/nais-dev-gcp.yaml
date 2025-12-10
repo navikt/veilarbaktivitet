@@ -148,5 +148,7 @@ spec:
       value: "https://pdl-api.dev-fss-pub.nais.io"
     - name: PDL_SCOPE
       value: "api://dev-fss.pdl.pdl-api/.default"
+    - name: PDL_SCOPE_TOKENX
+      value: "dev-fss:pdl:pdl-api"
     - name: FSS_PROXY_ENABLED
       value: "false"
