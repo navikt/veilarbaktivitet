@@ -18,14 +18,17 @@ open class PdlClientConfig(val authService: IAuthService) {
     @Value("\${pdl.scope}")
     private val pdlTokenscope: String? = null
 
+    @Value("\${pdl.scope.tokenx}")
+    private val pdlTokenscopeTokenX: String? = null
+
     @Bean
     open fun pdlClient(azureTokenClient: AzureAdOnBehalfOfTokenClient, tokenXTokenClient: TokenXOnBehalfOfTokenClient): PdlClient {
         val tokenClientSupplier = {
-            val tokenClient = when (authService.erInternBruker()) {
-                true -> azureTokenClient
-                false -> tokenXTokenClient
+            val (tokenClient, tokenScope) = when (authService.erInternBruker()) {
+                true -> Pair(azureTokenClient, pdlTokenscope)
+                false -> Pair(tokenXTokenClient, pdlTokenscopeTokenX)
             }
-            tokenClient.exchangeOnBehalfOfToken(pdlTokenscope, authService.getInnloggetBrukerToken())
+            tokenClient.exchangeOnBehalfOfToken(tokenScope, authService.getInnloggetBrukerToken())
         }
         return PdlClientImpl(pdlUrl, tokenClientSupplier, "B579")
     }
