@@ -212,7 +212,7 @@ class ArkiveringsFiltrererTest {
                     .opprettetDato(Date.from(Instant.now())).build(),
                 AktivitetDataTestBuilder.nyAktivitet().build(),
             ),
-            dialoger = listOf(defaultDialogtråd)
+            dialoger = listOf(defaultDialogtråd.copy(kontorsperreEnhetId = "1234"))
         )
         val filter =
             defaultFilter.copy(kvpUtvalgskriterie = ArkiveringsController.KvpUtvalgskriterie(alternativ = INKLUDER_KVP_AKTIVITETER))
@@ -231,6 +231,19 @@ class ArkiveringsFiltrererTest {
                 AktivitetDataTestBuilder.nyAktivitet().kontorsperreEnhetId("1234")
                     .opprettetDato(Date.from(Instant.now().minusSeconds(1000))).build(),
                 AktivitetDataTestBuilder.nyAktivitet().build(),
+            ),
+            dialoger = listOf(
+                defaultDialogtråd.copy(
+                    kontorsperreEnhetId = "1234",
+                    opprettetDato = DateUtils.dateToZonedDateTime(opprettetTidspunktTilInkludertKvpPeriode)
+                ),
+                defaultDialogtråd.copy(
+                    kontorsperreEnhetId = "1234",
+                    opprettetDato = DateUtils.dateToZonedDateTime(
+                        Date.from(Instant.now().minusSeconds(1000))
+                    )
+                ),
+                defaultDialogtråd
             )
         )
         val filter = defaultFilter.copy(
@@ -242,6 +255,7 @@ class ArkiveringsFiltrererTest {
         )
         val filtrertData = filtrerArkiveringsData(arkiveringsData, filter)
         assertThat(filtrertData.aktiviteter).hasSize(1)
+        assertThat(filtrertData.dialoger).hasSize(1)
         assertThat(filtrertData.aktiviteter.first().opprettetDato).isEqualTo(opprettetTidspunktTilInkludertKvpPeriode)
     }
 
@@ -255,6 +269,19 @@ class ArkiveringsFiltrererTest {
                 AktivitetDataTestBuilder.nyAktivitet().kontorsperreEnhetId("1234")
                     .opprettetDato(Date.from(Instant.now().minusSeconds(1000))).build(),
                 AktivitetDataTestBuilder.nyAktivitet().build(),
+            ),
+            dialoger = listOf(
+                defaultDialogtråd.copy(
+                    kontorsperreEnhetId = "1234",
+                    opprettetDato = DateUtils.dateToZonedDateTime(opprettetTidspunktTilInkludertKvpPeriode)
+                ),
+                defaultDialogtråd.copy(
+                    kontorsperreEnhetId = "1234",
+                    opprettetDato = DateUtils.dateToZonedDateTime(
+                        Date.from(Instant.now().minusSeconds(1000))
+                    )
+                ),
+                defaultDialogtråd
             )
         )
         val filter = defaultFilter.copy(
@@ -266,6 +293,7 @@ class ArkiveringsFiltrererTest {
         )
         val filtrertData = filtrerArkiveringsData(arkiveringsData, filter)
         assertThat(filtrertData.aktiviteter).hasSize(3)
+        assertThat(filtrertData.dialoger).hasSize(3)
     }
 
     @Test
@@ -278,6 +306,19 @@ class ArkiveringsFiltrererTest {
                 AktivitetDataTestBuilder.nyAktivitet().kontorsperreEnhetId("1234")
                     .opprettetDato(Date.from(Instant.now().minusSeconds(1000))).build(),
                 AktivitetDataTestBuilder.nyAktivitet().build(),
+            ),
+            dialoger = listOf(
+                defaultDialogtråd.copy(
+                    kontorsperreEnhetId = "1234",
+                    opprettetDato = DateUtils.dateToZonedDateTime(opprettetTidspunktTilInkludertKvpPeriode)
+                ),
+                defaultDialogtråd.copy(
+                    kontorsperreEnhetId = "1234",
+                    opprettetDato = DateUtils.dateToZonedDateTime(
+                        Date.from(Instant.now().minusSeconds(1000))
+                    )
+                ),
+                defaultDialogtråd
             )
         )
         val filter = defaultFilter.copy(
@@ -289,6 +330,7 @@ class ArkiveringsFiltrererTest {
         )
         val filtrertData = filtrerArkiveringsData(arkiveringsData, filter)
         assertThat(filtrertData.aktiviteter).hasSize(1)
+        assertThat(filtrertData.dialoger).hasSize(1)
     }
 
     val defaultFilter = ArkiveringsController.Filter(
@@ -341,5 +383,8 @@ class ArkiveringsFiltrererTest {
         egenskaper = emptyList(),
         erLestAvBruker = true,
         lestAvBrukerTidspunkt = ZonedDateTime.now(),
+        opprettetDato = ZonedDateTime.now().minusSeconds(10),
+        kontorsperreEnhetId = null,
+        sisteDato = ZonedDateTime.now()
     )
 }

@@ -4,6 +4,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.*
 import no.nav.common.json.JsonUtils
 import no.nav.veilarbaktivitet.SpringBootTestBase
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
+import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortUtil
 import no.nav.veilarbaktivitet.aktivitetskort.ArenaKort
@@ -286,8 +287,8 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                     {
                       "navn": "${bruker.navn.tilFornavnMellomnavnEtternavn()}",
                       "fnr": "${bruker.fnr}",
-                      "tekstTilBruker" : null,
                       "brukteFiltre": { },
+                      "tekstTilBruker" : null,
                       "oppfølgingsperiodeStart": "${norskDato(sisteOppfølgingsperiode.startTid)}",
                       "oppfølgingsperiodeSlutt": ${sisteOppfølgingsperiode?.sluttTid?.let { norskDato(it) } ?: null},
                       "sakId": ${bruker.sakId},
@@ -449,8 +450,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val kvpAktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
             .toBuilder().oppfolgingsperiodeId(oppfølgingsperiode).build()
         aktivitetTestService.opprettAktivitet(kvpBruker, veileder, kvpAktivitet)
-
-        stubDialogTråder(kvpBruker.fnr, oppfølgingsperiode.toString(), "dummyAktivitetId")
+        stubDialogTråder(kvpBruker.fnr, oppfølgingsperiode.toString(), "dummyAktivitetId", kontorsperreEnhetId = "1234")
         stubIngenArenaAktiviteter(kvpBruker.fnr)
         val arkiveringsUrl =
             "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
@@ -464,8 +464,10 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
         val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
         assertThat(arkivPayload.aktiviteter).isEmpty()
-        val harHentetDialogerMedKontorsperre = wireMock.getAllServeEvents().any { it.request.url.contains("ekskluderDialogerMedKontorsperre=false") }
-        assertThat(harHentetDialogerMedKontorsperre).isFalse()
+        val antallDialogerUtenAktivitet = arkivPayload.dialogtråder.size
+        val antallDialogerMedAktivitet = arkivPayload.aktiviteter.values.flatten().count { it.dialogtråd != null }
+        assertThat(antallDialogerUtenAktivitet).isEqualTo(0)
+        assertThat(antallDialogerMedAktivitet).isEqualTo(0)
     }
 
     @Test
@@ -502,10 +504,17 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
     }
 
     @Test
-    fun `Skal kunne hente dialoger med kontorsperre når man forhåndsviser`() {
+    fun `Skal kunne hente dialoger og aktiviteter med kontorsperre når man forhåndsviser`() {
         val (kvpBruker, veileder) = hentKvpBrukerOgVeileder("Sølvi", "Normalbakke")
         val oppfølgingsperiode = kvpBruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
-        stubDialogTråder(kvpBruker.fnr, oppfølgingsperiode.toString(), "dummyAktivitetId", ekskluderDialogerMedKontorsperre = false)
+        val aktivitet = aktivitetTestService.opprettAktivitet(
+            kvpBruker,
+            veileder,
+            AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
+                .toBuilder().oppfolgingsperiodeId(oppfølgingsperiode).build()
+        )
+
+        stubDialogTråder(kvpBruker.fnr, oppfølgingsperiode.toString(), aktivitet.id, kontorsperreEnhetId = kvpBruker.oppfolgingsenhet)
         stubIngenArenaAktiviteter(kvpBruker.fnr)
         val url = "http://localhost:$port/veilarbaktivitet/api/arkivering/forhaandsvisning-send-til-bruker?oppfolgingsperiodeId=$oppfølgingsperiode"
         val body = ArkiveringsController.ForhaandsvisningInboundDTO(
@@ -513,13 +522,20 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             filter = defaultFilter(kvpAlternativ = INKLUDER_KVP_AKTIVITETER)
         )
 
-        veileder
+        val response = veileder
             .createRequest(kvpBruker)
             .body(body)
             .post(url)
 
-        val harHentetDialogerMedKontorsperre = wireMock.getAllServeEvents().any { it.request.url.contains("ekskluderDialogerMedKontorsperre=false") }
-        assertThat(harHentetDialogerMedKontorsperre).isTrue()
+        assertThat(response.statusCode).isEqualTo(200)
+        val forhaandsvisningRequest =
+            wireMock.getAllServeEvents().filter { it.request.url.contains("forhaandsvisning-send-til-bruker") }.first()
+        val payload = JsonUtils.fromJson(forhaandsvisningRequest.request.bodyAsString, ForhåndsvisningPayload::class.java)
+        assertThat(payload.aktiviteter.values.flatten().size).isEqualTo(1)
+        val antallDialogerUtenAktivitet = payload.dialogtråder.size
+        val antallDialogerMedAktivitet = payload.aktiviteter.values.flatten().count { it.dialogtråd != null }
+        assertThat(antallDialogerUtenAktivitet).isEqualTo(1)
+        assertThat(antallDialogerMedAktivitet).isEqualTo(1)
     }
 
     @Test
@@ -895,7 +911,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
     }
 
     @Test
-    fun `Skal aldri inkludere kontorsperrede aktiviteter og dialoger ved forhaandsvisning hvis veileder ikke har tilgang`() {
+    fun `Skal aldri inkludere kontorsperrede aktiviteter ved forhaandsvisning hvis veileder ikke har tilgang`() {
         val (kvpBruker, veileder) = hentKvpBrukerOgVeileder("Sølvi", "Normalbakke")
         val oppfølgingsperiode = kvpBruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
         val sendTilBrukerInbound = ArkiveringsController.SendTilBrukerInboundDTO(
@@ -919,79 +935,81 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         aktivitetId: String,
         meldingerSendtTidspunkt: String = "2024-02-05T13:31:22.238+00:00",
         sistLestTidspunkt: String = "2024-03-05T13:31:22.238+00:00",
-        ekskluderDialogerMedKontorsperre: Boolean = true
+        kontorsperreEnhetId: String? = null,
     ) {
         wireMock.stubFor(
-            get(
+            post(
                 urlEqualTo(
-                    "/veilarbdialog/api/dialog?fnr=$fnr&ekskluderDialogerMedKontorsperre=$ekskluderDialogerMedKontorsperre"
+                    "/veilarbdialog/graphql"
                 )
-            )
-                .willReturn(
-                    aResponse().withBody(
-                        """
-                            [
-                                {
-                                    "id": "618055",
-                                    "aktivitetId": "$aktivitetId",
-                                    "overskrift": "Arbeidsmarkedsopplæring (Gruppe): Kurs: Speiderkurs gruppe-AMO",
-                                    "sisteTekst": "Jada",
-                                    "sisteDato": "2024-02-05T13:31:22.238+00:00",
-                                    "opprettetDato": "2024-02-05T13:31:11.564+00:00",
-                                    "historisk": false,
-                                    "lest": true,
-                                    "venterPaSvar": false,
-                                    "ferdigBehandlet": false,
-                                    "lestAvBrukerTidspunkt": "$sistLestTidspunkt",
-                                    "erLestAvBruker": true,
-                                    "oppfolgingsperiode": "$oppfølgingsperiodeId",
-                                    "henvendelser": [
-                                        {
-                                            "id": "1147416",
-                                            "dialogId": "618057",
-                                            "avsender": "VEILEDER",
-                                            "avsenderId": "Z994188",
-                                            "sendt": "$meldingerSendtTidspunkt",
-                                            "lest": true,
-                                            "viktig": false,
-                                            "tekst": "wehfuiehwf\n\nHilsen F_994188 E_994188"
-                                        }
-                                    ],
-                                    "egenskaper": []
-                                },
-                                {
-                                    "id": "618056",
-                                    "aktivitetId": null,
-                                    "overskrift": "Penger",
-                                    "sisteTekst": "Jeg liker NAV. NAV er snille!",
-                                    "sisteDato": "2024-02-05T13:29:18.635+00:00",
-                                    "opprettetDato": "2024-02-05T13:29:18.616+00:00",
-                                    "historisk": false,
-                                    "lest": true,
-                                    "venterPaSvar": false,
-                                    "ferdigBehandlet": false,
-                                    "lestAvBrukerTidspunkt": null,
-                                    "erLestAvBruker": true,
-                                    "oppfolgingsperiode": "$oppfølgingsperiodeId",
-                                    "henvendelser": [
-                                        {
-                                            "id": "1147415",
-                                            "dialogId": "618056",
-                                            "avsender": "BRUKER",
-                                            "avsenderId": "$fnr",
-                                            "sendt": "$meldingerSendtTidspunkt",
-                                            "lest": true,
-                                            "viktig": false,
-                                            "tekst": "Jeg liker NAV. NAV er snille!"
-                                        }
-                                    ],
-                                    "egenskaper": []
-                                }
-                            ]
-                        """.trimIndent()
-                    )
-                )
-        )
+            ).willReturn(aResponse().withBody(
+                """
+                    {
+                      "data" : {
+                        "dialoger" : [
+                          {
+                            "id": "618055",
+                            "aktivitetId": "$aktivitetId",
+                            "overskrift": "Arbeidsmarkedsopplæring (Gruppe): Kurs: Speiderkurs gruppe-AMO",
+                            "sisteTekst": "Jada",
+                            "sisteDato": "2024-02-05T13:31:22.238+00:00",
+                            "opprettetDato": "2024-02-05T13:31:11.564+00:00",
+                            "historisk": false,
+                            "lest": true,
+                            "venterPaSvar": false,
+                            "ferdigBehandlet": false,
+                            "lestAvBrukerTidspunkt": "$sistLestTidspunkt",
+                            "erLestAvBruker": true,
+                            "oppfolgingsperiode": "$oppfølgingsperiodeId",
+                            "kontorsperreEnhetId" :  ${kontorsperreEnhetId?.let { "\"$it\"" } ?: "null"},
+                            "henvendelser": [
+                              {
+                                "id": "1147416",
+                                "dialogId": "618057",
+                                "avsender": "VEILEDER",
+                                "avsenderId": "Z994188",
+                                "sendt": "$meldingerSendtTidspunkt",
+                                "lest": true,
+                                "viktig": false,
+                                "tekst": "wehfuiehwf\n\nHilsen F_994188 E_994188"
+                              }
+                            ],
+                            "egenskaper": []
+                          },
+                          {
+                            "id": "618056",
+                            "aktivitetId": null,
+                            "overskrift": "Penger",
+                            "sisteTekst": "Jeg liker NAV. NAV er snille!",
+                            "sisteDato": "2024-02-05T13:29:18.635+00:00",
+                            "opprettetDato": "2024-02-05T13:29:18.616+00:00",
+                            "historisk": false,
+                            "lest": true,
+                            "venterPaSvar": false,
+                            "ferdigBehandlet": false,
+                            "lestAvBrukerTidspunkt": null,
+                            "erLestAvBruker": true,
+                            "oppfolgingsperiode": "$oppfølgingsperiodeId",
+                            "kontorsperreEnhetId" :  ${kontorsperreEnhetId?.let { "\"$it\"" } ?: "null"},
+                            "henvendelser": [
+                              {
+                                "id": "1147415",
+                                "dialogId": "618056",
+                                "avsender": "BRUKER",
+                                "avsenderId": "$fnr",
+                                "sendt": "$meldingerSendtTidspunkt",
+                                "lest": true,
+                                "viktig": false,
+                                "tekst": "Jeg liker NAV. NAV er snille!"
+                              }
+                            ],
+                            "egenskaper": []
+                          }
+                        ]
+                      }
+                    }
+                """.trimIndent()
+            )))
     }
 
     private fun stubIngenDialogTråder(fnr: String) {
