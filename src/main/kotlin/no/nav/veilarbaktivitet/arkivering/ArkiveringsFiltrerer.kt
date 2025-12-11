@@ -3,6 +3,7 @@ package no.nav.veilarbaktivitet.arkivering
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
 import no.nav.veilarbaktivitet.aktivitet.mappers.Helpers
 import no.nav.veilarbaktivitet.util.DateUtils
+import java.time.ZonedDateTime
 
 fun filtrerArkiveringsData(
     arkiveringsData: ArkiveringsController.ArkiveringsData,
@@ -14,29 +15,32 @@ fun filtrerArkiveringsData(
         .filtrerPåStillingsstatus(filter)
         .filtrerPåArenaAktivitetStatus(filter)
         .filtrerPaAktivitetType(filter)
-        .filtrerDialoger(filter)
+        .filtrerInkluderDialoger(filter)
         .filtrerPåKvpPeriode(filter)
 }
 
 private fun ArkiveringsController.ArkiveringsData.filtrerPåKvpPeriode(filter: ArkiveringsController.Filter): ArkiveringsController.ArkiveringsData {
     return when (filter.kvpUtvalgskriterie.alternativ) {
         ArkiveringsController.KvpUtvalgskriterieAlternativ.EKSKLUDER_KVP_AKTIVITETER -> {
-            val aktiviteterUtenKvp = this.aktiviteter.filter { it.kontorsperreEnhetId == null }
-            this.copy(aktiviteter = aktiviteterUtenKvp)
+            this.copy(
+                aktiviteter = this.aktiviteter.filter { it.kontorsperreEnhetId == null },
+                dialoger = this.dialoger.filter { it.kontorsperreEnhetId == null }
+            )
         }
         ArkiveringsController.KvpUtvalgskriterieAlternativ.INKLUDER_KVP_AKTIVITETER -> {
             this
         }
         ArkiveringsController.KvpUtvalgskriterieAlternativ.KUN_KVP_AKTIVITETER -> {
-            val kunKvpAktiviteterITidsrom = this.aktiviteter.filter { aktivitet ->
+            val kvpStart = filter.kvpUtvalgskriterie.start
+            val kvpSlutt = filter.kvpUtvalgskriterie.slutt
+            val aktiviteterIKvpPerioden = this.aktiviteter.filter { aktivitet ->
                 val opprettetDato = DateUtils.dateToZonedDateTime(aktivitet.opprettetDato)
-                val erKvpAktivitetITidsrom = aktivitet.kontorsperreEnhetId != null &&
-                        opprettetDato.isAfter(filter.kvpUtvalgskriterie.start) &&
-                        opprettetDato.isBefore(filter.kvpUtvalgskriterie.slutt)
-
-                erKvpAktivitetITidsrom
+                aktivitet.kontorsperreEnhetId != null && opprettetDato.iTidsrom(kvpStart, kvpSlutt)
             }
-            this.copy(aktiviteter = kunKvpAktiviteterITidsrom)
+            val dialogerIKvpPerioden = this.dialoger.filter { dialog ->
+                dialog.kontorsperreEnhetId != null && dialog.opprettetDato.iTidsrom(kvpStart, kvpSlutt)
+            }
+            this.copy(aktiviteter = aktiviteterIKvpPerioden, dialoger = dialogerIKvpPerioden)
         }
     }
 }
@@ -101,7 +105,10 @@ private fun ArkiveringsController.ArkiveringsData.filtrerPaAktivitetType(filter:
     return this.copy(aktiviteter = filtrerteAktiviteter, arenaAktiviteter = filtrerteArenaAktiviteter)
 }
 
-private fun ArkiveringsController.ArkiveringsData.filtrerDialoger(filter: ArkiveringsController.Filter): ArkiveringsController.ArkiveringsData {
+private fun ArkiveringsController.ArkiveringsData.filtrerInkluderDialoger(filter: ArkiveringsController.Filter): ArkiveringsController.ArkiveringsData {
     if (filter.inkluderDialoger) return this
     return this.copy(dialoger = emptyList())
 }
+
+private fun ZonedDateTime.iTidsrom(fra: ZonedDateTime?, til: ZonedDateTime?) =
+    this.isAfter(fra) && this.isBefore(til)

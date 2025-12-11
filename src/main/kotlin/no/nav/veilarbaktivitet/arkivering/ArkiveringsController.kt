@@ -4,7 +4,6 @@ import kotlinx.coroutines.*
 import no.nav.common.auth.context.AuthContext
 import no.nav.common.auth.context.AuthContextHolder
 import no.nav.common.auth.context.AuthContextHolderThreadLocal
-import no.nav.common.types.identer.EnhetId
 import no.nav.poao.dab.spring_a2_annotations.auth.AuthorizeFnr
 import no.nav.poao.dab.spring_auth.AuthService
 import no.nav.veilarbaktivitet.aktivitet.AktivitetAppService
@@ -29,6 +28,7 @@ import no.nav.veilarbaktivitet.person.Navn
 import no.nav.veilarbaktivitet.person.Person.Fnr
 import no.nav.veilarbaktivitet.person.UserInContext
 import no.nav.veilarbaktivitet.util.DateUtils
+import no.nav.veilarbaktivitet.util.EnheterTilgangCache
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -164,6 +164,7 @@ class ArkiveringsController(
             val fnr = userInContext.fnr.get()
             val aktorId = userInContext.aktorId
             val authContext = authContextHolder.context.get()
+            val enheterTilgangCache = EnheterTilgangCache(authService::harTilgangTilEnhet)
 
             fun <T> CoroutineScope.hentDataAsync(hentData: () -> T): Deferred<T> =
                 hentDataAsyncMedAuthContext(authContext, hentData)
@@ -173,20 +174,19 @@ class ArkiveringsController(
                     val aktiviteter =
                         if (inkluderDataIKvpPeriode) appService.hentAktiviteterForIdent(fnr)
                         else appService.hentAktiviteterUtenKontorsperre(fnr) //TODO: Ta bort til slutt
-                    val kontorsperreEnhetIder = aktiviteter.mapNotNull { it.kontorsperreEnhetId } // TODO: Skal ikke gjøres for privatpersoner
-                    val kontorIderMedTilgang = filtrerEnheterMedLesetilgang(kontorsperreEnhetIder)
 
                     aktiviteter
                         .asSequence()
                         .filter { it.oppfolgingsperiodeId == oppfølgingsperiodeId }
-                        .filter { it.kontorsperreEnhetId == null || kontorIderMedTilgang.contains(it.kontorsperreEnhetId) } // TODO: Test i integrationTest
+                        .filter { it.kontorsperreEnhetId == null ||  enheterTilgangCache.harTilgang(it.kontorsperreEnhetId) }
                         .filterNot { it.aktivitetType == SAMTALEREFERAT && it.moteData?.isReferatPublisert == false }
                         .sortedByDescending { it.endretDato }
                         .toList()
                 }
                 val dialogerIPerioden = hentDataAsync {
-                    dialogClient.hentDialoger(fnr, inkluderDataIKvpPeriode)
+                    dialogClient.hentDialoger(fnr)
                         .filter { it.oppfolgingsperiodeId == oppfølgingsperiodeId }
+                        .filter { it.kontorsperreEnhetId == null || enheterTilgangCache.harTilgang(it.kontorsperreEnhetId) }
                 }
                 val arenaAktiviteter = hentDataAsync {
                     arenaService.hentArenaAktiviteter(fnr).filter { it.oppfolgingsperiodeId == oppfølgingsperiodeId }
@@ -236,10 +236,6 @@ class ArkiveringsController(
         val sistOppdatert =
             (aktiviteterTidspunkt + dialogerTidspunkt).maxOrNull() ?: ZonedDateTime.now().minusYears(100)
         return sistOppdatert > tidspunkt
-    }
-
-    private fun filtrerEnheterMedLesetilgang(enhetIder: List<String>): List<String> {
-        return enhetIder.distinct().filter { authService.harTilgangTilEnhet(EnhetId(it))}
     }
 
     data class ArkiveringsData(

@@ -171,6 +171,9 @@ class DialogTrådMapperTest {
         egenskaper = emptyList(),
         erLestAvBruker = lestAvBruker,
         lestAvBrukerTidspunkt = lestAvBrukerTidspunkt,
+        opprettetDato = ZonedDateTime.now().minusSeconds(10),
+        kontorsperreEnhetId = null,
+        sisteDato = ZonedDateTime.now()
     )
 
     private fun meldingFraBruker(sendt: ZonedDateTime = ZonedDateTime.now()) = melding(
