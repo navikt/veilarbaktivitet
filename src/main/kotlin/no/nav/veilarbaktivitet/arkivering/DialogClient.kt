@@ -79,7 +79,7 @@ class DialogClient(private val dialogHttpClient: OkHttpClient) {
         val id: String,
         val dialogId: String,
         val avsender: Avsender,
-        val avsenderId: String,
+        val avsenderId: String?,
         val sendt: ZonedDateTime,
         val lest: Boolean,
         val viktig: Boolean,
