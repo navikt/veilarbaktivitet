@@ -114,6 +114,9 @@ class ArkiveringsController(
     @PostMapping("/journalfor")
     @AuthorizeFnr(auditlogMessage = "journalføre aktivitetsplan og dialog", resourceType = OppfolgingsperiodeResource::class, resourceIdParamName = "oppfolgingsperiodeId")
     fun arkiverAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID, @RequestBody arkiverInboundDTO: ArkiverInboundDTO): JournalførtOutboundDTO {
+        if (!authService.erInternBruker()) {
+            throw ResponseStatusException(HttpStatus.FORBIDDEN, "Kun interne brukere kan journalføre aktivitetsplan og dialog")
+        }
         val arkiveringsdata = hentArkiveringsData(oppfølgingsperiodeId)
 
         val oppdatertEtterForhaandsvisning = aktiviteterOgDialogerOppdatertEtter(arkiverInboundDTO.forhaandsvisningOpprettet, arkiveringsdata.aktiviteter, arkiveringsdata.dialoger)
@@ -136,6 +139,9 @@ class ArkiveringsController(
     @PostMapping("/send-til-bruker")
     @AuthorizeFnr(auditlogMessage = "Send aktivitetsplan til bruker", resourceType = OppfolgingsperiodeResource::class, resourceIdParamName = "oppfolgingsperiodeId")
     fun sendAktivitetsplanTilBruker(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID, @RequestBody sendTilBrukerInboundDTO: SendTilBrukerInboundDTO): ResponseEntity<Unit> {
+        if (!authService.erInternBruker()) {
+            throw ResponseStatusException(HttpStatus.FORBIDDEN, "Kun interne brukere kan journalføre aktivitetsplan og dialog")
+        }
         val inkludererKvpAktiviteter = sendTilBrukerInboundDTO.filter.kvpUtvalgskriterie.alternativ != EKSKLUDER_KVP_AKTIVITETER
         if (inkludererKvpAktiviteter) {
             throw ResponseStatusException(HttpStatus.UNAVAILABLE_FOR_LEGAL_REASONS)
