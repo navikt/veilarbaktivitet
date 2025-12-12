@@ -53,11 +53,11 @@ class OrkivarClient(private val orkivarHttpClient: OkHttpClient, @Value("\${orki
             .orElseThrow { RuntimeException("Kunne ikke journalføre aktivitetsplan og dialog") }
     }
 
-    fun sendTilBruker(arkivPayload: ArkivPayload): SendTilBrukerResult {
+    fun sendTilBruker(sendTilBrukerPayload: SendTilBrukerPayload): SendTilBrukerResult {
         val request: Request = Request.Builder()
             .addHeader("Content-Type", "application/json")
             .addHeader("Accept", "application/json")
-            .post(JsonUtils.toJson(arkivPayload).toRequestBody("application/json".toMediaTypeOrNull()))
+            .post(JsonUtils.toJson(sendTilBrukerPayload).toRequestBody("application/json".toMediaTypeOrNull()))
             .url("$orkivarUrl/send-til-bruker")
             .build()
 

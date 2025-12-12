@@ -20,6 +20,8 @@ import no.nav.veilarbaktivitet.arkivering.mapper.ArkiveringspayloadMapper.mapTil
 import no.nav.veilarbaktivitet.arkivering.mapper.ArkiveringspayloadMapper.mapTilForhåndsvisningsPayload
 import no.nav.veilarbaktivitet.arkivering.mapper.toArkivEtikett
 import no.nav.veilarbaktivitet.config.OppfolgingsperiodeResource
+import no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV2Client
+import no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV3ClientImpl
 import no.nav.veilarbaktivitet.oppfolging.client.MålDTO
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeService
@@ -37,6 +39,7 @@ import org.springframework.web.server.ResponseStatusException
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.util.*
+import kotlin.jvm.optionals.getOrNull
 import kotlin.time.measureTimedValue
 
 @RestController
@@ -50,6 +53,7 @@ class ArkiveringsController(
     private val oppfølgingsperiodeService: OppfolgingsperiodeService,
     private val historikkService: HistorikkService,
     private val arenaService: ArenaService,
+    private val manuellStatusClient: ManuellStatusV2Client,
     private val authContextHolder: AuthContextHolder,
     private val authService: AuthService,
 ) {
@@ -147,9 +151,11 @@ class ArkiveringsController(
 
         val sak = oppfølgingsperiodeService.hentSak(oppfølgingsperiodeId) ?: throw RuntimeException("Kunne ikke hente sak for oppfølgingsperiode: $oppfølgingsperiodeId")
         val arkivPayload = mapTilArkivPayload(filtrertArkiveringsdata, sak, sendTilBrukerInboundDTO.journalforendeEnhet, Tema_AktivitetsplanMedDialog, sendTilBrukerInboundDTO.filter)
+        val manuellStatus = manuellStatusClient.get(userInContext.aktorId).getOrNull()
+        val erManuell = manuellStatus?.isErUnderManuellOppfolging ?: false
 
         val timedJournalførtResultat = measureTimedValue {
-            orkivarClient.sendTilBruker(arkivPayload)
+            orkivarClient.sendTilBruker(SendTilBrukerPayload(arkivPayload, erManuell))
         }
         logger.info("Sending av PDF til bruker tok ${timedJournalførtResultat.duration.inWholeMilliseconds} ms")
 

@@ -23,6 +23,11 @@ data class ArkivPayload(
     val mål: String?,
 )
 
+data class SendTilBrukerPayload(
+    val arkivData: ArkivPayload,
+    val brukerHarManuellOppfølging: Boolean,
+)
+
 data class ForhåndsvisningPayload(
     val navn: String,
     val fnr: String,

@@ -4,7 +4,6 @@ import com.github.tomakehurst.wiremock.client.WireMock.*
 import no.nav.common.json.JsonUtils
 import no.nav.veilarbaktivitet.SpringBootTestBase
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
-import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortUtil
 import no.nav.veilarbaktivitet.aktivitetskort.ArenaKort
@@ -497,8 +496,8 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         assertThat(response.statusCode).isEqualTo(204)
         val journalforingsrequest =
             wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/send-til-bruker") }.first()
-        val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
-        assertThat(arkivPayload.aktiviteter).isEmpty()
+        val sendTilBrukerPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, SendTilBrukerPayload::class.java)
+        assertThat(sendTilBrukerPayload.arkivData.aktiviteter).isEmpty()
         val harHentetDialogerMedKontorsperre = wireMock.getAllServeEvents().any { it.request.url.contains("ekskluderDialogerMedKontorsperre=false") }
         assertThat(harHentetDialogerMedKontorsperre).isFalse()
     }
