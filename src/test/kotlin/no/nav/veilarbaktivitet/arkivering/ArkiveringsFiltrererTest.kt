@@ -7,9 +7,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.StillingsoekEtikettData
 import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO
 import no.nav.veilarbaktivitet.arena.model.ArenaStatusEtikettDTO
-import no.nav.veilarbaktivitet.arkivering.ArkiveringsController.KvpUtvalgskriterieAlternativ.EKSKLUDER_KVP_AKTIVITETER
-import no.nav.veilarbaktivitet.arkivering.ArkiveringsController.KvpUtvalgskriterieAlternativ.INKLUDER_KVP_AKTIVITETER
-import no.nav.veilarbaktivitet.arkivering.ArkiveringsController.KvpUtvalgskriterieAlternativ.KUN_KVP_AKTIVITETER
+import no.nav.veilarbaktivitet.arkivering.ArkiveringsController.KvpUtvalgskriterieAlternativ.*
 import no.nav.veilarbaktivitet.arkivering.DialogClient.Avsender
 import no.nav.veilarbaktivitet.oppfolging.client.MålDTO
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO
@@ -351,6 +349,7 @@ class ArkiveringsFiltrererTest {
         fnr = fnr("12345678901"),
         navn = Navn(fornavn = "Ola", mellomnavn = "", etternavn = "Nordmann"),
         tekstTilBruker = "En tekst til bruker",
+        journalførendeEnhet = ArkiveringsController.JournalførendeEnhet("1234", "Helsfyr"),
         oppfølgingsperiode = OppfolgingPeriodeMinimalDTO(
             UUID.randomUUID(),
             ZonedDateTime.now().minusMonths(2),

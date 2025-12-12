@@ -16,7 +16,7 @@ object ArkiveringspayloadMapper {
     fun mapTilArkivPayload(
         arkiveringsData: ArkiveringsController.ArkiveringsData,
         sakDTO: SakDTO,
-        journalførendeEnhet: String,
+        journalførendeEnhet: ArkiveringsController.JournalførendeEnhet,
         tema: String,
         filter: ArkiveringsController.Filter?
     ): ArkivPayload {
@@ -47,6 +47,7 @@ object ArkiveringspayloadMapper {
             fnr = arkiveringsData.fnr.get(),
             brukteFiltre = filter?.mapTilBrukteFiltre() ?: emptyMap(),
             tekstTilBruker = arkiveringsData.tekstTilBruker,
+            journalførendeEnhet = arkiveringsData.journalførendeEnhet,
             oppfølgingsperiodeStart = norskDato(arkiveringsData.oppfølgingsperiode.startDato),
             oppfølgingsperiodeSlutt = arkiveringsData.oppfølgingsperiode.sluttDato?.let { norskDato(it) },
             oppfølgingsperiodeId = arkiveringsData.oppfølgingsperiode.uuid,
