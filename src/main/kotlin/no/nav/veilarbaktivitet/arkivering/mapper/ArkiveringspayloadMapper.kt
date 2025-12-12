@@ -19,9 +19,9 @@ object ArkiveringspayloadMapper {
         journalførendeEnhet: String,
         tema: String,
         filter: ArkiveringsController.Filter?
-    ): ArkivPayload {
+    ): JournalføringPayload {
         val (arkivaktiviteter, arkivdialoger) = lagDataTilOrkivar(arkiveringsData.aktiviteter, arkiveringsData.dialoger, arkiveringsData.historikkForAktiviteter, arkiveringsData.arenaAktiviteter)
-        return ArkivPayload(
+        return JournalføringPayload(
             navn = arkiveringsData.navn.tilFornavnMellomnavnEtternavn(),
             fnr = arkiveringsData.fnr.get(),
             tekstTilBruker = arkiveringsData.tekstTilBruker,

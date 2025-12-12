@@ -436,9 +436,9 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
 
         val journalforingsrequest =
             wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
-        val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
-        assertThat(arkivPayload.aktiviteter).isEmpty()
-        assertThat(arkivPayload.dialogtråder).isEmpty()
+        val journalføringPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, JournalføringPayload::class.java)
+        assertThat(journalføringPayload.aktiviteter).isEmpty()
+        assertThat(journalføringPayload.dialogtråder).isEmpty()
     }
 
     @Test
@@ -461,10 +461,10 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
 
         val journalforingsrequest =
             wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
-        val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
-        assertThat(arkivPayload.aktiviteter).isEmpty()
-        val antallDialogerUtenAktivitet = arkivPayload.dialogtråder.size
-        val antallDialogerMedAktivitet = arkivPayload.aktiviteter.values.flatten().count { it.dialogtråd != null }
+        val journalføringPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, JournalføringPayload::class.java)
+        assertThat(journalføringPayload.aktiviteter).isEmpty()
+        val antallDialogerUtenAktivitet = journalføringPayload.dialogtråder.size
+        val antallDialogerMedAktivitet = journalføringPayload.aktiviteter.values.flatten().count { it.dialogtråd != null }
         assertThat(antallDialogerUtenAktivitet).isEqualTo(0)
         assertThat(antallDialogerMedAktivitet).isEqualTo(0)
     }
@@ -497,7 +497,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val journalforingsrequest =
             wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/send-til-bruker") }.first()
         val sendTilBrukerPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, SendTilBrukerPayload::class.java)
-        assertThat(sendTilBrukerPayload.arkivData.aktiviteter).isEmpty()
+        assertThat(sendTilBrukerPayload.journalføringspayload.aktiviteter).isEmpty()
         val harHentetDialogerMedKontorsperre = wireMock.getAllServeEvents().any { it.request.url.contains("ekskluderDialogerMedKontorsperre=false") }
         assertThat(harHentetDialogerMedKontorsperre).isFalse()
     }
@@ -561,9 +561,9 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
 
         val journalforingsrequest =
             wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
-        val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
-        assertThat(arkivPayload.aktiviteter).hasSize(1)
-        assertThat(arkivPayload.aktiviteter.values.flatten().first().tittel).isEqualTo(ikkeKvpAktivitetTittel)
+        val journalføringPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, JournalføringPayload::class.java)
+        assertThat(journalføringPayload.aktiviteter).hasSize(1)
+        assertThat(journalføringPayload.aktiviteter.values.flatten().first().tittel).isEqualTo(ikkeKvpAktivitetTittel)
     }
 
     @Test
@@ -598,8 +598,8 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
 
         val journalforingsrequest =
             wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
-        val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
-        val aktiviteterSendtTilArkiv = arkivPayload.aktiviteter.values.flatten()
+        val journalføringPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, JournalføringPayload::class.java)
+        val aktiviteterSendtTilArkiv = journalføringPayload.aktiviteter.values.flatten()
         assertThat(aktiviteterSendtTilArkiv).hasSize(eksternaAktiviteterTyper.size)
     }
 
@@ -633,8 +633,8 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             .post(arkiveringsUrl)
 
         val journalforingsrequest = wireMock.getAllServeEvents().first { it.request.url.contains("orkivar/arkiver") }
-        val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
-        val aktiviteterSendtTilArkiv = arkivPayload.aktiviteter.values.flatten()
+        val journalføringPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, JournalføringPayload::class.java)
+        val aktiviteterSendtTilArkiv = journalføringPayload.aktiviteter.values.flatten()
         assertThat(aktiviteterSendtTilArkiv).hasSize(1)
     }
 
@@ -685,8 +685,8 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
 
         val journalforingsrequest =
             wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
-        val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
-        val aktivitetSendtTilArkiv = arkivPayload.aktiviteter.values.flatten().first()
+        val journalføringPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, JournalføringPayload::class.java)
+        val aktivitetSendtTilArkiv = journalføringPayload.aktiviteter.values.flatten().first()
         assertThat(aktivitetSendtTilArkiv.eksterneHandlinger).hasSize(2)
         assertThat(aktivitetSendtTilArkiv.eksterneHandlinger).containsExactlyInAnyOrder(
             EksternHandling(internHandling.tekst, internHandling.subtekst, internHandling.url.toString()),
@@ -720,8 +720,8 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
 
         val journalforingsrequest =
             wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
-        val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
-        val aktiviteter = arkivPayload.aktiviteter.flatMap { it.value }
+        val journalføringPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, JournalføringPayload::class.java)
+        val aktiviteter = journalføringPayload.aktiviteter.flatMap { it.value }
         assertThat(aktiviteter).hasSize(1)
         assertThat(aktiviteter.first().tittel).isEqualTo(referatPublisertTittel)
     }
@@ -745,8 +745,8 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
 
         val journalforingsrequest =
             wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
-        val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
-        val journalførtAktivitet = arkivPayload.aktiviteter.flatMap { it.value }.first()
+        val journalføringPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, JournalføringPayload::class.java)
+        val journalførtAktivitet = journalføringPayload.aktiviteter.flatMap { it.value }.first()
         assertThat(journalførtAktivitet.detaljer.find { it.tittel == "Samtalereferat" }?.tekst).isEmpty()
     }
 
@@ -770,8 +770,8 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
 
         val journalforingsrequest =
             wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
-        val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
-        val journalførtAktivitet = arkivPayload.aktiviteter.flatMap { it.value }.first()
+        val journalføringPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, JournalføringPayload::class.java)
+        val journalførtAktivitet = journalføringPayload.aktiviteter.flatMap { it.value }.first()
         assertThat(journalførtAktivitet.detaljer.find { it.tittel == "Samtalereferat" }?.tekst).isEqualTo(referat)
     }
 

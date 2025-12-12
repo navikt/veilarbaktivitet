@@ -39,11 +39,11 @@ class OrkivarClient(private val orkivarHttpClient: OkHttpClient, @Value("\${orki
             .orElseThrow { RuntimeException("Kunne ikke hente PDF for forhåndsvisning") }
     }
 
-    fun journalfor(arkivPayload: ArkivPayload): JournalføringResult {
+    fun journalfor(journalføringPayload: JournalføringPayload): JournalføringResult {
         val request: Request = Request.Builder()
             .addHeader("Content-Type", "application/json")
             .addHeader("Accept", "application/json")
-            .post(JsonUtils.toJson(arkivPayload).toRequestBody("application/json".toMediaTypeOrNull()))
+            .post(JsonUtils.toJson(journalføringPayload).toRequestBody("application/json".toMediaTypeOrNull()))
             .url("$orkivarUrl/arkiver")
             .build()
 
