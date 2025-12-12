@@ -5,7 +5,7 @@ import java.util.*
 
 typealias ArkivAktivitetStatus = String
 
-data class ArkivPayload(
+data class JournalføringPayload(
     val navn: String,
     val fnr: String,
     val brukteFiltre: Map<String, List<String>>,
@@ -24,7 +24,7 @@ data class ArkivPayload(
 )
 
 data class SendTilBrukerPayload(
-    val arkivData: ArkivPayload,
+    val journalføringspayload: JournalføringPayload,
     val brukerHarManuellOppfølging: Boolean,
 )
 
