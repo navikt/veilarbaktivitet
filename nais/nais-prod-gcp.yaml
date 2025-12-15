@@ -104,6 +104,8 @@ spec:
         - application: veilarboppfolging
           namespace: poao
         - application: orkivar
+        - application: norg2
+          namespace: org
   gcp:
     sqlInstances:
       - name: veilarbaktivitet-gcp

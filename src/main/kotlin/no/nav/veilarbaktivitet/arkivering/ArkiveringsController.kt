@@ -4,6 +4,8 @@ import kotlinx.coroutines.*
 import no.nav.common.auth.context.AuthContext
 import no.nav.common.auth.context.AuthContextHolder
 import no.nav.common.auth.context.AuthContextHolderThreadLocal
+import no.nav.common.client.norg2.CachedNorg2Client
+import no.nav.common.client.norg2.Norg2Client
 import no.nav.poao.dab.spring_a2_annotations.auth.AuthorizeFnr
 import no.nav.poao.dab.spring_auth.AuthService
 import no.nav.veilarbaktivitet.aktivitet.AktivitetAppService

@@ -77,6 +77,13 @@ public class OkHttpClientConfig {
                 .build();
     }
 
+    @Bean
+    OkHttpClient norg2HttpClient(MeterRegistry meterRegistry) {
+        return RestClient.baseClientBuilder()
+                .eventListener(OkHttpMetricsEventListener.builder(meterRegistry, "okhttp.requests").build())
+                .build();
+    }
+
     private String getVeilarboppfolgingScope(Boolean forAzureToken) {
         String env = isProduction().orElse(false) ? "prod" : "dev";
         if (forAzureToken) {
