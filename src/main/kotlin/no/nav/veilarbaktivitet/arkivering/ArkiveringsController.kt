@@ -4,8 +4,6 @@ import kotlinx.coroutines.*
 import no.nav.common.auth.context.AuthContext
 import no.nav.common.auth.context.AuthContextHolder
 import no.nav.common.auth.context.AuthContextHolderThreadLocal
-import no.nav.common.client.norg2.CachedNorg2Client
-import no.nav.common.client.norg2.Norg2Client
 import no.nav.poao.dab.spring_a2_annotations.auth.AuthorizeFnr
 import no.nav.poao.dab.spring_auth.AuthService
 import no.nav.veilarbaktivitet.aktivitet.AktivitetAppService
@@ -23,7 +21,6 @@ import no.nav.veilarbaktivitet.arkivering.mapper.ArkiveringspayloadMapper.mapTil
 import no.nav.veilarbaktivitet.arkivering.mapper.toArkivEtikett
 import no.nav.veilarbaktivitet.config.OppfolgingsperiodeResource
 import no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV2Client
-import no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV3ClientImpl
 import no.nav.veilarbaktivitet.oppfolging.client.MålDTO
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeService
@@ -125,7 +122,7 @@ class ArkiveringsController(
         if (oppdatertEtterForhaandsvisning) throw ResponseStatusException(HttpStatus.CONFLICT)
 
         val sak = oppfølgingsperiodeService.hentSak(oppfølgingsperiodeId) ?: throw RuntimeException("Kunne ikke hente sak for oppfølgingsperiode: $oppfølgingsperiodeId")
-        val arkivPayload = mapTilArkivPayload(arkiveringsdata, sak, arkiverInboundDTO.journalforendeEnhet, Tema_AktivitetsplanMedDialog, null)
+        val arkivPayload = mapTilArkivPayload(arkiveringsdata, sak, arkiverInboundDTO.journalførendeEnhetId, Tema_AktivitetsplanMedDialog, null)
 
         val timedJournalførtResultat = measureTimedValue {
             orkivarClient.journalfor(arkivPayload)
@@ -158,7 +155,7 @@ class ArkiveringsController(
         if (oppdatertEtterForhaandsvisning) throw ResponseStatusException(HttpStatus.CONFLICT)
 
         val sak = oppfølgingsperiodeService.hentSak(oppfølgingsperiodeId) ?: throw RuntimeException("Kunne ikke hente sak for oppfølgingsperiode: $oppfølgingsperiodeId")
-        val arkivPayload = mapTilArkivPayload(filtrertArkiveringsdata, sak, sendTilBrukerInboundDTO.journalforendeEnhet, Tema_AktivitetsplanMedDialog, sendTilBrukerInboundDTO.filter)
+        val arkivPayload = mapTilArkivPayload(filtrertArkiveringsdata, sak, sendTilBrukerInboundDTO.journalførendeEnhetId, Tema_AktivitetsplanMedDialog, sendTilBrukerInboundDTO.filter)
         val manuellStatus = manuellStatusClient.get(userInContext.aktorId).getOrNull()
         val erManuell = manuellStatus?.isErUnderManuellOppfolging ?: false
 
@@ -272,7 +269,7 @@ class ArkiveringsController(
 
     data class ArkiverInboundDTO(
         val forhaandsvisningOpprettet: ZonedDateTime,
-        val journalforendeEnhet: String
+        val journalførendeEnhetId: String
     )
 
     data class JournalførtOutboundDTO(
@@ -281,7 +278,7 @@ class ArkiveringsController(
 
     data class SendTilBrukerInboundDTO(
         val forhaandsvisningOpprettet: ZonedDateTime,
-        val journalforendeEnhet: String,
+        val journalførendeEnhetId: String,
         val tekstTilBruker: String,
         val filter: Filter
     )

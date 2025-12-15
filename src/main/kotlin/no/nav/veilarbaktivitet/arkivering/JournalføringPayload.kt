@@ -17,7 +17,7 @@ data class JournalføringPayload(
     val fagsaksystem: String,
     val tema: String,
     val oppfølgingsperiodeId: UUID,
-    val journalførendeEnhet: String,
+    val journalførendeEnhetId: String,
     val aktiviteter: Map<ArkivAktivitetStatus, List<ArkivAktivitet>>,
     val dialogtråder: List<ArkivDialogtråd>,
     val mål: String?,

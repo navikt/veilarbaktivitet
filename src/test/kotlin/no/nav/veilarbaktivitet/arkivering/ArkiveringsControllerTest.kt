@@ -232,7 +232,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
     @Test
     fun `Når man skal journalføre sender man data til orkivar`() {
         val (bruker, veileder) = hentBrukerOgVeileder("Sølvi", "Normalbakke")
-        val journalførendeEnhet = "0909"
+        val journalførendeEnhetId = "0909"
         val sisteOppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }
 
         val jobbAktivitetPlanlegger = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
@@ -264,7 +264,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val arkiveringsUrl =
             "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiodeId"
 
-        val body = ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now(), journalførendeEnhet)
+        val body = ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now(), journalførendeEnhetId)
         veileder
             .createRequest(bruker)
             .body(body)
@@ -294,7 +294,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                       "fagsaksystem": "ARBEIDSOPPFOLGING",
                       "tema": "AKT",
                       "oppfølgingsperiodeId": "${oppfølgingsperiodeId}",
-                      "journalførendeEnhet": "$journalførendeEnhet",
+                      "journalførendeEnhetId": "$journalførendeEnhetId",
                       "aktiviteter" : {
                         "Planlagt" : [ {
                           "tittel" : "tittel",
@@ -431,7 +431,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiodeForArkivering"
         veileder
             .createRequest(bruker)
-            .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now(), "dummyEnhet"))
+            .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now(), "1234"))
             .post(arkiveringsUrl)
 
         val journalforingsrequest =
@@ -456,7 +456,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
 
         veileder
             .createRequest(kvpBruker)
-            .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now(), "dummyEnhet"))
+            .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now(), "1234"))
             .post(arkiveringsUrl)
 
         val journalforingsrequest =
@@ -481,7 +481,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         stubIngenArenaAktiviteter(kvpBruker.fnr)
         val sendTilBrukerInbound = ArkiveringsController.SendTilBrukerInboundDTO(
             forhaandsvisningOpprettet = ZonedDateTime.now(),
-            journalforendeEnhet = "dummyEnhet",
+            journalførendeEnhetId = "1234",
             tekstTilBruker = "Dette er en tekst til bruker",
             filter = defaultFilter()
         )
@@ -556,7 +556,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
         veileder
             .createRequest(bruker)
-            .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now(), "dummyEnhet"))
+            .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now(), "1234"))
             .post(arkiveringsUrl)
 
         val journalforingsrequest =
@@ -593,7 +593,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
         veileder
             .createRequest(bruker)
-            .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now(), "dummyEnhet"))
+            .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now(), "1234"))
             .post(arkiveringsUrl)
 
         val journalforingsrequest =
@@ -629,7 +629,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
         veileder
             .createRequest(bruker)
-            .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now(), "dummyEnhet"))
+            .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now(), "1234"))
             .post(arkiveringsUrl)
 
         val journalforingsrequest = wireMock.getAllServeEvents().first { it.request.url.contains("orkivar/arkiver") }
@@ -680,7 +680,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
         veileder
             .createRequest(bruker)
-            .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now(), "dummyEnhet"))
+            .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now(), "1234"))
             .post(arkiveringsUrl)
 
         val journalforingsrequest =
@@ -715,7 +715,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
         veileder
             .createRequest(bruker)
-            .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now(), "dummyEnhet"))
+            .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now(), "1234"))
             .post(arkiveringsUrl)
 
         val journalforingsrequest =
@@ -740,7 +740,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
         veileder
             .createRequest(bruker)
-            .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now(), "dummyEnhet"))
+            .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now(), "1234"))
             .post(arkiveringsUrl)
 
         val journalforingsrequest =
@@ -765,7 +765,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
         veileder
             .createRequest(bruker)
-            .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now(), "dummyEnhet"))
+            .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now(), "1234"))
             .post(arkiveringsUrl)
 
         val journalforingsrequest =
@@ -789,7 +789,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=${oppfølgingsperiode.oppfolgingsperiodeId}"
         veileder
             .createRequest(bruker)
-            .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now(), "dummyEnhet"))
+            .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now(), "1234"))
             .post(arkiveringsUrl)
 
         wireMock.verify(
@@ -809,7 +809,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                               "fagsaksystem" : "ARBEIDSOPPFOLGING",
                               "tema" : "AKT",
                               "oppfølgingsperiodeId" : "${oppfølgingsperiode.oppfolgingsperiodeId}",
-                              "journalførendeEnhet" : "dummyEnhet",
+                              "journalførendeEnhetId" : "1234",
                               "aktiviteter" : {
                                 "Fullført" : [ {
                                   "tittel" : "Ordinær utdanning for enslige forsørgere mv",
@@ -867,7 +867,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
         veileder
             .createRequest(bruker)
-            .body(ArkiveringsController.ArkiverInboundDTO(forhaandsvisningstidspunkt, "dummyEnhet"))
+            .body(ArkiveringsController.ArkiverInboundDTO(forhaandsvisningstidspunkt, "1234"))
             .post(arkiveringsUrl)
             .then()
             .assertThat()
@@ -895,7 +895,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val oppfølgingsperiode = kvpBruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
         val sendTilBrukerInbound = ArkiveringsController.SendTilBrukerInboundDTO(
             forhaandsvisningOpprettet = ZonedDateTime.now(),
-            journalforendeEnhet = "dummyEnhet",
+            journalførendeEnhetId = "1234",
             tekstTilBruker = "Dette er en tekst til bruker",
             filter = defaultFilter(kvpAlternativ = INKLUDER_KVP_AKTIVITETER)
         )
@@ -915,7 +915,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val oppfølgingsperiode = kvpBruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
         val sendTilBrukerInbound = ArkiveringsController.SendTilBrukerInboundDTO(
             forhaandsvisningOpprettet = ZonedDateTime.now(),
-            journalforendeEnhet = "dummyEnhet",
+            journalførendeEnhetId = "1234",
             tekstTilBruker = "Dette er en tekst til bruker",
             filter = defaultFilter(kvpAlternativ = ArkiveringsController.KvpUtvalgskriterieAlternativ.KUN_KVP_AKTIVITETER)
         )

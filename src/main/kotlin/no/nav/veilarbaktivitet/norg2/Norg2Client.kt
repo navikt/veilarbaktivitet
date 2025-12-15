@@ -15,10 +15,6 @@ class Norg2Client(private val norg2HttpClient: OkHttpClient) {
     private val log = LoggerFactory.getLogger(Norg2Client::class.java)
     private var norgKontorCache = mapOf<EnhetId, NorgKontor>()
 
-    init {
-        norgKontorCache = hentAlleEnheter()
-    }
-
     private fun hentAlleEnheter(): Map<EnhetId, NorgKontor> {
         val request: Request = Request.Builder()
             .addHeader("Content-Type", "application/json")
