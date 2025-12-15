@@ -185,7 +185,7 @@ class ArkiveringsController(
                 val aktiviteterDeferred = hentDataAsync {
                     val aktiviteter =
                         if (inkluderDataIKvpPeriode) appService.hentAktiviteterForIdent(fnr)
-                        else appService.hentAktiviteterUtenKontorsperre(fnr) //TODO: Ta bort til slutt
+                        else appService.hentAktiviteterUtenKontorsperre(fnr) //TODO: Filtrer data også på journalføring og send-til-bruker, fjern denne
 
                     aktiviteter
                         .asSequence()
