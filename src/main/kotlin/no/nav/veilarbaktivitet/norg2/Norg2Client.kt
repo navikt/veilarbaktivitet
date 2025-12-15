@@ -36,6 +36,22 @@ class Norg2Client(private val norg2HttpClient: OkHttpClient) {
             throw RuntimeException("Feil ved henting av kontor fra norg")
         }
     }
+
+    private fun hentKontorFraCache(enhetId: EnhetId): NorgKontor? {
+        val kontornavn = norgKontorCache[enhetId]
+
+        return if (kontornavn != null) {
+            kontornavn
+        } else {
+            norgKontorCache = hentAlleEnheter()
+            norgKontorCache[enhetId]
+        }
+    }
+
+    fun hentKontorNavn(enhetId: EnhetId): String {
+        return hentKontorFraCache(enhetId)?.navn
+            ?: throw RuntimeException("Finner ikke kontor med enhetId $enhetId")
+    }
 }
 
 data class NorgKontor(
