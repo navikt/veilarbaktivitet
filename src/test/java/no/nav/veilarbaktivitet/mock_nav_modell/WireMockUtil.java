@@ -218,7 +218,7 @@ public class WireMockUtil {
     }
 
     private static void hentKontor() {
-        wireMock.stubFor(get(urlMatching("/norg2/api/v1/enhet"))
+        wireMock.stubFor(get(urlEqualTo("/norg2/api/v1/enhet"))
                 .willReturn(aResponse()
                         .withBody("""
                                 [

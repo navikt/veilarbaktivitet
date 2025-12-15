@@ -138,6 +138,8 @@ spec:
       value: "http://orkivar"
     - name: VEILARBDIALOG_URL
       value: "https://veilarbdialog.intern.dev.nav.no"
+    - name: NORG2_URL
+      value: "http://norg2.org/norg2"
     - name: KAFKA_ENABLED
       value: "true"
     - name: AKTIVITETSPLAN_URL

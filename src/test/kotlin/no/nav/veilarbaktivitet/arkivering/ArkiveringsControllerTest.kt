@@ -70,17 +70,20 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         stubIngenArenaAktiviteter(bruker.fnr)
         val arkiveringsUrl =
             "http://localhost:$port/veilarbaktivitet/api/arkivering/forhaandsvisning?oppfolgingsperiodeId=$oppfølgingsperiodeId"
+        val forhaandsvisningInboundDTO = ArkiveringsController.ForhaandsvisningInboundDTO("1234")
 
-        // When
+
         val forhaandsvisning = veileder
             .createRequest(bruker)
-            .get(arkiveringsUrl)
+            .body(forhaandsvisningInboundDTO)
+            .post(arkiveringsUrl)
             .then()
             .assertThat()
             .statusCode(HttpStatus.OK.value())
             .extract()
             .response()
             .`as`(ArkiveringsController.ForhaandsvisningOutboundDTO::class.java)
+        // When
 
         // Then
         assertThat(forhaandsvisning.forhaandsvisningOpprettet).isCloseTo(
@@ -101,8 +104,9 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                     {
                       "navn": "${bruker.navn.tilFornavnMellomnavnEtternavn()}",
                       "fnr": "${bruker.fnr}",
-                      "tekstTilBruker" : null,
                       "brukteFiltre": { },
+                      "tekstTilBruker" : null,
+                      "journalførendeEnhetNavn" : "Nav Helsfyr",
                       "oppfølgingsperiodeStart": "${norskDato(sisteOppfølgingsperiode.startTid)}",
                       "oppfølgingsperiodeSlutt": ${sisteOppfølgingsperiode.sluttTid?.let { norskDato(it) }},
                       "oppfølgingsperiodeId": "${sisteOppfølgingsperiode.oppfolgingsperiodeId}",
@@ -232,7 +236,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
     @Test
     fun `Når man skal journalføre sender man data til orkivar`() {
         val (bruker, veileder) = hentBrukerOgVeileder("Sølvi", "Normalbakke")
-        val journalførendeEnhetId = "0909"
+        val journalførendeEnhetId = "1234"
         val sisteOppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }
 
         val jobbAktivitetPlanlegger = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
@@ -288,6 +292,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                       "fnr": "${bruker.fnr}",
                       "brukteFiltre": { },
                       "tekstTilBruker" : null,
+                      "journalførendeEnhetNavn" : "Nav Helsfyr",
                       "oppfølgingsperiodeStart": "${norskDato(sisteOppfølgingsperiode.startTid)}",
                       "oppfølgingsperiodeSlutt": ${sisteOppfølgingsperiode?.sluttTid?.let { norskDato(it) } ?: null},
                       "sakId": ${bruker.sakId},
@@ -399,10 +404,11 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         stubIngenArenaAktiviteter(bruker.fnr)
 
         val arkiveringsUrl =
-            "http://localhost:$port/veilarbaktivitet/api/arkivering/forhaandsvisning?oppfolgingsperiodeId=$oppfølgingsperiodeForArkivering&journalforendeEnhet=0909"
+            "http://localhost:$port/veilarbaktivitet/api/arkivering/forhaandsvisning?oppfolgingsperiodeId=$oppfølgingsperiodeForArkivering&journalforendeEnhet=1234"
         veileder
             .createRequest(bruker)
-            .get(arkiveringsUrl)
+            .body(ArkiveringsController.ForhaandsvisningInboundDTO("1234"))
+            .post(arkiveringsUrl)
 
         val journalforingsrequest =
             wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/forhaandsvisning") }.first()
@@ -804,6 +810,8 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                               "fnr" : "${bruker.fnr}",
                               "tekstTilBruker" : null,
                               "brukteFiltre": { }, 
+                              "tekstTilBruker" : null,
+                              "journalførendeEnhetNavn" : "Nav Helsfyr",
                               "oppfølgingsperiodeStart" : "${norskDato(oppfølgingsperiode.startTid)}",
                               "oppfølgingsperiodeSlutt" : null,
                               "sakId" : 1000,
@@ -879,12 +887,13 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
     fun `Kall mot arkiveringsendepunkt kaster 403 når oppfølgingsperiodeId mangler`() {
         val bruker = navMockService.createBruker()
         val veileder = navMockService.createVeileder(mockBruker = bruker)
-
-        val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering/forhaandsvisning"
+        val url = "http://localhost:$port/veilarbaktivitet/api/arkivering/forhaandsvisning"
+        val inboundDto = ArkiveringsController.ForhaandsvisningInboundDTO("1234")
 
         veileder
             .createRequest(bruker)
-            .get(arkiveringsUrl)
+            .body(inboundDto)
+            .post(url)
             .then()
             .assertThat()
             .statusCode(HttpStatus.FORBIDDEN.value())

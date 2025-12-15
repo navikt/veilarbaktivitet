@@ -6,21 +6,26 @@ import no.nav.common.types.identer.EnhetId
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 
 @Component
 class Norg2Client(private val norg2HttpClient: OkHttpClient) {
 
-    private val hentAlleEnheterUrl = "http://norg2.org/norg2/api/v1/enhet"
+
+    @Value("\${norg2.url}")
+    private lateinit var baseUrl: String;
     private val log = LoggerFactory.getLogger(Norg2Client::class.java)
     private var norgKontorCache = mapOf<EnhetId, NorgKontor>()
 
     private fun hentAlleEnheter(): Map<EnhetId, NorgKontor> {
+        val url = "$baseUrl/api/v1/enhet"
+
         val request: Request = Request.Builder()
             .addHeader("Content-Type", "application/json")
             .addHeader("Accept", "application/json")
             .get()
-            .url(hentAlleEnheterUrl)
+            .url(url)
             .build()
 
         val response = norg2HttpClient.newCall(request).execute()
