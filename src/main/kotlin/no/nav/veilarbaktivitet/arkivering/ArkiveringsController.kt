@@ -96,11 +96,12 @@ class ArkiveringsController(
             KvpUtvalgskriterieAlternativ.KUN_KVP_AKTIVITETER
         )
         val filter = forhaandsvisningSendTilBrukerInboundDto.filter
+        val journalførendeEnhetId = forhaandsvisningSendTilBrukerInboundDto.journalførendeEnhetId
         val arkiveringsdata = hentArkiveringsData(
             oppfølgingsperiodeId = oppfølgingsperiodeId,
             tekstTilBruker = forhaandsvisningSendTilBrukerInboundDto.tekstTilBruker,
             inkluderDataIKvpPeriode = hentKvpAktiviteter,
-            journalførendeEnhetId = EnhetId.of(forhaandsvisningSendTilBrukerInboundDto.journalførendeEnhetId)
+            journalførendeEnhetId = if (journalførendeEnhetId != null && journalførendeEnhetId.isNotBlank()) EnhetId.of(journalførendeEnhetId) else null
         )
         val filtrertArkiveringsdata = filtrerArkiveringsData(arkiveringsdata, filter)
         val forhåndsvisningPayload = mapTilForhåndsvisningsPayload(filtrertArkiveringsdata, filter)
