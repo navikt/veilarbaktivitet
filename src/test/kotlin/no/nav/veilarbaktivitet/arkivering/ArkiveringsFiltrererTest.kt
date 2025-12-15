@@ -360,7 +360,8 @@ class ArkiveringsFiltrererTest {
         dialoger = emptyList(),
         mål = MålDTO("Måltekst"),
         historikkForAktiviteter = emptyMap(),
-        arenaAktiviteter = emptyList()
+        arenaAktiviteter = emptyList(),
+        journalførendeEnhetNavn = "Nav Helsfyr"
     )
 
     val defaultDialogtråd = DialogClient.DialogTråd(

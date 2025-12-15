@@ -516,9 +516,10 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         stubDialogTråder(kvpBruker.fnr, oppfølgingsperiode.toString(), aktivitet.id, kontorsperreEnhetId = kvpBruker.oppfolgingsenhet)
         stubIngenArenaAktiviteter(kvpBruker.fnr)
         val url = "http://localhost:$port/veilarbaktivitet/api/arkivering/forhaandsvisning-send-til-bruker?oppfolgingsperiodeId=$oppfølgingsperiode"
-        val body = ArkiveringsController.ForhaandsvisningInboundDTO(
+        val body = ArkiveringsController.ForhaandsvisningSendTilBrukerInboundDto(
             tekstTilBruker = "Tekst til bruker",
-            filter = defaultFilter(kvpAlternativ = INKLUDER_KVP_AKTIVITETER)
+            filter = defaultFilter(kvpAlternativ = INKLUDER_KVP_AKTIVITETER),
+            journalførendeEnhetId = "1234",
         )
 
         val response = veileder

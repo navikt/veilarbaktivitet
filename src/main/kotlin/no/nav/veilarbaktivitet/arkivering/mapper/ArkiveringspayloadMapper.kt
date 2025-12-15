@@ -1,5 +1,7 @@
 package no.nav.veilarbaktivitet.arkivering.mapper
 
+import no.nav.common.client.norg2.Enhet
+import no.nav.common.types.identer.EnhetId
 import no.nav.veilarbaktivitet.aktivitet.AktivitetId
 import no.nav.veilarbaktivitet.aktivitet.Historikk
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
@@ -16,15 +18,17 @@ object ArkiveringspayloadMapper {
     fun mapTilArkivPayload(
         arkiveringsData: ArkiveringsController.ArkiveringsData,
         sakDTO: SakDTO,
-        journalførendeEnhetId: String,
+        journalførendeEnhetId: EnhetId,
         tema: String,
         filter: ArkiveringsController.Filter?
     ): JournalføringPayload {
         val (arkivaktiviteter, arkivdialoger) = lagDataTilOrkivar(arkiveringsData.aktiviteter, arkiveringsData.dialoger, arkiveringsData.historikkForAktiviteter, arkiveringsData.arenaAktiviteter)
+
         return JournalføringPayload(
             navn = arkiveringsData.navn.tilFornavnMellomnavnEtternavn(),
             fnr = arkiveringsData.fnr.get(),
             tekstTilBruker = arkiveringsData.tekstTilBruker,
+            journalførendeEnhetNavn = arkiveringsData.journalførendeEnhetNavn,
             brukteFiltre = filter?.mapTilBrukteFiltre() ?: emptyMap(),
             oppfølgingsperiodeStart = norskDato(arkiveringsData.oppfølgingsperiode.startDato),
             oppfølgingsperiodeSlutt = arkiveringsData.oppfølgingsperiode.sluttDato?.let { norskDato(it) },
@@ -32,7 +36,7 @@ object ArkiveringspayloadMapper {
             fagsaksystem = sakDTO.fagsaksystem,
             tema = tema,
             oppfølgingsperiodeId = arkiveringsData.oppfølgingsperiode.uuid,
-            journalførendeEnhetId = journalførendeEnhetId,
+            journalførendeEnhetId = journalførendeEnhetId.get(),
             aktiviteter = arkivaktiviteter.groupBy { it.status },
             dialogtråder = arkivdialoger,
             mål = arkiveringsData.mål.mal
@@ -47,6 +51,7 @@ object ArkiveringspayloadMapper {
             fnr = arkiveringsData.fnr.get(),
             brukteFiltre = filter?.mapTilBrukteFiltre() ?: emptyMap(),
             tekstTilBruker = arkiveringsData.tekstTilBruker,
+            journalførendeEnhetNavn = arkiveringsData.journalførendeEnhetNavn,
             oppfølgingsperiodeStart = norskDato(arkiveringsData.oppfølgingsperiode.startDato),
             oppfølgingsperiodeSlutt = arkiveringsData.oppfølgingsperiode.sluttDato?.let { norskDato(it) },
             oppfølgingsperiodeId = arkiveringsData.oppfølgingsperiode.uuid,

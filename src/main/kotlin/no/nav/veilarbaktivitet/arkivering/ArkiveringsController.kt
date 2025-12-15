@@ -4,6 +4,7 @@ import kotlinx.coroutines.*
 import no.nav.common.auth.context.AuthContext
 import no.nav.common.auth.context.AuthContextHolder
 import no.nav.common.auth.context.AuthContextHolderThreadLocal
+import no.nav.common.types.identer.EnhetId
 import no.nav.poao.dab.spring_a2_annotations.auth.AuthorizeFnr
 import no.nav.poao.dab.spring_auth.AuthService
 import no.nav.veilarbaktivitet.aktivitet.AktivitetAppService
@@ -21,6 +22,7 @@ import no.nav.veilarbaktivitet.arkivering.mapper.ArkiveringspayloadMapper.mapTil
 import no.nav.veilarbaktivitet.arkivering.mapper.toArkivEtikett
 import no.nav.veilarbaktivitet.config.OppfolgingsperiodeResource
 import no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV2Client
+import no.nav.veilarbaktivitet.norg2.Norg2Client
 import no.nav.veilarbaktivitet.oppfolging.client.MålDTO
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeService
@@ -54,6 +56,7 @@ class ArkiveringsController(
     private val arenaService: ArenaService,
     private val manuellStatusClient: ManuellStatusV2Client,
     private val authContextHolder: AuthContextHolder,
+    private val norg2Client: Norg2Client,
     private val authService: AuthService,
 ) {
     private val logger = LoggerFactory.getLogger(this::class.java)
@@ -62,13 +65,13 @@ class ArkiveringsController(
         private const val Tema_AktivitetsplanMedDialog = "AKT"
     }
 
-    @GetMapping("/forhaandsvisning")
+    @PostMapping("/forhaandsvisning")
     @AuthorizeFnr(auditlogMessage = "lag forhåndsvisning av aktivitetsplan og dialog", resourceType = OppfolgingsperiodeResource::class, resourceIdParamName = "oppfolgingsperiodeId")
-    fun forhaandsvisAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID): ForhaandsvisningOutboundDTO {
+    fun forhaandsvisAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID, @RequestBody forhaandsvisningInboundDto: ForhaandsvisningInboundDTO): ForhaandsvisningOutboundDTO {
         val dataHentet = ZonedDateTime.now()
-        val arkiveringsdata = hentArkiveringsData(oppfølgingsperiodeId)
+        val arkiveringsdata = hentArkiveringsData(oppfølgingsperiodeId = oppfølgingsperiodeId, journalførendeEnhetId = EnhetId.of(forhaandsvisningInboundDto.journalførendeEnhetId))
 
-        val forhåndsvisningPayload = mapTilForhåndsvisningsPayload(arkiveringsdata, null)
+        val forhåndsvisningPayload = mapTilForhåndsvisningsPayload(arkiveringsData = arkiveringsdata, filter = null)
 
         val timedForhaandsvisningResultat = measureTimedValue {
             orkivarClient.hentPdfForForhaandsvisning(forhåndsvisningPayload)
@@ -85,15 +88,20 @@ class ArkiveringsController(
 
     @PostMapping("/forhaandsvisning-send-til-bruker")
     @AuthorizeFnr(auditlogMessage = "lag forhåndsvisning av aktivitetsplan og dialog", resourceType = OppfolgingsperiodeResource::class, resourceIdParamName = "oppfolgingsperiodeId")
-    fun forhaandsvisAktivitetsplanOgDialogSendTilBruker(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID, @RequestBody forhaandsvisningInboundDTO: ForhaandsvisningInboundDTO): ForhaandsvisningOutboundDTO {
+    fun forhaandsvisAktivitetsplanOgDialogSendTilBruker(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID, @RequestBody forhaandsvisningSendTilBrukerInboundDto: ForhaandsvisningSendTilBrukerInboundDto): ForhaandsvisningOutboundDTO {
         val dataHentet = ZonedDateTime.now()
-        val valgtKvpAlternativ = forhaandsvisningInboundDTO.filter.kvpUtvalgskriterie.alternativ
+        val valgtKvpAlternativ = forhaandsvisningSendTilBrukerInboundDto.filter.kvpUtvalgskriterie.alternativ
         val hentKvpAktiviteter = valgtKvpAlternativ in listOf(
             INKLUDER_KVP_AKTIVITETER,
             KvpUtvalgskriterieAlternativ.KUN_KVP_AKTIVITETER
         )
-        val filter = forhaandsvisningInboundDTO.filter
-        val arkiveringsdata = hentArkiveringsData(oppfølgingsperiodeId, forhaandsvisningInboundDTO.tekstTilBruker,hentKvpAktiviteter)
+        val filter = forhaandsvisningSendTilBrukerInboundDto.filter
+        val arkiveringsdata = hentArkiveringsData(
+            oppfølgingsperiodeId = oppfølgingsperiodeId,
+            tekstTilBruker = forhaandsvisningSendTilBrukerInboundDto.tekstTilBruker,
+            inkluderDataIKvpPeriode = hentKvpAktiviteter,
+            journalførendeEnhetId = EnhetId.of(forhaandsvisningSendTilBrukerInboundDto.journalførendeEnhetId)
+        )
         val filtrertArkiveringsdata = filtrerArkiveringsData(arkiveringsdata, filter)
         val forhåndsvisningPayload = mapTilForhåndsvisningsPayload(filtrertArkiveringsdata, filter)
 
@@ -116,13 +124,19 @@ class ArkiveringsController(
         if (!authService.erInternBruker()) {
             throw ResponseStatusException(HttpStatus.FORBIDDEN, "Kun interne brukere kan journalføre aktivitetsplan og dialog")
         }
-        val arkiveringsdata = hentArkiveringsData(oppfølgingsperiodeId)
+        val arkiveringsdata = hentArkiveringsData(oppfølgingsperiodeId = oppfølgingsperiodeId, journalførendeEnhetId = EnhetId.of(arkiverInboundDTO.journalførendeEnhetId))
 
         val oppdatertEtterForhaandsvisning = aktiviteterOgDialogerOppdatertEtter(arkiverInboundDTO.forhaandsvisningOpprettet, arkiveringsdata.aktiviteter, arkiveringsdata.dialoger)
         if (oppdatertEtterForhaandsvisning) throw ResponseStatusException(HttpStatus.CONFLICT)
 
         val sak = oppfølgingsperiodeService.hentSak(oppfølgingsperiodeId) ?: throw RuntimeException("Kunne ikke hente sak for oppfølgingsperiode: $oppfølgingsperiodeId")
-        val arkivPayload = mapTilArkivPayload(arkiveringsdata, sak, arkiverInboundDTO.journalførendeEnhetId, Tema_AktivitetsplanMedDialog, null)
+        val arkivPayload = mapTilArkivPayload(
+            arkiveringsdata,
+            sak,
+            EnhetId.of(arkiverInboundDTO.journalførendeEnhetId),
+            Tema_AktivitetsplanMedDialog,
+            null
+        )
 
         val timedJournalførtResultat = measureTimedValue {
             orkivarClient.journalfor(arkivPayload)
@@ -147,7 +161,11 @@ class ArkiveringsController(
         }
 
         val filtrertArkiveringsdata = filtrerArkiveringsData(
-            hentArkiveringsData(oppfølgingsperiodeId, sendTilBrukerInboundDTO.tekstTilBruker),
+            hentArkiveringsData(
+                oppfølgingsperiodeId = oppfølgingsperiodeId,
+                tekstTilBruker = sendTilBrukerInboundDTO.tekstTilBruker,
+                journalførendeEnhetId = EnhetId(sendTilBrukerInboundDTO.journalførendeEnhetId)
+            ),
             sendTilBrukerInboundDTO.filter
         )
 
@@ -155,7 +173,7 @@ class ArkiveringsController(
         if (oppdatertEtterForhaandsvisning) throw ResponseStatusException(HttpStatus.CONFLICT)
 
         val sak = oppfølgingsperiodeService.hentSak(oppfølgingsperiodeId) ?: throw RuntimeException("Kunne ikke hente sak for oppfølgingsperiode: $oppfølgingsperiodeId")
-        val arkivPayload = mapTilArkivPayload(filtrertArkiveringsdata, sak, sendTilBrukerInboundDTO.journalførendeEnhetId, Tema_AktivitetsplanMedDialog, sendTilBrukerInboundDTO.filter)
+        val arkivPayload = mapTilArkivPayload(filtrertArkiveringsdata, sak, EnhetId.of(sendTilBrukerInboundDTO.journalførendeEnhetId), Tema_AktivitetsplanMedDialog, sendTilBrukerInboundDTO.filter)
         val manuellStatus = manuellStatusClient.get(userInContext.aktorId).getOrNull()
         val erManuell = manuellStatus?.isErUnderManuellOppfolging ?: false
 
@@ -170,12 +188,18 @@ class ArkiveringsController(
         }
     }
 
-    private fun hentArkiveringsData(oppfølgingsperiodeId: UUID, tekstTilBruker: String? = null, inkluderDataIKvpPeriode: Boolean = false): ArkiveringsData {
+    private fun hentArkiveringsData(
+        oppfølgingsperiodeId: UUID,
+        journalførendeEnhetId: EnhetId?,
+        tekstTilBruker: String? = null,
+        inkluderDataIKvpPeriode: Boolean = false
+    ): ArkiveringsData {
         val timedArkiveringsdata = measureTimedValue {
             val fnr = userInContext.fnr.get()
             val aktorId = userInContext.aktorId
             val authContext = authContextHolder.context.get()
             val enheterTilgangCache = EnheterTilgangCache(authService::harTilgangTilEnhet)
+            val journalførendeEnhetNavn = journalførendeEnhetId?.let { norg2Client.hentKontorNavn(it) } ?: ""
 
             fun <T> CoroutineScope.hentDataAsync(hentData: () -> T): Deferred<T> =
                 hentDataAsyncMedAuthContext(authContext, hentData)
@@ -216,6 +240,7 @@ class ArkiveringsController(
                     fnr = fnr,
                     navn = navn.await(),
                     tekstTilBruker = tekstTilBruker,
+                    journalførendeEnhetNavn = journalførendeEnhetNavn,
                     oppfølgingsperiode = oppfølgingsperiode.await(),
                     aktiviteter = aktiviteter,
                     dialoger = dialogerIPerioden.await(),
@@ -253,12 +278,17 @@ class ArkiveringsController(
         val fnr: Fnr,
         val navn: Navn,
         val tekstTilBruker: String?,
+        val journalførendeEnhetNavn: String,
         val oppfølgingsperiode: OppfolgingPeriodeMinimalDTO,
         val aktiviteter: List<AktivitetData>,
         val dialoger: List<DialogClient.DialogTråd>,
         val mål: MålDTO,
         val historikkForAktiviteter: Map<Long, Historikk>,
         val arenaAktiviteter: List<ArenaAktivitetDTO>
+    )
+
+    data class ForhaandsvisningInboundDTO(
+        val journalførendeEnhetId: String
     )
 
     data class ForhaandsvisningOutboundDTO(
@@ -283,8 +313,9 @@ class ArkiveringsController(
         val filter: Filter
     )
 
-    data class ForhaandsvisningInboundDTO(
+    data class ForhaandsvisningSendTilBrukerInboundDto(
         val tekstTilBruker: String,
+        val journalførendeEnhetId: String?,
         val filter: Filter,
     )
 
