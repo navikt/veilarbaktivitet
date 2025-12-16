@@ -1,26 +1,18 @@
 package no.nav.veilarbaktivitet.arkivering
 
-import no.nav.common.auth.context.AuthContextHolder
 import no.nav.common.types.identer.EnhetId
 import no.nav.poao.dab.spring_a2_annotations.auth.AuthorizeFnr
-import no.nav.poao.dab.spring_auth.AuthService
-import no.nav.veilarbaktivitet.aktivitet.AktivitetAppService
 import no.nav.veilarbaktivitet.aktivitet.Historikk
-import no.nav.veilarbaktivitet.aktivitet.HistorikkService
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
-import no.nav.veilarbaktivitet.arena.ArenaService
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO
 import no.nav.veilarbaktivitet.arena.model.ArenaStatusEtikettDTO
-import no.nav.veilarbaktivitet.arkivering.ArkiveringsController.KvpUtvalgskriterieAlternativ.EKSKLUDER_KVP_AKTIVITETER
 import no.nav.veilarbaktivitet.arkivering.mapper.ArkiveringspayloadMapper.mapTilArkivPayload
 import no.nav.veilarbaktivitet.arkivering.mapper.toArkivEtikett
 import no.nav.veilarbaktivitet.config.OppfolgingsperiodeResource
 import no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV2Client
-import no.nav.veilarbaktivitet.norg2.Norg2Client
 import no.nav.veilarbaktivitet.oppfolging.client.MålDTO
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeService
-import no.nav.veilarbaktivitet.person.EksternNavnService
 import no.nav.veilarbaktivitet.person.Navn
 import no.nav.veilarbaktivitet.person.Person.Fnr
 import no.nav.veilarbaktivitet.person.UserInContext
