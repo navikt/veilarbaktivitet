@@ -22,7 +22,9 @@ import no.nav.veilarbaktivitet.person.UserInContext
 import no.nav.veilarbaktivitet.util.DateUtils
 import no.nav.veilarbaktivitet.util.EnheterTilgangCache
 import org.slf4j.LoggerFactory
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
+import org.springframework.web.server.ResponseStatusException
 import java.time.ZonedDateTime
 import java.util.*
 import kotlin.time.measureTimedValue
@@ -62,7 +64,7 @@ class ArkiveringService(
             filtrertArkiveringsdata.dialoger
         )
         if (oppdatertEtterForhaandsvisning) {
-            return Result.failure(RuntimeException("Aktiviteter eller dialoger er oppdatert etter forhåndsvisningstidspunkt"))
+            return Result.failure(ResponseStatusException(HttpStatus.CONFLICT))
         }
         return Result.success(mapTilPdfPayload(arkiveringsData = filtrertArkiveringsdata,  tekstTilBruker = null, filter = tomtFilterUtenKvp))
     }
@@ -71,6 +73,25 @@ class ArkiveringService(
         val ufiltrertArkiveringsdata = hentArkiveringsData(oppfølgingsperiodeId = oppfølgingsperiodeId, journalførendeEnhetId = journalførendeEnhetId)
         val filtrertArkiveringsdata = filtrerArkiveringsData(ufiltrertArkiveringsdata, filter)
         return mapTilPdfPayload(arkiveringsData = filtrertArkiveringsdata, filter = filter, tekstTilBruker = tekstTilBruker)
+    }
+
+    fun lagPdfPayloadForUtskrift(oppfølgingsperiodeId: UUID, journalførendeEnhetId: EnhetId, tekstTilBruker: String?, filter: Filter, ikkeOppdatertEtter: ZonedDateTime): Result<PdfPayload> {
+        if(!authService.erInternBruker()) throw RuntimeException("Skal kun brukes av interne brukere")
+        val inkludererKvpAktiviteter = filter.kvpUtvalgskriterie.alternativ != EKSKLUDER_KVP_AKTIVITETER
+        if (inkludererKvpAktiviteter) {
+            return Result.failure(ResponseStatusException(HttpStatus.UNAVAILABLE_FOR_LEGAL_REASONS))
+        }
+        val ufiltrertArkiveringsdata = hentArkiveringsData(oppfølgingsperiodeId = oppfølgingsperiodeId, journalførendeEnhetId = journalførendeEnhetId)
+        val filtrertArkiveringsdata = filtrerArkiveringsData(ufiltrertArkiveringsdata, filter)
+        val oppdatertEtterForhaandsvisning = aktiviteterOgDialogerOppdatertEtter(
+            ikkeOppdatertEtter,
+            filtrertArkiveringsdata.aktiviteter,
+            filtrertArkiveringsdata.dialoger
+        )
+        if (oppdatertEtterForhaandsvisning) {
+            return Result.failure(ResponseStatusException(HttpStatus.CONFLICT))
+        }
+        return Result.success(mapTilPdfPayload(arkiveringsData = filtrertArkiveringsdata, tekstTilBruker = tekstTilBruker, filter = filter))
     }
 
     private fun defaultFilter() = Filter(

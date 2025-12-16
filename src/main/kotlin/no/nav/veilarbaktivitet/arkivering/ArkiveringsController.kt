@@ -1,6 +1,5 @@
 package no.nav.veilarbaktivitet.arkivering
 
-import kotlinx.coroutines.*
 import no.nav.common.auth.context.AuthContextHolder
 import no.nav.common.types.identer.EnhetId
 import no.nav.poao.dab.spring_a2_annotations.auth.AuthorizeFnr
@@ -25,7 +24,6 @@ import no.nav.veilarbaktivitet.person.EksternNavnService
 import no.nav.veilarbaktivitet.person.Navn
 import no.nav.veilarbaktivitet.person.Person.Fnr
 import no.nav.veilarbaktivitet.person.UserInContext
-import no.nav.veilarbaktivitet.util.DateUtils
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -106,16 +104,18 @@ class ArkiveringsController(
     @PostMapping("/journalfor")
     @AuthorizeFnr(auditlogMessage = "journalføre aktivitetsplan og dialog", resourceType = OppfolgingsperiodeResource::class, resourceIdParamName = "oppfolgingsperiodeId")
     fun arkiverAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID, @RequestBody arkiverInboundDTO: ArkiverInboundDTO): JournalførtOutboundDTO {
-        val pdfPayload = arkiveringService.lagPdfPayloadForForhåndsvisning(oppfølgingsperiodeId, EnhetId.of(arkiverInboundDTO.journalførendeEnhetId))
+        val pdfPayloadResult = arkiveringService.lagPdfPayloadForJournalføring(oppfølgingsperiodeId, EnhetId.of(arkiverInboundDTO.journalførendeEnhetId), arkiverInboundDTO.forhaandsvisningOpprettet)
+        val pdfPayload = pdfPayloadResult.getOrElse {
+            val statusCode = (it as? ResponseStatusException)?.statusCode ?: HttpStatus.INTERNAL_SERVER_ERROR
+            throw ResponseStatusException(statusCode)
+        }
         val sak = oppfølgingsperiodeService.hentSak(oppfølgingsperiodeId) ?: throw RuntimeException("Kunne ikke hente sak for oppfølgingsperiode: $oppfølgingsperiodeId")
-
         val arkivPayload = mapTilArkivPayload(
             pdfPayload = pdfPayload,
             sakDTO = sak,
             journalførendeEnhetId = EnhetId.of(arkiverInboundDTO.journalførendeEnhetId),
             tema = Tema_AktivitetsplanMedDialog,
         )
-
         val timedJournalførtResultat = measureTimedValue {
             orkivarClient.journalfor(arkivPayload)
         }
@@ -130,28 +130,20 @@ class ArkiveringsController(
     @PostMapping("/send-til-bruker")
     @AuthorizeFnr(auditlogMessage = "Send aktivitetsplan til bruker", resourceType = OppfolgingsperiodeResource::class, resourceIdParamName = "oppfolgingsperiodeId")
     fun sendAktivitetsplanTilBruker(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID, @RequestBody sendTilBrukerInboundDTO: SendTilBrukerInboundDTO): ResponseEntity<Unit> {
-        if (!authService.erInternBruker()) {
-            throw ResponseStatusException(HttpStatus.FORBIDDEN, "Kun interne brukere kan journalføre aktivitetsplan og dialog")
-        }
-        val inkludererKvpAktiviteter = sendTilBrukerInboundDTO.filter.kvpUtvalgskriterie.alternativ != EKSKLUDER_KVP_AKTIVITETER
-        if (inkludererKvpAktiviteter) {
-            throw ResponseStatusException(HttpStatus.UNAVAILABLE_FOR_LEGAL_REASONS)
-        }
-
-        val filtrertArkiveringsdata = filtrerArkiveringsData(
-            hentArkiveringsData(
-                oppfølgingsperiodeId = oppfølgingsperiodeId,
-                tekstTilBruker = sendTilBrukerInboundDTO.tekstTilBruker,
-                journalførendeEnhetId = sendTilBrukerInboundDTO.journalførendeEnhetId
-            ),
-            sendTilBrukerInboundDTO.filter
+        val pdfPayloadResult = arkiveringService.lagPdfPayloadForUtskrift(
+            oppfølgingsperiodeId = oppfølgingsperiodeId,
+            journalførendeEnhetId = EnhetId.of(sendTilBrukerInboundDTO.journalførendeEnhetId),
+            tekstTilBruker = sendTilBrukerInboundDTO.tekstTilBruker,
+            filter = sendTilBrukerInboundDTO.filter,
+            ikkeOppdatertEtter = sendTilBrukerInboundDTO.forhaandsvisningOpprettet
         )
-
-        val oppdatertEtterForhaandsvisning = aktiviteterOgDialogerOppdatertEtter(sendTilBrukerInboundDTO.forhaandsvisningOpprettet, filtrertArkiveringsdata.aktiviteter, filtrertArkiveringsdata.dialoger)
-        if (oppdatertEtterForhaandsvisning) throw ResponseStatusException(HttpStatus.CONFLICT)
+        val pdfPayload = pdfPayloadResult.getOrElse {
+            val statusCode = (it as? ResponseStatusException)?.statusCode ?: HttpStatus.INTERNAL_SERVER_ERROR
+            throw ResponseStatusException(statusCode)
+        }
 
         val sak = oppfølgingsperiodeService.hentSak(oppfølgingsperiodeId) ?: throw RuntimeException("Kunne ikke hente sak for oppfølgingsperiode: $oppfølgingsperiodeId")
-        val arkivPayload = mapTilArkivPayload(filtrertArkiveringsdata, sak, EnhetId.of(sendTilBrukerInboundDTO.journalførendeEnhetId), Tema_AktivitetsplanMedDialog, sendTilBrukerInboundDTO.filter)
+        val arkivPayload = mapTilArkivPayload(pdfPayload, sak, EnhetId.of(sendTilBrukerInboundDTO.journalførendeEnhetId), Tema_AktivitetsplanMedDialog)
         val manuellStatus = manuellStatusClient.get(userInContext.aktorId).getOrNull()
         val erManuell = manuellStatus?.isErUnderManuellOppfolging ?: false
 
