@@ -222,7 +222,7 @@ class ArkiveringsController(
                 val dialogerIPerioden = hentDataAsync {
                     dialogClient.hentDialoger(fnr)
                         .filter { it.oppfolgingsperiodeId == oppfølgingsperiodeId }
-                        .filter { it.kontorsperreEnhetId == null || enheterTilgangCache.harTilgang(it.kontorsperreEnhetId) }
+                        .filter { it.kontorsperreEnhetId == null || inkluderDataIKvpPeriode && enheterTilgangCache.harTilgang(it.kontorsperreEnhetId) }
                 }
                 val arenaAktiviteter = hentDataAsync {
                     arenaService.hentArenaAktiviteter(fnr).filter { it.oppfolgingsperiodeId == oppfølgingsperiodeId }
