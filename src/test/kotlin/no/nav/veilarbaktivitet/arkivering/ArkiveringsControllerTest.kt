@@ -288,100 +288,122 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                     equalToJson(
                         """
                     {
-                      "navn": "${bruker.navn.tilFornavnMellomnavnEtternavn()}",
-                      "fnr": "${bruker.fnr}",
-                      "brukteFiltre": { },
-                      "tekstTilBruker" : null,
-                      "journalførendeEnhetNavn" : "Nav Helsfyr",
-                      "oppfølgingsperiodeStart": "${norskDato(sisteOppfølgingsperiode.startTid)}",
-                      "oppfølgingsperiodeSlutt": ${sisteOppfølgingsperiode?.sluttTid?.let { norskDato(it) } ?: null},
-                      "sakId": ${bruker.sakId},
-                      "fagsaksystem": "ARBEIDSOPPFOLGING",
-                      "tema": "AKT",
-                      "oppfølgingsperiodeId": "${oppfølgingsperiodeId}",
-                      "journalførendeEnhetId": "$journalførendeEnhetId",
-                      "aktiviteter" : {
-                        "Planlagt" : [ {
-                          "tittel" : "tittel",
-                          "type" : "Jobb jeg har nå",
-                          "status" : "Planlagt",
-                          "detaljer" : [ {
-                            "stil" : "HALV_LINJE",
-                            "tittel" : "Fra dato",
-                            "tekst": "${norskDato(jobbAktivitetPlanlegger.fraDato)}"
-                          }, {
-                            "stil" : "HALV_LINJE",
-                            "tittel" : "Til dato",
-                            "tekst": "${norskDato(jobbAktivitetPlanlegger.tilDato)}"
-                          }, {
-                            "stil" : "HALV_LINJE",
-                            "tittel" : "Stillingsandel",
-                            "tekst" : "HELTID"
-                          }, {
-                            "stil" : "HALV_LINJE",
-                            "tittel" : "Arbeidsgiver",
-                            "tekst" : "Vikar"
-                          }, {
-                            "stil" : "HALV_LINJE",
-                            "tittel" : "Ansettelsesforhold",
-                            "tekst" : "7,5 timer"
-                          }, {
-                            "stil" : "PARAGRAF",
-                            "tittel" : "Beskrivelse",
-                            "tekst" : "beskrivelse"
-                          } ],
-                        "dialogtråd" : {
-                          "overskrift" : "Arbeidsmarkedsopplæring (Gruppe): Kurs: Speiderkurs gruppe-AMO",
-                          "meldinger" : [ {
-                            "avsender" : "VEILEDER",
-                            "sendt" : "$expectedMeldingerSendtNorskTid",
-                            "lest" : true,
-                            "viktig" : false,
-                            "tekst" : "wehfuiehwf\n\nHilsen F_994188 E_994188"
-                          }],
-                          "egenskaper" : [ ],
-                          "indexSisteMeldingLestAvBruker" : 0,
-                          "tidspunktSistLestAvBruker" : "$expectedDialogSistLestTidspunkt"
-                        },
-                          "etiketter" : [ {
-                            "stil" : "AVTALT",
-                            "tekst" : "Avtalt med NAV"
-                          } ],
-                          "eksterneHandlinger" : [ ],
-                          "historikk" : {
-                            "endringer" : [ {
-                                "formattertTidspunkt" : "${norskDatoOgKlokkeslett(lestFHO.lestDato)}",
-                                  "beskrivelse" : "Bruker bekreftet å ha lest informasjon om ansvaret sitt"
-                                }, {
-                                  "formattertTidspunkt" : "${norskDatoOgKlokkeslett(opprettetJobbAktivitetMedFHO.endretDato)}",
-                                  "beskrivelse" : "NAV merket aktiviteten som \"Avtalt med NAV\""
-                                }, {
-                                  "formattertTidspunkt" : "${norskDato(opprettetJobbAktivitet.endretDato)} kl. ${klokkeslett(opprettetJobbAktivitet.endretDato)
-                        }",
-                              "beskrivelse" : "Bruker opprettet aktiviteten"
-                            } ]
-                          },
-                          "forhaandsorientering" : {
-                            "tekst" : "fho tekst",
-                            "tidspunktLest" : "${norskDatoOgKlokkeslett(lestFHO.lestDato)}"
+                          "sakId": ${bruker.sakId},
+                          "fagsaksystem": "ARBEIDSOPPFOLGING",
+                          "tema": "AKT",
+                          "journalførendeEnhetId": "$journalførendeEnhetId",
+                          "pdfPayload": {
+                            "navn": "${bruker.navn.tilFornavnMellomnavnEtternavn()}",
+                            "fnr": "${bruker.fnr}",
+                            "brukteFiltre": {},
+                            "tekstTilBruker": null,
+                            "journalførendeEnhetNavn": "Nav Helsfyr",
+                            "oppfølgingsperiodeStart": "${norskDato(sisteOppfølgingsperiode.startTid)}",
+                            "oppfølgingsperiodeSlutt": ${sisteOppfølgingsperiode?.sluttTid?.let { norskDato(it) } ?: null},
+                            "oppfølgingsperiodeId": "${oppfølgingsperiodeId}",
+                            "aktiviteter": {
+                              "Planlagt": [
+                                {
+                                  "tittel": "tittel",
+                                  "type": "Jobb jeg har nå",
+                                  "status": "Planlagt",
+                                  "detaljer": [
+                                    {
+                                      "stil": "HALV_LINJE",
+                                      "tittel": "Fra dato",
+                                      "tekst": "${norskDato(jobbAktivitetPlanlegger.fraDato)}"
+                                    },
+                                    {
+                                      "stil": "HALV_LINJE",
+                                      "tittel": "Til dato",
+                                      "tekst": "${norskDato(jobbAktivitetPlanlegger.tilDato)}"
+                                    },
+                                    {
+                                      "stil": "HALV_LINJE",
+                                      "tittel": "Stillingsandel",
+                                      "tekst": "HELTID"
+                                    },
+                                    {
+                                      "stil": "HALV_LINJE",
+                                      "tittel": "Arbeidsgiver",
+                                      "tekst": "Vikar"
+                                    },
+                                    {
+                                      "stil": "HALV_LINJE",
+                                      "tittel": "Ansettelsesforhold",
+                                      "tekst": "7,5 timer"
+                                    },
+                                    {
+                                      "stil": "PARAGRAF",
+                                      "tittel": "Beskrivelse",
+                                      "tekst": "beskrivelse"
+                                    }
+                                  ],
+                                  "dialogtråd": {
+                                    "overskrift": "Arbeidsmarkedsopplæring (Gruppe): Kurs: Speiderkurs gruppe-AMO",
+                                    "meldinger": [
+                                      {
+                                        "avsender": "VEILEDER",
+                                        "sendt": "$expectedMeldingerSendtNorskTid",
+                                        "lest": true,
+                                        "viktig": false,
+                                        "tekst": "wehfuiehwf\n\nHilsen F_994188 E_994188"
+                                      }
+                                    ],
+                                    "egenskaper": [],
+                                    "indexSisteMeldingLestAvBruker": 0,
+                                    "tidspunktSistLestAvBruker": "$expectedDialogSistLestTidspunkt"
+                                  },
+                                  "etiketter": [
+                                    {
+                                      "stil": "AVTALT",
+                                      "tekst": "Avtalt med NAV"
+                                    }
+                                  ],
+                                  "eksterneHandlinger": [],
+                                  "historikk": {
+                                    "endringer": [
+                                      {
+                                        "formattertTidspunkt": "${norskDatoOgKlokkeslett(lestFHO.lestDato)}",
+                                        "beskrivelse": "Bruker bekreftet å ha lest informasjon om ansvaret sitt"
+                                      },
+                                      {
+                                        "formattertTidspunkt": "${norskDatoOgKlokkeslett(opprettetJobbAktivitetMedFHO.endretDato)}",
+                                        "beskrivelse": "NAV merket aktiviteten som \"Avtalt med NAV\""
+                                      },
+                                      {
+                                        "formattertTidspunkt": "${norskDato(opprettetJobbAktivitet.endretDato)} kl. ${klokkeslett(opprettetJobbAktivitet.endretDato)}",
+                                        "beskrivelse": "Bruker opprettet aktiviteten"
+                                      }
+                                    ]
+                                  },
+                                  "forhaandsorientering": {
+                                    "tekst": "fho tekst",
+                                    "tidspunktLest": "${norskDatoOgKlokkeslett(lestFHO.lestDato)}"
+                                  }
+                                }
+                              ]
+                            },
+                            "dialogtråder": [
+                              {
+                                "overskrift": "Penger",
+                                "meldinger": [
+                                  {
+                                    "avsender": "BRUKER",
+                                    "sendt": "$expectedMeldingerSendtNorskTid",
+                                    "lest": true,
+                                    "viktig": false,
+                                    "tekst": "Jeg liker NAV. NAV er snille!"
+                                  }
+                                ],
+                                "egenskaper": [],
+                                "indexSisteMeldingLestAvBruker": null,
+                                "tidspunktSistLestAvBruker": null
+                              }
+                            ],
+                            "mål": "${bruker.brukerOptions.mål}"
                           }
-                        } ]
-                      },
-                      "dialogtråder" : [ {
-                        "overskrift" : "Penger",
-                        "meldinger" : [ {
-                          "avsender" : "BRUKER",
-                          "sendt" : "$expectedMeldingerSendtNorskTid",
-                          "lest" : true,
-                          "viktig" : false,
-                          "tekst" : "Jeg liker NAV. NAV er snille!"
-                        } ],
-                        "egenskaper" : [ ],
-                        "indexSisteMeldingLestAvBruker" : null,
-                        "tidspunktSistLestAvBruker" : null
-                      } ],
-                      "mål": "${bruker.brukerOptions.mål}"
-                    }
+                        }
                 """.trimIndent()
                     )
                 )
@@ -791,7 +813,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val arenaAktivitetId = "ARENAUA123"
         val tiltaksnavn = "Et tiltaksnavn fra Arena!"
         stubHentArenaAktiviteter(bruker.fnr, arenaAktivitetId, arenaAktivitetEndretDato, tiltaksnavn)
-        stubIngenDialogTråder(bruker.fnr)
+        stubIngenDialogTråder()
         val arkiveringsUrl =
             "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=${oppfølgingsperiode.oppfolgingsperiodeId}"
         veileder
@@ -806,51 +828,60 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                     equalToJson(
                         """
                             {
-                              "navn" : "Sølvi Normalbakke",
-                              "fnr" : "${bruker.fnr}",
-                              "tekstTilBruker" : null,
-                              "brukteFiltre": { }, 
-                              "tekstTilBruker" : null,
-                              "journalførendeEnhetNavn" : "Nav Helsfyr",
-                              "oppfølgingsperiodeStart" : "${norskDato(oppfølgingsperiode.startTid)}",
-                              "oppfølgingsperiodeSlutt" : null,
-                              "sakId" : 1000,
-                              "fagsaksystem" : "ARBEIDSOPPFOLGING",
-                              "tema" : "AKT",
-                              "oppfølgingsperiodeId" : "${oppfølgingsperiode.oppfolgingsperiodeId}",
-                              "journalførendeEnhetId" : "1234",
-                              "aktiviteter" : {
-                                "Fullført" : [ {
-                                  "tittel" : "Ordinær utdanning for enslige forsørgere mv",
-                                  "type" : "Utdanning",
-                                  "status" : "Fullført",
-                                  "detaljer" : [ {
-                                    "stil" : "PARAGRAF",
-                                    "tittel" : "Fullført / Tiltak gjennom NAV",
-                                    "tekst" : "Et tiltaksnavn fra Arena!"
-                                  }, {
-                                    "stil" : "HALV_LINJE",
-                                    "tittel" : "Fra dato",
-                                    "tekst" : "18. november 2021"
-                                  }, {
-                                    "stil" : "HALV_LINJE",
-                                    "tittel" : "Til dato",
-                                    "tekst" : "25. november 2021"
-                                  } ],
-                                  "dialogtråd" : null,
-                                  "etiketter" : [ {
-                                    "stil" : "AVTALT",
-                                    "tekst" : "Avtalt med NAV"
-                                  } ],
-                                  "eksterneHandlinger" : [ ],
-                                  "historikk" : {
-                                    "endringer" : [ ]
-                                  },
-                                   "forhaandsorientering" : null
-                                } ]
-                              },
-                              "dialogtråder" : [],
-                              "mål" : "Å få meg jobb"
+                              "sakId": 1000,
+                              "fagsaksystem": "ARBEIDSOPPFOLGING",
+                              "tema": "AKT",
+                              "journalførendeEnhetId": "1234",
+                              "pdfPayload": {
+                                "navn": "Sølvi Normalbakke",
+                                "fnr": "${bruker.fnr}",
+                                "brukteFiltre": {},
+                                "tekstTilBruker": null,
+                                "journalførendeEnhetNavn": "Nav Helsfyr",
+                                "oppfølgingsperiodeStart": "${norskDato(oppfølgingsperiode.startTid)}",
+                                "oppfølgingsperiodeSlutt": null,
+                                "oppfølgingsperiodeId": "${oppfølgingsperiode.oppfolgingsperiodeId}",
+                                "aktiviteter": {
+                                  "Fullført": [
+                                    {
+                                      "tittel": "Ordinær utdanning for enslige forsørgere mv",
+                                      "type": "Utdanning",
+                                      "status": "Fullført",
+                                      "detaljer": [
+                                        {
+                                          "stil": "PARAGRAF",
+                                          "tittel": "Fullført / Tiltak gjennom NAV",
+                                          "tekst": "Et tiltaksnavn fra Arena!"
+                                        },
+                                        {
+                                          "stil": "HALV_LINJE",
+                                          "tittel": "Fra dato",
+                                          "tekst": "18. november 2021"
+                                        },
+                                        {
+                                          "stil": "HALV_LINJE",
+                                          "tittel": "Til dato",
+                                          "tekst": "25. november 2021"
+                                        }
+                                      ],
+                                      "dialogtråd": null,
+                                      "etiketter": [
+                                        {
+                                          "stil": "AVTALT",
+                                          "tekst": "Avtalt med NAV"
+                                        }
+                                      ],
+                                      "eksterneHandlinger": [],
+                                      "historikk": {
+                                        "endringer": []
+                                      },
+                                      "forhaandsorientering": null
+                                    }
+                                  ]
+                                },
+                                "dialogtråder": [],
+                                "mål": "Å få meg jobb"
+                              }
                             }
                         """.trimIndent()
                     )
@@ -1021,17 +1052,21 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             )))
     }
 
-    private fun stubIngenDialogTråder(fnr: String) {
+    private fun stubIngenDialogTråder() {
         wireMock.stubFor(
-            get(urlEqualTo("/veilarbdialog/api/dialog?fnr=$fnr&ekskluderDialogerMedKontorsperre=true"))
-                .willReturn(
-                    aResponse().withBody(
-                        """
-                            []
-                        """.trimIndent()
-                    )
+            post(
+                urlEqualTo(
+                    "/veilarbdialog/graphql"
                 )
-        )
+            ).willReturn(aResponse().withBody(
+                """
+                    {
+                      "data" : {
+                        "dialoger" : []
+                      }
+                    }
+                """.trimIndent()
+            )))
     }
 
     private fun stubIngenArenaAktiviteter(fnr: String) {
