@@ -20,9 +20,11 @@ import no.nav.veilarbaktivitet.person.EksternNavnService
 import no.nav.veilarbaktivitet.person.UserInContext
 import no.nav.veilarbaktivitet.util.EnheterTilgangCache
 import org.slf4j.LoggerFactory
+import org.springframework.stereotype.Service
 import java.util.*
 import kotlin.time.measureTimedValue
 
+@Service
 class ArkiveringService(
     private val userInContext: UserInContext,
     private val dialogClient: DialogClient,
@@ -43,7 +45,13 @@ class ArkiveringService(
         val tomtFilterUtenKvp = defaultFilter()
         val ufiltrertArkiveringsdata = hentArkiveringsData(oppfølgingsperiodeId = oppfølgingsperiodeId, journalførendeEnhetId = journalførendeEnhetId)
         val filtrertArkiveringsdata = filtrerArkiveringsData(ufiltrertArkiveringsdata, tomtFilterUtenKvp)
-        return mapTilPdfPayload(arkiveringsData = filtrertArkiveringsdata, filter = null)
+        return mapTilPdfPayload(arkiveringsData = filtrertArkiveringsdata,  tekstTilBruker = null, filter = tomtFilterUtenKvp)
+    }
+
+    fun lagPdfPayloadForForhåndsvisningUtskrift(oppfølgingsperiodeId: UUID, journalførendeEnhetId: EnhetId?, tekstTilBruker: String?, filter: Filter): PdfPayload {
+        val ufiltrertArkiveringsdata = hentArkiveringsData(oppfølgingsperiodeId = oppfølgingsperiodeId, journalførendeEnhetId = journalførendeEnhetId)
+        val filtrertArkiveringsdata = filtrerArkiveringsData(ufiltrertArkiveringsdata, filter)
+        return mapTilPdfPayload(arkiveringsData = filtrertArkiveringsdata, filter = filter, tekstTilBruker = tekstTilBruker)
     }
 
     private fun defaultFilter() = Filter(
@@ -59,7 +67,6 @@ class ArkiveringService(
     private fun hentArkiveringsData(
         oppfølgingsperiodeId: UUID,
         journalførendeEnhetId: EnhetId?,
-        tekstTilBruker: String? = null,
     ): ArkiveringsData {
         val timedArkiveringsdata = measureTimedValue {
             val fnr = userInContext.fnr.get()
@@ -102,7 +109,6 @@ class ArkiveringService(
                 ArkiveringsData(
                     fnr = fnr,
                     navn = navn.await(),
-                    tekstTilBruker = tekstTilBruker,
                     journalførendeEnhetNavn = journalførendeEnhetNavn,
                     oppfølgingsperiode = oppfølgingsperiode.await(),
                     aktiviteter = aktiviteter,

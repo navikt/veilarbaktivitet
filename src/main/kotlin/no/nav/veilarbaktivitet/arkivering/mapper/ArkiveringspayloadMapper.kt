@@ -18,6 +18,7 @@ object ArkiveringspayloadMapper {
         arkiveringsData: ArkiveringsController.ArkiveringsData,
         sakDTO: SakDTO,
         journalførendeEnhetId: EnhetId,
+        tekstTilBruker: String?,
         tema: String,
         filter: ArkiveringsController.Filter?
     ): JournalføringPayload {
@@ -26,18 +27,18 @@ object ArkiveringspayloadMapper {
             fagsaksystem = sakDTO.fagsaksystem,
             tema = tema,
             journalførendeEnhetId = journalførendeEnhetId.get(),
-            pdfPayload = mapTilPdfPayload(arkiveringsData, filter)
+            pdfPayload = mapTilPdfPayload(arkiveringsData, tekstTilBruker, filter)
         )
     }
 
-    fun mapTilPdfPayload(arkiveringsData: ArkiveringsController.ArkiveringsData, filter: ArkiveringsController.Filter?): PdfPayload {
+    fun mapTilPdfPayload(arkiveringsData: ArkiveringsController.ArkiveringsData, tekstTilBruker: String?, filter: ArkiveringsController.Filter?): PdfPayload {
         val (arkivaktiviteter, arkivdialoger) = lagDataTilOrkivar(arkiveringsData.aktiviteter, arkiveringsData.dialoger, arkiveringsData.historikkForAktiviteter, arkiveringsData.arenaAktiviteter)
 
         return PdfPayload(
             navn = arkiveringsData.navn.tilFornavnMellomnavnEtternavn(),
             fnr = arkiveringsData.fnr.get(),
             brukteFiltre = filter?.mapTilBrukteFiltre() ?: emptyMap(),
-            tekstTilBruker = arkiveringsData.tekstTilBruker,
+            tekstTilBruker = tekstTilBruker,
             journalførendeEnhetNavn = arkiveringsData.journalførendeEnhetNavn,
             oppfølgingsperiodeStart = norskDato(arkiveringsData.oppfølgingsperiode.startDato),
             oppfølgingsperiodeSlutt = arkiveringsData.oppfølgingsperiode.sluttDato?.let { norskDato(it) },

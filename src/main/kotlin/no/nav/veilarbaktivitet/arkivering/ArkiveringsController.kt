@@ -84,18 +84,15 @@ class ArkiveringsController(
     @AuthorizeFnr(auditlogMessage = "lag forhåndsvisning av aktivitetsplan og dialog", resourceType = OppfolgingsperiodeResource::class, resourceIdParamName = "oppfolgingsperiodeId")
     fun forhaandsvisAktivitetsplanOgDialogSendTilBruker(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID, @RequestBody forhaandsvisningSendTilBrukerInboundDto: ForhaandsvisningSendTilBrukerInboundDto): ForhaandsvisningOutboundDTO {
         val dataHentet = ZonedDateTime.now()
-        val filter = forhaandsvisningSendTilBrukerInboundDto.filter
         val journalførendeEnhetId = forhaandsvisningSendTilBrukerInboundDto.journalførendeEnhetId
-        val arkiveringsdata = hentArkiveringsData(
+        val pdfPayload = arkiveringService.lagPdfPayloadForForhåndsvisningUtskrift(
             oppfølgingsperiodeId = oppfølgingsperiodeId,
+            journalførendeEnhetId = if (journalførendeEnhetId != null && journalførendeEnhetId.isNotBlank()) EnhetId.of(journalførendeEnhetId) else null,
             tekstTilBruker = forhaandsvisningSendTilBrukerInboundDto.tekstTilBruker,
-            journalførendeEnhetId = if (journalførendeEnhetId != null && journalførendeEnhetId.isNotBlank()) journalførendeEnhetId else null
+            filter = forhaandsvisningSendTilBrukerInboundDto.filter
         )
-        val filtrertArkiveringsdata = filtrerArkiveringsData(arkiveringsdata, filter)
-        val forhåndsvisningPayload = mapTilPdfPayload(filtrertArkiveringsdata, filter)
-
         val timedForhaandsvisningResultat = measureTimedValue {
-            orkivarClient.hentPdfForForhaandsvisningSendTilBruker(forhåndsvisningPayload)
+            orkivarClient.hentPdfForForhaandsvisningSendTilBruker(pdfPayload)
         }
         logger.info("Henting av PDF tok ${timedForhaandsvisningResultat.duration.inWholeMilliseconds} ms")
         val forhaandsvisningResultat = timedForhaandsvisningResultat.value
@@ -193,7 +190,6 @@ class ArkiveringsController(
     data class ArkiveringsData(
         val fnr: Fnr,
         val navn: Navn,
-        val tekstTilBruker: String?,
         val journalførendeEnhetNavn: String,
         val oppfølgingsperiode: OppfolgingPeriodeMinimalDTO,
         val aktiviteter: List<AktivitetData>,

@@ -22,7 +22,7 @@ data class PdfPayload(
     val navn: String,
     val fnr: String,
     val brukteFiltre: Map<String, List<String>>,
-    val tekstTilBruker: String? = null,
+    val tekstTilBruker: String?,
     val journalførendeEnhetNavn: String,
     val oppfølgingsperiodeStart: String,
     val oppfølgingsperiodeSlutt: String?,
