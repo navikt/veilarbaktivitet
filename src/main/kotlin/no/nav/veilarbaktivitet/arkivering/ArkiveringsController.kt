@@ -27,7 +27,7 @@ class ArkiveringsController(
     private val orkivarClient: OrkivarClient,
     private val oppfølgingsperiodeService: OppfolgingsperiodeService,
     private val manuellStatusClient: ManuellStatusV2Client,
-    private val arkiveringService: ArkiveringService,
+    private val pdfPayloadService: PdfPayloadService,
 ) {
     private val logger = LoggerFactory.getLogger(this::class.java)
 
@@ -39,7 +39,7 @@ class ArkiveringsController(
     @AuthorizeFnr(auditlogMessage = "lag forhåndsvisning av aktivitetsplan og dialog", resourceType = OppfolgingsperiodeResource::class, resourceIdParamName = "oppfolgingsperiodeId")
     fun forhaandsvisAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID, @RequestBody forhaandsvisningInboundDto: ForhaandsvisningInboundDTO): ForhaandsvisningOutboundDTO {
         val dataHentet = ZonedDateTime.now()
-        val pdfPayload = arkiveringService.lagPdfPayloadForForhåndsvisning(oppfølgingsperiodeId, EnhetId.of(forhaandsvisningInboundDto.journalførendeEnhetId))
+        val pdfPayload = pdfPayloadService.lagPdfPayloadForForhåndsvisning(oppfølgingsperiodeId, EnhetId.of(forhaandsvisningInboundDto.journalførendeEnhetId))
 
         val timedForhaandsvisningResultat = measureTimedValue {
             orkivarClient.hentPdfForForhaandsvisning(pdfPayload)
@@ -59,7 +59,7 @@ class ArkiveringsController(
     fun forhaandsvisAktivitetsplanOgDialogUtskrift(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID, @RequestBody forhaandsvisningSendTilBrukerInboundDto: ForhaandsvisningSendTilBrukerInboundDto): ForhaandsvisningOutboundDTO {
         val dataHentet = ZonedDateTime.now()
         val journalførendeEnhetId = forhaandsvisningSendTilBrukerInboundDto.journalførendeEnhetId
-        val pdfPayload = arkiveringService.lagPdfPayloadForForhåndsvisningUtskrift(
+        val pdfPayload = pdfPayloadService.lagPdfPayloadForForhåndsvisningUtskrift(
             oppfølgingsperiodeId = oppfølgingsperiodeId,
             journalførendeEnhetId = if (journalførendeEnhetId != null && journalførendeEnhetId.isNotBlank()) EnhetId.of(journalførendeEnhetId) else null,
             tekstTilBruker = forhaandsvisningSendTilBrukerInboundDto.tekstTilBruker,
@@ -81,7 +81,7 @@ class ArkiveringsController(
     @PostMapping("/journalfor")
     @AuthorizeFnr(auditlogMessage = "journalføre aktivitetsplan og dialog", resourceType = OppfolgingsperiodeResource::class, resourceIdParamName = "oppfolgingsperiodeId")
     fun arkiverAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID, @RequestBody journalførInboundDTO: JournalførInboundDTO): JournalførtOutboundDTO {
-        val pdfPayloadResult = arkiveringService.lagPdfPayloadForJournalføring(oppfølgingsperiodeId, EnhetId.of(journalførInboundDTO.journalførendeEnhetId), journalførInboundDTO.forhaandsvisningOpprettet)
+        val pdfPayloadResult = pdfPayloadService.lagPdfPayloadForJournalføring(oppfølgingsperiodeId, EnhetId.of(journalførInboundDTO.journalførendeEnhetId), journalførInboundDTO.forhaandsvisningOpprettet)
         val pdfPayload = pdfPayloadResult.getOrElse {
             val statusCode = (it as? ResponseStatusException)?.statusCode ?: HttpStatus.INTERNAL_SERVER_ERROR
             throw ResponseStatusException(statusCode)
@@ -107,7 +107,7 @@ class ArkiveringsController(
     @PostMapping("/send-til-bruker")
     @AuthorizeFnr(auditlogMessage = "Send aktivitetsplan til bruker", resourceType = OppfolgingsperiodeResource::class, resourceIdParamName = "oppfolgingsperiodeId")
     fun sendAktivitetsplanTilBruker(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID, @RequestBody sendTilBrukerInboundDTO: SendTilBrukerInboundDTO): ResponseEntity<Unit> {
-        val pdfPayloadResult = arkiveringService.lagPdfPayloadForUtskrift(
+        val pdfPayloadResult = pdfPayloadService.lagPdfPayloadForUtskrift(
             oppfølgingsperiodeId = oppfølgingsperiodeId,
             journalførendeEnhetId = EnhetId.of(sendTilBrukerInboundDTO.journalførendeEnhetId),
             tekstTilBruker = sendTilBrukerInboundDTO.tekstTilBruker,

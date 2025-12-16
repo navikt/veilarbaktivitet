@@ -36,7 +36,7 @@ import java.util.*
 import kotlin.time.measureTimedValue
 
 @Service
-class ArkiveringService(
+class PdfPayloadService(
     private val userInContext: UserInContext,
     private val dialogClient: DialogClient,
     private val navnService: EksternNavnService,
