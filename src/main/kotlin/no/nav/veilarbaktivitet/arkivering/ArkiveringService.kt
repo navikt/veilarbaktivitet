@@ -8,6 +8,7 @@ import no.nav.common.types.identer.EnhetId
 import no.nav.poao.dab.spring_auth.AuthService
 import no.nav.veilarbaktivitet.aktivitet.AktivitetAppService
 import no.nav.veilarbaktivitet.aktivitet.HistorikkService
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData.SAMTALEREFERAT
 import no.nav.veilarbaktivitet.arena.ArenaService
 import no.nav.veilarbaktivitet.arkivering.ArkiveringsController.*
@@ -18,9 +19,11 @@ import no.nav.veilarbaktivitet.norg2.Norg2Client
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeService
 import no.nav.veilarbaktivitet.person.EksternNavnService
 import no.nav.veilarbaktivitet.person.UserInContext
+import no.nav.veilarbaktivitet.util.DateUtils
 import no.nav.veilarbaktivitet.util.EnheterTilgangCache
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import java.time.ZonedDateTime
 import java.util.*
 import kotlin.time.measureTimedValue
 
@@ -46,6 +49,22 @@ class ArkiveringService(
         val ufiltrertArkiveringsdata = hentArkiveringsData(oppfølgingsperiodeId = oppfølgingsperiodeId, journalførendeEnhetId = journalførendeEnhetId)
         val filtrertArkiveringsdata = filtrerArkiveringsData(ufiltrertArkiveringsdata, tomtFilterUtenKvp)
         return mapTilPdfPayload(arkiveringsData = filtrertArkiveringsdata,  tekstTilBruker = null, filter = tomtFilterUtenKvp)
+    }
+
+    fun lagPdfPayloadForJournalføring(oppfølgingsperiodeId: UUID, journalførendeEnhetId: EnhetId, ikkeOppdatertEtter: ZonedDateTime): Result<PdfPayload> {
+        if(!authService.erInternBruker()) throw RuntimeException("Skal kun brukes av interne brukere")
+        val tomtFilterUtenKvp = defaultFilter()
+        val ufiltrertArkiveringsdata = hentArkiveringsData(oppfølgingsperiodeId = oppfølgingsperiodeId, journalførendeEnhetId = journalførendeEnhetId)
+        val filtrertArkiveringsdata = filtrerArkiveringsData(ufiltrertArkiveringsdata, tomtFilterUtenKvp)
+        val oppdatertEtterForhaandsvisning = aktiviteterOgDialogerOppdatertEtter(
+            ikkeOppdatertEtter,
+            filtrertArkiveringsdata.aktiviteter,
+            filtrertArkiveringsdata.dialoger
+        )
+        if (oppdatertEtterForhaandsvisning) {
+            return Result.failure(RuntimeException("Aktiviteter eller dialoger er oppdatert etter forhåndsvisningstidspunkt"))
+        }
+        return Result.success(mapTilPdfPayload(arkiveringsData = filtrertArkiveringsdata,  tekstTilBruker = null, filter = tomtFilterUtenKvp))
     }
 
     fun lagPdfPayloadForForhåndsvisningUtskrift(oppfølgingsperiodeId: UUID, journalførendeEnhetId: EnhetId?, tekstTilBruker: String?, filter: Filter): PdfPayload {
@@ -129,5 +148,17 @@ class ArkiveringService(
             threadAuthContext.setContext(authContext)
             hentData()
         }
+    }
+
+    private fun aktiviteterOgDialogerOppdatertEtter(
+        tidspunkt: ZonedDateTime,
+        aktiviteter: List<AktivitetData>,
+        dialoger: List<DialogClient.DialogTråd>
+    ): Boolean {
+        val aktiviteterTidspunkt = aktiviteter.map { DateUtils.dateToZonedDateTime(it.endretDato) }
+        val dialogerTidspunkt = dialoger.map { it.meldinger }.flatten().map { it.sendt }
+        val sistOppdatert =
+            (aktiviteterTidspunkt + dialogerTidspunkt).maxOrNull() ?: ZonedDateTime.now().minusYears(100)
+        return sistOppdatert > tidspunkt
     }
 }

@@ -15,19 +15,17 @@ object ArkiveringspayloadMapper {
     private val logger = LoggerFactory.getLogger(this::class.java)
 
     fun mapTilArkivPayload(
-        arkiveringsData: ArkiveringsController.ArkiveringsData,
+        pdfPayload: PdfPayload,
         sakDTO: SakDTO,
         journalførendeEnhetId: EnhetId,
-        tekstTilBruker: String?,
         tema: String,
-        filter: ArkiveringsController.Filter?
     ): JournalføringPayload {
         return JournalføringPayload(
             sakId = sakDTO.sakId,
             fagsaksystem = sakDTO.fagsaksystem,
             tema = tema,
             journalførendeEnhetId = journalførendeEnhetId.get(),
-            pdfPayload = mapTilPdfPayload(arkiveringsData, tekstTilBruker, filter)
+            pdfPayload = pdfPayload
         )
     }
 

@@ -14,7 +14,6 @@ import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO
 import no.nav.veilarbaktivitet.arena.model.ArenaStatusEtikettDTO
 import no.nav.veilarbaktivitet.arkivering.ArkiveringsController.KvpUtvalgskriterieAlternativ.EKSKLUDER_KVP_AKTIVITETER
 import no.nav.veilarbaktivitet.arkivering.mapper.ArkiveringspayloadMapper.mapTilArkivPayload
-import no.nav.veilarbaktivitet.arkivering.mapper.ArkiveringspayloadMapper.mapTilPdfPayload
 import no.nav.veilarbaktivitet.arkivering.mapper.toArkivEtikett
 import no.nav.veilarbaktivitet.config.OppfolgingsperiodeResource
 import no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV2Client
@@ -82,7 +81,7 @@ class ArkiveringsController(
 
     @PostMapping("/forhaandsvisning-send-til-bruker")
     @AuthorizeFnr(auditlogMessage = "lag forhåndsvisning av aktivitetsplan og dialog", resourceType = OppfolgingsperiodeResource::class, resourceIdParamName = "oppfolgingsperiodeId")
-    fun forhaandsvisAktivitetsplanOgDialogSendTilBruker(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID, @RequestBody forhaandsvisningSendTilBrukerInboundDto: ForhaandsvisningSendTilBrukerInboundDto): ForhaandsvisningOutboundDTO {
+    fun forhaandsvisAktivitetsplanOgDialogUtskrift(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID, @RequestBody forhaandsvisningSendTilBrukerInboundDto: ForhaandsvisningSendTilBrukerInboundDto): ForhaandsvisningOutboundDTO {
         val dataHentet = ZonedDateTime.now()
         val journalførendeEnhetId = forhaandsvisningSendTilBrukerInboundDto.journalførendeEnhetId
         val pdfPayload = arkiveringService.lagPdfPayloadForForhåndsvisningUtskrift(
@@ -107,22 +106,14 @@ class ArkiveringsController(
     @PostMapping("/journalfor")
     @AuthorizeFnr(auditlogMessage = "journalføre aktivitetsplan og dialog", resourceType = OppfolgingsperiodeResource::class, resourceIdParamName = "oppfolgingsperiodeId")
     fun arkiverAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID, @RequestBody arkiverInboundDTO: ArkiverInboundDTO): JournalførtOutboundDTO {
-        if (!authService.erInternBruker()) {
-            throw ResponseStatusException(HttpStatus.FORBIDDEN, "Kun interne brukere kan journalføre aktivitetsplan og dialog")
-        }
-        val ufiltrertArkiveringsdata = hentArkiveringsData(oppfølgingsperiodeId = oppfølgingsperiodeId, journalførendeEnhetId = arkiverInboundDTO.journalførendeEnhetId)
-        val filtrertArkiveringsdata = filtrerArkiveringsData(ufiltrertArkiveringsdata, Filter.utenKvpFilter)
-
-        val oppdatertEtterForhaandsvisning = aktiviteterOgDialogerOppdatertEtter(arkiverInboundDTO.forhaandsvisningOpprettet, filtrertArkiveringsdata.aktiviteter, filtrertArkiveringsdata.dialoger)
-        if (oppdatertEtterForhaandsvisning) throw ResponseStatusException(HttpStatus.CONFLICT)
-
+        val pdfPayload = arkiveringService.lagPdfPayloadForForhåndsvisning(oppfølgingsperiodeId, EnhetId.of(arkiverInboundDTO.journalførendeEnhetId))
         val sak = oppfølgingsperiodeService.hentSak(oppfølgingsperiodeId) ?: throw RuntimeException("Kunne ikke hente sak for oppfølgingsperiode: $oppfølgingsperiodeId")
+
         val arkivPayload = mapTilArkivPayload(
-            filtrertArkiveringsdata,
-            sak,
-            EnhetId.of(arkiverInboundDTO.journalførendeEnhetId),
-            Tema_AktivitetsplanMedDialog,
-            null
+            pdfPayload = pdfPayload,
+            sakDTO = sak,
+            journalførendeEnhetId = EnhetId.of(arkiverInboundDTO.journalførendeEnhetId),
+            tema = Tema_AktivitetsplanMedDialog,
         )
 
         val timedJournalførtResultat = measureTimedValue {
@@ -173,18 +164,6 @@ class ArkiveringsController(
             is OrkivarClient.SendTilBrukerSuccess -> ResponseEntity.status(204).build()
             is OrkivarClient.SendTilBrukerFail -> ResponseEntity.status(500).build()
         }
-    }
-
-    private fun aktiviteterOgDialogerOppdatertEtter(
-        tidspunkt: ZonedDateTime,
-        aktiviteter: List<AktivitetData>,
-        dialoger: List<DialogClient.DialogTråd>
-    ): Boolean {
-        val aktiviteterTidspunkt = aktiviteter.map { DateUtils.dateToZonedDateTime(it.endretDato) }
-        val dialogerTidspunkt = dialoger.map { it.meldinger }.flatten().map { it.sendt }
-        val sistOppdatert =
-            (aktiviteterTidspunkt + dialogerTidspunkt).maxOrNull() ?: ZonedDateTime.now().minusYears(100)
-        return sistOppdatert > tidspunkt
     }
 
     data class ArkiveringsData(
