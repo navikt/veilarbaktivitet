@@ -1,9 +1,7 @@
 package no.nav.veilarbaktivitet.arkivering
 
 import kotlinx.coroutines.*
-import no.nav.common.auth.context.AuthContext
 import no.nav.common.auth.context.AuthContextHolder
-import no.nav.common.auth.context.AuthContextHolderThreadLocal
 import no.nav.common.types.identer.EnhetId
 import no.nav.poao.dab.spring_a2_annotations.auth.AuthorizeFnr
 import no.nav.poao.dab.spring_auth.AuthService
@@ -11,12 +9,10 @@ import no.nav.veilarbaktivitet.aktivitet.AktivitetAppService
 import no.nav.veilarbaktivitet.aktivitet.Historikk
 import no.nav.veilarbaktivitet.aktivitet.HistorikkService
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
-import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData.SAMTALEREFERAT
 import no.nav.veilarbaktivitet.arena.ArenaService
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO
 import no.nav.veilarbaktivitet.arena.model.ArenaStatusEtikettDTO
 import no.nav.veilarbaktivitet.arkivering.ArkiveringsController.KvpUtvalgskriterieAlternativ.EKSKLUDER_KVP_AKTIVITETER
-import no.nav.veilarbaktivitet.arkivering.ArkiveringsController.KvpUtvalgskriterieAlternativ.INKLUDER_KVP_AKTIVITETER
 import no.nav.veilarbaktivitet.arkivering.mapper.ArkiveringspayloadMapper.mapTilArkivPayload
 import no.nav.veilarbaktivitet.arkivering.mapper.ArkiveringspayloadMapper.mapTilPdfPayload
 import no.nav.veilarbaktivitet.arkivering.mapper.toArkivEtikett
@@ -31,7 +27,6 @@ import no.nav.veilarbaktivitet.person.Navn
 import no.nav.veilarbaktivitet.person.Person.Fnr
 import no.nav.veilarbaktivitet.person.UserInContext
 import no.nav.veilarbaktivitet.util.DateUtils
-import no.nav.veilarbaktivitet.util.EnheterTilgangCache
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -58,6 +53,7 @@ class ArkiveringsController(
     private val authContextHolder: AuthContextHolder,
     private val norg2Client: Norg2Client,
     private val authService: AuthService,
+    private val arkiveringService: ArkiveringService,
 ) {
     private val logger = LoggerFactory.getLogger(this::class.java)
 
@@ -69,12 +65,10 @@ class ArkiveringsController(
     @AuthorizeFnr(auditlogMessage = "lag forhåndsvisning av aktivitetsplan og dialog", resourceType = OppfolgingsperiodeResource::class, resourceIdParamName = "oppfolgingsperiodeId")
     fun forhaandsvisAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID, @RequestBody forhaandsvisningInboundDto: ForhaandsvisningInboundDTO): ForhaandsvisningOutboundDTO {
         val dataHentet = ZonedDateTime.now()
-        val ufiltrertArkiveringsdata = hentArkiveringsData(oppfølgingsperiodeId = oppfølgingsperiodeId, journalførendeEnhetId = forhaandsvisningInboundDto.journalførendeEnhetId)
-        val filtrertArkiveringsdata = filtrerArkiveringsData(ufiltrertArkiveringsdata, Filter.utenKvpFilter)
-        val forhåndsvisningPayload = mapTilPdfPayload(arkiveringsData = filtrertArkiveringsdata, filter = null)
+        val pdfPayload = arkiveringService.lagPdfPayloadForForhåndsvisning(oppfølgingsperiodeId, EnhetId.of(forhaandsvisningInboundDto.journalførendeEnhetId))
 
         val timedForhaandsvisningResultat = measureTimedValue {
-            orkivarClient.hentPdfForForhaandsvisning(forhåndsvisningPayload)
+            orkivarClient.hentPdfForForhaandsvisning(pdfPayload)
         }
         logger.info("Henting av PDF tok ${timedForhaandsvisningResultat.duration.inWholeMilliseconds} ms")
         val forhaandsvisningResultat = timedForhaandsvisningResultat.value
@@ -181,75 +175,6 @@ class ArkiveringsController(
         return when (timedJournalførtResultat.value) {
             is OrkivarClient.SendTilBrukerSuccess -> ResponseEntity.status(204).build()
             is OrkivarClient.SendTilBrukerFail -> ResponseEntity.status(500).build()
-        }
-    }
-
-    private fun hentArkiveringsData(
-        oppfølgingsperiodeId: UUID,
-        journalførendeEnhetId: String?,
-        tekstTilBruker: String? = null,
-    ): ArkiveringsData {
-        val timedArkiveringsdata = measureTimedValue {
-            val fnr = userInContext.fnr.get()
-            val aktorId = userInContext.aktorId
-            val authContext = authContextHolder.context.get()
-            val enheterTilgangCache = EnheterTilgangCache(authService::harTilgangTilEnhet)
-            val journalførendeEnhetNavn = journalførendeEnhetId?.let { norg2Client.hentKontorNavn(it) } ?: ""
-
-            fun <T> CoroutineScope.hentDataAsync(hentData: () -> T): Deferred<T> =
-                hentDataAsyncMedAuthContext(authContext, hentData)
-
-            runBlocking(Dispatchers.IO) {
-                val aktiviteterDeferred = hentDataAsync {
-                    appService.hentAktiviteterForIdent(fnr)
-                        .asSequence()
-                        .filter { it.oppfolgingsperiodeId == oppfølgingsperiodeId }
-                        .filter { it.kontorsperreEnhetId == null ||  enheterTilgangCache.harTilgang(it.kontorsperreEnhetId) }
-                        .filterNot { it.aktivitetType == SAMTALEREFERAT && it.moteData?.isReferatPublisert == false }
-                        .sortedByDescending { it.endretDato }
-                        .toList()
-                }
-                val dialogerIPerioden = hentDataAsync {
-                    dialogClient.hentDialoger(fnr)
-                        .filter { it.oppfolgingsperiodeId == oppfølgingsperiodeId }
-                        .filter { it.kontorsperreEnhetId == null || enheterTilgangCache.harTilgang(it.kontorsperreEnhetId) }
-                }
-                val arenaAktiviteter = hentDataAsync {
-                    arenaService.hentArenaAktiviteter(fnr).filter { it.oppfolgingsperiodeId == oppfølgingsperiodeId }
-                }
-                val oppfølgingsperiode = hentDataAsync {
-                    oppfølgingsperiodeService.hentOppfolgingsperiode(aktorId, oppfølgingsperiodeId) ?:
-                    throw RuntimeException("Fant ingen oppfølgingsperiode for $oppfølgingsperiodeId")
-                }
-                val navn = hentDataAsync { navnService.hentNavn(fnr) }
-                val mål = hentDataAsync { oppfølgingsperiodeService.hentMål(fnr) }
-
-                val aktiviteter = aktiviteterDeferred.await()
-                val historikk = hentDataAsync { historikkService.hentHistorikk(aktiviteter.map { it.id }) }
-
-                ArkiveringsData(
-                    fnr = fnr,
-                    navn = navn.await(),
-                    tekstTilBruker = tekstTilBruker,
-                    journalførendeEnhetNavn = journalførendeEnhetNavn,
-                    oppfølgingsperiode = oppfølgingsperiode.await(),
-                    aktiviteter = aktiviteter,
-                    dialoger = dialogerIPerioden.await(),
-                    mål = mål.await(),
-                    historikkForAktiviteter = historikk.await(),
-                    arenaAktiviteter = arenaAktiviteter.await()
-                )
-            }
-        }
-        logger.info("Henting av data tok ${timedArkiveringsdata.duration.inWholeMilliseconds} ms")
-        return timedArkiveringsdata.value
-    }
-
-    private fun <T> CoroutineScope.hentDataAsyncMedAuthContext(authContext: AuthContext, hentData: () -> T): Deferred<T> {
-        return async {
-            val threadAuthContext = AuthContextHolderThreadLocal.instance()
-            threadAuthContext.setContext(authContext)
-            hentData()
         }
     }
 
