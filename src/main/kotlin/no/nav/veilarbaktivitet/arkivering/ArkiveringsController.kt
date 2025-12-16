@@ -69,7 +69,7 @@ class ArkiveringsController(
     @AuthorizeFnr(auditlogMessage = "lag forhåndsvisning av aktivitetsplan og dialog", resourceType = OppfolgingsperiodeResource::class, resourceIdParamName = "oppfolgingsperiodeId")
     fun forhaandsvisAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID, @RequestBody forhaandsvisningInboundDto: ForhaandsvisningInboundDTO): ForhaandsvisningOutboundDTO {
         val dataHentet = ZonedDateTime.now()
-        val arkiveringsdata = hentArkiveringsData(oppfølgingsperiodeId = oppfølgingsperiodeId, journalførendeEnhetId = EnhetId.of(forhaandsvisningInboundDto.journalførendeEnhetId))
+        val arkiveringsdata = hentArkiveringsData(oppfølgingsperiodeId = oppfølgingsperiodeId, journalførendeEnhetId = forhaandsvisningInboundDto.journalførendeEnhetId)
 
         val forhåndsvisningPayload = mapTilForhåndsvisningsPayload(arkiveringsData = arkiveringsdata, filter = null)
 
@@ -101,7 +101,7 @@ class ArkiveringsController(
             oppfølgingsperiodeId = oppfølgingsperiodeId,
             tekstTilBruker = forhaandsvisningSendTilBrukerInboundDto.tekstTilBruker,
             inkluderDataIKvpPeriode = hentKvpAktiviteter,
-            journalførendeEnhetId = if (journalførendeEnhetId != null && journalførendeEnhetId.isNotBlank()) EnhetId.of(journalførendeEnhetId) else null
+            journalførendeEnhetId = if (journalførendeEnhetId != null && journalførendeEnhetId.isNotBlank()) journalførendeEnhetId else null
         )
         val filtrertArkiveringsdata = filtrerArkiveringsData(arkiveringsdata, filter)
         val forhåndsvisningPayload = mapTilForhåndsvisningsPayload(filtrertArkiveringsdata, filter)
@@ -125,7 +125,7 @@ class ArkiveringsController(
         if (!authService.erInternBruker()) {
             throw ResponseStatusException(HttpStatus.FORBIDDEN, "Kun interne brukere kan journalføre aktivitetsplan og dialog")
         }
-        val arkiveringsdata = hentArkiveringsData(oppfølgingsperiodeId = oppfølgingsperiodeId, journalførendeEnhetId = EnhetId.of(arkiverInboundDTO.journalførendeEnhetId))
+        val arkiveringsdata = hentArkiveringsData(oppfølgingsperiodeId = oppfølgingsperiodeId, journalførendeEnhetId = arkiverInboundDTO.journalførendeEnhetId)
 
         val oppdatertEtterForhaandsvisning = aktiviteterOgDialogerOppdatertEtter(arkiverInboundDTO.forhaandsvisningOpprettet, arkiveringsdata.aktiviteter, arkiveringsdata.dialoger)
         if (oppdatertEtterForhaandsvisning) throw ResponseStatusException(HttpStatus.CONFLICT)
@@ -165,7 +165,7 @@ class ArkiveringsController(
             hentArkiveringsData(
                 oppfølgingsperiodeId = oppfølgingsperiodeId,
                 tekstTilBruker = sendTilBrukerInboundDTO.tekstTilBruker,
-                journalførendeEnhetId = EnhetId(sendTilBrukerInboundDTO.journalførendeEnhetId)
+                journalførendeEnhetId = sendTilBrukerInboundDTO.journalførendeEnhetId
             ),
             sendTilBrukerInboundDTO.filter
         )
@@ -191,7 +191,7 @@ class ArkiveringsController(
 
     private fun hentArkiveringsData(
         oppfølgingsperiodeId: UUID,
-        journalførendeEnhetId: EnhetId?,
+        journalførendeEnhetId: String?,
         tekstTilBruker: String? = null,
         inkluderDataIKvpPeriode: Boolean = false
     ): ArkiveringsData {

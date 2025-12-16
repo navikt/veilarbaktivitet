@@ -223,11 +223,11 @@ public class WireMockUtil {
                         .withBody("""
                                 [
                                 {
-                                    "enhetId": "1234",
+                                    "enhetNr": "1234",
                                     "navn": "Nav Helsfyr"
                                 },
                                 {
-                                    "enhetId": "9999",
+                                    "enhetNr": "9999",
                                     "navn": "Nav Etterstad"
                                 }
                                 ]
