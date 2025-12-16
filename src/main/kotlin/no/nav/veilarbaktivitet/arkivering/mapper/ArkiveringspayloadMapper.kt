@@ -29,7 +29,7 @@ object ArkiveringspayloadMapper {
         )
     }
 
-    fun mapTilPdfPayload(arkiveringsData: ArkiveringsController.ArkiveringsData, tekstTilBruker: String?, filter: ArkiveringsController.Filter?): PdfPayload {
+    fun mapTilPdfPayload(arkiveringsData: ArkiveringsData, tekstTilBruker: String?, filter: ArkiveringsController.Filter?): PdfPayload {
         val (arkivaktiviteter, arkivdialoger) = lagDataTilOrkivar(arkiveringsData.aktiviteter, arkiveringsData.dialoger, arkiveringsData.historikkForAktiviteter, arkiveringsData.arenaAktiviteter)
 
         return PdfPayload(

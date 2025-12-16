@@ -7,16 +7,23 @@ import no.nav.common.auth.context.AuthContextHolderThreadLocal
 import no.nav.common.types.identer.EnhetId
 import no.nav.poao.dab.spring_auth.AuthService
 import no.nav.veilarbaktivitet.aktivitet.AktivitetAppService
+import no.nav.veilarbaktivitet.aktivitet.Historikk
 import no.nav.veilarbaktivitet.aktivitet.HistorikkService
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData.SAMTALEREFERAT
 import no.nav.veilarbaktivitet.arena.ArenaService
-import no.nav.veilarbaktivitet.arkivering.ArkiveringsController.*
+import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO
+import no.nav.veilarbaktivitet.arkivering.ArkiveringsController.Filter
+import no.nav.veilarbaktivitet.arkivering.ArkiveringsController.KvpUtvalgskriterie
 import no.nav.veilarbaktivitet.arkivering.ArkiveringsController.KvpUtvalgskriterieAlternativ.EKSKLUDER_KVP_AKTIVITETER
 import no.nav.veilarbaktivitet.arkivering.mapper.ArkiveringspayloadMapper.mapTilPdfPayload
 import no.nav.veilarbaktivitet.norg2.Norg2Client
+import no.nav.veilarbaktivitet.oppfolging.client.MålDTO
+import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeService
 import no.nav.veilarbaktivitet.person.EksternNavnService
+import no.nav.veilarbaktivitet.person.Navn
+import no.nav.veilarbaktivitet.person.Person.Fnr
 import no.nav.veilarbaktivitet.person.UserInContext
 import no.nav.veilarbaktivitet.util.DateUtils
 import no.nav.veilarbaktivitet.util.EnheterTilgangCache
@@ -171,3 +178,16 @@ class ArkiveringService(
         return sistOppdatert > tidspunkt
     }
 }
+
+data class ArkiveringsData(
+    val fnr: Fnr,
+    val navn: Navn,
+    val journalførendeEnhetNavn: String,
+    val oppfølgingsperiode: OppfolgingPeriodeMinimalDTO,
+    val aktiviteter: List<AktivitetData>,
+    val dialoger: List<DialogClient.DialogTråd>,
+    val mål: MålDTO,
+    val historikkForAktiviteter: Map<Long, Historikk>,
+    val arenaAktiviteter: List<ArenaAktivitetDTO>
+)
+

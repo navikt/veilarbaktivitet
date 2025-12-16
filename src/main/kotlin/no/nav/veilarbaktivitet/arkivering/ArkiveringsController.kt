@@ -2,19 +2,12 @@ package no.nav.veilarbaktivitet.arkivering
 
 import no.nav.common.types.identer.EnhetId
 import no.nav.poao.dab.spring_a2_annotations.auth.AuthorizeFnr
-import no.nav.veilarbaktivitet.aktivitet.Historikk
-import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
-import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO
 import no.nav.veilarbaktivitet.arena.model.ArenaStatusEtikettDTO
 import no.nav.veilarbaktivitet.arkivering.mapper.ArkiveringspayloadMapper.mapTilArkivPayload
 import no.nav.veilarbaktivitet.arkivering.mapper.toArkivEtikett
 import no.nav.veilarbaktivitet.config.OppfolgingsperiodeResource
 import no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV2Client
-import no.nav.veilarbaktivitet.oppfolging.client.MålDTO
-import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeService
-import no.nav.veilarbaktivitet.person.Navn
-import no.nav.veilarbaktivitet.person.Person.Fnr
 import no.nav.veilarbaktivitet.person.UserInContext
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
@@ -87,8 +80,8 @@ class ArkiveringsController(
 
     @PostMapping("/journalfor")
     @AuthorizeFnr(auditlogMessage = "journalføre aktivitetsplan og dialog", resourceType = OppfolgingsperiodeResource::class, resourceIdParamName = "oppfolgingsperiodeId")
-    fun arkiverAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID, @RequestBody arkiverInboundDTO: ArkiverInboundDTO): JournalførtOutboundDTO {
-        val pdfPayloadResult = arkiveringService.lagPdfPayloadForJournalføring(oppfølgingsperiodeId, EnhetId.of(arkiverInboundDTO.journalførendeEnhetId), arkiverInboundDTO.forhaandsvisningOpprettet)
+    fun arkiverAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID, @RequestBody journalførInboundDTO: JournalførInboundDTO): JournalførtOutboundDTO {
+        val pdfPayloadResult = arkiveringService.lagPdfPayloadForJournalføring(oppfølgingsperiodeId, EnhetId.of(journalførInboundDTO.journalførendeEnhetId), journalførInboundDTO.forhaandsvisningOpprettet)
         val pdfPayload = pdfPayloadResult.getOrElse {
             val statusCode = (it as? ResponseStatusException)?.statusCode ?: HttpStatus.INTERNAL_SERVER_ERROR
             throw ResponseStatusException(statusCode)
@@ -97,7 +90,7 @@ class ArkiveringsController(
         val arkivPayload = mapTilArkivPayload(
             pdfPayload = pdfPayload,
             sakDTO = sak,
-            journalførendeEnhetId = EnhetId.of(arkiverInboundDTO.journalførendeEnhetId),
+            journalførendeEnhetId = EnhetId.of(journalførInboundDTO.journalførendeEnhetId),
             tema = Tema_AktivitetsplanMedDialog,
         )
         val timedJournalførtResultat = measureTimedValue {
@@ -142,18 +135,6 @@ class ArkiveringsController(
         }
     }
 
-    data class ArkiveringsData(
-        val fnr: Fnr,
-        val navn: Navn,
-        val journalførendeEnhetNavn: String,
-        val oppfølgingsperiode: OppfolgingPeriodeMinimalDTO,
-        val aktiviteter: List<AktivitetData>,
-        val dialoger: List<DialogClient.DialogTråd>,
-        val mål: MålDTO,
-        val historikkForAktiviteter: Map<Long, Historikk>,
-        val arenaAktiviteter: List<ArenaAktivitetDTO>
-    )
-
     data class ForhaandsvisningInboundDTO(
         val journalførendeEnhetId: String
     )
@@ -164,7 +145,7 @@ class ArkiveringsController(
         val sistJournalført: LocalDateTime?
     )
 
-    data class ArkiverInboundDTO(
+    data class JournalførInboundDTO(
         val forhaandsvisningOpprettet: ZonedDateTime,
         val journalførendeEnhetId: String
     )

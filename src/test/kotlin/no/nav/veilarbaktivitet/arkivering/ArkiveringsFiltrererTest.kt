@@ -345,7 +345,7 @@ class ArkiveringsFiltrererTest {
         )
     )
 
-    val defaultArkiveringsData = ArkiveringsController.ArkiveringsData(
+    val defaultArkiveringsData = ArkiveringsData(
         fnr = fnr("12345678901"),
         navn = Navn(fornavn = "Ola", mellomnavn = "", etternavn = "Nordmann"),
         oppfølgingsperiode = OppfolgingPeriodeMinimalDTO(

@@ -6,9 +6,9 @@ import no.nav.veilarbaktivitet.util.DateUtils
 import java.time.ZonedDateTime
 
 fun filtrerArkiveringsData(
-    arkiveringsData: ArkiveringsController.ArkiveringsData,
+    arkiveringsData: ArkiveringsData,
     filter: ArkiveringsController.Filter
-): ArkiveringsController.ArkiveringsData {
+): ArkiveringsData {
     return arkiveringsData
         .filtrerPåHistorikk(filter)
         .filtrerPåAvtaltMedNavn(filter)
@@ -19,7 +19,7 @@ fun filtrerArkiveringsData(
         .filtrerPåKvpPeriode(filter)
 }
 
-private fun ArkiveringsController.ArkiveringsData.filtrerPåKvpPeriode(filter: ArkiveringsController.Filter): ArkiveringsController.ArkiveringsData {
+private fun ArkiveringsData.filtrerPåKvpPeriode(filter: ArkiveringsController.Filter): ArkiveringsData {
     return when (filter.kvpUtvalgskriterie.alternativ) {
         ArkiveringsController.KvpUtvalgskriterieAlternativ.EKSKLUDER_KVP_AKTIVITETER -> {
             this.copy(
@@ -45,7 +45,7 @@ private fun ArkiveringsController.ArkiveringsData.filtrerPåKvpPeriode(filter: A
     }
 }
 
-private fun ArkiveringsController.ArkiveringsData.filtrerPåHistorikk(filter: ArkiveringsController.Filter): ArkiveringsController.ArkiveringsData {
+private fun ArkiveringsData.filtrerPåHistorikk(filter: ArkiveringsController.Filter): ArkiveringsData {
     return if (!filter.inkluderHistorikk) {
         this.copy(historikkForAktiviteter = emptyMap())
     } else {
@@ -53,7 +53,7 @@ private fun ArkiveringsController.ArkiveringsData.filtrerPåHistorikk(filter: Ar
     }
 }
 
-private fun ArkiveringsController.ArkiveringsData.filtrerPåAvtaltMedNavn(filter: ArkiveringsController.Filter): ArkiveringsController.ArkiveringsData {
+private fun ArkiveringsData.filtrerPåAvtaltMedNavn(filter: ArkiveringsController.Filter): ArkiveringsData {
     if (filter.aktivitetAvtaltMedNavFilter.isEmpty()) return this
 
     val predikater = filter.aktivitetAvtaltMedNavFilter.map { filter ->
@@ -68,7 +68,7 @@ private fun ArkiveringsController.ArkiveringsData.filtrerPåAvtaltMedNavn(filter
     return this.copy(aktiviteter = filtrerteAktiviteter)
 }
 
-private fun ArkiveringsController.ArkiveringsData.filtrerPåStillingsstatus(filter: ArkiveringsController.Filter): ArkiveringsController.ArkiveringsData {
+private fun ArkiveringsData.filtrerPåStillingsstatus(filter: ArkiveringsController.Filter): ArkiveringsData {
     if (filter.stillingsstatusFilter.isEmpty()) return this
     val stillingsstatusFilterSomTekst = filter.stillingsstatusFilter.map { it.name }
 
@@ -80,7 +80,7 @@ private fun ArkiveringsController.ArkiveringsData.filtrerPåStillingsstatus(filt
     return this.copy(aktiviteter = filtrerteAktiviteter)
 }
 
-private fun ArkiveringsController.ArkiveringsData.filtrerPåArenaAktivitetStatus(filter: ArkiveringsController.Filter): ArkiveringsController.ArkiveringsData {
+private fun ArkiveringsData.filtrerPåArenaAktivitetStatus(filter: ArkiveringsController.Filter): ArkiveringsData {
     if (filter.arenaAktivitetStatusFilter.isEmpty()) return this
 
     val oppdaterteArenaAktiviteter = arenaAktiviteter.filter { aktivitet ->
@@ -89,7 +89,7 @@ private fun ArkiveringsController.ArkiveringsData.filtrerPåArenaAktivitetStatus
     return this.copy(arenaAktiviteter = oppdaterteArenaAktiviteter)
 }
 
-private fun ArkiveringsController.ArkiveringsData.filtrerPaAktivitetType(filter: ArkiveringsController.Filter): ArkiveringsController.ArkiveringsData {
+private fun ArkiveringsData.filtrerPaAktivitetType(filter: ArkiveringsController.Filter): ArkiveringsData {
     if (filter.aktivitetTypeFilter.isEmpty()) return this
 
     val aktivitetTypeFilterSomTekst = filter.aktivitetTypeFilter.map { it.name }
@@ -105,7 +105,7 @@ private fun ArkiveringsController.ArkiveringsData.filtrerPaAktivitetType(filter:
     return this.copy(aktiviteter = filtrerteAktiviteter, arenaAktiviteter = filtrerteArenaAktiviteter)
 }
 
-private fun ArkiveringsController.ArkiveringsData.filtrerInkluderDialoger(filter: ArkiveringsController.Filter): ArkiveringsController.ArkiveringsData {
+private fun ArkiveringsData.filtrerInkluderDialoger(filter: ArkiveringsController.Filter): ArkiveringsData {
     if (filter.inkluderDialoger) return this
     return this.copy(dialoger = emptyList())
 }
