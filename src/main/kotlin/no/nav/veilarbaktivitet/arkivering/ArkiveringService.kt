@@ -38,7 +38,6 @@ class ArkiveringService(
     private val oppfølgingsperiodeService: OppfolgingsperiodeService,
     private val historikkService: HistorikkService,
     private val arenaService: ArenaService,
-    private val manuellStatusClient: ManuellStatusV2Client,
     private val authContextHolder: AuthContextHolder,
     private val norg2Client: Norg2Client,
     private val authService: AuthService,

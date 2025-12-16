@@ -40,16 +40,8 @@ import kotlin.time.measureTimedValue
 class ArkiveringsController(
     private val userInContext: UserInContext,
     private val orkivarClient: OrkivarClient,
-    private val dialogClient: DialogClient,
-    private val navnService: EksternNavnService,
-    private val appService: AktivitetAppService,
     private val oppfølgingsperiodeService: OppfolgingsperiodeService,
-    private val historikkService: HistorikkService,
-    private val arenaService: ArenaService,
     private val manuellStatusClient: ManuellStatusV2Client,
-    private val authContextHolder: AuthContextHolder,
-    private val norg2Client: Norg2Client,
-    private val authService: AuthService,
     private val arkiveringService: ArkiveringService,
 ) {
     private val logger = LoggerFactory.getLogger(this::class.java)
@@ -211,18 +203,6 @@ class ArkiveringsController(
         val arenaAktivitetStatusFilter: List<ArenaStatusEtikettDTO>,
         val aktivitetTypeFilter: List<AktivitetTypeFilter>,
     ) {
-        companion object {
-            val utenKvpFilter = Filter(
-                inkluderHistorikk = true,
-                kvpUtvalgskriterie = KvpUtvalgskriterie(EKSKLUDER_KVP_AKTIVITETER),
-                inkluderDialoger = true,
-                aktivitetAvtaltMedNavFilter = emptyList(),
-                stillingsstatusFilter = emptyList(),
-                arenaAktivitetStatusFilter = emptyList(),
-                aktivitetTypeFilter = emptyList()
-            )
-        }
-
         fun mapTilBrukteFiltre(): Map<String, List<String>> {
             return mapOf(
                 "Avtalt med Nav" to aktivitetAvtaltMedNavFilter.map { it.tekst },
