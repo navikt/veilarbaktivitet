@@ -1,6 +1,5 @@
 package no.nav.veilarbaktivitet.arkivering.mapper
 
-import no.nav.common.client.norg2.Enhet
 import no.nav.common.types.identer.EnhetId
 import no.nav.veilarbaktivitet.aktivitet.AktivitetId
 import no.nav.veilarbaktivitet.aktivitet.Historikk
@@ -22,31 +21,19 @@ object ArkiveringspayloadMapper {
         tema: String,
         filter: ArkiveringsController.Filter?
     ): JournalføringPayload {
-        val (arkivaktiviteter, arkivdialoger) = lagDataTilOrkivar(arkiveringsData.aktiviteter, arkiveringsData.dialoger, arkiveringsData.historikkForAktiviteter, arkiveringsData.arenaAktiviteter)
-
         return JournalføringPayload(
-            navn = arkiveringsData.navn.tilFornavnMellomnavnEtternavn(),
-            fnr = arkiveringsData.fnr.get(),
-            tekstTilBruker = arkiveringsData.tekstTilBruker,
-            journalførendeEnhetNavn = arkiveringsData.journalførendeEnhetNavn,
-            brukteFiltre = filter?.mapTilBrukteFiltre() ?: emptyMap(),
-            oppfølgingsperiodeStart = norskDato(arkiveringsData.oppfølgingsperiode.startDato),
-            oppfølgingsperiodeSlutt = arkiveringsData.oppfølgingsperiode.sluttDato?.let { norskDato(it) },
             sakId = sakDTO.sakId,
             fagsaksystem = sakDTO.fagsaksystem,
             tema = tema,
-            oppfølgingsperiodeId = arkiveringsData.oppfølgingsperiode.uuid,
             journalførendeEnhetId = journalførendeEnhetId.get(),
-            aktiviteter = arkivaktiviteter.groupBy { it.status },
-            dialogtråder = arkivdialoger,
-            mål = arkiveringsData.mål.mal
+            pdfPayload = mapTilPdfPayload(arkiveringsData, filter)
         )
     }
 
-    fun mapTilForhåndsvisningsPayload(arkiveringsData: ArkiveringsController.ArkiveringsData, filter: ArkiveringsController.Filter?): ForhåndsvisningPayload {
+    fun mapTilPdfPayload(arkiveringsData: ArkiveringsController.ArkiveringsData, filter: ArkiveringsController.Filter?): PdfPayload {
         val (arkivaktiviteter, arkivdialoger) = lagDataTilOrkivar(arkiveringsData.aktiviteter, arkiveringsData.dialoger, arkiveringsData.historikkForAktiviteter, arkiveringsData.arenaAktiviteter)
 
-        return ForhåndsvisningPayload(
+        return PdfPayload(
             navn = arkiveringsData.navn.tilFornavnMellomnavnEtternavn(),
             fnr = arkiveringsData.fnr.get(),
             brukteFiltre = filter?.mapTilBrukteFiltre() ?: emptyMap(),

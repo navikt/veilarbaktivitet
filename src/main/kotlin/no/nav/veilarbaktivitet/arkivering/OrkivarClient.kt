@@ -15,21 +15,21 @@ class OrkivarClient(private val orkivarHttpClient: OkHttpClient, @Value("\${orki
 
     private val orkivarUrl = "$orkivarBaseUrl"
 
-    fun hentPdfForForhaandsvisningSendTilBruker(forhåndsvisningPayload: ForhåndsvisningPayload): ForhaandsvisningResult {
+    fun hentPdfForForhaandsvisningSendTilBruker(pdfPayload: PdfPayload): ForhaandsvisningResult {
         val url = "$orkivarUrl/forhaandsvisning-send-til-bruker"
-        return hentPdfForForhaandsvisning(forhåndsvisningPayload, url)
+        return hentPdfForForhaandsvisning(pdfPayload, url)
     }
 
-    fun hentPdfForForhaandsvisning(forhåndsvisningPayload: ForhåndsvisningPayload): ForhaandsvisningResult {
+    fun hentPdfForForhaandsvisning(pdfPayload: PdfPayload): ForhaandsvisningResult {
         val url = "$orkivarUrl/forhaandsvisning"
-        return hentPdfForForhaandsvisning(forhåndsvisningPayload, url)
+        return hentPdfForForhaandsvisning(pdfPayload, url)
     }
 
-    private fun hentPdfForForhaandsvisning(forhåndsvisningPayload: ForhåndsvisningPayload, url: String): ForhaandsvisningResult {
+    private fun hentPdfForForhaandsvisning(pdfPayload: PdfPayload, url: String): ForhaandsvisningResult {
         val request: Request = Request.Builder()
             .addHeader("Content-Type", "application/json")
             .addHeader("Accept", "application/json")
-            .post(JsonUtils.toJson(forhåndsvisningPayload).toRequestBody("application/json".toMediaTypeOrNull()))
+            .post(JsonUtils.toJson(pdfPayload).toRequestBody("application/json".toMediaTypeOrNull()))
             .url(url)
             .build()
 

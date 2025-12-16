@@ -413,7 +413,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val journalforingsrequest =
             wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/forhaandsvisning") }.first()
         val arkivPayload =
-            JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ForhåndsvisningPayload::class.java)
+            JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, PdfPayload::class.java)
         assertThat(arkivPayload.aktiviteter).isEmpty()
         assertThat(arkivPayload.dialogtråder).isEmpty()
     }
@@ -443,8 +443,8 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val journalforingsrequest =
             wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
         val journalføringPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, JournalføringPayload::class.java)
-        assertThat(journalføringPayload.aktiviteter).isEmpty()
-        assertThat(journalføringPayload.dialogtråder).isEmpty()
+        assertThat(journalføringPayload.pdfPayload.aktiviteter).isEmpty()
+        assertThat(journalføringPayload.pdfPayload.dialogtråder).isEmpty()
     }
 
     @Test
@@ -468,9 +468,9 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val journalforingsrequest =
             wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
         val journalføringPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, JournalføringPayload::class.java)
-        assertThat(journalføringPayload.aktiviteter).isEmpty()
-        val antallDialogerUtenAktivitet = journalføringPayload.dialogtråder.size
-        val antallDialogerMedAktivitet = journalføringPayload.aktiviteter.values.flatten().count { it.dialogtråd != null }
+        assertThat(journalføringPayload.pdfPayload.aktiviteter).isEmpty()
+        val antallDialogerUtenAktivitet = journalføringPayload.pdfPayload.dialogtråder.size
+        val antallDialogerMedAktivitet = journalføringPayload.pdfPayload.aktiviteter.values.flatten().count { it.dialogtråd != null }
         assertThat(antallDialogerUtenAktivitet).isEqualTo(0)
         assertThat(antallDialogerMedAktivitet).isEqualTo(0)
     }
@@ -503,7 +503,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val journalforingsrequest =
             wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/send-til-bruker") }.first()
         val sendTilBrukerPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, SendTilBrukerPayload::class.java)
-        assertThat(sendTilBrukerPayload.journalføringspayload.aktiviteter).isEmpty()
+        assertThat(sendTilBrukerPayload.journalføringspayload.pdfPayload.aktiviteter).isEmpty()
         val harHentetDialogerMedKontorsperre = wireMock.getAllServeEvents().any { it.request.url.contains("ekskluderDialogerMedKontorsperre=false") }
         assertThat(harHentetDialogerMedKontorsperre).isFalse()
     }
@@ -536,7 +536,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         assertThat(response.statusCode).isEqualTo(200)
         val forhaandsvisningRequest =
             wireMock.getAllServeEvents().filter { it.request.url.contains("forhaandsvisning-send-til-bruker") }.first()
-        val payload = JsonUtils.fromJson(forhaandsvisningRequest.request.bodyAsString, ForhåndsvisningPayload::class.java)
+        val payload = JsonUtils.fromJson(forhaandsvisningRequest.request.bodyAsString, PdfPayload::class.java)
         assertThat(payload.aktiviteter.values.flatten().size).isEqualTo(1)
         val antallDialogerUtenAktivitet = payload.dialogtråder.size
         val antallDialogerMedAktivitet = payload.aktiviteter.values.flatten().count { it.dialogtråd != null }
@@ -569,8 +569,8 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val journalforingsrequest =
             wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
         val journalføringPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, JournalføringPayload::class.java)
-        assertThat(journalføringPayload.aktiviteter).hasSize(1)
-        assertThat(journalføringPayload.aktiviteter.values.flatten().first().tittel).isEqualTo(ikkeKvpAktivitetTittel)
+        assertThat(journalføringPayload.pdfPayload.aktiviteter).hasSize(1)
+        assertThat(journalføringPayload.pdfPayload.aktiviteter.values.flatten().first().tittel).isEqualTo(ikkeKvpAktivitetTittel)
     }
 
     @Test
@@ -606,7 +606,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val journalforingsrequest =
             wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
         val journalføringPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, JournalføringPayload::class.java)
-        val aktiviteterSendtTilArkiv = journalføringPayload.aktiviteter.values.flatten()
+        val aktiviteterSendtTilArkiv = journalføringPayload.pdfPayload.aktiviteter.values.flatten()
         assertThat(aktiviteterSendtTilArkiv).hasSize(eksternaAktiviteterTyper.size)
     }
 
@@ -641,7 +641,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
 
         val journalforingsrequest = wireMock.getAllServeEvents().first { it.request.url.contains("orkivar/arkiver") }
         val journalføringPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, JournalføringPayload::class.java)
-        val aktiviteterSendtTilArkiv = journalføringPayload.aktiviteter.values.flatten()
+        val aktiviteterSendtTilArkiv = journalføringPayload.pdfPayload.aktiviteter.values.flatten()
         assertThat(aktiviteterSendtTilArkiv).hasSize(1)
     }
 
@@ -693,7 +693,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val journalforingsrequest =
             wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
         val journalføringPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, JournalføringPayload::class.java)
-        val aktivitetSendtTilArkiv = journalføringPayload.aktiviteter.values.flatten().first()
+        val aktivitetSendtTilArkiv = journalføringPayload.pdfPayload.aktiviteter.values.flatten().first()
         assertThat(aktivitetSendtTilArkiv.eksterneHandlinger).hasSize(2)
         assertThat(aktivitetSendtTilArkiv.eksterneHandlinger).containsExactlyInAnyOrder(
             EksternHandling(internHandling.tekst, internHandling.subtekst, internHandling.url.toString()),
@@ -728,7 +728,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val journalforingsrequest =
             wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
         val journalføringPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, JournalføringPayload::class.java)
-        val aktiviteter = journalføringPayload.aktiviteter.flatMap { it.value }
+        val aktiviteter = journalføringPayload.pdfPayload.aktiviteter.flatMap { it.value }
         assertThat(aktiviteter).hasSize(1)
         assertThat(aktiviteter.first().tittel).isEqualTo(referatPublisertTittel)
     }
@@ -753,7 +753,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val journalforingsrequest =
             wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
         val journalføringPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, JournalføringPayload::class.java)
-        val journalførtAktivitet = journalføringPayload.aktiviteter.flatMap { it.value }.first()
+        val journalførtAktivitet = journalføringPayload.pdfPayload.aktiviteter.flatMap { it.value }.first()
         assertThat(journalførtAktivitet.detaljer.find { it.tittel == "Samtalereferat" }?.tekst).isEmpty()
     }
 
@@ -778,7 +778,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val journalforingsrequest =
             wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
         val journalføringPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, JournalføringPayload::class.java)
-        val journalførtAktivitet = journalføringPayload.aktiviteter.flatMap { it.value }.first()
+        val journalførtAktivitet = journalføringPayload.pdfPayload.aktiviteter.flatMap { it.value }.first()
         assertThat(journalførtAktivitet.detaljer.find { it.tittel == "Samtalereferat" }?.tekst).isEqualTo(referat)
     }
 

@@ -18,7 +18,7 @@ import no.nav.veilarbaktivitet.arena.model.ArenaStatusEtikettDTO
 import no.nav.veilarbaktivitet.arkivering.ArkiveringsController.KvpUtvalgskriterieAlternativ.EKSKLUDER_KVP_AKTIVITETER
 import no.nav.veilarbaktivitet.arkivering.ArkiveringsController.KvpUtvalgskriterieAlternativ.INKLUDER_KVP_AKTIVITETER
 import no.nav.veilarbaktivitet.arkivering.mapper.ArkiveringspayloadMapper.mapTilArkivPayload
-import no.nav.veilarbaktivitet.arkivering.mapper.ArkiveringspayloadMapper.mapTilForhåndsvisningsPayload
+import no.nav.veilarbaktivitet.arkivering.mapper.ArkiveringspayloadMapper.mapTilPdfPayload
 import no.nav.veilarbaktivitet.arkivering.mapper.toArkivEtikett
 import no.nav.veilarbaktivitet.config.OppfolgingsperiodeResource
 import no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV2Client
@@ -71,7 +71,7 @@ class ArkiveringsController(
         val dataHentet = ZonedDateTime.now()
         val arkiveringsdata = hentArkiveringsData(oppfølgingsperiodeId = oppfølgingsperiodeId, journalførendeEnhetId = forhaandsvisningInboundDto.journalførendeEnhetId)
 
-        val forhåndsvisningPayload = mapTilForhåndsvisningsPayload(arkiveringsData = arkiveringsdata, filter = null)
+        val forhåndsvisningPayload = mapTilPdfPayload(arkiveringsData = arkiveringsdata, filter = null)
 
         val timedForhaandsvisningResultat = measureTimedValue {
             orkivarClient.hentPdfForForhaandsvisning(forhåndsvisningPayload)
@@ -104,7 +104,7 @@ class ArkiveringsController(
             journalførendeEnhetId = if (journalførendeEnhetId != null && journalførendeEnhetId.isNotBlank()) journalførendeEnhetId else null
         )
         val filtrertArkiveringsdata = filtrerArkiveringsData(arkiveringsdata, filter)
-        val forhåndsvisningPayload = mapTilForhåndsvisningsPayload(filtrertArkiveringsdata, filter)
+        val forhåndsvisningPayload = mapTilPdfPayload(filtrertArkiveringsdata, filter)
 
         val timedForhaandsvisningResultat = measureTimedValue {
             orkivarClient.hentPdfForForhaandsvisningSendTilBruker(forhåndsvisningPayload)
