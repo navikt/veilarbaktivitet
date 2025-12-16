@@ -5,28 +5,35 @@ import java.util.*
 
 typealias ArkivAktivitetStatus = String
 
-data class ArkivPayload(
+data class JournalføringPayload(
     val navn: String,
     val fnr: String,
+    val brukteFiltre: Map<String, List<String>>,
     val tekstTilBruker: String? = null,
-    val journalførendeEnhetNavn: String = "",
+    val journalførendeEnhetNavn: String,
     val oppfølgingsperiodeStart: String,
     val oppfølgingsperiodeSlutt: String?,
     val sakId: Long,
     val fagsaksystem: String,
     val tema: String,
     val oppfølgingsperiodeId: UUID,
-    val journalførendeEnhet: String,
+    val journalførendeEnhetId: String,
     val aktiviteter: Map<ArkivAktivitetStatus, List<ArkivAktivitet>>,
     val dialogtråder: List<ArkivDialogtråd>,
     val mål: String?,
 )
 
+data class SendTilBrukerPayload(
+    val journalføringspayload: JournalføringPayload,
+    val brukerHarManuellOppfølging: Boolean,
+)
+
 data class ForhåndsvisningPayload(
     val navn: String,
     val fnr: String,
+    val brukteFiltre: Map<String, List<String>>,
     val tekstTilBruker: String? = null,
-    val journalførendeEnhetNavn: String = "",
+    val journalførendeEnhetNavn: String,
     val oppfølgingsperiodeStart: String,
     val oppfølgingsperiodeSlutt: String?,
     val oppfølgingsperiodeId: UUID,

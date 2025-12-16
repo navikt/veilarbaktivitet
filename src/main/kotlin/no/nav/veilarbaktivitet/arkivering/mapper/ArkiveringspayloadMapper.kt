@@ -1,5 +1,7 @@
 package no.nav.veilarbaktivitet.arkivering.mapper
 
+import no.nav.common.client.norg2.Enhet
+import no.nav.common.types.identer.EnhetId
 import no.nav.veilarbaktivitet.aktivitet.AktivitetId
 import no.nav.veilarbaktivitet.aktivitet.Historikk
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
@@ -16,33 +18,40 @@ object ArkiveringspayloadMapper {
     fun mapTilArkivPayload(
         arkiveringsData: ArkiveringsController.ArkiveringsData,
         sakDTO: SakDTO,
-        journalførendeEnhet: String,
-        tema: String
-    ): ArkivPayload {
+        journalførendeEnhetId: EnhetId,
+        tema: String,
+        filter: ArkiveringsController.Filter?
+    ): JournalføringPayload {
         val (arkivaktiviteter, arkivdialoger) = lagDataTilOrkivar(arkiveringsData.aktiviteter, arkiveringsData.dialoger, arkiveringsData.historikkForAktiviteter, arkiveringsData.arenaAktiviteter)
-        return ArkivPayload(
+
+        return JournalføringPayload(
             navn = arkiveringsData.navn.tilFornavnMellomnavnEtternavn(),
             fnr = arkiveringsData.fnr.get(),
+            tekstTilBruker = arkiveringsData.tekstTilBruker,
+            journalførendeEnhetNavn = arkiveringsData.journalførendeEnhetNavn,
+            brukteFiltre = filter?.mapTilBrukteFiltre() ?: emptyMap(),
             oppfølgingsperiodeStart = norskDato(arkiveringsData.oppfølgingsperiode.startDato),
             oppfølgingsperiodeSlutt = arkiveringsData.oppfølgingsperiode.sluttDato?.let { norskDato(it) },
             sakId = sakDTO.sakId,
             fagsaksystem = sakDTO.fagsaksystem,
             tema = tema,
             oppfølgingsperiodeId = arkiveringsData.oppfølgingsperiode.uuid,
-            journalførendeEnhet = journalførendeEnhet,
+            journalførendeEnhetId = journalførendeEnhetId.get(),
             aktiviteter = arkivaktiviteter.groupBy { it.status },
             dialogtråder = arkivdialoger,
             mål = arkiveringsData.mål.mal
         )
     }
 
-    fun mapTilForhåndsvisningsPayload(arkiveringsData: ArkiveringsController.ArkiveringsData
-    ): ForhåndsvisningPayload {
+    fun mapTilForhåndsvisningsPayload(arkiveringsData: ArkiveringsController.ArkiveringsData, filter: ArkiveringsController.Filter?): ForhåndsvisningPayload {
         val (arkivaktiviteter, arkivdialoger) = lagDataTilOrkivar(arkiveringsData.aktiviteter, arkiveringsData.dialoger, arkiveringsData.historikkForAktiviteter, arkiveringsData.arenaAktiviteter)
 
         return ForhåndsvisningPayload(
             navn = arkiveringsData.navn.tilFornavnMellomnavnEtternavn(),
             fnr = arkiveringsData.fnr.get(),
+            brukteFiltre = filter?.mapTilBrukteFiltre() ?: emptyMap(),
+            tekstTilBruker = arkiveringsData.tekstTilBruker,
+            journalførendeEnhetNavn = arkiveringsData.journalførendeEnhetNavn,
             oppfølgingsperiodeStart = norskDato(arkiveringsData.oppfølgingsperiode.startDato),
             oppfølgingsperiodeSlutt = arkiveringsData.oppfølgingsperiode.sluttDato?.let { norskDato(it) },
             oppfølgingsperiodeId = arkiveringsData.oppfølgingsperiode.uuid,
@@ -63,7 +72,7 @@ object ArkiveringspayloadMapper {
         val arkivAktiviteter = aktiviteter.map {
             it.toArkivPayload(
                 dialogtråd = dialogTilhørendeAktiviteten(aktivitetDialoger, it.id.toString()),
-                historikk = historikkForAktiviteter[it.id] ?: throw RuntimeException("Fant ikke historikk på aktivitet med id ${it.id}")
+                historikk = historikkForAktiviteter[it.id] ?: Historikk(emptyList())
             )
         }
 
