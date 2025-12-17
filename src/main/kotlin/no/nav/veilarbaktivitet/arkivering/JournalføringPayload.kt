@@ -6,21 +6,11 @@ import java.util.*
 typealias ArkivAktivitetStatus = String
 
 data class JournalføringPayload(
-    val navn: String,
-    val fnr: String,
-    val brukteFiltre: Map<String, List<String>>,
-    val tekstTilBruker: String? = null,
-    val journalførendeEnhetNavn: String,
-    val oppfølgingsperiodeStart: String,
-    val oppfølgingsperiodeSlutt: String?,
     val sakId: Long,
     val fagsaksystem: String,
     val tema: String,
-    val oppfølgingsperiodeId: UUID,
     val journalførendeEnhetId: String,
-    val aktiviteter: Map<ArkivAktivitetStatus, List<ArkivAktivitet>>,
-    val dialogtråder: List<ArkivDialogtråd>,
-    val mål: String?,
+    val pdfPayload: PdfPayload
 )
 
 data class SendTilBrukerPayload(
@@ -28,11 +18,11 @@ data class SendTilBrukerPayload(
     val brukerHarManuellOppfølging: Boolean,
 )
 
-data class ForhåndsvisningPayload(
+data class PdfPayload(
     val navn: String,
     val fnr: String,
     val brukteFiltre: Map<String, List<String>>,
-    val tekstTilBruker: String? = null,
+    val tekstTilBruker: String?,
     val journalførendeEnhetNavn: String,
     val oppfølgingsperiodeStart: String,
     val oppfølgingsperiodeSlutt: String?,
