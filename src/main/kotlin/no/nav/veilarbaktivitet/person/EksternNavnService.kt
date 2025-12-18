@@ -24,7 +24,7 @@ class EksternNavnService(val pdlClient: PdlClient) {
     }
 }
 
-data class QueryVariables(
+private data class QueryVariables(
     val ident: String,
     val historikk: Boolean
 )
