@@ -66,7 +66,7 @@ public class AktivitetDataMapperService {
                 .lenke(aktivitetDTO.getLenke())
                 .malid(aktivitetDTO.getMalid())
                 .oppfolgingsperiodeId(aktivitetDTO.getOppfolgingsperiodeId())
-                .kontorsperreEnhetId(kontorSperreEnhet.orElse(null));
+                .kontorsperreEnhetId(kontorSperreEnhet.map(Id::get).orElse(null));
 
         switch (aktivitetType) {
             case EGENAKTIVITET -> aktivitetData.egenAktivitetData(egenAktivitetData(aktivitetDTO));

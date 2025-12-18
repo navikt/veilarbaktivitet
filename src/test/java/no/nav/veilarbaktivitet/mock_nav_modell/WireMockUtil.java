@@ -33,7 +33,7 @@ public class WireMockUtil {
 
         oppfolging(fnr, aktorId, underOppfolging, oppfolgingFeiler, nyesteOppfølgingsperiode);
         manuell(erManuell, erReservertKrr, kanVarsles);
-        kvp(aktorId, erUnderKvp, kontorsperreEnhet);
+        kvp(Person.fnr(fnr), erUnderKvp, kontorsperreEnhet);
         aktor(fnr, aktorId);
         hentPerson(fnr, navn);
         forhaandsvisning();
@@ -103,15 +103,33 @@ public class WireMockUtil {
                         .withBody("{\"erUnderManuellOppfolging\":" + erManuell + ",\"krrStatus\":{\"kanVarsles\":" + kanVarsles + ",\"erReservert\":" + erReservertKrr + "}}")));
     }
 
-    private static void kvp(Person.AktorId aktorId, boolean erUnderKvp, String enhet) {
+    private static void kvp(Person.Fnr fnr, boolean erUnderKvp, String enhet) {
         if (erUnderKvp) {
-            wireMock.stubFor(get("/veilarboppfolging/api/v2/kvp?aktorId=" + aktorId.get())
+            wireMock.stubFor(post("/veilarboppfolging/api/graphql")
+                    .withRequestBody(matchingJsonPath("$.variables.fnr", equalTo(fnr.get())))
                     .willReturn(ok()
-                            .withHeader("Content-Type", "text/json")
-                            .withBody("{\"enhet\":\"" + enhet + "\"}")));
+                            .withHeader("Content-Type", "application/json")
+                            .withBody(String.format("""
+                              {
+                                "data": {
+                                  "brukerStatus": {
+                                    "kontorSperre": {
+                                      "kontorId": "%s"
+                                    }
+                                  }
+                                },
+                                "errors": []
+                              }
+                            """, enhet))));
         } else {
-            wireMock.stubFor(get("/veilarboppfolging/api/v2/kvp?aktorId=" + aktorId.get())
-                    .willReturn(aResponse().withStatus(204)));
+            wireMock.stubFor(post("/veilarboppfolging/api/graphql")
+                    .withRequestBody(matchingJsonPath("$.variables.fnr", equalTo(fnr.get())))
+                    .willReturn(aResponse()
+                            .withHeader("Content-Type", "application/json")
+                            .withStatus(200)
+                            .withBody("""
+                              { "data": { "brukerStatus": { "kontorSperre": null } }, "errors": null }
+                              """)));
         }
     }
 
