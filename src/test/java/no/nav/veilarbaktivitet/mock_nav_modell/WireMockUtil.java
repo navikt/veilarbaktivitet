@@ -105,7 +105,7 @@ public class WireMockUtil {
 
     private static void kvp(Person.Fnr fnr, boolean erUnderKvp, String enhet) {
         if (erUnderKvp) {
-            wireMock.stubFor(post("/veilarboppfolging/graphql")
+            wireMock.stubFor(post("/veilarboppfolging/api/graphql")
                     .withRequestBody(matchingJsonPath("$.variables.fnr", equalTo(fnr.get())))
                     .willReturn(ok()
                             .withHeader("Content-Type", "application/json")
@@ -122,7 +122,7 @@ public class WireMockUtil {
                               }
                             """, enhet))));
         } else {
-            wireMock.stubFor(post("/veilarboppfolging/graphql")
+            wireMock.stubFor(post("/veilarboppfolging/api/graphql")
                     .withRequestBody(matchingJsonPath("$.variables.fnr", equalTo(fnr.get())))
                     .willReturn(aResponse()
                             .withHeader("Content-Type", "application/json")

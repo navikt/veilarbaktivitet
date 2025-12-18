@@ -26,7 +26,7 @@ class KvpV2ClientImpl(
 ): KvpV2Client {
 
     override fun get(fnr: Person.Fnr): Optional<KontorSperre> {
-        val uri = " ${baseUrl}/veilarboppfolging/graphql"
+        val uri = " ${baseUrl}/veilarboppfolging/api/graphql"
 
         val graphqlRequest: GraphqlRequest<*> = GraphqlRequestBuilder<KontorSperretEnhetQueryVariables>("graphql/veilarboppfolging/kontorSperreQuery.graphql")
             .buildRequest(KontorSperretEnhetQueryVariables(fnr = fnr.get()));
