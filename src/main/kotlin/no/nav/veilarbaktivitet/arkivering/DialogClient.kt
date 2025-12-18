@@ -1,10 +1,15 @@
 package no.nav.veilarbaktivitet.arkivering
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import no.nav.common.client.utils.graphql.GraphqlRequestBuilder
+import no.nav.common.client.utils.graphql.GraphqlResponse
+import no.nav.common.json.JsonUtils
 import no.nav.common.rest.client.RestUtils
 import no.nav.veilarbaktivitet.person.Person.Fnr
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
@@ -21,43 +26,60 @@ class DialogClient(private val dialogHttpClient: OkHttpClient) {
     @Value("\${veilarbdialog.url}")
     lateinit var dialogUrl: String;
 
-    fun hentDialogerUtenKontorsperre(fnr: Fnr): List<DialogTråd> {
-        val uri = "$dialogUrl/veilarbdialog/api/dialog?fnr=${fnr.get()}&ekskluderDialogerMedKontorsperre=true"
+    fun hentDialoger(fnr: Fnr): List<DialogTråd> {
+        val graphqlRequest = GraphqlRequestBuilder<QueryVariables>("graphql/veilarbdialog/dialogQuery.graphql")
+            .buildRequest(QueryVariables(fnr = fnr.get()))
+        val body = JsonUtils.toJson(graphqlRequest).toRequestBody("application/json".toMediaType())
 
         val request: Request = Request.Builder()
             .addHeader("Content-Type", "application/json")
             .addHeader("Accept", "application/json")
-            .get()
-            .url(uri)
+            .post(body)
+            .url("$dialogUrl/veilarbdialog/graphql")
             .build()
 
         return try {
             val response = dialogHttpClient.newCall(request).execute()
-            RestUtils.parseJsonResponseArrayOrThrow(response, DialogTråd::class.java)
+            val responseData: DialogResponse = RestUtils.parseJsonResponseOrThrow(response, DialogResponse::class.java)
+            if(responseData.errors?.isNotEmpty() == true) { throw RuntimeException("Feil ved kall til veilarbdialog") }
+            responseData.data?.dialoger ?: emptyList()
         } catch (e: Exception) {
             log.error("Feil ved henting av dialoger fra veilarbdialog", e)
             throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Feil ved henting av dialoger")
         }
     }
 
+    private data class QueryVariables(
+        val fnr: String,
+    )
+
+    private class DialogResponse: GraphqlResponse<DialogData>()
+
+    data class DialogData(
+        val dialoger: List<DialogTråd>
+    )
+
     data class DialogTråd(
         val id: String,
         val aktivitetId: String?,
         val overskrift: String?,
+        val kontorsperreEnhetId: String?,
         @JsonProperty("oppfolgingsperiode")
         val oppfolgingsperiodeId: UUID,
+        val opprettetDato: ZonedDateTime,
         @JsonProperty("henvendelser")
         val meldinger: List<Melding>,
         val egenskaper: List<Egenskap>,
         val erLestAvBruker: Boolean,
         val lestAvBrukerTidspunkt: ZonedDateTime?,
+        val sisteDato: ZonedDateTime?,
     )
 
     data class Melding(
         val id: String,
         val dialogId: String,
         val avsender: Avsender,
-        val avsenderId: String,
+        val avsenderId: String?,
         val sendt: ZonedDateTime,
         val lest: Boolean,
         val viktig: Boolean,

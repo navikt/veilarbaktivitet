@@ -15,12 +15,22 @@ class OrkivarClient(private val orkivarHttpClient: OkHttpClient, @Value("\${orki
 
     private val orkivarUrl = "$orkivarBaseUrl"
 
-    fun hentPdfForForhaandsvisning(forhåndsvisningPayload: ForhåndsvisningPayload): ForhaandsvisningResult {
+    fun hentPdfForForhaandsvisningSendTilBruker(pdfPayload: PdfPayload): ForhaandsvisningResult {
+        val url = "$orkivarUrl/forhaandsvisning-send-til-bruker"
+        return hentPdfForForhaandsvisning(pdfPayload, url)
+    }
+
+    fun hentPdfForForhaandsvisning(pdfPayload: PdfPayload): ForhaandsvisningResult {
+        val url = "$orkivarUrl/forhaandsvisning"
+        return hentPdfForForhaandsvisning(pdfPayload, url)
+    }
+
+    private fun hentPdfForForhaandsvisning(pdfPayload: PdfPayload, url: String): ForhaandsvisningResult {
         val request: Request = Request.Builder()
             .addHeader("Content-Type", "application/json")
             .addHeader("Accept", "application/json")
-            .post(JsonUtils.toJson(forhåndsvisningPayload).toRequestBody("application/json".toMediaTypeOrNull()))
-            .url("$orkivarUrl/forhaandsvisning")
+            .post(JsonUtils.toJson(pdfPayload).toRequestBody("application/json".toMediaTypeOrNull()))
+            .url(url)
             .build()
 
         val response = orkivarHttpClient.newCall(request).execute()
@@ -29,11 +39,11 @@ class OrkivarClient(private val orkivarHttpClient: OkHttpClient, @Value("\${orki
             .orElseThrow { RuntimeException("Kunne ikke hente PDF for forhåndsvisning") }
     }
 
-    fun journalfor(arkivPayload: ArkivPayload): JournalføringResult {
+    fun journalfor(journalføringPayload: JournalføringPayload): JournalføringResult {
         val request: Request = Request.Builder()
             .addHeader("Content-Type", "application/json")
             .addHeader("Accept", "application/json")
-            .post(JsonUtils.toJson(arkivPayload).toRequestBody("application/json".toMediaTypeOrNull()))
+            .post(JsonUtils.toJson(journalføringPayload).toRequestBody("application/json".toMediaTypeOrNull()))
             .url("$orkivarUrl/arkiver")
             .build()
 
@@ -41,6 +51,22 @@ class OrkivarClient(private val orkivarHttpClient: OkHttpClient, @Value("\${orki
 
         return RestUtils.parseJsonResponse(response, JournalføringResult::class.java)
             .orElseThrow { RuntimeException("Kunne ikke journalføre aktivitetsplan og dialog") }
+    }
+
+    fun sendTilBruker(sendTilBrukerPayload: SendTilBrukerPayload): SendTilBrukerResult {
+        val request: Request = Request.Builder()
+            .addHeader("Content-Type", "application/json")
+            .addHeader("Accept", "application/json")
+            .post(JsonUtils.toJson(sendTilBrukerPayload).toRequestBody("application/json".toMediaTypeOrNull()))
+            .url("$orkivarUrl/send-til-bruker")
+            .build()
+
+        val response = orkivarHttpClient.newCall(request).execute()
+
+        return when (response.isSuccessful) {
+            true -> SendTilBrukerSuccess()
+            false -> SendTilBrukerFail()
+        }
     }
 
     data class ForhaandsvisningResult(
@@ -51,4 +77,8 @@ class OrkivarClient(private val orkivarHttpClient: OkHttpClient, @Value("\${orki
     data class JournalføringResult(
         val sistJournalført: LocalDateTime
     )
+
+    sealed interface SendTilBrukerResult
+    class SendTilBrukerSuccess: SendTilBrukerResult
+    class SendTilBrukerFail: SendTilBrukerResult
 }
