@@ -18,10 +18,9 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class KvpV2ClientTest {
-    private static final Person.AktorId AKTORID = Person.aktorId("1234");
     private static final Person.Fnr FNR = Person.fnr("1234567890");
     private static final String KVP_RESPONS = "kvp/v2/kvpRespons.json";
-    private static final String graphqlApiurl = "/veilarboppfolging/api/graphql";
+    private static final String GRAPHQL_API_URL = "/veilarboppfolging/api/graphql";
 
     private KvpV2Client kvpV2Client;
 
@@ -41,7 +40,7 @@ class KvpV2ClientTest {
 
     @Test
     void test_kvp_ok_response() {
-        wireMock.stubFor(post(urlMatching(graphqlApiurl))
+        wireMock.stubFor(post(urlMatching(GRAPHQL_API_URL))
                 .willReturn(ok()
                         .withHeader("Content-Type", "application/json")
                         .withBodyFile(KVP_RESPONS)));
@@ -53,7 +52,7 @@ class KvpV2ClientTest {
 
     @Test
     void test_kvp_kall_feiler() {
-        wireMock.stubFor(post(urlMatching(graphqlApiurl))
+        wireMock.stubFor(post(urlMatching(GRAPHQL_API_URL))
                 .willReturn(aResponse()
                         .withStatus(400)
                         .withHeader("Content-Type", "application/json")));
@@ -63,7 +62,7 @@ class KvpV2ClientTest {
 
     @Test
     void test_kvp_kall_feiler_i_graphql() {
-        wireMock.stubFor(post(urlMatching(graphqlApiurl))
+        wireMock.stubFor(post(urlMatching(GRAPHQL_API_URL))
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
@@ -81,7 +80,7 @@ class KvpV2ClientTest {
 
     @Test
     void test_kvp_httpcode_204() {
-        wireMock.stubFor(post(urlMatching(graphqlApiurl))
+        wireMock.stubFor(post(urlMatching(GRAPHQL_API_URL))
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
