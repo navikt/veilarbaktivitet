@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import no.nav.common.rest.client.RestClient;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
+import no.nav.common.token_client.client.TokenXOnBehalfOfTokenClient;
 import no.nav.poao.dab.spring_auth.IAuthService;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
@@ -24,52 +25,102 @@ public class OkHttpClientConfig {
 
     private final IAuthService authService;
 
-    @Bean OkHttpClient veilarboppfolgingHttpClient(MeterRegistry meterRegistry, AzureAdMachineToMachineTokenClient azureAdMachineToMachineTokenClient) {
+    @Bean
+    OkHttpClient veilarboppfolgingHttpClient(MeterRegistry meterRegistry, AzureAdMachineToMachineTokenClient azureAdMachineToMachineTokenClient) {
         return RestClient.baseClientBuilder()
-                .addInterceptor(azureAdInterceptor(() -> azureAdMachineToMachineTokenClient.createMachineToMachineToken(veilarboppfolgingScope)))
-            .eventListener(OkHttpMetricsEventListener.builder(meterRegistry, "okhttp.requests").build())
-            .build();
-    }
-
-    @Bean OkHttpClient veilarboppfolgingOnBehalfOfHttpClient(MeterRegistry meterRegistry, AzureAdOnBehalfOfTokenClient azureAdOnBehalfOfTokenClient) {
-        return RestClient.baseClientBuilder()
-                .addInterceptor(azureAdInterceptor(() -> azureAdOnBehalfOfTokenClient.exchangeOnBehalfOfToken(veilarboppfolgingScope, authService.getInnloggetBrukerToken())))
+                .addInterceptor(tokenInterceptor(() -> azureAdMachineToMachineTokenClient.createMachineToMachineToken(getVeilarboppfolgingScope(true))))
                 .eventListener(OkHttpMetricsEventListener.builder(meterRegistry, "okhttp.requests").build())
                 .build();
     }
 
-    @Bean OkHttpClient veilarbarenaHttpClient(MeterRegistry meterRegistry, AzureAdMachineToMachineTokenClient azureAdMachineToMachineTokenClient) {
+    @Bean
+    OkHttpClient veilarboppfolgingOnBehalfOfHttpClient(MeterRegistry meterRegistry, AzureAdOnBehalfOfTokenClient azureAdOnBehalfOfTokenClient, TokenXOnBehalfOfTokenClient tokenXOnBehalfOfTokenClient) {
         return RestClient.baseClientBuilder()
-            .addInterceptor(azureAdInterceptor(() -> azureAdMachineToMachineTokenClient.createMachineToMachineToken(veilarbarenaScope)))
-            .eventListener(OkHttpMetricsEventListener.builder(meterRegistry, "okhttp.requests").build())
-            .build();
-    }
-
-    @Bean OkHttpClient orkivarHttpClient(MeterRegistry meterRegistry, AzureAdOnBehalfOfTokenClient azureAdOnBehalfOfTokenClient) {
-        return RestClient.baseClientBuilder()
-            .connectTimeout(15, TimeUnit.SECONDS) // Dokark and pdf-gen is very slow
-            .writeTimeout(15, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
-            .addInterceptor(azureAdInterceptor(() ->
-                    azureAdOnBehalfOfTokenClient.exchangeOnBehalfOfToken(orkivarScope, authService.getInnloggetBrukerToken())
-            )).eventListener(OkHttpMetricsEventListener.builder(meterRegistry, "okhttp.requests").build())
-            .build();
-    }
-
-    @Bean OkHttpClient dialogHttpClient(MeterRegistry meterRegistry, AzureAdOnBehalfOfTokenClient azureAdOnBehalfOfTokenClient) {
-        return RestClient.baseClientBuilder()
-                .addInterceptor(azureAdInterceptor(() ->
-                        azureAdOnBehalfOfTokenClient.exchangeOnBehalfOfToken(dialogScope, authService.getInnloggetBrukerToken())
-                )).eventListener(OkHttpMetricsEventListener.builder(meterRegistry, "okhttp.requests").build())
+                .addInterceptor(tokenInterceptor(() -> {
+                    var tokenClient = authService.erInternBruker() ? azureAdOnBehalfOfTokenClient : tokenXOnBehalfOfTokenClient;
+                    return tokenClient.exchangeOnBehalfOfToken(getVeilarboppfolgingScope(authService.erInternBruker()), authService.getInnloggetBrukerToken());
+                }))
+                .eventListener(OkHttpMetricsEventListener.builder(meterRegistry, "okhttp.requests").build())
                 .build();
     }
 
-    private final String veilarboppfolgingScope = "api://%s-gcp.poao.veilarboppfolging/.default".formatted(isProduction().orElse(false) ? "prod" : "dev");
-    private final String veilarbarenaScope = "api://%s-fss.pto.veilarbarena/.default".formatted(isProduction().orElse(false) ? "prod" : "dev");
-    private final String orkivarScope = "api://%s-gcp.dab.orkivar/.default".formatted(isProduction().orElse(false) ? "prod" : "dev");
-    private final String dialogScope = "api://%s-gcp.dab.veilarbdialog/.default".formatted(isProduction().orElse(false) ? "prod" : "dev");
+    @Bean
+    OkHttpClient veilarbarenaHttpClient(MeterRegistry meterRegistry, AzureAdMachineToMachineTokenClient azureAdMachineToMachineTokenClient) {
+        return RestClient.baseClientBuilder()
+                .addInterceptor(tokenInterceptor(() -> azureAdMachineToMachineTokenClient.createMachineToMachineToken(getVeilarbarenaScope(true))))
+                .eventListener(OkHttpMetricsEventListener.builder(meterRegistry, "okhttp.requests").build())
+                .build();
+    }
 
-    private Interceptor azureAdInterceptor(Supplier<String> getToken) {
+    @Bean
+    OkHttpClient orkivarHttpClient(MeterRegistry meterRegistry, AzureAdOnBehalfOfTokenClient azureAdOnBehalfOfTokenClient, TokenXOnBehalfOfTokenClient tokenXOnBehalfOfTokenClient) {
+        return RestClient.baseClientBuilder()
+                .connectTimeout(15, TimeUnit.SECONDS) // Dokark and pdf-gen is very slow
+                .writeTimeout(15, TimeUnit.SECONDS)
+                .readTimeout(30, TimeUnit.SECONDS)
+                .addInterceptor(tokenInterceptor(() -> {
+                    var tokenClient = authService.erInternBruker() ? azureAdOnBehalfOfTokenClient : tokenXOnBehalfOfTokenClient;
+                    return tokenClient.exchangeOnBehalfOfToken(getOrkivarScope(authService.erInternBruker()), authService.getInnloggetBrukerToken());
+                }))
+                .eventListener(OkHttpMetricsEventListener.builder(meterRegistry, "okhttp.requests").build())
+                .build();
+    }
+
+    @Bean
+    OkHttpClient dialogHttpClient(MeterRegistry meterRegistry, AzureAdOnBehalfOfTokenClient azureAdOnBehalfOfTokenClient, TokenXOnBehalfOfTokenClient tokenXOnBehalfOfTokenClient) {
+        return RestClient.baseClientBuilder()
+                .addInterceptor(tokenInterceptor(() -> {
+                    var tokenClient = authService.erInternBruker() ? azureAdOnBehalfOfTokenClient : tokenXOnBehalfOfTokenClient;
+                    return tokenClient.exchangeOnBehalfOfToken(getDialogScope(authService.erInternBruker()), authService.getInnloggetBrukerToken());
+                }))
+                .eventListener(OkHttpMetricsEventListener.builder(meterRegistry, "okhttp.requests").build())
+                .build();
+    }
+
+    @Bean
+    OkHttpClient norg2HttpClient(MeterRegistry meterRegistry) {
+        return RestClient.baseClientBuilder()
+                .eventListener(OkHttpMetricsEventListener.builder(meterRegistry, "okhttp.requests").build())
+                .build();
+    }
+
+    private String getVeilarboppfolgingScope(Boolean forAzureToken) {
+        String env = isProduction().orElse(false) ? "prod" : "dev";
+        if (forAzureToken) {
+            return "api://%s-gcp.poao.veilarboppfolging/.default".formatted(env);
+        } else {
+            return "%s-gcp:poao:veilarboppfolging".formatted(env);
+        }
+    }
+
+    private String getVeilarbarenaScope(Boolean forAzureToken) {
+        String env = isProduction().orElse(false) ? "prod" : "dev";
+        if (forAzureToken) {
+            return "api://%s-fss.pto.veilarbarena/.default".formatted(env);
+        } else {
+            return "%s-gcp:dab:veilarbarena".formatted(env);
+        }
+    }
+
+    private String getOrkivarScope(Boolean forAzureToken) {
+        String env = isProduction().orElse(false) ? "prod" : "dev";
+        if (forAzureToken) {
+            return "api://%s-gcp.dab.orkivar/.default".formatted(env);
+        } else {
+            return "%s-gcp:dab:orkivar".formatted(env);
+        }
+    }
+
+    private String getDialogScope(Boolean forAzureToken) {
+        String env = isProduction().orElse(false) ? "prod" : "dev";
+        if (forAzureToken) {
+            return "api://%s-gcp.dab.veilarbdialog/.default".formatted(env);
+        } else {
+            return "%s-gcp:dab:veilarbdialog".formatted(env);
+        }
+    }
+
+    private Interceptor tokenInterceptor(Supplier<String> getToken) {
         return chain -> {
             Request original = chain.request();
             Request newReq = original.newBuilder()

@@ -106,6 +106,8 @@ spec:
         - application: veilarboppfolging
           namespace: poao
         - application: orkivar
+        - application: norg2
+          namespace: org
   gcp:
     sqlInstances:
       - name: veilarbaktivitet
@@ -136,6 +138,8 @@ spec:
       value: "http://orkivar"
     - name: VEILARBDIALOG_URL
       value: "https://veilarbdialog.intern.dev.nav.no"
+    - name: NORG2_URL
+      value: "http://norg2.org/norg2"
     - name: KAFKA_ENABLED
       value: "true"
     - name: AKTIVITETSPLAN_URL
@@ -148,5 +152,7 @@ spec:
       value: "https://pdl-api.dev-fss-pub.nais.io"
     - name: PDL_SCOPE
       value: "api://dev-fss.pdl.pdl-api/.default"
+    - name: PDL_SCOPE_TOKENX
+      value: "dev-fss:pdl:pdl-api"
     - name: FSS_PROXY_ENABLED
       value: "false"

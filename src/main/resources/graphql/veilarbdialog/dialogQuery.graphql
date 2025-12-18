@@ -1,0 +1,24 @@
+query($fnr: String!) {
+    dialoger(fnr: $fnr) {
+        id,
+        aktivitetId,
+        kontorsperreEnhetId,
+        overskrift,
+        oppfolgingsperiode,
+        opprettetDato,
+        egenskaper,
+        erLestAvBruker,
+        lestAvBrukerTidspunkt,
+        sisteDato,
+        henvendelser {
+            id,
+            lest,
+            avsender,
+            avsenderId,
+            dialogId,
+            sendt,
+            tekst,
+            viktig
+        }
+    }
+}

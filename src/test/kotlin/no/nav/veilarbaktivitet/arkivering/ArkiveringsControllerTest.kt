@@ -15,6 +15,8 @@ import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType.MIDLERTIDIG
 import no.nav.veilarbaktivitet.aktivitetskort.dto.KafkaAktivitetskortWrapperDTO
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.LenkeSeksjon
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.LenkeType
+import no.nav.veilarbaktivitet.arkivering.ArkiveringsController.KvpUtvalgskriterieAlternativ.EKSKLUDER_KVP_AKTIVITETER
+import no.nav.veilarbaktivitet.arkivering.ArkiveringsController.KvpUtvalgskriterieAlternativ.INKLUDER_KVP_AKTIVITETER
 import no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavDTO
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO
 import no.nav.veilarbaktivitet.avtalt_med_nav.Type
@@ -66,27 +68,28 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             sistLestTidspunkt = meldingerSistLestTidspunkt
         )
         stubIngenArenaAktiviteter(bruker.fnr)
-
         val arkiveringsUrl =
             "http://localhost:$port/veilarbaktivitet/api/arkivering/forhaandsvisning?oppfolgingsperiodeId=$oppfølgingsperiodeId"
+        val forhaandsvisningInboundDTO = ArkiveringsController.ForhaandsvisningInboundDTO("1234")
 
-        // When
+
         val forhaandsvisning = veileder
             .createRequest(bruker)
-            .get(arkiveringsUrl)
+            .body(forhaandsvisningInboundDTO)
+            .post(arkiveringsUrl)
             .then()
             .assertThat()
             .statusCode(HttpStatus.OK.value())
             .extract()
             .response()
             .`as`(ArkiveringsController.ForhaandsvisningOutboundDTO::class.java)
+        // When
 
         // Then
         assertThat(forhaandsvisning.forhaandsvisningOpprettet).isCloseTo(
             ZonedDateTime.now(),
             within(500, ChronoUnit.MILLIS)
         )
-
         val meldingerSendtTidspunkt = ZonedDateTime.parse(meldingerSendtTidspunktUtc)
         val expectedMeldingerSendtNorskTid = norskDatoOgKlokkeslett(meldingerSendtTidspunkt)
         val dialogSistLestTidspunkt = ZonedDateTime.parse(meldingerSistLestTidspunkt)
@@ -101,7 +104,9 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                     {
                       "navn": "${bruker.navn.tilFornavnMellomnavnEtternavn()}",
                       "fnr": "${bruker.fnr}",
+                      "brukteFiltre": { },
                       "tekstTilBruker" : null,
+                      "journalførendeEnhetNavn" : "Nav Helsfyr",
                       "oppfølgingsperiodeStart": "${norskDato(sisteOppfølgingsperiode.startTid)}",
                       "oppfølgingsperiodeSlutt": ${sisteOppfølgingsperiode.sluttTid?.let { norskDato(it) }},
                       "oppfølgingsperiodeId": "${sisteOppfølgingsperiode.oppfolgingsperiodeId}",
@@ -231,7 +236,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
     @Test
     fun `Når man skal journalføre sender man data til orkivar`() {
         val (bruker, veileder) = hentBrukerOgVeileder("Sølvi", "Normalbakke")
-        val journalførendeEnhet = "0909"
+        val journalførendeEnhetId = "1234"
         val sisteOppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }
 
         val jobbAktivitetPlanlegger = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
@@ -263,7 +268,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val arkiveringsUrl =
             "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiodeId"
 
-        val body = ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now(), journalførendeEnhet)
+        val body = ArkiveringsController.JournalførInboundDTO(ZonedDateTime.now(), journalførendeEnhetId)
         veileder
             .createRequest(bruker)
             .body(body)
@@ -283,139 +288,126 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                     equalToJson(
                         """
                     {
-                      "navn": "${bruker.navn.tilFornavnMellomnavnEtternavn()}",
-                      "fnr": "${bruker.fnr}",
-                      "tekstTilBruker" : null,
-                      "oppfølgingsperiodeStart": "${norskDato(sisteOppfølgingsperiode.startTid)}",
-                      "oppfølgingsperiodeSlutt": ${sisteOppfølgingsperiode?.sluttTid?.let { norskDato(it) } ?: null},
-                      "sakId": ${bruker.sakId},
-                      "fagsaksystem": "ARBEIDSOPPFOLGING",
-                      "tema": "AKT",
-                      "oppfølgingsperiodeId": "${oppfølgingsperiodeId}",
-                      "journalførendeEnhet": "$journalførendeEnhet",
-                      "aktiviteter" : {
-                        "Planlagt" : [ {
-                          "tittel" : "tittel",
-                          "type" : "Jobb jeg har nå",
-                          "status" : "Planlagt",
-                          "detaljer" : [ {
-                            "stil" : "HALV_LINJE",
-                            "tittel" : "Fra dato",
-                            "tekst": "${norskDato(jobbAktivitetPlanlegger.fraDato)}"
-                          }, {
-                            "stil" : "HALV_LINJE",
-                            "tittel" : "Til dato",
-                            "tekst": "${norskDato(jobbAktivitetPlanlegger.tilDato)}"
-                          }, {
-                            "stil" : "HALV_LINJE",
-                            "tittel" : "Stillingsandel",
-                            "tekst" : "HELTID"
-                          }, {
-                            "stil" : "HALV_LINJE",
-                            "tittel" : "Arbeidsgiver",
-                            "tekst" : "Vikar"
-                          }, {
-                            "stil" : "HALV_LINJE",
-                            "tittel" : "Ansettelsesforhold",
-                            "tekst" : "7,5 timer"
-                          }, {
-                            "stil" : "PARAGRAF",
-                            "tittel" : "Beskrivelse",
-                            "tekst" : "beskrivelse"
-                          } ],
-                        "dialogtråd" : {
-                          "overskrift" : "Arbeidsmarkedsopplæring (Gruppe): Kurs: Speiderkurs gruppe-AMO",
-                          "meldinger" : [ {
-                            "avsender" : "VEILEDER",
-                            "sendt" : "$expectedMeldingerSendtNorskTid",
-                            "lest" : true,
-                            "viktig" : false,
-                            "tekst" : "wehfuiehwf\n\nHilsen F_994188 E_994188"
-                          }],
-                          "egenskaper" : [ ],
-                          "indexSisteMeldingLestAvBruker" : 0,
-                          "tidspunktSistLestAvBruker" : "$expectedDialogSistLestTidspunkt"
-                        },
-                          "etiketter" : [ {
-                            "stil" : "AVTALT",
-                            "tekst" : "Avtalt med NAV"
-                          } ],
-                          "eksterneHandlinger" : [ ],
-                          "historikk" : {
-                            "endringer" : [ {
-                                "formattertTidspunkt" : "${norskDatoOgKlokkeslett(lestFHO.lestDato)}",
-                                  "beskrivelse" : "Bruker bekreftet å ha lest informasjon om ansvaret sitt"
-                                }, {
-                                  "formattertTidspunkt" : "${norskDatoOgKlokkeslett(opprettetJobbAktivitetMedFHO.endretDato)}",
-                                  "beskrivelse" : "NAV merket aktiviteten som \"Avtalt med NAV\""
-                                }, {
-                                  "formattertTidspunkt" : "${norskDato(opprettetJobbAktivitet.endretDato)} kl. ${klokkeslett(opprettetJobbAktivitet.endretDato)
-                        }",
-                              "beskrivelse" : "Bruker opprettet aktiviteten"
-                            } ]
-                          },
-                          "forhaandsorientering" : {
-                            "tekst" : "fho tekst",
-                            "tidspunktLest" : "${norskDatoOgKlokkeslett(lestFHO.lestDato)}"
+                          "sakId": ${bruker.sakId},
+                          "fagsaksystem": "ARBEIDSOPPFOLGING",
+                          "tema": "AKT",
+                          "journalførendeEnhetId": "$journalførendeEnhetId",
+                          "pdfPayload": {
+                            "navn": "${bruker.navn.tilFornavnMellomnavnEtternavn()}",
+                            "fnr": "${bruker.fnr}",
+                            "brukteFiltre": {},
+                            "tekstTilBruker": null,
+                            "journalførendeEnhetNavn": "Nav Helsfyr",
+                            "oppfølgingsperiodeStart": "${norskDato(sisteOppfølgingsperiode.startTid)}",
+                            "oppfølgingsperiodeSlutt": ${sisteOppfølgingsperiode?.sluttTid?.let { norskDato(it) } ?: null},
+                            "oppfølgingsperiodeId": "${oppfølgingsperiodeId}",
+                            "aktiviteter": {
+                              "Planlagt": [
+                                {
+                                  "tittel": "tittel",
+                                  "type": "Jobb jeg har nå",
+                                  "status": "Planlagt",
+                                  "detaljer": [
+                                    {
+                                      "stil": "HALV_LINJE",
+                                      "tittel": "Fra dato",
+                                      "tekst": "${norskDato(jobbAktivitetPlanlegger.fraDato)}"
+                                    },
+                                    {
+                                      "stil": "HALV_LINJE",
+                                      "tittel": "Til dato",
+                                      "tekst": "${norskDato(jobbAktivitetPlanlegger.tilDato)}"
+                                    },
+                                    {
+                                      "stil": "HALV_LINJE",
+                                      "tittel": "Stillingsandel",
+                                      "tekst": "HELTID"
+                                    },
+                                    {
+                                      "stil": "HALV_LINJE",
+                                      "tittel": "Arbeidsgiver",
+                                      "tekst": "Vikar"
+                                    },
+                                    {
+                                      "stil": "HALV_LINJE",
+                                      "tittel": "Ansettelsesforhold",
+                                      "tekst": "7,5 timer"
+                                    },
+                                    {
+                                      "stil": "PARAGRAF",
+                                      "tittel": "Beskrivelse",
+                                      "tekst": "beskrivelse"
+                                    }
+                                  ],
+                                  "dialogtråd": {
+                                    "overskrift": "Arbeidsmarkedsopplæring (Gruppe): Kurs: Speiderkurs gruppe-AMO",
+                                    "meldinger": [
+                                      {
+                                        "avsender": "VEILEDER",
+                                        "sendt": "$expectedMeldingerSendtNorskTid",
+                                        "lest": true,
+                                        "viktig": false,
+                                        "tekst": "wehfuiehwf\n\nHilsen F_994188 E_994188"
+                                      }
+                                    ],
+                                    "egenskaper": [],
+                                    "indexSisteMeldingLestAvBruker": 0,
+                                    "tidspunktSistLestAvBruker": "$expectedDialogSistLestTidspunkt"
+                                  },
+                                  "etiketter": [
+                                    {
+                                      "stil": "AVTALT",
+                                      "tekst": "Avtalt med NAV"
+                                    }
+                                  ],
+                                  "eksterneHandlinger": [],
+                                  "historikk": {
+                                    "endringer": [
+                                      {
+                                        "formattertTidspunkt": "${norskDatoOgKlokkeslett(lestFHO.lestDato)}",
+                                        "beskrivelse": "Bruker bekreftet å ha lest informasjon om ansvaret sitt"
+                                      },
+                                      {
+                                        "formattertTidspunkt": "${norskDatoOgKlokkeslett(opprettetJobbAktivitetMedFHO.endretDato)}",
+                                        "beskrivelse": "NAV merket aktiviteten som \"Avtalt med NAV\""
+                                      },
+                                      {
+                                        "formattertTidspunkt": "${norskDato(opprettetJobbAktivitet.endretDato)} kl. ${klokkeslett(opprettetJobbAktivitet.endretDato)}",
+                                        "beskrivelse": "Bruker opprettet aktiviteten"
+                                      }
+                                    ]
+                                  },
+                                  "forhaandsorientering": {
+                                    "tekst": "fho tekst",
+                                    "tidspunktLest": "${norskDatoOgKlokkeslett(lestFHO.lestDato)}"
+                                  }
+                                }
+                              ]
+                            },
+                            "dialogtråder": [
+                              {
+                                "overskrift": "Penger",
+                                "meldinger": [
+                                  {
+                                    "avsender": "BRUKER",
+                                    "sendt": "$expectedMeldingerSendtNorskTid",
+                                    "lest": true,
+                                    "viktig": false,
+                                    "tekst": "Jeg liker NAV. NAV er snille!"
+                                  }
+                                ],
+                                "egenskaper": [],
+                                "indexSisteMeldingLestAvBruker": null,
+                                "tidspunktSistLestAvBruker": null
+                              }
+                            ],
+                            "mål": "${bruker.brukerOptions.mål}"
                           }
-                        } ]
-                      },
-                      "dialogtråder" : [ {
-                        "overskrift" : "Penger",
-                        "meldinger" : [ {
-                          "avsender" : "BRUKER",
-                          "sendt" : "$expectedMeldingerSendtNorskTid",
-                          "lest" : true,
-                          "viktig" : false,
-                          "tekst" : "Jeg liker NAV. NAV er snille!"
-                        } ],
-                        "egenskaper" : [ ],
-                        "indexSisteMeldingLestAvBruker" : null,
-                        "tidspunktSistLestAvBruker" : null
-                      } ],
-                      "mål": "${bruker.brukerOptions.mål}"
-                    }
+                        }
                 """.trimIndent()
                     )
                 )
         )
-    }
-
-    @Test
-    fun `Når man forhåndsviser PDF skal aktiviteter sorteres kronologisk med nyeste øverst`() {
-        val (bruker, veileder) = hentBrukerOgVeileder("Sølvi", "Normalbakke")
-        val oppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
-        val jobbAktivitetGammel = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
-            .toBuilder()
-            .oppfolgingsperiodeId(oppfølgingsperiode)
-            .tittel("Gammel aktivitet")
-            .endretDato(Date.from(Instant.now().minusSeconds(1000)))
-            .build()
-        val jobbAktivitetNy = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
-            .toBuilder()
-            .oppfolgingsperiodeId(oppfølgingsperiode)
-            .tittel("Ny aktivitet")
-            .endretDato(Date.from(Instant.now()))
-            .build()
-        val gamellOpprettetAktivitet = aktivitetTestService.opprettAktivitet(bruker, bruker, jobbAktivitetGammel)
-        val nyOpprettetAktivitet = aktivitetTestService.opprettAktivitet(bruker, bruker, jobbAktivitetNy)
-        stubDialogTråder(fnr = bruker.fnr, oppfølgingsperiodeId = oppfølgingsperiode.toString(), aktivitetId = "dummy")
-        stubIngenArenaAktiviteter(bruker.fnr)
-
-        val arkiveringsUrl =
-            "http://localhost:$port/veilarbaktivitet/api/arkivering/forhaandsvisning?oppfolgingsperiodeId=$oppfølgingsperiode&journalforendeEnhet=0909"
-        veileder
-            .createRequest(bruker)
-            .get(arkiveringsUrl)
-
-        val journalforingsrequest =
-            wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/forhaandsvisning") }.first()
-        val arkivPayload =
-            JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ForhåndsvisningPayload::class.java)
-        arkivPayload.aktiviteter["Planlagt"]?.let { aktiviteter ->
-            assertThat(aktiviteter[0].tittel).isEqualTo(nyOpprettetAktivitet.tittel)
-            assertThat(aktiviteter[1].tittel).isEqualTo(gamellOpprettetAktivitet.tittel)
-        }
     }
 
     @Test
@@ -434,15 +426,16 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         stubIngenArenaAktiviteter(bruker.fnr)
 
         val arkiveringsUrl =
-            "http://localhost:$port/veilarbaktivitet/api/arkivering/forhaandsvisning?oppfolgingsperiodeId=$oppfølgingsperiodeForArkivering&journalforendeEnhet=0909"
+            "http://localhost:$port/veilarbaktivitet/api/arkivering/forhaandsvisning?oppfolgingsperiodeId=$oppfølgingsperiodeForArkivering&journalforendeEnhet=1234"
         veileder
             .createRequest(bruker)
-            .get(arkiveringsUrl)
+            .body(ArkiveringsController.ForhaandsvisningInboundDTO("1234"))
+            .post(arkiveringsUrl)
 
         val journalforingsrequest =
             wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/forhaandsvisning") }.first()
         val arkivPayload =
-            JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ForhåndsvisningPayload::class.java)
+            JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, PdfPayload::class.java)
         assertThat(arkivPayload.aktiviteter).isEmpty()
         assertThat(arkivPayload.dialogtråder).isEmpty()
     }
@@ -466,39 +459,111 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiodeForArkivering"
         veileder
             .createRequest(bruker)
-            .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now(), "dummyEnhet"))
+            .body(ArkiveringsController.JournalførInboundDTO(ZonedDateTime.now(), "1234"))
             .post(arkiveringsUrl)
 
         val journalforingsrequest =
             wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
-        val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
-        assertThat(arkivPayload.aktiviteter).isEmpty()
-        assertThat(arkivPayload.dialogtråder).isEmpty()
+        val journalføringPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, JournalføringPayload::class.java)
+        assertThat(journalføringPayload.pdfPayload.aktiviteter).isEmpty()
+        assertThat(journalføringPayload.pdfPayload.dialogtråder).isEmpty()
     }
 
     @Test
-    fun `Når man journalfører på bruker i KVP skal aktiviteter med kontorsperre ekskluderes`() {
+    fun `Når man journalfører på bruker i KVP skal aktiviteter og dialoger med kontorsperre ekskluderes`() {
         val (kvpBruker, veileder) = hentKvpBrukerOgVeileder("Sølvi", "Normalbakke")
         val oppfølgingsperiode = kvpBruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
         // Aktiviteten vil få satt kontorsperre fordi bruker er under KVP
         val kvpAktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
             .toBuilder().oppfolgingsperiodeId(oppfølgingsperiode).build()
         aktivitetTestService.opprettAktivitet(kvpBruker, veileder, kvpAktivitet)
-
-        stubDialogTråder(kvpBruker.fnr, oppfølgingsperiode.toString(), "dummyAktivitetId")
+        stubDialogTråder(kvpBruker.fnr, oppfølgingsperiode.toString(), "dummyAktivitetId", kontorsperreEnhetId = "1234")
         stubIngenArenaAktiviteter(kvpBruker.fnr)
         val arkiveringsUrl =
             "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
 
         veileder
             .createRequest(kvpBruker)
-            .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now(), "dummyEnhet"))
+            .body(ArkiveringsController.JournalførInboundDTO(ZonedDateTime.now(), "1234"))
             .post(arkiveringsUrl)
 
         val journalforingsrequest =
             wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
-        val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
-        assertThat(arkivPayload.aktiviteter).isEmpty()
+        val journalføringPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, JournalføringPayload::class.java)
+        assertThat(journalføringPayload.pdfPayload.aktiviteter).isEmpty()
+        val antallDialogerUtenAktivitet = journalføringPayload.pdfPayload.dialogtråder.size
+        val antallDialogerMedAktivitet = journalføringPayload.pdfPayload.aktiviteter.values.flatten().count { it.dialogtråd != null }
+        assertThat(antallDialogerUtenAktivitet).isEqualTo(0)
+        assertThat(antallDialogerMedAktivitet).isEqualTo(0)
+    }
+
+    @Test
+    fun `Skal aldri arkivere kontorsperrede aktiviteter og dialoger når man skal sende aktivitetsplan til bruker`() {
+        wireMock.resetAll()
+        val (kvpBruker, veileder) = hentKvpBrukerOgVeileder("Sølvi", "Normalbakke")
+        val oppfølgingsperiode = kvpBruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
+        val kvpAktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
+            .toBuilder().oppfolgingsperiodeId(oppfølgingsperiode).build()
+        aktivitetTestService.opprettAktivitet(kvpBruker, veileder, kvpAktivitet)
+        stubDialogTråder(kvpBruker.fnr, oppfølgingsperiode.toString(), "dummyAktivitetId")
+        stubIngenArenaAktiviteter(kvpBruker.fnr)
+        val sendTilBrukerInbound = ArkiveringsController.SendTilBrukerInboundDTO(
+            forhaandsvisningOpprettet = ZonedDateTime.now(),
+            journalførendeEnhetId = "1234",
+            tekstTilBruker = "Dette er en tekst til bruker",
+            filter = defaultFilter()
+        )
+        val arkiveringsUrl =
+            "http://localhost:$port/veilarbaktivitet/api/arkivering/send-til-bruker?oppfolgingsperiodeId=$oppfølgingsperiode"
+
+        val response = veileder
+            .createRequest(kvpBruker)
+            .body(sendTilBrukerInbound)
+            .post(arkiveringsUrl)
+
+        assertThat(response.statusCode).isEqualTo(204)
+        val journalforingsrequest =
+            wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/send-til-bruker") }.first()
+        val sendTilBrukerPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, SendTilBrukerPayload::class.java)
+        assertThat(sendTilBrukerPayload.journalføringspayload.pdfPayload.aktiviteter).isEmpty()
+        val harHentetDialogerMedKontorsperre = wireMock.getAllServeEvents().any { it.request.url.contains("ekskluderDialogerMedKontorsperre=false") }
+        assertThat(harHentetDialogerMedKontorsperre).isFalse()
+    }
+
+    @Test
+    fun `Skal kunne hente dialoger og aktiviteter med kontorsperre når man forhåndsviser`() {
+        val (kvpBruker, veileder) = hentKvpBrukerOgVeileder("Sølvi", "Normalbakke")
+        val oppfølgingsperiode = kvpBruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
+        val aktivitet = aktivitetTestService.opprettAktivitet(
+            kvpBruker,
+            veileder,
+            AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
+                .toBuilder().oppfolgingsperiodeId(oppfølgingsperiode).build()
+        )
+
+        stubDialogTråder(kvpBruker.fnr, oppfølgingsperiode.toString(), aktivitet.id, kontorsperreEnhetId = kvpBruker.oppfolgingsenhet)
+        stubIngenArenaAktiviteter(kvpBruker.fnr)
+        val url = "http://localhost:$port/veilarbaktivitet/api/arkivering/forhaandsvisning-send-til-bruker?oppfolgingsperiodeId=$oppfølgingsperiode"
+        val body = ArkiveringsController.ForhaandsvisningSendTilBrukerInboundDto(
+            tekstTilBruker = "Tekst til bruker",
+            filter = defaultFilter(kvpAlternativ = INKLUDER_KVP_AKTIVITETER),
+            journalførendeEnhetId = "1234",
+        )
+
+        val response = veileder
+            .createRequest(kvpBruker)
+            .body(body)
+            .post(url)
+
+        assertThat(response.statusCode).isEqualTo(200)
+        val forhaandsvisningRequest =
+            wireMock.getAllServeEvents().filter { it.request.url.contains("forhaandsvisning-send-til-bruker") }.first()
+        val payload = JsonUtils.fromJson(forhaandsvisningRequest.request.bodyAsString, PdfPayload::class.java)
+        assertThat(payload.aktiviteter.values.flatten().size).isEqualTo(1)
+        val antallDialogerUtenAktivitet = payload.dialogtråder.size
+        val antallDialogerMedAktivitet = payload.aktiviteter.values.flatten().count { it.dialogtråd != null }
+        assertThat(antallDialogerUtenAktivitet).isEqualTo(1)
+        assertThat(antallDialogerMedAktivitet).isEqualTo(1)
     }
 
     @Test
@@ -520,14 +585,14 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
         veileder
             .createRequest(bruker)
-            .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now(), "dummyEnhet"))
+            .body(ArkiveringsController.JournalførInboundDTO(ZonedDateTime.now(), "1234"))
             .post(arkiveringsUrl)
 
         val journalforingsrequest =
             wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
-        val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
-        assertThat(arkivPayload.aktiviteter).hasSize(1)
-        assertThat(arkivPayload.aktiviteter.values.flatten().first().tittel).isEqualTo(ikkeKvpAktivitetTittel)
+        val journalføringPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, JournalføringPayload::class.java)
+        assertThat(journalføringPayload.pdfPayload.aktiviteter).hasSize(1)
+        assertThat(journalføringPayload.pdfPayload.aktiviteter.values.flatten().first().tittel).isEqualTo(ikkeKvpAktivitetTittel)
     }
 
     @Test
@@ -557,13 +622,13 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
         veileder
             .createRequest(bruker)
-            .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now(), "dummyEnhet"))
+            .body(ArkiveringsController.JournalførInboundDTO(ZonedDateTime.now(), "1234"))
             .post(arkiveringsUrl)
 
         val journalforingsrequest =
             wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
-        val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
-        val aktiviteterSendtTilArkiv = arkivPayload.aktiviteter.values.flatten()
+        val journalføringPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, JournalføringPayload::class.java)
+        val aktiviteterSendtTilArkiv = journalføringPayload.pdfPayload.aktiviteter.values.flatten()
         assertThat(aktiviteterSendtTilArkiv).hasSize(eksternaAktiviteterTyper.size)
     }
 
@@ -593,12 +658,12 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
         veileder
             .createRequest(bruker)
-            .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now(), "dummyEnhet"))
+            .body(ArkiveringsController.JournalførInboundDTO(ZonedDateTime.now(), "1234"))
             .post(arkiveringsUrl)
 
-        val journalforingsrequest = wireMock.allServeEvents.first { it.request.url.contains("orkivar/arkiver") }
-        val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
-        val aktiviteterSendtTilArkiv = arkivPayload.aktiviteter.values.flatten()
+        val journalforingsrequest = wireMock.getAllServeEvents().first { it.request.url.contains("orkivar/arkiver") }
+        val journalføringPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, JournalføringPayload::class.java)
+        val aktiviteterSendtTilArkiv = journalføringPayload.pdfPayload.aktiviteter.values.flatten()
         assertThat(aktiviteterSendtTilArkiv).hasSize(1)
     }
 
@@ -644,13 +709,13 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
         veileder
             .createRequest(bruker)
-            .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now(), "dummyEnhet"))
+            .body(ArkiveringsController.JournalførInboundDTO(ZonedDateTime.now(), "1234"))
             .post(arkiveringsUrl)
 
         val journalforingsrequest =
             wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
-        val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
-        val aktivitetSendtTilArkiv = arkivPayload.aktiviteter.values.flatten().first()
+        val journalføringPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, JournalføringPayload::class.java)
+        val aktivitetSendtTilArkiv = journalføringPayload.pdfPayload.aktiviteter.values.flatten().first()
         assertThat(aktivitetSendtTilArkiv.eksterneHandlinger).hasSize(2)
         assertThat(aktivitetSendtTilArkiv.eksterneHandlinger).containsExactlyInAnyOrder(
             EksternHandling(internHandling.tekst, internHandling.subtekst, internHandling.url.toString()),
@@ -679,13 +744,13 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
         veileder
             .createRequest(bruker)
-            .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now(), "dummyEnhet"))
+            .body(ArkiveringsController.JournalførInboundDTO(ZonedDateTime.now(), "1234"))
             .post(arkiveringsUrl)
 
         val journalforingsrequest =
             wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
-        val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
-        val aktiviteter = arkivPayload.aktiviteter.flatMap { it.value }
+        val journalføringPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, JournalføringPayload::class.java)
+        val aktiviteter = journalføringPayload.pdfPayload.aktiviteter.flatMap { it.value }
         assertThat(aktiviteter).hasSize(1)
         assertThat(aktiviteter.first().tittel).isEqualTo(referatPublisertTittel)
     }
@@ -704,13 +769,13 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
         veileder
             .createRequest(bruker)
-            .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now(), "dummyEnhet"))
+            .body(ArkiveringsController.JournalførInboundDTO(ZonedDateTime.now(), "1234"))
             .post(arkiveringsUrl)
 
         val journalforingsrequest =
             wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
-        val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
-        val journalførtAktivitet = arkivPayload.aktiviteter.flatMap { it.value }.first()
+        val journalføringPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, JournalføringPayload::class.java)
+        val journalførtAktivitet = journalføringPayload.pdfPayload.aktiviteter.flatMap { it.value }.first()
         assertThat(journalførtAktivitet.detaljer.find { it.tittel == "Samtalereferat" }?.tekst).isEmpty()
     }
 
@@ -729,13 +794,13 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
         veileder
             .createRequest(bruker)
-            .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now(), "dummyEnhet"))
+            .body(ArkiveringsController.JournalførInboundDTO(ZonedDateTime.now(), "1234"))
             .post(arkiveringsUrl)
 
         val journalforingsrequest =
             wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
-        val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
-        val journalførtAktivitet = arkivPayload.aktiviteter.flatMap { it.value }.first()
+        val journalføringPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, JournalføringPayload::class.java)
+        val journalførtAktivitet = journalføringPayload.pdfPayload.aktiviteter.flatMap { it.value }.first()
         assertThat(journalførtAktivitet.detaljer.find { it.tittel == "Samtalereferat" }?.tekst).isEqualTo(referat)
     }
 
@@ -748,12 +813,12 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val arenaAktivitetId = "ARENAUA123"
         val tiltaksnavn = "Et tiltaksnavn fra Arena!"
         stubHentArenaAktiviteter(bruker.fnr, arenaAktivitetId, arenaAktivitetEndretDato, tiltaksnavn)
-        stubIngenDialogTråder(bruker.fnr)
+        stubIngenDialogTråder()
         val arkiveringsUrl =
             "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=${oppfølgingsperiode.oppfolgingsperiodeId}"
         veileder
             .createRequest(bruker)
-            .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now(), "dummyEnhet"))
+            .body(ArkiveringsController.JournalførInboundDTO(ZonedDateTime.now(), "1234"))
             .post(arkiveringsUrl)
 
         wireMock.verify(
@@ -763,48 +828,60 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                     equalToJson(
                         """
                             {
-                              "navn" : "Sølvi Normalbakke",
-                              "fnr" : "${bruker.fnr}",
-                              "tekstTilBruker" : null,
-                              "oppfølgingsperiodeStart" : "${norskDato(oppfølgingsperiode.startTid)}",
-                              "oppfølgingsperiodeSlutt" : null,
-                              "sakId" : 1000,
-                              "fagsaksystem" : "ARBEIDSOPPFOLGING",
-                              "tema" : "AKT",
-                              "oppfølgingsperiodeId" : "${oppfølgingsperiode.oppfolgingsperiodeId}",
-                              "journalførendeEnhet" : "dummyEnhet",
-                              "aktiviteter" : {
-                                "Fullført" : [ {
-                                  "tittel" : "Ordinær utdanning for enslige forsørgere mv",
-                                  "type" : "Utdanning",
-                                  "status" : "Fullført",
-                                  "detaljer" : [ {
-                                    "stil" : "PARAGRAF",
-                                    "tittel" : "Fullført / Tiltak gjennom NAV",
-                                    "tekst" : "Et tiltaksnavn fra Arena!"
-                                  }, {
-                                    "stil" : "HALV_LINJE",
-                                    "tittel" : "Fra dato",
-                                    "tekst" : "18. november 2021"
-                                  }, {
-                                    "stil" : "HALV_LINJE",
-                                    "tittel" : "Til dato",
-                                    "tekst" : "25. november 2021"
-                                  } ],
-                                  "dialogtråd" : null,
-                                  "etiketter" : [ {
-                                    "stil" : "AVTALT",
-                                    "tekst" : "Avtalt med NAV"
-                                  } ],
-                                  "eksterneHandlinger" : [ ],
-                                  "historikk" : {
-                                    "endringer" : [ ]
-                                  },
-                                   "forhaandsorientering" : null
-                                } ]
-                              },
-                              "dialogtråder" : [],
-                              "mål" : "Å få meg jobb"
+                              "sakId": 1000,
+                              "fagsaksystem": "ARBEIDSOPPFOLGING",
+                              "tema": "AKT",
+                              "journalførendeEnhetId": "1234",
+                              "pdfPayload": {
+                                "navn": "Sølvi Normalbakke",
+                                "fnr": "${bruker.fnr}",
+                                "brukteFiltre": {},
+                                "tekstTilBruker": null,
+                                "journalførendeEnhetNavn": "Nav Helsfyr",
+                                "oppfølgingsperiodeStart": "${norskDato(oppfølgingsperiode.startTid)}",
+                                "oppfølgingsperiodeSlutt": null,
+                                "oppfølgingsperiodeId": "${oppfølgingsperiode.oppfolgingsperiodeId}",
+                                "aktiviteter": {
+                                  "Fullført": [
+                                    {
+                                      "tittel": "Ordinær utdanning for enslige forsørgere mv",
+                                      "type": "Utdanning",
+                                      "status": "Fullført",
+                                      "detaljer": [
+                                        {
+                                          "stil": "PARAGRAF",
+                                          "tittel": "Fullført / Tiltak gjennom NAV",
+                                          "tekst": "Et tiltaksnavn fra Arena!"
+                                        },
+                                        {
+                                          "stil": "HALV_LINJE",
+                                          "tittel": "Fra dato",
+                                          "tekst": "18. november 2021"
+                                        },
+                                        {
+                                          "stil": "HALV_LINJE",
+                                          "tittel": "Til dato",
+                                          "tekst": "25. november 2021"
+                                        }
+                                      ],
+                                      "dialogtråd": null,
+                                      "etiketter": [
+                                        {
+                                          "stil": "AVTALT",
+                                          "tekst": "Avtalt med NAV"
+                                        }
+                                      ],
+                                      "eksterneHandlinger": [],
+                                      "historikk": {
+                                        "endringer": []
+                                      },
+                                      "forhaandsorientering": null
+                                    }
+                                  ]
+                                },
+                                "dialogtråder": [],
+                                "mål": "Å få meg jobb"
+                              }
                             }
                         """.trimIndent()
                     )
@@ -830,7 +907,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
         veileder
             .createRequest(bruker)
-            .body(ArkiveringsController.ArkiverInboundDTO(forhaandsvisningstidspunkt, "dummyEnhet"))
+            .body(ArkiveringsController.JournalførInboundDTO(forhaandsvisningstidspunkt, "1234"))
             .post(arkiveringsUrl)
             .then()
             .assertThat()
@@ -841,108 +918,155 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
     fun `Kall mot arkiveringsendepunkt kaster 403 når oppfølgingsperiodeId mangler`() {
         val bruker = navMockService.createBruker()
         val veileder = navMockService.createVeileder(mockBruker = bruker)
-
-        val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering/forhaandsvisning"
+        val url = "http://localhost:$port/veilarbaktivitet/api/arkivering/forhaandsvisning"
+        val inboundDto = ArkiveringsController.ForhaandsvisningInboundDTO("1234")
 
         veileder
             .createRequest(bruker)
-            .get(arkiveringsUrl)
+            .body(inboundDto)
+            .post(url)
             .then()
             .assertThat()
             .statusCode(HttpStatus.FORBIDDEN.value())
     }
 
+    @Test
+    fun `Kast feil hvis veileder forsøker å inkludere KVP-aktiviter ved send-til-bruker`() {
+        val (kvpBruker, veileder) = hentKvpBrukerOgVeileder("Sølvi", "Normalbakke")
+        val oppfølgingsperiode = kvpBruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
+        val sendTilBrukerInbound = ArkiveringsController.SendTilBrukerInboundDTO(
+            forhaandsvisningOpprettet = ZonedDateTime.now(),
+            journalførendeEnhetId = "1234",
+            tekstTilBruker = "Dette er en tekst til bruker",
+            filter = defaultFilter(kvpAlternativ = INKLUDER_KVP_AKTIVITETER)
+        )
+        val url =
+            "http://localhost:$port/veilarbaktivitet/api/arkivering/send-til-bruker?oppfolgingsperiodeId=$oppfølgingsperiode"
+
+        val response = veileder
+            .createRequest(kvpBruker)
+            .body(sendTilBrukerInbound)
+            .post(url)
+        assertThat(response.statusCode()).isEqualTo(451)
+    }
+
+    @Test
+    fun `Skal aldri inkludere kontorsperrede aktiviteter ved forhaandsvisning hvis veileder ikke har tilgang`() {
+        val (kvpBruker, veileder) = hentKvpBrukerOgVeileder("Sølvi", "Normalbakke")
+        val oppfølgingsperiode = kvpBruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
+        val sendTilBrukerInbound = ArkiveringsController.SendTilBrukerInboundDTO(
+            forhaandsvisningOpprettet = ZonedDateTime.now(),
+            journalførendeEnhetId = "1234",
+            tekstTilBruker = "Dette er en tekst til bruker",
+            filter = defaultFilter(kvpAlternativ = ArkiveringsController.KvpUtvalgskriterieAlternativ.KUN_KVP_AKTIVITETER)
+        )
+        val url =
+            "http://localhost:$port/veilarbaktivitet/api/arkivering/send-til-bruker?oppfolgingsperiodeId=$oppfølgingsperiode"
+
+        val response = veileder
+            .createRequest(kvpBruker)
+            .body(sendTilBrukerInbound)
+            .post(url)
+        assertThat(response.statusCode()).isEqualTo(451)
+    }
     private fun stubDialogTråder(
         fnr: String,
         oppfølgingsperiodeId: String,
         aktivitetId: String,
         meldingerSendtTidspunkt: String = "2024-02-05T13:31:22.238+00:00",
-        sistLestTidspunkt: String = "2024-03-05T13:31:22.238+00:00"
+        sistLestTidspunkt: String = "2024-03-05T13:31:22.238+00:00",
+        kontorsperreEnhetId: String? = null,
     ) {
         wireMock.stubFor(
-            get(
+            post(
                 urlEqualTo(
-                    "/veilarbdialog/api/dialog?fnr=$fnr&ekskluderDialogerMedKontorsperre=true"
+                    "/veilarbdialog/graphql"
                 )
-            )
-                .willReturn(
-                    aResponse().withBody(
-                        """
-                            [
-                                {
-                                    "id": "618055",
-                                    "aktivitetId": "$aktivitetId",
-                                    "overskrift": "Arbeidsmarkedsopplæring (Gruppe): Kurs: Speiderkurs gruppe-AMO",
-                                    "sisteTekst": "Jada",
-                                    "sisteDato": "2024-02-05T13:31:22.238+00:00",
-                                    "opprettetDato": "2024-02-05T13:31:11.564+00:00",
-                                    "historisk": false,
-                                    "lest": true,
-                                    "venterPaSvar": false,
-                                    "ferdigBehandlet": false,
-                                    "lestAvBrukerTidspunkt": "$sistLestTidspunkt",
-                                    "erLestAvBruker": true,
-                                    "oppfolgingsperiode": "$oppfølgingsperiodeId",
-                                    "henvendelser": [
-                                        {
-                                            "id": "1147416",
-                                            "dialogId": "618057",
-                                            "avsender": "VEILEDER",
-                                            "avsenderId": "Z994188",
-                                            "sendt": "$meldingerSendtTidspunkt",
-                                            "lest": true,
-                                            "viktig": false,
-                                            "tekst": "wehfuiehwf\n\nHilsen F_994188 E_994188"
-                                        }
-                                    ],
-                                    "egenskaper": []
-                                },
-                                {
-                                    "id": "618056",
-                                    "aktivitetId": null,
-                                    "overskrift": "Penger",
-                                    "sisteTekst": "Jeg liker NAV. NAV er snille!",
-                                    "sisteDato": "2024-02-05T13:29:18.635+00:00",
-                                    "opprettetDato": "2024-02-05T13:29:18.616+00:00",
-                                    "historisk": false,
-                                    "lest": true,
-                                    "venterPaSvar": false,
-                                    "ferdigBehandlet": false,
-                                    "lestAvBrukerTidspunkt": null,
-                                    "erLestAvBruker": true,
-                                    "oppfolgingsperiode": "$oppfølgingsperiodeId",
-                                    "henvendelser": [
-                                        {
-                                            "id": "1147415",
-                                            "dialogId": "618056",
-                                            "avsender": "BRUKER",
-                                            "avsenderId": "$fnr",
-                                            "sendt": "$meldingerSendtTidspunkt",
-                                            "lest": true,
-                                            "viktig": false,
-                                            "tekst": "Jeg liker NAV. NAV er snille!"
-                                        }
-                                    ],
-                                    "egenskaper": []
-                                }
-                            ]
-                        """.trimIndent()
-                    )
-                )
-        )
+            ).willReturn(aResponse().withBody(
+                """
+                    {
+                      "data" : {
+                        "dialoger" : [
+                          {
+                            "id": "618055",
+                            "aktivitetId": "$aktivitetId",
+                            "overskrift": "Arbeidsmarkedsopplæring (Gruppe): Kurs: Speiderkurs gruppe-AMO",
+                            "sisteTekst": "Jada",
+                            "sisteDato": "2024-02-05T13:31:22.238+00:00",
+                            "opprettetDato": "2024-02-05T13:31:11.564+00:00",
+                            "historisk": false,
+                            "lest": true,
+                            "venterPaSvar": false,
+                            "ferdigBehandlet": false,
+                            "lestAvBrukerTidspunkt": "$sistLestTidspunkt",
+                            "erLestAvBruker": true,
+                            "oppfolgingsperiode": "$oppfølgingsperiodeId",
+                            "kontorsperreEnhetId" :  ${kontorsperreEnhetId?.let { "\"$it\"" } ?: "null"},
+                            "henvendelser": [
+                              {
+                                "id": "1147416",
+                                "dialogId": "618057",
+                                "avsender": "VEILEDER",
+                                "avsenderId": "Z994188",
+                                "sendt": "$meldingerSendtTidspunkt",
+                                "lest": true,
+                                "viktig": false,
+                                "tekst": "wehfuiehwf\n\nHilsen F_994188 E_994188"
+                              }
+                            ],
+                            "egenskaper": []
+                          },
+                          {
+                            "id": "618056",
+                            "aktivitetId": null,
+                            "overskrift": "Penger",
+                            "sisteTekst": "Jeg liker NAV. NAV er snille!",
+                            "sisteDato": "2024-02-05T13:29:18.635+00:00",
+                            "opprettetDato": "2024-02-05T13:29:18.616+00:00",
+                            "historisk": false,
+                            "lest": true,
+                            "venterPaSvar": false,
+                            "ferdigBehandlet": false,
+                            "lestAvBrukerTidspunkt": null,
+                            "erLestAvBruker": true,
+                            "oppfolgingsperiode": "$oppfølgingsperiodeId",
+                            "kontorsperreEnhetId" :  ${kontorsperreEnhetId?.let { "\"$it\"" } ?: "null"},
+                            "henvendelser": [
+                              {
+                                "id": "1147415",
+                                "dialogId": "618056",
+                                "avsender": "BRUKER",
+                                "avsenderId": "$fnr",
+                                "sendt": "$meldingerSendtTidspunkt",
+                                "lest": true,
+                                "viktig": false,
+                                "tekst": "Jeg liker NAV. NAV er snille!"
+                              }
+                            ],
+                            "egenskaper": []
+                          }
+                        ]
+                      }
+                    }
+                """.trimIndent()
+            )))
     }
 
-    private fun stubIngenDialogTråder(fnr: String) {
+    private fun stubIngenDialogTråder() {
         wireMock.stubFor(
-            get(urlEqualTo("/veilarbdialog/api/dialog?fnr=$fnr&ekskluderDialogerMedKontorsperre=true"))
-                .willReturn(
-                    aResponse().withBody(
-                        """
-                            []
-                        """.trimIndent()
-                    )
+            post(
+                urlEqualTo(
+                    "/veilarbdialog/graphql"
                 )
-        )
+            ).willReturn(aResponse().withBody(
+                """
+                    {
+                      "data" : {
+                        "dialoger" : []
+                      }
+                    }
+                """.trimIndent()
+            )))
     }
 
     private fun stubIngenArenaAktiviteter(fnr: String) {
@@ -1029,4 +1153,18 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val veileder = navMockService.createVeileder(mockBruker = bruker)
         return Pair(bruker, veileder)
     }
+
+    private fun defaultFilter(kvpAlternativ: ArkiveringsController.KvpUtvalgskriterieAlternativ = EKSKLUDER_KVP_AKTIVITETER) = ArkiveringsController.Filter(
+        inkluderHistorikk = true,
+        inkluderDialoger = true,
+        kvpUtvalgskriterie = ArkiveringsController.KvpUtvalgskriterie(
+            alternativ = kvpAlternativ,
+            start = null,
+            slutt = null,
+        ),
+        aktivitetAvtaltMedNavFilter = emptyList(),
+        stillingsstatusFilter = emptyList(),
+        arenaAktivitetStatusFilter = emptyList(),
+        aktivitetTypeFilter = emptyList()
+    )
 }

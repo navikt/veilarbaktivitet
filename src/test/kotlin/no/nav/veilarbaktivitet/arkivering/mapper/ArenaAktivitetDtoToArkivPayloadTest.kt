@@ -18,9 +18,9 @@ class ArenaAktivitetDtoToArkivPayloadTest {
     @Test
     fun `Skal mappe avtaltMedNav til riktig etikett`() {
         val avtaltAktivitet = ArenaAktivitetDTO().setAvtalt(true)
-        assertThat(avtaltAktivitet.toArkivEtikett()).containsExactly(ArkivEtikett(ArkivEtikettStil.AVTALT,"Avtalt med NAV"))
+        assertThat(avtaltAktivitet.toArkivEtiketter()).containsExactly(ArkivEtikett(ArkivEtikettStil.AVTALT,"Avtalt med NAV"))
         val ikkeAvtaltAktivitet = ArenaAktivitetDTO().setAvtalt(false)
-        assertThat(ikkeAvtaltAktivitet.toArkivEtikett()).isEmpty()
+        assertThat(ikkeAvtaltAktivitet.toArkivEtiketter()).isEmpty()
     }
 
     @Test
@@ -36,16 +36,16 @@ class ArenaAktivitetDtoToArkivPayloadTest {
         val ventelisteAktivitet = ArenaAktivitetDTO().setEtikett(VENTELISTE)
         val utenEtikettAktivitet = ArenaAktivitetDTO().setEtikett(null)
 
-        assertThat(aktuellAktivitet.toArkivEtikett()).containsExactly(ArkivEtikett(ArkivEtikettStil.POSITIVE, "Søkt inn på tiltaket"))
-        assertThat(avslagAktivitet.toArkivEtikett()).containsExactly(ArkivEtikett(ArkivEtikettStil.NEGATIVE, "Fått avslag"))
-        assertThat(ikkeAktuellAktivitet.toArkivEtikett()).containsExactly(ArkivEtikett(ArkivEtikettStil.NEUTRAL, "Ikke aktuell for tiltaket"))
-        assertThat(ikkeMøttAktivitet.toArkivEtikett()).containsExactly(ArkivEtikett(ArkivEtikettStil.NEGATIVE, "Ikke møtt på tiltaket"))
-        assertThat(infomøteAktivitet.toArkivEtikett()).containsExactly(ArkivEtikett(ArkivEtikettStil.POSITIVE, "Infomøte før tiltaket"))
-        assertThat(jaTakkAktivitet.toArkivEtikett()).containsExactly(ArkivEtikett(ArkivEtikettStil.POSITIVE, "Takket ja til tilbud"))
-        assertThat(neiTakkAktivitet.toArkivEtikett()).containsExactly(ArkivEtikett(ArkivEtikettStil.NEUTRAL, "Takket nei til tilbud"))
-        assertThat(tilbudAktivitet.toArkivEtikett()).containsExactly(ArkivEtikett(ArkivEtikettStil.POSITIVE, "Fått plass på tiltaket"))
-        assertThat(ventelisteAktivitet.toArkivEtikett()).containsExactly(ArkivEtikett(ArkivEtikettStil.POSITIVE, "På venteliste"))
-        assertThat(utenEtikettAktivitet.toArkivEtikett()).isEmpty()
+        assertThat(aktuellAktivitet.toArkivEtiketter()).containsExactly(ArkivEtikett(ArkivEtikettStil.POSITIVE, "Søkt inn på tiltaket"))
+        assertThat(avslagAktivitet.toArkivEtiketter()).containsExactly(ArkivEtikett(ArkivEtikettStil.NEGATIVE, "Fått avslag"))
+        assertThat(ikkeAktuellAktivitet.toArkivEtiketter()).containsExactly(ArkivEtikett(ArkivEtikettStil.NEUTRAL, "Ikke aktuell for tiltaket"))
+        assertThat(ikkeMøttAktivitet.toArkivEtiketter()).containsExactly(ArkivEtikett(ArkivEtikettStil.NEGATIVE, "Ikke møtt på tiltaket"))
+        assertThat(infomøteAktivitet.toArkivEtiketter()).containsExactly(ArkivEtikett(ArkivEtikettStil.POSITIVE, "Infomøte før tiltaket"))
+        assertThat(jaTakkAktivitet.toArkivEtiketter()).containsExactly(ArkivEtikett(ArkivEtikettStil.POSITIVE, "Takket ja til tilbud"))
+        assertThat(neiTakkAktivitet.toArkivEtiketter()).containsExactly(ArkivEtikett(ArkivEtikettStil.NEUTRAL, "Takket nei til tilbud"))
+        assertThat(tilbudAktivitet.toArkivEtiketter()).containsExactly(ArkivEtikett(ArkivEtikettStil.POSITIVE, "Fått plass på tiltaket"))
+        assertThat(ventelisteAktivitet.toArkivEtiketter()).containsExactly(ArkivEtikett(ArkivEtikettStil.POSITIVE, "På venteliste"))
+        assertThat(utenEtikettAktivitet.toArkivEtiketter()).isEmpty()
     }
 
     @Test
