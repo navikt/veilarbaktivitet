@@ -61,4 +61,10 @@ public class UserInContext {
                 .or(() -> aktorId.or(() -> aktorIdFromFnr))
                 .orElseThrow();
     }
+
+    public EksternBruker getEksternBruker() {
+        Person.Fnr fnr = getFnr().orElseThrow();
+        Person.AktorId aktorId = getAktorId();
+        return new EksternBruker(fnr, aktorId);
+    }
 }
