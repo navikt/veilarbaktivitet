@@ -2,7 +2,6 @@ package no.nav.veilarbaktivitet.arkivering
 
 import kotlinx.coroutines.*
 import no.nav.common.auth.context.AuthContext
-import no.nav.common.auth.context.AuthContextHolder
 import no.nav.common.auth.context.AuthContextHolderThreadLocal
 import no.nav.common.types.identer.EnhetId
 import no.nav.veilarbaktivitet.aktivitet.AktivitetId
@@ -38,7 +37,7 @@ class PdfPayloadService(
     private val hentArenaAktiviteter: (Person.Fnr) -> List<ArenaAktivitetDTO>,
     private val hentKontorNavn: (String) -> String,
     private val harTilgangTilEnhet: (enhet: EnhetId) -> Boolean,
-    private val authContextHolder: AuthContextHolder,
+    private val getAuthContext: () -> AuthContext,
 ) {
     private val logger = LoggerFactory.getLogger(this::class.java)
 
@@ -95,7 +94,7 @@ class PdfPayloadService(
         journalførendeEnhetId: EnhetId?,
     ): ArkiveringsData {
         val timedArkiveringsdata = measureTimedValue {
-            val authContext = authContextHolder.context.get()
+            val authContext = getAuthContext()
             val enheterTilgangCache = EnheterTilgangCache(harTilgangTilEnhet)
             val journalførendeEnhetNavn = journalførendeEnhetId?.let { hentKontorNavn(it.get()) } ?: ""
 

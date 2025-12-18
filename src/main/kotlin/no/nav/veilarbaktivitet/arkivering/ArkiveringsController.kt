@@ -54,8 +54,10 @@ class ArkiveringsController(
         hentHistorikk = historikkService::hentHistorikk,
         hentArenaAktiviteter = arenaService::hentArenaAktiviteter,
         hentKontorNavn = norg2Client::hentKontorNavn,
-        authContextHolder = authContextHolder,
-        harTilgangTilEnhet = authService::harTilgangTilEnhet
+        harTilgangTilEnhet = authService::harTilgangTilEnhet,
+        getAuthContext = {
+            authContextHolder.getContext().get()
+        }
     )
 
     companion object {
