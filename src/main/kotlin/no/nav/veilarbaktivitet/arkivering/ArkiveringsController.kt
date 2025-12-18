@@ -42,7 +42,7 @@ class ArkiveringsController(
     private val norg2Client: Norg2Client,
     private val authContextHolder: AuthContextHolder,
     private val authService: AuthService,
-    ) {
+) {
     private val logger = LoggerFactory.getLogger(this::class.java)
 
     private val pdfPayloadService = PdfPayloadService(
@@ -140,13 +140,13 @@ class ArkiveringsController(
     @AuthorizeFnr(auditlogMessage = "Send aktivitetsplan til bruker", resourceType = OppfolgingsperiodeResource::class, resourceIdParamName = "oppfolgingsperiodeId")
     fun sendAktivitetsplanTilBruker(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID, @RequestBody sendTilBrukerInboundDTO: SendTilBrukerInboundDTO): ResponseEntity<Unit> {
         if(!authService.erInternBruker()) throw ResponseStatusException(HttpStatus.FORBIDDEN)
-        val pdfPayloadResult = pdfPayloadService.lagPdfPayloadForUtskrift(
+        val pdfPayloadResult = pdfPayloadService.lagPdfPayloadForSendTilBruker(
             bruker = userInContext.eksternBruker,
             oppfølgingsperiodeId = oppfølgingsperiodeId,
             journalførendeEnhetId = EnhetId.of(sendTilBrukerInboundDTO.journalførendeEnhetId),
             tekstTilBruker = sendTilBrukerInboundDTO.tekstTilBruker,
             filter = sendTilBrukerInboundDTO.filter,
-            ikkeOppdatertEtter = sendTilBrukerInboundDTO.forhaandsvisningOpprettet
+            forhåndsvisningsTidspunkt = sendTilBrukerInboundDTO.forhaandsvisningOpprettet
         )
         val pdfPayload = pdfPayloadResult.getOrElse {
             val statusCode = (it as? ResponseStatusException)?.statusCode ?: HttpStatus.INTERNAL_SERVER_ERROR
@@ -215,7 +215,7 @@ class ArkiveringsController(
                 "Avtalt med Nav" to aktivitetAvtaltMedNavFilter.map { it.tekst },
                 "Stillingsstatus" to stillingsstatusFilter.map { it.tekst },
                 "Status for Arena-aktivitet" to arenaAktivitetStatusFilter.map { it.toArkivEtikett().tekst },
-                "Aktivitetstype" to aktivitetTypeFilter.map { it.tekst}
+                "Aktivitetstype" to aktivitetTypeFilter.map { it.tekst }
             ).filter { it.value.isNotEmpty() }
         }
     }

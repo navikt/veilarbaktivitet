@@ -46,9 +46,9 @@ class PdfPayloadService(
         return mapTilPdfPayload(arkiveringsData = arkiveringsdata,  tekstTilBruker = null, filter = tomtFilterUtenKvp)
     }
 
-    fun lagPdfPayloadForJournalføring(bruker: EksternBruker, oppfølgingsperiodeId: UUID, journalførendeEnhetId: EnhetId, ikkeOppdatertEtter: ZonedDateTime): Result<PdfPayload> {
+    fun lagPdfPayloadForJournalføring(bruker: EksternBruker, oppfølgingsperiodeId: UUID, journalførendeEnhetId: EnhetId, forhåndsvisningsTidspunkt: ZonedDateTime): Result<PdfPayload> {
         val arkiveringsdata = hentArkiveringsData(bruker, oppfølgingsperiodeId, journalførendeEnhetId, tomtFilterUtenKvp)
-        val oppdatertEtterForhaandsvisning = aktiviteterOgDialogerOppdatertEtter(ikkeOppdatertEtter, arkiveringsdata)
+        val oppdatertEtterForhaandsvisning = aktiviteterOgDialogerOppdatertEtter(forhåndsvisningsTidspunkt, arkiveringsdata)
         if (oppdatertEtterForhaandsvisning) {
             return Result.failure(ResponseStatusException(HttpStatus.CONFLICT))
         }
@@ -60,13 +60,13 @@ class PdfPayloadService(
         return mapTilPdfPayload(arkiveringsData = arkiveringsdata, filter = filter, tekstTilBruker = tekstTilBruker)
     }
 
-    fun lagPdfPayloadForUtskrift(bruker: EksternBruker, oppfølgingsperiodeId: UUID, journalførendeEnhetId: EnhetId, tekstTilBruker: String?, filter: Filter, ikkeOppdatertEtter: ZonedDateTime): Result<PdfPayload> {
+    fun lagPdfPayloadForSendTilBruker(bruker: EksternBruker, oppfølgingsperiodeId: UUID, journalførendeEnhetId: EnhetId, tekstTilBruker: String?, filter: Filter, forhåndsvisningsTidspunkt: ZonedDateTime): Result<PdfPayload> {
         val inkludererKvpAktiviteter = filter.kvpUtvalgskriterie.alternativ != EKSKLUDER_KVP_AKTIVITETER
         if (inkludererKvpAktiviteter) {
             return Result.failure(ResponseStatusException(HttpStatus.UNAVAILABLE_FOR_LEGAL_REASONS))
         }
         val arkiveringsdata = hentArkiveringsData(bruker, oppfølgingsperiodeId, journalførendeEnhetId, filter)
-        val oppdatertEtterForhaandsvisning = aktiviteterOgDialogerOppdatertEtter(ikkeOppdatertEtter, arkiveringsdata)
+        val oppdatertEtterForhaandsvisning = aktiviteterOgDialogerOppdatertEtter(forhåndsvisningsTidspunkt, arkiveringsdata)
         if (oppdatertEtterForhaandsvisning) {
             return Result.failure(ResponseStatusException(HttpStatus.CONFLICT))
         }
@@ -159,7 +159,7 @@ class PdfPayloadService(
         arkiveringsdata: ArkiveringsData
     ): Boolean {
         val aktiviteterTidspunkt = arkiveringsdata.aktiviteter.map { DateUtils.dateToZonedDateTime(it.endretDato) }
-        val dialogerTidspunkt = arkiveringsdata.dialoger.map { it.meldinger }.flatten().map { it.sendt }
+        val dialogerTidspunkt = arkiveringsdata.dialoger.mapNotNull { it.sisteDato }
         val sistOppdatert =
             (aktiviteterTidspunkt + dialogerTidspunkt).maxOrNull() ?: ZonedDateTime.now().minusYears(100)
         return sistOppdatert > tidspunkt
