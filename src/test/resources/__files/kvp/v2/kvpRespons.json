@@ -1,11 +1,10 @@
 {
-  "serial": 123,
-  "aktorId": "123",
-  "enhet": "1234",
-  "opprettetAv": "S123456",
-  "opprettetDato": "2018-08-31T10:46:10.971+01:00",
-  "opprettetBegrunnelse": null,
-  "avsluttetAv": null,
-  "avsluttetDato": null,
-  "avsluttetBegrunnelse": null
+  "data": {
+    "brukerStatus": {
+      "kontorSperre": {
+        "kontorId": "1234"
+      }
+    }
+  },
+  "errors": []
 }

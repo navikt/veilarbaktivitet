@@ -18,8 +18,9 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class KvpV2ClientTest {
-    private static final Person.AktorId AKTORID = Person.aktorId("1234");
+    private static final Person.Fnr FNR = Person.fnr("1234567890");
     private static final String KVP_RESPONS = "kvp/v2/kvpRespons.json";
+    private static final String GRAPHQL_API_URL = "/veilarboppfolging/api/graphql";
 
     private KvpV2Client kvpV2Client;
 
@@ -30,41 +31,63 @@ class KvpV2ClientTest {
     @BeforeEach
     void setup() {
         OkHttpClient okHttpClient = new OkHttpClient();
-        kvpV2Client = new KvpV2ClientImpl(okHttpClient);
+        kvpV2Client = new KvpV2ClientImpl(
+                "http://localhost:" + wireMock.getPort(),
+                okHttpClient
+        );
         kvpV2Client.setBaseUrl( wireMock.baseUrl());
     }
 
     @Test
     void test_kvp_ok_response() {
-
-        wireMock.stubFor(get(urlMatching("/veilarboppfolging/api/v2/kvp\\?aktorId=([0-9]*)"))
+        wireMock.stubFor(post(urlMatching(GRAPHQL_API_URL))
                 .willReturn(ok()
-                        .withHeader("Content-Type", "text/json")
+                        .withHeader("Content-Type", "application/json")
                         .withBodyFile(KVP_RESPONS)));
-        Optional<KvpV2DTO> kvpV2DTO = kvpV2Client.get(AKTORID);
+        Optional<KontorSperre> kontorSperre = kvpV2Client.get(FNR);
 
-        assertThat(kvpV2DTO).get()
-                .hasFieldOrPropertyWithValue("enhet", "1234")
-                .hasFieldOrPropertyWithValue("avsluttetDato", null);
+        assertThat(kontorSperre).isNotEmpty();
+        assertThat(kontorSperre.get().getEnhetId().get()).isEqualTo("1234");
     }
 
     @Test
     void test_kvp_kall_feiler() {
-        wireMock.stubFor(get(urlMatching("/veilarboppfolging/api/v2/kvp\\?aktorId=([0-9]*)"))
+        wireMock.stubFor(post(urlMatching(GRAPHQL_API_URL))
                 .willReturn(aResponse()
                         .withStatus(400)
-                        .withHeader("Content-Type", "text/json")));
-        Exception exception = assertThrows(ResponseStatusException.class, () -> kvpV2Client.get(AKTORID));
-        MatcherAssert.assertThat(exception.getMessage(), containsString("Uventet status 400"));
+                        .withHeader("Content-Type", "application/json")));
+        Exception exception = assertThrows(ResponseStatusException.class, () -> kvpV2Client.get(FNR));
+        MatcherAssert.assertThat(exception.getMessage(), containsString("Feil ved henting av kontorsperreenhet fra veilarboppfolging (http status: 400)"));
+    }
+
+    @Test
+    void test_kvp_kall_feiler_i_graphql() {
+        wireMock.stubFor(post(urlMatching(GRAPHQL_API_URL))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("""
+                          {
+                            "data": null,
+                            "errors": [{ "message": "Noe gikk galt" }]
+                          }
+                        """)
+                )
+        );
+        Exception exception = assertThrows(ResponseStatusException.class, () -> kvpV2Client.get(FNR));
+        MatcherAssert.assertThat(exception.getMessage(), containsString("Feil ved henting av kontorsperreenhet fra veilarboppfolging (error i graphql response): [GraphqlError(message=Noe gikk galt, locations=null, path=null, extensions=null)]"));
     }
 
     @Test
     void test_kvp_httpcode_204() {
-        wireMock.stubFor(get(urlMatching("/veilarboppfolging/api/v2/kvp\\?aktorId=([0-9]*)"))
+        wireMock.stubFor(post(urlMatching(GRAPHQL_API_URL))
                 .willReturn(aResponse()
-                        .withStatus(204)
-                        .withHeader("Content-Type", "text/json")));
-        Optional<KvpV2DTO> kvpV2DTO = kvpV2Client.get(AKTORID);
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("""
+                            { "data": { "brukerStatus": { "kontorSperre": null } }, "errors": null }
+                        """)));
+        Optional<KontorSperre> kvpV2DTO = kvpV2Client.get(FNR);
         assertThat(kvpV2DTO).isEmpty();
     }
 }

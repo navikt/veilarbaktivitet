@@ -1,0 +1,7 @@
+query($fnr: String!) {
+    brukerStatus(fnr: $fnr) {
+        kontorSperre {
+            kontorId
+        }
+    }
+}
