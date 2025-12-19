@@ -1,13 +1,20 @@
 package no.nav.veilarbaktivitet.arkivering
 
+import no.nav.common.auth.context.AuthContextHolder
 import no.nav.common.types.identer.EnhetId
 import no.nav.poao.dab.spring_a2_annotations.auth.AuthorizeFnr
+import no.nav.poao.dab.spring_auth.AuthService
+import no.nav.veilarbaktivitet.aktivitet.AktivitetAppService
+import no.nav.veilarbaktivitet.aktivitet.HistorikkService
+import no.nav.veilarbaktivitet.arena.ArenaService
 import no.nav.veilarbaktivitet.arena.model.ArenaStatusEtikettDTO
 import no.nav.veilarbaktivitet.arkivering.mapper.ArkiveringspayloadMapper.mapTilArkivPayload
 import no.nav.veilarbaktivitet.arkivering.mapper.toArkivEtikett
 import no.nav.veilarbaktivitet.config.OppfolgingsperiodeResource
 import no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV2Client
+import no.nav.veilarbaktivitet.norg2.Norg2Client
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeService
+import no.nav.veilarbaktivitet.person.EksternNavnService
 import no.nav.veilarbaktivitet.person.UserInContext
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
@@ -27,9 +34,31 @@ class ArkiveringsController(
     private val orkivarClient: OrkivarClient,
     private val oppfølgingsperiodeService: OppfolgingsperiodeService,
     private val manuellStatusClient: ManuellStatusV2Client,
-    private val pdfPayloadService: PdfPayloadService,
+    private val dialogClient: DialogClient,
+    private val navnService: EksternNavnService,
+    private val appService: AktivitetAppService,
+    private val historikkService: HistorikkService,
+    private val arenaService: ArenaService,
+    private val norg2Client: Norg2Client,
+    private val authContextHolder: AuthContextHolder,
+    private val authService: AuthService,
 ) {
     private val logger = LoggerFactory.getLogger(this::class.java)
+
+    private val pdfPayloadService = PdfPayloadService(
+        hentDialoger = dialogClient::hentDialoger,
+        hentNavn = navnService::hentNavn,
+        hentAktiviteter = appService::hentAktiviteterForIdent,
+        hentOppfølgingsperiode = oppfølgingsperiodeService::hentOppfolgingsperiode,
+        hentMål = oppfølgingsperiodeService::hentMål,
+        hentHistorikk = historikkService::hentHistorikk,
+        hentArenaAktiviteter = arenaService::hentArenaAktiviteter,
+        hentKontorNavn = norg2Client::hentKontorNavn,
+        harTilgangTilEnhet = authService::harTilgangTilEnhet,
+        getAuthContext = {
+            authContextHolder.getContext().get()
+        }
+    )
 
     companion object {
         private const val Tema_AktivitetsplanMedDialog = "AKT"
@@ -38,8 +67,9 @@ class ArkiveringsController(
     @PostMapping("/forhaandsvisning")
     @AuthorizeFnr(auditlogMessage = "lag forhåndsvisning av aktivitetsplan og dialog", resourceType = OppfolgingsperiodeResource::class, resourceIdParamName = "oppfolgingsperiodeId")
     fun forhaandsvisAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID, @RequestBody forhaandsvisningInboundDto: ForhaandsvisningInboundDTO): ForhaandsvisningOutboundDTO {
+        if(!authService.erInternBruker()) throw ResponseStatusException(HttpStatus.FORBIDDEN)
         val dataHentet = ZonedDateTime.now()
-        val pdfPayload = pdfPayloadService.lagPdfPayloadForForhåndsvisning(oppfølgingsperiodeId, EnhetId.of(forhaandsvisningInboundDto.journalførendeEnhetId))
+        val pdfPayload = pdfPayloadService.lagPdfPayloadForForhåndsvisning(userInContext.eksternBruker, oppfølgingsperiodeId, EnhetId.of(forhaandsvisningInboundDto.journalførendeEnhetId))
 
         val timedForhaandsvisningResultat = measureTimedValue {
             orkivarClient.hentPdfForForhaandsvisning(pdfPayload)
@@ -60,6 +90,7 @@ class ArkiveringsController(
         val dataHentet = ZonedDateTime.now()
         val journalførendeEnhetId = forhaandsvisningSendTilBrukerInboundDto.journalførendeEnhetId
         val pdfPayload = pdfPayloadService.lagPdfPayloadForForhåndsvisningUtskrift(
+            bruker = userInContext.eksternBruker,
             oppfølgingsperiodeId = oppfølgingsperiodeId,
             journalførendeEnhetId = if (journalførendeEnhetId != null && journalførendeEnhetId.isNotBlank()) EnhetId.of(journalførendeEnhetId) else null,
             tekstTilBruker = forhaandsvisningSendTilBrukerInboundDto.tekstTilBruker,
@@ -81,7 +112,8 @@ class ArkiveringsController(
     @PostMapping("/journalfor")
     @AuthorizeFnr(auditlogMessage = "journalføre aktivitetsplan og dialog", resourceType = OppfolgingsperiodeResource::class, resourceIdParamName = "oppfolgingsperiodeId")
     fun arkiverAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID, @RequestBody journalførInboundDTO: JournalførInboundDTO): JournalførtOutboundDTO {
-        val pdfPayloadResult = pdfPayloadService.lagPdfPayloadForJournalføring(oppfølgingsperiodeId, EnhetId.of(journalførInboundDTO.journalførendeEnhetId), journalførInboundDTO.forhaandsvisningOpprettet)
+        if(!authService.erInternBruker()) throw ResponseStatusException(HttpStatus.FORBIDDEN)
+        val pdfPayloadResult = pdfPayloadService.lagPdfPayloadForJournalføring(userInContext.eksternBruker, oppfølgingsperiodeId, EnhetId.of(journalførInboundDTO.journalførendeEnhetId), journalførInboundDTO.forhaandsvisningOpprettet)
         val pdfPayload = pdfPayloadResult.getOrElse {
             val statusCode = (it as? ResponseStatusException)?.statusCode ?: HttpStatus.INTERNAL_SERVER_ERROR
             throw ResponseStatusException(statusCode)
@@ -107,12 +139,14 @@ class ArkiveringsController(
     @PostMapping("/send-til-bruker")
     @AuthorizeFnr(auditlogMessage = "Send aktivitetsplan til bruker", resourceType = OppfolgingsperiodeResource::class, resourceIdParamName = "oppfolgingsperiodeId")
     fun sendAktivitetsplanTilBruker(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID, @RequestBody sendTilBrukerInboundDTO: SendTilBrukerInboundDTO): ResponseEntity<Unit> {
-        val pdfPayloadResult = pdfPayloadService.lagPdfPayloadForUtskrift(
+        if(!authService.erInternBruker()) throw ResponseStatusException(HttpStatus.FORBIDDEN)
+        val pdfPayloadResult = pdfPayloadService.lagPdfPayloadForSendTilBruker(
+            bruker = userInContext.eksternBruker,
             oppfølgingsperiodeId = oppfølgingsperiodeId,
             journalførendeEnhetId = EnhetId.of(sendTilBrukerInboundDTO.journalførendeEnhetId),
             tekstTilBruker = sendTilBrukerInboundDTO.tekstTilBruker,
             filter = sendTilBrukerInboundDTO.filter,
-            ikkeOppdatertEtter = sendTilBrukerInboundDTO.forhaandsvisningOpprettet
+            forhåndsvisningsTidspunkt = sendTilBrukerInboundDTO.forhaandsvisningOpprettet
         )
         val pdfPayload = pdfPayloadResult.getOrElse {
             val statusCode = (it as? ResponseStatusException)?.statusCode ?: HttpStatus.INTERNAL_SERVER_ERROR
@@ -181,7 +215,7 @@ class ArkiveringsController(
                 "Avtalt med Nav" to aktivitetAvtaltMedNavFilter.map { it.tekst },
                 "Stillingsstatus" to stillingsstatusFilter.map { it.tekst },
                 "Status for Arena-aktivitet" to arenaAktivitetStatusFilter.map { it.toArkivEtikett().tekst },
-                "Aktivitetstype" to aktivitetTypeFilter.map { it.tekst}
+                "Aktivitetstype" to aktivitetTypeFilter.map { it.tekst }
             ).filter { it.value.isNotEmpty() }
         }
     }

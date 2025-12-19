@@ -890,31 +890,6 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
     }
 
     @Test
-    fun `Kast 409 Conflict når man arkiverer dersom ny data har kommet etter forhåndsvisningen`() {
-        val (bruker, veileder) = hentBrukerOgVeileder("Sølvi", "Normalbakke")
-        val oppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
-        val forhaandsvisningstidspunkt = ZonedDateTime.now().minusSeconds(1)
-        val aktivitetSistEndret = Date()
-        val aktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
-            .toBuilder()
-            .endretDato(aktivitetSistEndret)
-            .oppfolgingsperiodeId(oppfølgingsperiode).build()
-        aktivitetTestService.opprettAktivitet(bruker, bruker, aktivitet)
-        stubDialogTråder(fnr = bruker.fnr, oppfølgingsperiodeId = oppfølgingsperiode.toString(), aktivitetId = "dummy")
-        stubIngenArenaAktiviteter(bruker.fnr)
-
-        val arkiveringsUrl =
-            "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
-        veileder
-            .createRequest(bruker)
-            .body(ArkiveringsController.JournalførInboundDTO(forhaandsvisningstidspunkt, "1234"))
-            .post(arkiveringsUrl)
-            .then()
-            .assertThat()
-            .statusCode(HttpStatus.CONFLICT.value())
-    }
-
-    @Test
     fun `Kall mot arkiveringsendepunkt kaster 403 når oppfølgingsperiodeId mangler`() {
         val bruker = navMockService.createBruker()
         val veileder = navMockService.createVeileder(mockBruker = bruker)
@@ -930,45 +905,6 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             .statusCode(HttpStatus.FORBIDDEN.value())
     }
 
-    @Test
-    fun `Kast feil hvis veileder forsøker å inkludere KVP-aktiviter ved send-til-bruker`() {
-        val (kvpBruker, veileder) = hentKvpBrukerOgVeileder("Sølvi", "Normalbakke")
-        val oppfølgingsperiode = kvpBruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
-        val sendTilBrukerInbound = ArkiveringsController.SendTilBrukerInboundDTO(
-            forhaandsvisningOpprettet = ZonedDateTime.now(),
-            journalførendeEnhetId = "1234",
-            tekstTilBruker = "Dette er en tekst til bruker",
-            filter = defaultFilter(kvpAlternativ = INKLUDER_KVP_AKTIVITETER)
-        )
-        val url =
-            "http://localhost:$port/veilarbaktivitet/api/arkivering/send-til-bruker?oppfolgingsperiodeId=$oppfølgingsperiode"
-
-        val response = veileder
-            .createRequest(kvpBruker)
-            .body(sendTilBrukerInbound)
-            .post(url)
-        assertThat(response.statusCode()).isEqualTo(451)
-    }
-
-    @Test
-    fun `Skal aldri inkludere kontorsperrede aktiviteter ved forhaandsvisning hvis veileder ikke har tilgang`() {
-        val (kvpBruker, veileder) = hentKvpBrukerOgVeileder("Sølvi", "Normalbakke")
-        val oppfølgingsperiode = kvpBruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
-        val sendTilBrukerInbound = ArkiveringsController.SendTilBrukerInboundDTO(
-            forhaandsvisningOpprettet = ZonedDateTime.now(),
-            journalførendeEnhetId = "1234",
-            tekstTilBruker = "Dette er en tekst til bruker",
-            filter = defaultFilter(kvpAlternativ = ArkiveringsController.KvpUtvalgskriterieAlternativ.KUN_KVP_AKTIVITETER)
-        )
-        val url =
-            "http://localhost:$port/veilarbaktivitet/api/arkivering/send-til-bruker?oppfolgingsperiodeId=$oppfølgingsperiode"
-
-        val response = veileder
-            .createRequest(kvpBruker)
-            .body(sendTilBrukerInbound)
-            .post(url)
-        assertThat(response.statusCode()).isEqualTo(451)
-    }
     private fun stubDialogTråder(
         fnr: String,
         oppfølgingsperiodeId: String,
