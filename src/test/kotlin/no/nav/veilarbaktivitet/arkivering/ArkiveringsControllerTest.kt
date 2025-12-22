@@ -94,6 +94,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val expectedMeldingerSendtNorskTid = norskDatoOgKlokkeslett(meldingerSendtTidspunkt)
         val dialogSistLestTidspunkt = ZonedDateTime.parse(meldingerSistLestTidspunkt)
         val expectedDialogSistLestTidspunkt = norskDatoOgKlokkeslett(dialogSistLestTidspunkt)
+        assertThat(forhaandsvisning.uuidCachetPdf).isNotNull
 
         wireMock.verify(
             exactly(1), postRequestedFor(urlEqualTo("/orkivar/forhaandsvisning"))

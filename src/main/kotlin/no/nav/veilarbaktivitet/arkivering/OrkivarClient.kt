@@ -71,7 +71,8 @@ class OrkivarClient(private val orkivarHttpClient: OkHttpClient, @Value("\${orki
 
     data class ForhaandsvisningResult(
         val pdf: ByteArray,
-        val sistJournalført: LocalDateTime?
+        val sistJournalført: LocalDateTime?,
+        val uuidCachetPdf: String?
     )
 
     data class JournalføringResult(

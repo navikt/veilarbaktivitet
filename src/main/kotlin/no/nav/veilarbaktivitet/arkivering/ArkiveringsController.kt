@@ -80,7 +80,8 @@ class ArkiveringsController(
         return ForhaandsvisningOutboundDTO(
             forhaandsvisningResultat.pdf,
             dataHentet,
-            forhaandsvisningResultat.sistJournalført
+            forhaandsvisningResultat.sistJournalført,
+            forhaandsvisningResultat.uuidCachetPdf
         )
     }
 
@@ -105,7 +106,8 @@ class ArkiveringsController(
         return ForhaandsvisningOutboundDTO(
             forhaandsvisningResultat.pdf,
             dataHentet,
-            forhaandsvisningResultat.sistJournalført
+            forhaandsvisningResultat.sistJournalført,
+            forhaandsvisningResultat.uuidCachetPdf
         )
     }
 
@@ -176,7 +178,8 @@ class ArkiveringsController(
     data class ForhaandsvisningOutboundDTO(
         val pdf: ByteArray,
         val forhaandsvisningOpprettet: ZonedDateTime,
-        val sistJournalført: LocalDateTime?
+        val sistJournalført: LocalDateTime?,
+        val uuidCachetPdf: String?
     )
 
     data class JournalførInboundDTO(

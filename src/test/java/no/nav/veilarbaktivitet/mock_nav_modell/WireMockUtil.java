@@ -261,7 +261,8 @@ public class WireMockUtil {
                         .withBody("""
                                 {
                                    "pdf":"%s",
-                                   "sistJournalført": "2024-03-13T14:11:48.478662"
+                                   "sistJournalført": "2024-03-13T14:11:48.478662",
+                                   "uuidCachetPdf": "e559773d-35e8-4e7c-ad9d-ec62cc0fef07"
                                 }
                                 """.formatted(pdfByteArray))));
     }
@@ -272,7 +273,8 @@ public class WireMockUtil {
                         .withBody("""
                                 {
                                    "pdf":"%s",
-                                   "sistJournalført": "2024-03-13T14:11:48.478662"
+                                   "sistJournalført": "2024-03-13T14:11:48.478662",
+                                   "uuidCachetPdf": null
                                 }
                                 """.formatted(pdfByteArray))));
     }
