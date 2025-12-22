@@ -268,8 +268,9 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         stubIngenArenaAktiviteter(bruker.fnr)
         val arkiveringsUrl =
             "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiodeId"
+        val cachedPdfUuid = UUID.randomUUID().toString()
 
-        val body = ArkiveringsController.JournalførInboundDTO(ZonedDateTime.now(), journalførendeEnhetId)
+        val body = ArkiveringsController.JournalførInboundDTO(ZonedDateTime.now(), journalførendeEnhetId, cachedPdfUuid)
         veileder
             .createRequest(bruker)
             .body(body)
@@ -403,7 +404,8 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                               }
                             ],
                             "mål": "${bruker.brukerOptions.mål}"
-                          }
+                          },
+                          "uuidCachetPdf" : "$cachedPdfUuid"
                         }
                 """.trimIndent()
                     )
@@ -455,12 +457,13 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             aktivitetId = "dummy"
         )
         stubIngenArenaAktiviteter(bruker.fnr)
-
+        val cachedPdfUuid = UUID.randomUUID().toString()
         val arkiveringsUrl =
             "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiodeForArkivering"
+
         veileder
             .createRequest(bruker)
-            .body(ArkiveringsController.JournalførInboundDTO(ZonedDateTime.now(), "1234"))
+            .body(ArkiveringsController.JournalførInboundDTO(ZonedDateTime.now(), "1234", cachedPdfUuid))
             .post(arkiveringsUrl)
 
         val journalforingsrequest =
@@ -482,10 +485,11 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         stubIngenArenaAktiviteter(kvpBruker.fnr)
         val arkiveringsUrl =
             "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
+        val cachedPdfUuid = UUID.randomUUID().toString()
 
         veileder
             .createRequest(kvpBruker)
-            .body(ArkiveringsController.JournalførInboundDTO(ZonedDateTime.now(), "1234"))
+            .body(ArkiveringsController.JournalførInboundDTO(ZonedDateTime.now(), "1234", cachedPdfUuid))
             .post(arkiveringsUrl)
 
         val journalforingsrequest =
@@ -508,11 +512,13 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         aktivitetTestService.opprettAktivitet(kvpBruker, veileder, kvpAktivitet)
         stubDialogTråder(kvpBruker.fnr, oppfølgingsperiode.toString(), "dummyAktivitetId")
         stubIngenArenaAktiviteter(kvpBruker.fnr)
+        val cachedPdfUuid = UUID.randomUUID()
         val sendTilBrukerInbound = ArkiveringsController.SendTilBrukerInboundDTO(
             forhaandsvisningOpprettet = ZonedDateTime.now(),
             journalførendeEnhetId = "1234",
             tekstTilBruker = "Dette er en tekst til bruker",
-            filter = defaultFilter()
+            filter = defaultFilter(),
+            uuidCachetPdf = cachedPdfUuid.toString(),
         )
         val arkiveringsUrl =
             "http://localhost:$port/veilarbaktivitet/api/arkivering/send-til-bruker?oppfolgingsperiodeId=$oppfølgingsperiode"
@@ -581,12 +587,13 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         aktivitetTestService.opprettAktivitet(bruker, veileder, ikkeKvpAktivitet)
         stubIngenArenaAktiviteter(bruker.fnr)
         stubDialogTråder(bruker.fnr, oppfølgingsperiode.toString(), "dummyAktivitetId")
+        val cachedPdfUuid = UUID.randomUUID().toString()
 
         val arkiveringsUrl =
             "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
         veileder
             .createRequest(bruker)
-            .body(ArkiveringsController.JournalførInboundDTO(ZonedDateTime.now(), "1234"))
+            .body(ArkiveringsController.JournalførInboundDTO(ZonedDateTime.now(), "1234", cachedPdfUuid))
             .post(arkiveringsUrl)
 
         val journalforingsrequest =
@@ -618,12 +625,13 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         )
         stubDialogTråder(bruker.fnr, UUID.randomUUID().toString(), "dummy")
         stubIngenArenaAktiviteter(bruker.fnr)
+        val cachedPdfUuid = UUID.randomUUID().toString()
 
         val arkiveringsUrl =
             "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
         veileder
             .createRequest(bruker)
-            .body(ArkiveringsController.JournalførInboundDTO(ZonedDateTime.now(), "1234"))
+            .body(ArkiveringsController.JournalførInboundDTO(ZonedDateTime.now(), "1234", cachedPdfUuid))
             .post(arkiveringsUrl)
 
         val journalforingsrequest =
@@ -653,13 +661,14 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             )
         )
         stubDialogTråder(bruker.fnr, UUID.randomUUID().toString(), "dummy")
+        val cachedPdfUuid = UUID.randomUUID().toString()
         stubIngenArenaAktiviteter(bruker.fnr)
 
         val arkiveringsUrl =
             "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
         veileder
             .createRequest(bruker)
-            .body(ArkiveringsController.JournalførInboundDTO(ZonedDateTime.now(), "1234"))
+            .body(ArkiveringsController.JournalførInboundDTO(ZonedDateTime.now(), "1234", cachedPdfUuid))
             .post(arkiveringsUrl)
 
         val journalforingsrequest = wireMock.getAllServeEvents().first { it.request.url.contains("orkivar/arkiver") }
@@ -705,12 +714,13 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         aktivitetTestService.opprettEksterntAktivitetsKort(listOf(eksternAktivitetskort))
         stubDialogTråder(bruker.fnr, UUID.randomUUID().toString(), "dummy")
         stubIngenArenaAktiviteter(bruker.fnr)
+        val cachedPdfUuid = UUID.randomUUID().toString()
 
         val arkiveringsUrl =
             "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
         veileder
             .createRequest(bruker)
-            .body(ArkiveringsController.JournalførInboundDTO(ZonedDateTime.now(), "1234"))
+            .body(ArkiveringsController.JournalførInboundDTO(ZonedDateTime.now(), "1234", cachedPdfUuid))
             .post(arkiveringsUrl)
 
         val journalforingsrequest =
@@ -740,12 +750,13 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             .setTittel(referatPublisertTittel).toBuilder().oppfolgingsperiodeId(oppfølgingsperiode).build()
         stubDialogTråder(bruker.fnr, oppfølgingsperiode.toString(), "dummyAktivitetId")
         stubIngenArenaAktiviteter(bruker.fnr)
+        val cachedPdfUuid = UUID.randomUUID().toString()
 
         val arkiveringsUrl =
             "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
         veileder
             .createRequest(bruker)
-            .body(ArkiveringsController.JournalførInboundDTO(ZonedDateTime.now(), "1234"))
+            .body(ArkiveringsController.JournalførInboundDTO(ZonedDateTime.now(), "1234", cachedPdfUuid))
             .post(arkiveringsUrl)
 
         val journalforingsrequest =
@@ -765,12 +776,13 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         aktivitetTestService.opprettAktivitet(bruker, veileder, møteAktivitet)
         stubDialogTråder(bruker.fnr, oppfølgingsperiode.toString(), "dummyAktivitetId")
         stubIngenArenaAktiviteter(bruker.fnr)
+        val cachedPdfUuid = UUID.randomUUID().toString()
 
         val arkiveringsUrl =
             "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
         veileder
             .createRequest(bruker)
-            .body(ArkiveringsController.JournalførInboundDTO(ZonedDateTime.now(), "1234"))
+            .body(ArkiveringsController.JournalførInboundDTO(ZonedDateTime.now(), "1234", cachedPdfUuid))
             .post(arkiveringsUrl)
 
         val journalforingsrequest =
@@ -790,12 +802,13 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         aktivitetTestService.opprettAktivitet(bruker, veileder, møteAktivitet)
         stubDialogTråder(bruker.fnr, oppfølgingsperiode.toString(), "dummyAktivitetId")
         stubIngenArenaAktiviteter(bruker.fnr)
+        val cachedPdfUuid = UUID.randomUUID().toString()
 
         val arkiveringsUrl =
             "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
         veileder
             .createRequest(bruker)
-            .body(ArkiveringsController.JournalførInboundDTO(ZonedDateTime.now(), "1234"))
+            .body(ArkiveringsController.JournalførInboundDTO(ZonedDateTime.now(), "1234", cachedPdfUuid))
             .post(arkiveringsUrl)
 
         val journalforingsrequest =
@@ -817,9 +830,10 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         stubIngenDialogTråder()
         val arkiveringsUrl =
             "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=${oppfølgingsperiode.oppfolgingsperiodeId}"
+        val cachedPdfUuid = UUID.randomUUID().toString()
         veileder
             .createRequest(bruker)
-            .body(ArkiveringsController.JournalførInboundDTO(ZonedDateTime.now(), "1234"))
+            .body(ArkiveringsController.JournalførInboundDTO(ZonedDateTime.now(), "1234", cachedPdfUuid))
             .post(arkiveringsUrl)
 
         wireMock.verify(
@@ -882,7 +896,8 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                                 },
                                 "dialogtråder": [],
                                 "mål": "Å få meg jobb"
-                              }
+                              },
+                              "uuidCachetPdf" : "$cachedPdfUuid"
                             }
                         """.trimIndent()
                     )

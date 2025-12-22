@@ -19,13 +19,15 @@ object ArkiveringspayloadMapper {
         sakDTO: SakDTO,
         journalførendeEnhetId: EnhetId,
         tema: String,
-    ): JournalføringPayload {
+        uuidCachetPdf: String,
+        ): JournalføringPayload {
         return JournalføringPayload(
             sakId = sakDTO.sakId,
             fagsaksystem = sakDTO.fagsaksystem,
             tema = tema,
             journalførendeEnhetId = journalførendeEnhetId.get(),
-            pdfPayload = pdfPayload
+            pdfPayload = pdfPayload,
+            uuidCachetPdf = uuidCachetPdf,
         )
     }
 

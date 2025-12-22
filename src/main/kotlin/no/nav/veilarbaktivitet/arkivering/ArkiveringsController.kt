@@ -126,6 +126,7 @@ class ArkiveringsController(
             sakDTO = sak,
             journalførendeEnhetId = EnhetId.of(journalførInboundDTO.journalførendeEnhetId),
             tema = Tema_AktivitetsplanMedDialog,
+            uuidCachetPdf = journalførInboundDTO.uuidCachetPdf,
         )
         val timedJournalførtResultat = measureTimedValue {
             orkivarClient.journalfor(arkivPayload)
@@ -156,7 +157,7 @@ class ArkiveringsController(
         }
 
         val sak = oppfølgingsperiodeService.hentSak(oppfølgingsperiodeId) ?: throw RuntimeException("Kunne ikke hente sak for oppfølgingsperiode: $oppfølgingsperiodeId")
-        val arkivPayload = mapTilArkivPayload(pdfPayload, sak, EnhetId.of(sendTilBrukerInboundDTO.journalførendeEnhetId), Tema_AktivitetsplanMedDialog)
+        val arkivPayload = mapTilArkivPayload(pdfPayload, sak, EnhetId.of(sendTilBrukerInboundDTO.journalførendeEnhetId), Tema_AktivitetsplanMedDialog, sendTilBrukerInboundDTO.uuidCachetPdf)
         val manuellStatus = manuellStatusClient.get(userInContext.aktorId).getOrNull()
         val erManuell = manuellStatus?.isErUnderManuellOppfolging ?: false
 
@@ -184,7 +185,8 @@ class ArkiveringsController(
 
     data class JournalførInboundDTO(
         val forhaandsvisningOpprettet: ZonedDateTime,
-        val journalførendeEnhetId: String
+        val journalførendeEnhetId: String,
+        val uuidCachetPdf: String,
     )
 
     data class JournalførtOutboundDTO(
@@ -195,7 +197,8 @@ class ArkiveringsController(
         val forhaandsvisningOpprettet: ZonedDateTime,
         val journalførendeEnhetId: String,
         val tekstTilBruker: String,
-        val filter: Filter
+        val filter: Filter,
+        val uuidCachetPdf: String,
     )
 
     data class ForhaandsvisningSendTilBrukerInboundDto(
