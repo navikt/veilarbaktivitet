@@ -105,20 +105,32 @@ class ArkiveringsFiltrererTest {
                     StillingsoekAktivitetData.builder().stillingsoekEtikett(
                         StillingsoekEtikettData.SOKNAD_SENDT
                     ).build()
-                )
+                ),
+                AktivitetDataTestBuilder.nyttStillingssok().withStillingsSoekAktivitetData(
+                    StillingsoekAktivitetData.builder().stillingsoekEtikett(
+                        StillingsoekEtikettData.INNKALT_TIL_INTERVJU
+                    ).build()
+                ),
+                AktivitetDataTestBuilder.nyttStillingssok().withStillingsSoekAktivitetData(
+                    StillingsoekAktivitetData.builder().build()
+                ),
             )
         )
         val filter = defaultFilter.copy(
             stillingsstatusFilter = listOf(
                 ArkiveringsController.SøknadsstatusFilter.SOKNAD_SENDT,
-                ArkiveringsController.SøknadsstatusFilter.FATT_JOBBEN
+                ArkiveringsController.SøknadsstatusFilter.FATT_JOBBEN,
+                ArkiveringsController.SøknadsstatusFilter.INNKALT_TIL_INTERVJU,
             )
         )
         val filtrertData = filtrerArkiveringsData(arkiveringsData, filter)
-        assertThat(filtrertData.aktiviteter).hasSize(2)
+        assertThat(filtrertData.aktiviteter).hasSize(3)
         assertThat(filtrertData.aktiviteter[0].stillingFraNavData.soknadsstatus).isEqualTo(Soknadsstatus.FATT_JOBBEN)
         assertThat(filtrertData.aktiviteter[1].stillingsSoekAktivitetData.stillingsoekEtikett).isEqualTo(
             StillingsoekEtikettData.SOKNAD_SENDT
+        )
+        assertThat(filtrertData.aktiviteter[2].stillingsSoekAktivitetData.stillingsoekEtikett).isEqualTo(
+            StillingsoekEtikettData.INNKALT_TIL_INTERVJU
         )
     }
 

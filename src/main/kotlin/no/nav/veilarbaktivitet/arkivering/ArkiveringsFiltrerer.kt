@@ -75,7 +75,7 @@ private fun ArkiveringsData.filtrerPåStillingsstatus(filter: ArkiveringsControl
     val filtrerteAktiviteter = aktiviteter.filter { aktivitet ->
         if (aktivitet.stillingFraNavData == null && aktivitet.stillingsSoekAktivitetData == null) true
         else if (aktivitet.stillingFraNavData != null) aktivitet.stillingFraNavData.soknadsstatus.name in stillingsstatusFilterSomTekst
-        else aktivitet.stillingsSoekAktivitetData.stillingsoekEtikett.name in stillingsstatusFilterSomTekst
+        else aktivitet.stillingsSoekAktivitetData.stillingsoekEtikett?.name in stillingsstatusFilterSomTekst
     }
     return this.copy(aktiviteter = filtrerteAktiviteter)
 }
