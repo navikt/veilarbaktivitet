@@ -10,7 +10,8 @@ data class JournalføringPayload(
     val fagsaksystem: String,
     val tema: String,
     val journalførendeEnhetId: String,
-    val pdfPayload: PdfPayload
+    val pdfPayload: PdfPayload,
+    val uuidCachetPdf: String,
 )
 
 data class SendTilBrukerPayload(
