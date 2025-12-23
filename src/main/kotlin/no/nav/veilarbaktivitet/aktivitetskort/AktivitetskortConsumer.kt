@@ -35,6 +35,11 @@ class AktivitetskortConsumer (
     private val bestillingsCreator: AktivitetsbestillingCreator,
 ) : TopicConsumer<String, String>  {
 
+    data class OffsetAndPartition(
+        val offset: Long,
+        val partition: Int
+    )
+
     val log = LoggerFactory.getLogger(javaClass)
     @Transactional(noRollbackFor = [AktivitetsKortFunksjonellException::class])
     override fun consume(consumerRecord: ConsumerRecord<String, String>): ConsumeStatus {
@@ -43,7 +48,7 @@ class AktivitetskortConsumer (
             traceFields = extractTraceFields(consumerRecord)
             val (messageId) = traceFields
             val funksjonellId = UUID.fromString(consumerRecord.key()) // Lik aktivitetskort.id i payload
-            ignorerHvisSettFor(messageId, funksjonellId)
+            ignorerHvisSettFor(messageId, funksjonellId, OffsetAndPartition(consumerRecord.offset(),  consumerRecord.partition()))
             if (messageId == funksjonellId) {
                 throw MessageIdIkkeUnikFeil(
                     ErrorMessage("messageId må være unik for hver melding. aktivitetsId er lik messageId"),
@@ -119,12 +124,12 @@ class AktivitetskortConsumer (
     }
 
     @Throws(DuplikatMeldingFeil::class)
-    private fun ignorerHvisSettFor(messageId: UUID, funksjonellId: UUID) =
+    private fun ignorerHvisSettFor(messageId: UUID, funksjonellId: UUID, offsetAndPartition: OffsetAndPartition) =
         if (aktivitetskortService.harSettMelding(messageId)) {
             log.warn("Previously handled message seen {} , ignoring. Funksjonell id: {}", messageId, funksjonellId)
             throw DuplikatMeldingFeil()
         } else {
-            aktivitetskortService.lagreMeldingsId(messageId, funksjonellId)
+            aktivitetskortService.lagreMeldingsId(messageId, funksjonellId, offsetAndPartition)
         }
 
     @Throws(AktivitetsKortFunksjonellException::class)
