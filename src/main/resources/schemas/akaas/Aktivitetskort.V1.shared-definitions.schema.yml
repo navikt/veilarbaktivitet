@@ -30,6 +30,11 @@ definitions:
       - ENKELAMO
       - ENKFAGYRKE
       - HOYEREUTD
+      - ARBEIDSMARKEDSOPPLAERING
+      - NORSKOPPLAERING_GRUNNLEGGENDE_FERDIGHETER_FOV
+      - STUDIESPESIALISERING
+      - FAG_OG_YRKESOPPLAERING
+      - HOYERE_YRKESFAGLIG_UTDANNING
     description: |
       Aktivitetskort typer som er tillatt å opprette via tjenesten. Denne enumereringen vil utvides etterhvert.
       MIDLERTIDIG_LONNSTILSKUDD - Midlertidig lønnstilskudd (Team Tiltak)
@@ -50,6 +55,11 @@ definitions:
       ENKELAMO - Arbeidsmarkedsopplæring
       ENKFAGYRKE - Fag- og yrkesopplæring
       HOYEREUTD - Høyere utdanning
+      ARBEIDSMARKEDSOPPLAERING - GRUPPEAMO og ENKELAMO etter ny forskrift (bokstav a) (Team Komet)
+      NORSKOPPLAERING_GRUNNLEGGENDE_FERDIGHETER_FOV - GRUPPEAMO og ENKELAMO etter ny forskrift (bokstav b) (Team Komet)
+      STUDIESPESIALISERING - Ny tiltakskode for GRUPPEAMO og ENKELAMO etter ny forskrift (bokstav c) (Team Komet)
+      FAG_OG_YRKESOPPLAERING - GRUFAGYRK og ENKFAGYRK etter ny forskrift(bokstav d) (Team Komet)
+      HOYERE_YRKESFAGLIG_UTDANNING - GRUFAGYRK og ENKFAGYRK etter ny forskrift(bokstav e) (Team Komet)
   errorType:
     description: Alle mulige funksjonelle-feil som kan oppstå under prosessering av aktivitetskort-meldinger og kasserings-meldinger
     type: string
