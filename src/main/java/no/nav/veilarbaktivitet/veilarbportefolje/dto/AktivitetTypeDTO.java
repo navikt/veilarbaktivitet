@@ -35,6 +35,12 @@ public enum AktivitetTypeDTO {
         aktivitetskortTypeTilArenaTiltakskode.put(AktivitetskortType.ENKELAMO, "ENKELAMO");
         aktivitetskortTypeTilArenaTiltakskode.put(AktivitetskortType.ENKFAGYRKE, "ENKFAGYRKE");
         aktivitetskortTypeTilArenaTiltakskode.put(AktivitetskortType.HOYEREUTD, "HOYEREUTD");
+
+        aktivitetskortTypeTilArenaTiltakskode.put(AktivitetskortType.ARBEIDSMARKEDSOPPLAERING, "GRUPPEAMO");
+        aktivitetskortTypeTilArenaTiltakskode.put(AktivitetskortType.NORSKOPPLAERING_GRUNNLEGGENDE_FERDIGHETER_FOV, "GRUPPEAMO");
+        aktivitetskortTypeTilArenaTiltakskode.put(AktivitetskortType.STUDIESPESIALISERING, "GRUPPEAMO");
+        aktivitetskortTypeTilArenaTiltakskode.put(AktivitetskortType.FAG_OG_YRKESOPPLAERING, "GRUFAGYRKE");
+        aktivitetskortTypeTilArenaTiltakskode.put(AktivitetskortType.HOYERE_YRKESFAGLIG_UTDANNING, "GRUFAGYRKE");
     }
 
     public static String aktivitetsKortTypeToArenaTiltakskode(AktivitetskortType aktivitetskortType) {
