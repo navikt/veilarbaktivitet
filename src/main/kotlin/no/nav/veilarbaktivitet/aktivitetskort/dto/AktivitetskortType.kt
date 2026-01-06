@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory
       NORSKOPPLAERING_GRUNNLEGGENDE_FERDIGHETER_FOV - GRUPPEAMO og ENKELAMO etter ny forskrift (bokstav b)
       STUDIESPESIALISERING - Ny tiltakskode for GRUPPEAMO og ENKELAMO etter ny forskrift (bokstav c)
       FAG_OG_YRKESOPPLAERING - GRUFAGYRK og ENKFAGYRK etter ny forskrift(bokstav d)
-      HOYERE_YRKESFAGLIG_UTDANNING - GRUFAGYRK og ENKFAGYRK etter ny forskrift(bokstav d)
+      HOYERE_YRKESFAGLIG_UTDANNING - GRUFAGYRK og ENKFAGYRK etter ny forskrift(bokstav e)
 
 */
 enum class AktivitetskortType {

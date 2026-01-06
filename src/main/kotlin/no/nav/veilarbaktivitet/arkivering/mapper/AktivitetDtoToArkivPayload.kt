@@ -75,10 +75,10 @@ fun AktivitetData.toArkivTypeTekst(): String {
                 AktivitetskortType.ENKFAGYRKE -> "Fag- og yrkesopplæring"
                 AktivitetskortType.HOYEREUTD -> "Høyere utdanning"
                 AktivitetskortType.ARBEIDSMARKEDSOPPLAERING -> "Arbeidsmarkedsopplæring"
-                AktivitetskortType.NORSKOPPLAERING_GRUNNLEGGENDE_FERDIGHETER_FOV -> "Arbeidsmarkedsopplæring"
-                AktivitetskortType.STUDIESPESIALISERING -> "Arbeidsmarkedsopplæring"
+                AktivitetskortType.NORSKOPPLAERING_GRUNNLEGGENDE_FERDIGHETER_FOV -> "Norskopplæring, grunnleggende ferdigheter eller FOV"
+                AktivitetskortType.STUDIESPESIALISERING -> "Studiespesialisering"
                 AktivitetskortType.FAG_OG_YRKESOPPLAERING -> "Fag- og yrkesopplæring"
-                AktivitetskortType.HOYERE_YRKESFAGLIG_UTDANNING -> "Fag- og yrkesopplæring"
+                AktivitetskortType.HOYERE_YRKESFAGLIG_UTDANNING -> "Høyere yrkesfaglig utdanning"
             }
         }
     }
