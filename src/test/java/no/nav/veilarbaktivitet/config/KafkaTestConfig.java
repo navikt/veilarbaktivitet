@@ -40,7 +40,6 @@ public class KafkaTestConfig {
             @Value("${topic.ut.stillingFraNav}") String utStillingFraNav,
             @Value("${topic.inn.kvpAvsluttet}") String kvpAvsluttetTopic,
 //            @Value("${topic.inn.eksternVarselKvittering}") String eksternVarselKvittering,
-            @Value("${topic.ut.aktivitetdata.rawjson}") String aktivitetRawJson,
             @Value("${topic.ut.portefolje}") String portefoljeTopic,
             @Value("${topic.inn.oppfolgingsperiode}") String oppfolgingsperiode,
             @Value("${topic.inn.aktivitetskort}") String aktivitetskortTopic) {
@@ -52,7 +51,6 @@ public class KafkaTestConfig {
                 utStillingFraNav,
                 kvpAvsluttetTopic,
 //                eksternVarselKvittering,
-                aktivitetRawJson,
                 portefoljeTopic,
                 oppfolgingsperiode,
                 aktivitetskortTopic);
