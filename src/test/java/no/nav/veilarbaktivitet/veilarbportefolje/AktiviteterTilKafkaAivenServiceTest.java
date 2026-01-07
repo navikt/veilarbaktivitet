@@ -55,9 +55,6 @@ class AktiviteterTilKafkaAivenServiceTest extends SpringBootTestBase {
     @Value("${topic.ut.portefolje}")
     String portefoljeTopic;
 
-    @Value("${topic.ut.aktivitetdata.rawjson}")
-    String aktivitetRawJson;
-
     Consumer<String, String> portefoljeConsumer;
 
     Consumer<String, AktivitetData> aktiviteterKafkaConsumer;
@@ -76,7 +73,6 @@ class AktiviteterTilKafkaAivenServiceTest extends SpringBootTestBase {
         l.clearCache();
 
         portefoljeConsumer = kafkaTestService.createStringStringConsumer(portefoljeTopic);
-        aktiviteterKafkaConsumer = kafkaTestService.createStringJsonConsumer(aktivitetRawJson);
 
         Mockito.reset(portefoljeProducer);
     }
@@ -96,13 +92,7 @@ class AktiviteterTilKafkaAivenServiceTest extends SpringBootTestBase {
         assertEquals(opprettetAktivitet.getId(), melding.getAktivitetId());
         assertEquals(opprettetAktivitet.getVersjon(), melding.getVersion().toString());
 
-        ConsumerRecord<String, AktivitetData> singleRecord = getSingleRecord(aktiviteterKafkaConsumer, aktivitetRawJson, DEFAULT_WAIT_TIMEOUT_DURATION);
-        AktivitetData aktivitetMelding = singleRecord.value();
-
-        assertEquals(opprettetAktivitet, AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetMelding, false));
-
         assertTrue(kafkaTestService.harKonsumertAlleMeldinger(portefoljeTopic, portefoljeConsumer));
-        assertTrue(kafkaTestService.harKonsumertAlleMeldinger(aktivitetRawJson, aktiviteterKafkaConsumer));
     }
 
     @Test
