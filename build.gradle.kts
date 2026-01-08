@@ -1,6 +1,6 @@
-val spring_boot_version = "3.5.5"
+val spring_boot_version = "3.5.9"
 val common_version = "3.2025.10.10_08.21-bb7c7830d93c"
-val dab_common_version = "2024.11.14-10.46.174740baf5c7"
+val dab_common_version = "2025.12.15-10.38.4f649aa03352"
 val poao_tilgang_version = "2025.07.04_08.56-814fa50f6740"
 val shedlock_version = "6.10.0"
 val avroVersion = "1.12.1"
@@ -183,7 +183,7 @@ dependencies {
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.20.1")
 
     // BigQuery
-    implementation(platform("com.google.cloud:libraries-bom:26.71.0"))
+    implementation(platform("com.google.cloud:libraries-bom:26.73.0"))
     implementation("com.google.cloud:google-cloud-bigquery")
 
     implementation("io.getunleash:unleash-client-java:11.1.1")
