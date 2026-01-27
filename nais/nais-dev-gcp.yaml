@@ -91,6 +91,8 @@ spec:
         - application: poao-admin
           cluster: dev-gcp
           namespace: poao
+        - application: inngar
+          namespace: dab
     outbound:
       external:
         - host: veilarbarena.dev-fss-pub.nais.io
