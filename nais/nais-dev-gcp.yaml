@@ -38,8 +38,6 @@ spec:
     - secret: veilarbaktivitet-unleash-api-token
     - secret: veilarbaktivitet-kassering-identer
   leaderElection: true
-  secureLogs:
-    enabled: true
   kafka:
     pool: nav-dev
   tokenx:
@@ -110,6 +108,8 @@ spec:
         - application: orkivar
         - application: norg2
           namespace: org
+        - application: logging
+          namespace: nais-system
   gcp:
     sqlInstances:
       - name: veilarbaktivitet

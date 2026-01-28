@@ -9,6 +9,7 @@ import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.MinSideVarselId
 import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.UtgåendeVarsel
 import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SkalSendes
 import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.VarselDAO
+import no.nav.veilarbaktivitet.config.TeamLog.teamLog
 import no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV2Client
 import no.nav.veilarbaktivitet.oppfolging.periode.SistePeriodeService
 import no.nav.veilarbaktivitet.person.Person
@@ -35,7 +36,6 @@ open class MinsideVarselService(
     var sistePeriodeService: SistePeriodeService
 ) {
     private val log = LoggerFactory.getLogger(MinsideVarselService::class.java)
-    private val secureLogs: Logger = LoggerFactory.getLogger("SecureLog")
 
     open fun hentVarselSomSkalSendes(maxAntall: Int): List<SkalSendes> = varselDAO.hentVarselSomSkalSendes(maxAntall)
     open fun avbrytIkkeSendteOppgaverForAvslutteteAktiviteter(): Int = varselDAO.avbrytIkkeSendteOppgaverForAvslutteteAktiviteter()
@@ -73,7 +73,7 @@ open class MinsideVarselService(
 
         val kanVarsles = !erManuell && !erReservertIKrr
         if (!kanVarsles) {
-            secureLogs.info(
+            teamLog.info(
                 "bruker kan ikke varsles aktorId: {}, erManuell: {}, erReservertIKrr: {}",
                 aktorId.get(),
                 erManuell,

@@ -6,15 +6,14 @@ import no.nav.veilarbaktivitet.avro.*;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringAvroTemplate;
 import no.nav.veilarbaktivitet.person.Innsender;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import static no.nav.veilarbaktivitet.config.TeamLog.teamLog;
 
 @Service
 @Slf4j
 public class StillingFraNavProducerClient {
-    private final Logger secureLog = LoggerFactory.getLogger("SecureLog");
     private final KafkaStringAvroTemplate<DelingAvCvRespons> producerClient;
     private final String topicUt;
 
@@ -98,7 +97,7 @@ public class StillingFraNavProducerClient {
         delingAvCvRespons.setSvar(svar);
         delingAvCvRespons.setKanIkkeOppretteBegrunnelse(kanIkkeOppretteBegrunnelse);
         ProducerRecord<String, DelingAvCvRespons> stringDelingAvCvResponsProducerRecord = new ProducerRecord<>(topicUt, delingAvCvRespons.getBestillingsId(), delingAvCvRespons);
-        secureLog.info("StillingFraNavProducerClient.sendRespons:{}", stringDelingAvCvResponsProducerRecord);
+        teamLog.info("StillingFraNavProducerClient.sendRespons:{}", stringDelingAvCvResponsProducerRecord);
         log.debug("StillingFraNavProducerClient sender oppdatering på bestillingsId: {} på topic: {}", delingAvCvRespons.getBestillingsId(), topicUt);
         producerClient.send(stringDelingAvCvResponsProducerRecord);
     }

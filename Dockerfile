@@ -11,8 +11,6 @@ ENV TZ="Europe/Oslo"
 WORKDIR /app
 #COPY nais/init.sh /init-scripts/init.sh
 COPY build/libs/veilarbaktivitet.jar ./
-RUN /bin/mkdir /secure-logs
-RUN chown nonroot /secure-logs
 EXPOSE 8080
 USER nonroot
 CMD ["veilarbaktivitet.jar"]

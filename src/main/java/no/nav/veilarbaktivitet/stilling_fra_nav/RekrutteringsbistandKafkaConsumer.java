@@ -9,13 +9,13 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.util.DateUtils;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+
+import static no.nav.veilarbaktivitet.config.TeamLog.teamLog;
 
 @Service
 @RequiredArgsConstructor
@@ -24,8 +24,6 @@ public class RekrutteringsbistandKafkaConsumer {
     private final RekrutteringsbistandStatusoppdateringService service;
     private final RekrutteringsbistandStatusoppdateringDAO dao;
     private final StillingFraNavMetrikker stillingFraNavMetrikker;
-
-    private final Logger secureLogs = LoggerFactory.getLogger("SecureLog");
 
     @KafkaListener(topics = "${topic.inn.rekrutteringsbistandStatusoppdatering}", containerFactory = "stringStringKafkaListenerContainerFactory", autoStartup = "${app.kafka.enabled:false}")
     @Transactional(noRollbackFor = {IngenGjeldendeIdentException.class})
@@ -37,13 +35,13 @@ public class RekrutteringsbistandKafkaConsumer {
         try {
             rekrutteringsbistandStatusoppdatering = JsonUtils.fromJson(consumerRecord.value(), RekrutteringsbistandStatusoppdatering.class);
         } catch (Exception ignored) {
-            log.error("Feilet i Json-deserialisering. Se securelogs for payload.");
-            secureLogs.error("Feilet i Json-deserialisering. {}.", consumerRecord.value());
+            log.error("Feilet i Json-deserialisering. Se teamLogs for payload.");
+            teamLog.error("Feilet i Json-deserialisering. {}.", consumerRecord.value());
         }
 
         if (rekrutteringsbistandStatusoppdatering == null) {
-            log.error("Ugyldig melding bestillingsId: {} på pto.rekrutteringsbistand-statusoppdatering-v1. Se securelogs for payload. ", bestillingsId);
-            secureLogs.error("Ugyldig melding bestillingsId: {} på pto.rekrutteringsbistand-statusoppdatering-v1 : {}", bestillingsId, consumerRecord.value());
+            log.error("Ugyldig melding bestillingsId: {} på pto.rekrutteringsbistand-statusoppdatering-v1. Se teamLogs for payload. ", bestillingsId);
+            teamLog.error("Ugyldig melding bestillingsId: {} på pto.rekrutteringsbistand-statusoppdatering-v1 : {}", bestillingsId, consumerRecord.value());
             stillingFraNavMetrikker.countRekrutteringsbistandStatusoppdatering(false, "Ugyldig melding", RekrutteringsbistandStatusoppdateringEventType.UKJENT);
             return;
         }
