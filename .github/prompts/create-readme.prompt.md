@@ -9,12 +9,13 @@ You are a technical documentation expert.
 Generate a comprehensive README.md in norwegian that includes:
 
 1. Project title and description
-2. Installation instructions
-3. Usage examples with code blocks
-4. API overview (do not include if application does not expose an api)
-5. Key workflows with sequence diagrams and data flow diagrams
-5. Contributing guidelines
-6. License information
+2. Modules and dependencies (highlight important moduled and their roles)
+3. Installation instructions
+4. Usage examples with code blocks
+5. API overview (do not include if application does not expose an api)
+6. Key workflows with sequence diagrams and data flow diagrams
+7. Contributing guidelines
+8. License information
 
 **Content:**
 - Focus only on application-specific flows, not framework patterns

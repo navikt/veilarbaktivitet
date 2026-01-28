@@ -4,12 +4,13 @@
 Backend-applikasjon for aktivitetsplanen. Tilbyr REST og GraphQL-tjenester for å administrere aktiviteter i forbindelse med arbeidsoppfølging.
 ## Innholdsfortegnelse
 - [Oversikt](#oversikt)
+- [Moduler og avhengigheter](#moduler-og-avhengigheter)
 - [Arkitektur](#arkitektur)
 - [Teknologier](#teknologier)
 - [Kom i gang](#kom-i-gang)
   - [Forutsetninger](#forutsetninger)
   - [Installasjon](#installasjon)
-  - [Kjøre lokalt](#kjøre-lokalt)
+  - [Lokal utvikling](#lokal-utvikling)
   - [Kjøre tester](#kjøre-tester)
 - [API-dokumentasjon](#api-dokumentasjon)
   - [REST API](#rest-api)
@@ -35,7 +36,119 @@ Veilarbaktivitet er en Spring Boot-applikasjon som fungerer som backend for NAVs
 - Møter med NAV-veiledere
 - Egeninitierte aktiviteter
 - Aktiviteter fra eksterne systemer (Arena, eksterne partnere)
+
 Applikasjonen tilbyr et omfattende API for å opprette, oppdatere og spore aktiviteter, samt å håndtere varsler og integrere med ulike NAV-systemer.
+
+## Moduler og avhengigheter
+
+### Hovedmoduler
+
+Applikasjonen er strukturert i flere moduler med klare ansvarsområder:
+
+#### 1. **aktivitet** - Kjernedomene
+Hovedmodul for aktivitetshåndtering med:
+- `AktivitetService` - Forretningslogikk for aktiviteter
+- `AktivitetAppService` - Applikasjonslag med autorisasjon og integrasjoner
+- `AktivitetDAO` - Databasetilgang
+- `AktivitetsplanController` (REST) og `AktivitetskortController` (GraphQL)
+
+#### 2. **aktivitetskort** - Integrasjon med eksterne systemer
+Håndterer aktivitetskort fra Arena og andre eksterne partnere:
+- `AktivitetskortConsumer` - Kafka-konsument for aktivitetskort
+- `AktivitetskortService` - Prosessering av aktivitetskort
+- `AktivitetsKortFeilProducer` - Publisering av feilmeldinger
+- `IdMappingProducer` - ID-mapping mellom eksterne og interne systemer
+
+#### 3. **stilling_fra_nav** - Stillingsintegrasjon
+Håndterer deling av stillinger fra NAV:
+- `DelingAvCvService` - Forretningslogikk for CV-deling
+- `StillingFraNavProducerClient` - Kafka-produsent for stillingsoppdateringer
+- `OpprettForesporselOmDelingAvCv` - Opprettelse av forespørsler
+
+#### 4. **brukernotifikasjon** - Varslingssystem
+Varsling av brukere via Minside:
+- `MinsideVarselService` - Håndtering av brukernotifikasjoner
+- `VarselDAO` - Lagring av varsler
+- `MinsideVarselProducer` - Publisering til Minside
+
+#### 5. **oppfolging** - Oppfølgingsperioder
+Håndtering av oppfølgingsperioder:
+- `OppfolgingsperiodeService` - Henting og oppdatering av perioder
+- `SistePeriodeService` - Identifisering av siste periode
+
+#### 6. **avtalt_med_nav** - Avtaler
+Håndtering av aktiviteter avtalt med NAV:
+- `AvtaltMedNavController` - REST-endepunkter
+- `AvtaltMedNavService` - Forretningslogikk for avtaler
+- Forhaandsorientering (FHO) - Håndtering av forhåndsorientering
+
+#### 7. **arena** - Arena-integrasjon
+Integrasjon med NAVs Arena-system:
+- `ArenaService` - Henting av tiltaksaktiviteter
+- `MigreringService` - Migrering fra Arena til nye systemer
+
+### Viktige avhengigheter
+
+#### NAV-biblioteker
+- **no.nav.common** (v3.2025.10.10) - Felles bibliotek for:
+  - `kafka` - Kafka-integrasjon
+  - `auth` - Autentisering og autorisasjon
+  - `token-client` - Token-håndtering (Azure AD, TokenX)
+  - `metrics` - Metrikker og logging
+  - `client` - HTTP-klienter
+  
+- **no.nav.poao.dab:spring-auth** (v2025.12.15) - DAB-spesifikk autentisering
+- **no.nav.tms.varsel:kotlin-builder** (v2.1.1) - Bygging av brukernotifikasjoner
+
+#### Eksterne biblioteker
+- **Apache Kafka** - Meldingskø
+  - `kafka-avro-serializer` (v8.1.0) - Avro-serialisering
+  - `spring-kafka` - Spring-integrasjon
+  
+- **Unleash** (v11.1.1) - Feature toggles for gradvis utrulling
+- **ShedLock** (v6.10.0) - Distribuert låsing for planlagte jobber
+- **Google Cloud BigQuery** - Analyse og logging
+- **Flyway** - Databasemigreringer
+- **WireMock** - Mocking av eksterne tjenester i tester
+
+#### Spring Boot Starters
+- `spring-boot-starter-web` - REST API
+- `spring-boot-starter-graphql` - GraphQL API
+- `spring-boot-starter-data-jdbc` - Database-tilgang
+- `spring-boot-starter-actuator` - Helsesjekker og metrikker
+- `spring-boot-starter-quartz` - Planlagte jobber
+
+### Modulavhengigheter
+
+```mermaid
+graph TD
+    A[AktivitetsplanController] --> B[AktivitetAppService]
+    B --> C[AktivitetService]
+    B --> D[PersonService]
+    B --> E[OversiktenService]
+    C --> F[AktivitetDAO]
+    
+    G[AktivitetskortConsumer] --> H[AktivitetskortService]
+    H --> C
+    H --> I[IdMappingProducer]
+    H --> J[FeilProducer]
+    
+    K[StillingFraNavController] --> L[DelingAvCvService]
+    L --> C
+    L --> M[StillingFraNavProducerClient]
+    
+    N[MinsideVarselService] --> O[VarselDAO]
+    N --> P[MinsideVarselProducer]
+    
+    B --> Q[IAuthService]
+    Q --> R[POAO Tilgang API]
+    
+    style B fill:#e1f5ff
+    style C fill:#fff4e1
+    style H fill:#ffe1f5
+    style L fill:#e1ffe1
+```
+
 ## Arkitektur
 ```mermaid
 graph TB
@@ -102,38 +215,71 @@ graph TB
 - **Feature Toggles**: Unleash
 - **Testing**: JUnit 5, Mockito, Rest Assured, WireMock
 ## Kom i gang
+
 ### Forutsetninger
+
 - JDK 21
-- Docker (for lokal PostgreSQL)
 - Gradle (inkludert via wrapper)
+
 ### Installasjon
+
 Klon repositoriet:
+
 ```bash
 git clone https://github.com/navikt/veilarbaktivitet.git
 cd veilarbaktivitet
 ```
-### Kjøre lokalt
-1. Start nødvendige tjenester (PostgreSQL, Kafka) ved hjelp av Docker Compose (hvis tilgjengelig) eller konfigurer eksterne tjenester.
-2. Sett opp lokal konfigurasjon i `src/main/resources/application-local.properties`:
-```properties
-server.servlet.context-path=/veilarbaktivitet
-app.env.aktivitetsplan.basepath=localhost:3000
-spring.flyway.enabled=false
+
+### Lokal utvikling
+
+Applikasjonen er **ikke lagt opp for lokal kjøring** med eksterne tjenester. I stedet bruker utviklere et testoppsett som inkluderer alle nødvendige avhengigheter.
+
+#### Testkjøring med embedded tjenester
+
+Applikasjonen har et komplett testoppsett (`SpringBootTestBase`) som automatisk starter:
+
+- **Embedded PostgreSQL** - via `@AutoConfigureEmbeddedDatabase`
+- **Embedded Kafka** - via `EmbeddedKafkaBroker`  
+- **WireMock** - for mocking av eksterne tjenester (PDL, Veilarbdialog, POAO Tilgang, osv.)
+
+**Kjør applikasjonen i testmodus:**
+
+Du kan kjøre `VeilarbAktivitetTestApp.main()` direkte fra IDE for lokal utvikling/testing. Dette starter applikasjonen med:
+- Embedded PostgreSQL med Flyway-migreringer
+- Embedded Kafka med alle nødvendige topics
+- WireMock-servere for eksterne API-er
+- Test-autentisering via `TestAuthContextFilter`
+
+**Testkonfigurasjon:**
+
+`SpringBootTestBase` er baseklassen for alle integrasjonstester og konfigurerer automatisk:
+```java
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@WireMockTest
+@SharedSpies
+public abstract class SpringBootTestBase {
+    // Embedded PostgreSQL
+    // Embedded Kafka  
+    // WireMock for eksterne tjenester
+    // Test-brukere og veiledere via NavMockService
+}
 ```
-3. Kjør applikasjonen:
-```bash
-./gradlew bootRun
-```
-Applikasjonen vil være tilgjengelig på `http://localhost:8080/veilarbaktivitet`
+
 ### Kjøre tester
+
 Kjør alle tester:
+
 ```bash
 ./gradlew test
 ```
+
 Kjør med dekningsrapport:
+
 ```bash
 ./gradlew test jacocoTestReport
 ```
+
+Testene arver fra `SpringBootTestBase` og får automatisk tilgang til fullt konfigurert Spring-kontekst med alle nødvendige mocks og embedded tjenester.
 ## API-dokumentasjon
 ### REST API
 REST API-et er definert ved hjelp av OpenAPI-spesifikasjon og tilbyr endepunkter for aktivitetshåndtering.
@@ -412,4 +558,4 @@ For spørsmål, problemer eller bidrag, vennligst:
 - Åpne en issue i GitHub for feilrapporter eller funksjonsforespørsler
 - Bli med i vår Slack-kanal for diskusjoner og spørsmål
 ---
-<sub>Denne README-filen ble AI-generert 27. januar 2026. For den mest oppdaterte informasjonen, vennligst se kildekoden og inline-dokumentasjon.</sub>
+<sub>Denne README-filen ble AI-generert 28. januar 2026. For den mest oppdaterte informasjonen, vennligst se kildekoden og inline-dokumentasjon.</sub>
