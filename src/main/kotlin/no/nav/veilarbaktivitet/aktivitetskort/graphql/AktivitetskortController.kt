@@ -14,6 +14,7 @@ import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper
 import no.nav.veilarbaktivitet.aktivitetskort.MigreringService
 import no.nav.veilarbaktivitet.arena.ArenaService
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO
+import no.nav.veilarbaktivitet.config.TeamLog.teamLog
 import no.nav.veilarbaktivitet.config.ownerProviders.AktivitetOwnerProvider
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeService
 import no.nav.veilarbaktivitet.person.Person
@@ -73,6 +74,7 @@ class AktivitetskortController(
 
     @QueryMapping
     fun aktivitet(@Argument aktivitetId: Long): AktivitetDTO {
+        teamLog.info("Test av teamlog")
         val erEksternBruker = authService.erEksternBruker()
         val eksternBrukerId = ownerProvider.getOwner(aktivitetId.toString())
             ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "No owner found for aktivitetId")
