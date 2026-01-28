@@ -18,15 +18,15 @@ import java.io.IOException;
 @Profile("!test")
 @Service
 @RequiredArgsConstructor
-public class EnhanceSecureLogsFilter implements Filter {
+public class EnhanceTeamLogsFilter implements Filter {
 
     private final IAuthService authService;
 
     private final UserInContext userInContext;
 
-    public static final String SECURELOGS_ER_INTERN_BRUKER = "SecureLogsFilter.erInternBruker";
-    public static final String SECURELOGS_INNLOGGET_BRUKER_IDENT = "SecureLogsFilter.innloggetBrukerIdent";
-    public static final String SECURELOGS_USER_CONTEXT = "SecureLogsFilter.userContext";
+    public static final String TEAMLOGS_ER_INTERN_BRUKER = "TeamLogsFilter.erInternBruker";
+    public static final String TEAMLOGS_INNLOGGET_BRUKER_IDENT = "TeamLogsFilter.innloggetBrukerIdent";
+    public static final String TEAMLOGS_USER_CONTEXT = "TeamLogsFilter.userContext";
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
@@ -34,9 +34,9 @@ public class EnhanceSecureLogsFilter implements Filter {
         String innloggetBrukerIdent = authService.getLoggedInnUser().get();
         String userContext = userInContext.getFnr().map(Person::get).orElse(null);
 
-        MDC.put(SECURELOGS_ER_INTERN_BRUKER, erInternBruker);
-        MDC.put(SECURELOGS_INNLOGGET_BRUKER_IDENT, innloggetBrukerIdent);
-        MDC.put(SECURELOGS_USER_CONTEXT, userContext);
+        MDC.put(TEAMLOGS_ER_INTERN_BRUKER, erInternBruker);
+        MDC.put(TEAMLOGS_INNLOGGET_BRUKER_IDENT, innloggetBrukerIdent);
+        MDC.put(TEAMLOGS_USER_CONTEXT, userContext);
 
         filterChain.doFilter(servletRequest, servletResponse);
     }

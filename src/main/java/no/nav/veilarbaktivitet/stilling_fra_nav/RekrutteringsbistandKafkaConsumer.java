@@ -35,12 +35,12 @@ public class RekrutteringsbistandKafkaConsumer {
         try {
             rekrutteringsbistandStatusoppdatering = JsonUtils.fromJson(consumerRecord.value(), RekrutteringsbistandStatusoppdatering.class);
         } catch (Exception ignored) {
-            log.error("Feilet i Json-deserialisering. Se securelogs for payload.");
+            log.error("Feilet i Json-deserialisering. Se teamLogs for payload.");
             teamLog.error("Feilet i Json-deserialisering. {}.", consumerRecord.value());
         }
 
         if (rekrutteringsbistandStatusoppdatering == null) {
-            log.error("Ugyldig melding bestillingsId: {} på pto.rekrutteringsbistand-statusoppdatering-v1. Se securelogs for payload. ", bestillingsId);
+            log.error("Ugyldig melding bestillingsId: {} på pto.rekrutteringsbistand-statusoppdatering-v1. Se teamLogs for payload. ", bestillingsId);
             teamLog.error("Ugyldig melding bestillingsId: {} på pto.rekrutteringsbistand-statusoppdatering-v1 : {}", bestillingsId, consumerRecord.value());
             stillingFraNavMetrikker.countRekrutteringsbistandStatusoppdatering(false, "Ugyldig melding", RekrutteringsbistandStatusoppdateringEventType.UKJENT);
             return;

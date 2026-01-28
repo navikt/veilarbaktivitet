@@ -67,7 +67,7 @@ public class OpprettForesporselOmDelingAvCv {
             underOppfolging = true;
         } catch (IngenGjeldendeIdentException exception) {
             producerClient.sendUgyldigInput(melding.getBestillingsId(), aktorId.get(), "Finner ingen gyldig ident for aktorId");
-            log.warn("*** Kan ikke behandle melding. Årsak: {} ***. Se securelogs for payload.", exception.getMessage());
+            log.warn("*** Kan ikke behandle melding. Årsak: {} ***. Se teamLogs for payload.", exception.getMessage());
             teamLog.warn("*** Kan ikke behandle melding={}. Årsak: {} ***", melding, exception.getMessage());
             return;
         } catch (IngenGjeldendePeriodeException exception) {
