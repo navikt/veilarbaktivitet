@@ -74,7 +74,6 @@ class AktivitetskortController(
 
     @QueryMapping
     fun aktivitet(@Argument aktivitetId: Long): AktivitetDTO {
-        teamLog.info("Test av teamlog")
         val erEksternBruker = authService.erEksternBruker()
         val eksternBrukerId = ownerProvider.getOwner(aktivitetId.toString())
             ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "No owner found for aktivitetId")
