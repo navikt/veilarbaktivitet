@@ -21,11 +21,12 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
 
+import static no.nav.veilarbaktivitet.config.TeamLog.teamLog;
+
 @Service
 @RequiredArgsConstructor
 public class AktivitetAppService {
 
-    private final Logger secureLog = LoggerFactory.getLogger("SecureLog");
     private final Logger log = LoggerFactory.getLogger(this.getClass());
     private final IAuthService authService;
     private final AktivitetService aktivitetService;
@@ -191,7 +192,7 @@ public class AktivitetAppService {
 
     private void kanEndreAktivitetGuard(AktivitetData orginalAktivitet, long sisteVersjon, Person.AktorId aktorId) {
         if (!orginalAktivitet.getAktorId().equals(aktorId)) {
-            secureLog.error("kan ikke oppdatere aktorid på aktivitet: orginal aktorId: {}, aktorId fra context: {}, aktivitetsId: {}",
+            teamLog.error("kan ikke oppdatere aktorid på aktivitet: orginal aktorId: {}, aktorId fra context: {}, aktivitetsId: {}",
                     orginalAktivitet.getAktorId(), aktorId, orginalAktivitet.getId());
             throw new IllegalArgumentException("kan ikke oppdatere aktorid på aktivitet");
         }

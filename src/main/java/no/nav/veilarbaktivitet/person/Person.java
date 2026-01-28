@@ -4,17 +4,15 @@ import no.nav.common.types.identer.EksternBrukerId;
 import no.nav.common.types.identer.Id;
 import no.nav.veilarbaktivitet.aktivitet.domain.Ident;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.IdentType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
+
+import static no.nav.veilarbaktivitet.config.TeamLog.teamLog;
 
 /**
  * Applikasjonsintern representasjon av en bruker. Kan også være en systembruker, som ikke er en person.
  */
 public abstract class Person {
-    private final Logger secureLogs = LoggerFactory.getLogger("SecureLog");
-
     private final String id;
 
     Person(String id) {
@@ -46,7 +44,7 @@ public abstract class Person {
     }
 
     private void logWrongTypeToSecureLogs() {
-        secureLogs.warn("Person id:{}, type:{}   må være en av Fnr, AktorId, NavIdent eller SystemUser", this.id, this.getClass().getSimpleName());
+        teamLog.warn("Person id:{}, type:{}   må være en av Fnr, AktorId, NavIdent eller SystemUser", this.id, this.getClass().getSimpleName());
     }
 
     public Innsender tilInnsenderType() {

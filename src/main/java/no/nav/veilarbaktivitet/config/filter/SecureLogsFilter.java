@@ -10,12 +10,11 @@ import org.springframework.context.annotation.Profile;
 
 import java.io.IOException;
 
+import static no.nav.veilarbaktivitet.config.TeamLog.teamLog;
 import static no.nav.veilarbaktivitet.config.filter.EnhanceSecureLogsFilter.*;
 
 @Profile("!test")
 public class SecureLogsFilter implements Filter {
-
-    private final Logger secureLog = LoggerFactory.getLogger("SecureLog");
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
@@ -34,7 +33,7 @@ public class SecureLogsFilter implements Filter {
                 httpRequest.getQueryString(),
                 MDC.get(SECURELOGS_USER_CONTEXT)
         );
-        secureLog.info(msg);
+        teamLog.info(msg);
     }
 
     @Override

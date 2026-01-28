@@ -20,8 +20,6 @@ import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.KontaktInfo;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
@@ -31,6 +29,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.util.Date;
 
+import static no.nav.veilarbaktivitet.config.TeamLog.teamLog;
 import static no.nav.veilarbaktivitet.stilling_fra_nav.DelingAvCvService.utledArbeidstedtekst;
 
 @Slf4j
@@ -45,7 +44,6 @@ public class OpprettForesporselOmDelingAvCv {
     private final StillingFraNavProducerClient producerClient;
     private final StillingFraNavMetrikker metrikker;
 
-    private final Logger secureLogs = LoggerFactory.getLogger("SecureLog");
     private static final String BRUKERNOTIFIKASJON_TEKST = "Vi søker etter kandidater til denne stillingen. Kan denne stillingen passe for deg?";
 
     @Transactional
@@ -57,7 +55,7 @@ public class OpprettForesporselOmDelingAvCv {
             log.info("ForesporselOmDelingAvCv med bestillingsId={} har allerede en aktivitet", melding.getBestillingsId());
             return;
         }
-        secureLogs.info("OpprettForesporselOmDelingAvCv.createAktivitet {}", melding);
+        teamLog.info("OpprettForesporselOmDelingAvCv.createAktivitet {}", melding);
         Person.AktorId aktorId = Person.aktorId(melding.getAktorId());
         if (aktorId.get() == null) {
             log.error("OpprettForesporselOmDelingAvCv.createAktivitet AktorId=null");
@@ -70,7 +68,7 @@ public class OpprettForesporselOmDelingAvCv {
         } catch (IngenGjeldendeIdentException exception) {
             producerClient.sendUgyldigInput(melding.getBestillingsId(), aktorId.get(), "Finner ingen gyldig ident for aktorId");
             log.warn("*** Kan ikke behandle melding. Årsak: {} ***. Se securelogs for payload.", exception.getMessage());
-            secureLogs.warn("*** Kan ikke behandle melding={}. Årsak: {} ***", melding, exception.getMessage());
+            teamLog.warn("*** Kan ikke behandle melding={}. Årsak: {} ***", melding, exception.getMessage());
             return;
         } catch (IngenGjeldendePeriodeException exception) {
             underOppfolging = false;
