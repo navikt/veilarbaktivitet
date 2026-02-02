@@ -36,11 +36,11 @@ public enum AktivitetTypeDTO {
         aktivitetskortTypeTilArenaTiltakskode.put(AktivitetskortType.ENKFAGYRKE, "ENKFAGYRKE");
         aktivitetskortTypeTilArenaTiltakskode.put(AktivitetskortType.HOYEREUTD, "HOYEREUTD");
 
-        aktivitetskortTypeTilArenaTiltakskode.put(AktivitetskortType.ARBEIDSMARKEDSOPPLAERING, "ARBEIDSMARKEDSOPPLAERING");
-        aktivitetskortTypeTilArenaTiltakskode.put(AktivitetskortType.NORSKOPPLAERING_GRUNNLEGGENDE_FERDIGHETER_FOV, "NORSKOPPLAERING_GRUNNLEGGENDE_FERDIGHETER_FOV");
-        aktivitetskortTypeTilArenaTiltakskode.put(AktivitetskortType.STUDIESPESIALISERING, "STUDIESPESIALISERING");
-        aktivitetskortTypeTilArenaTiltakskode.put(AktivitetskortType.FAG_OG_YRKESOPPLAERING, "FAG_OG_YRKESOPPLAERING");
-        aktivitetskortTypeTilArenaTiltakskode.put(AktivitetskortType.HOYERE_YRKESFAGLIG_UTDANNING, "HOYERE_YRKESFAGLIG_UTDANNING");
+        aktivitetskortTypeTilArenaTiltakskode.put(AktivitetskortType.ARBEIDSMARKEDSOPPLAERING, AktivitetskortType.ARBEIDSMARKEDSOPPLAERING.name());
+        aktivitetskortTypeTilArenaTiltakskode.put(AktivitetskortType.NORSKOPPLAERING_GRUNNLEGGENDE_FERDIGHETER_FOV, AktivitetskortType.NORSKOPPLAERING_GRUNNLEGGENDE_FERDIGHETER_FOV.name());
+        aktivitetskortTypeTilArenaTiltakskode.put(AktivitetskortType.STUDIESPESIALISERING, AktivitetskortType.STUDIESPESIALISERING.name());
+        aktivitetskortTypeTilArenaTiltakskode.put(AktivitetskortType.FAG_OG_YRKESOPPLAERING, AktivitetskortType.FAG_OG_YRKESOPPLAERING.name());
+        aktivitetskortTypeTilArenaTiltakskode.put(AktivitetskortType.HOYERE_YRKESFAGLIG_UTDANNING, AktivitetskortType.HOYERE_YRKESFAGLIG_UTDANNING.name());
     }
 
     public static String aktivitetsKortTypeToArenaTiltakskode(AktivitetskortType aktivitetskortType) {
