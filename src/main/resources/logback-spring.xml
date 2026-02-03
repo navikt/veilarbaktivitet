@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <include resource="no/nav/common/log/logback-default.xml"/>
-    <logger name="no.nav.veilarbaktivitet" level="DEBUG"/>
-    <logger name="org.springframework.cloud.gateway" level="DEBUG"/>
+    <include resource="no/nav/common/log/logback-naudit.xml"/>
+    <include resource="no/nav/common/log/logback-cxf.xml"/>
+    <include resource="no/nav/common/log/logback-stdout-json.xml"/>
+    <include resource="logback-team-logs.xml"/>
 </configuration>

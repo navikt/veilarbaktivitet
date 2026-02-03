@@ -4,17 +4,15 @@ import no.nav.common.types.identer.EksternBrukerId;
 import no.nav.common.types.identer.Id;
 import no.nav.veilarbaktivitet.aktivitet.domain.Ident;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.IdentType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
+
+import static no.nav.veilarbaktivitet.config.TeamLog.teamLog;
 
 /**
  * Applikasjonsintern representasjon av en bruker. Kan også være en systembruker, som ikke er en person.
  */
 public abstract class Person {
-    private final Logger secureLogs = LoggerFactory.getLogger("SecureLog");
-
     private final String id;
 
     Person(String id) {
@@ -45,15 +43,15 @@ public abstract class Person {
         return this instanceof AktorId || this instanceof Fnr;
     }
 
-    private void logWrongTypeToSecureLogs() {
-        secureLogs.warn("Person id:{}, type:{}   må være en av Fnr, AktorId, NavIdent eller SystemUser", this.id, this.getClass().getSimpleName());
+    private void logWrongTypeToTeamLogs() {
+        teamLog.warn("Person id:{}, type:{}   må være en av Fnr, AktorId, NavIdent eller SystemUser", this.id, this.getClass().getSimpleName());
     }
 
     public Innsender tilInnsenderType() {
         if (this instanceof Fnr || this instanceof AktorId) return Innsender.BRUKER;
         if (this instanceof NavIdent) return Innsender.NAV;
         if (this instanceof SystemUser) return Innsender.SYSTEM;
-        logWrongTypeToSecureLogs();
+        logWrongTypeToTeamLogs();
         throw new IllegalArgumentException("Ukjent persontype %s".formatted(this.getClass().getSimpleName()));
     }
 
@@ -61,14 +59,14 @@ public abstract class Person {
         if (this instanceof Fnr || this instanceof AktorId) return new Ident(this.get(), IdentType.PERSONBRUKERIDENT);
         if (this instanceof NavIdent) return new Ident(this.get(), IdentType.NAVIDENT);
         if (this instanceof SystemUser) return new Ident(this.get(), IdentType.SYSTEM);
-        logWrongTypeToSecureLogs();
+        logWrongTypeToTeamLogs();
         throw new IllegalArgumentException("Ukjent persontype %s".formatted(this.getClass().getSimpleName()));
     }
 
     public EksternBrukerId eksternBrukerId(){
         if (this instanceof Fnr) return no.nav.common.types.identer.Fnr.of(this.get());
         if (this instanceof AktorId) return no.nav.common.types.identer.AktorId.of(this.get());
-        logWrongTypeToSecureLogs();
+        logWrongTypeToTeamLogs();
         throw new IllegalStateException("Bare fnr eller aktorId kan brukes som eksternId, fikk %s".formatted(this.getClass().getSimpleName())
         );
     }
