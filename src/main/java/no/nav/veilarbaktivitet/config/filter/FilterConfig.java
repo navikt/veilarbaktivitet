@@ -57,9 +57,9 @@ public class FilterConfig {
     }
 
     @Bean
-    public FilterRegistrationBean<TeamLogsFilter> teamLogsFilterRegistrationBean(TeamLogsFilter teamLogsFilter) {
+    public FilterRegistrationBean<TeamLogsFilter> teamLogsFilterRegistrationBean() {
         FilterRegistrationBean<TeamLogsFilter> registration = new FilterRegistrationBean<>();
-        registration.setFilter(teamLogsFilter);
+        registration.setFilter(new TeamLogsFilter());
         registration.addUrlPatterns("/api/*");
         registration.addUrlPatterns("/graphql");
         registration.setOrder(3);
@@ -81,6 +81,16 @@ public class FilterConfig {
         registration.addUrlPatterns("/api/*");
         registration.addUrlPatterns("/internal/api/*");
         registration.addUrlPatterns("/graphql");
+        return registration;
+    }
+
+    @Bean
+    public FilterRegistrationBean<EnhanceTeamLogsFilter> enhanceTeamLogsFilterRegistrationBean(EnhanceTeamLogsFilter enhanceTeamLogsFilter) {
+        FilterRegistrationBean<EnhanceTeamLogsFilter> registration = new FilterRegistrationBean<>();
+        registration.setFilter(enhanceTeamLogsFilter);
+        registration.addUrlPatterns("/api/*");
+        registration.addUrlPatterns("/graphql");
+        registration.setOrder(5);
         return registration;
     }
 
