@@ -42,7 +42,7 @@ class ByEnhetStrategy(
 
     private fun hentEnheter(navAnsattAzureId: String): List<String> {
         val alleAdGrupper = poaoTilgangClient.hentAdGrupper(UUID.fromString(navAnsattAzureId))
-        log.info("Unleash: Alle AD-grupper: ${alleAdGrupper.map { it -> it.map { it.navn } }}")
+        log.info("Unleash: Alle AD-grupper: ${alleAdGrupper}")
 
         return alleAdGrupper
             .map { adGrupper ->
