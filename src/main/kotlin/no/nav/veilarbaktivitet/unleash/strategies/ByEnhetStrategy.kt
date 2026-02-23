@@ -8,6 +8,7 @@ import no.nav.poao_tilgang.client.PoaoTilgangClient
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import java.util.*
+import kotlin.jvm.optionals.getOrElse
 
 @Component
 @RequiredArgsConstructor
@@ -24,6 +25,9 @@ class ByEnhetStrategy(
 
     override fun isEnabled(parameters: Map<String, String>, context: UnleashContext): Boolean {
         // NavAnsattAzure id fra oid claim, se FeatureController
+        log.info("Unleash: Påskrudde Enheter: ${Optional.ofNullable(parameters[PARAM])}")
+        log.info("Unleash: Brukers enheter: ${brukersEnheter(context.userId.getOrElse { "" }).toSet()}")
+
         return context.userId
             .flatMap { userId ->
                 Optional.ofNullable(parameters[PARAM])
