@@ -41,8 +41,15 @@ class ByEnhetStrategy(
     }
 
     private fun hentEnheter(navAnsattAzureId: String): List<String> {
-        return poaoTilgangClient.hentAdGrupper(UUID.fromString(navAnsattAzureId))
-            .map { adGrupper -> adGrupper.mapNotNull { it.navn.split(ENHET_PREFIKS).getOrNull(1) } }
+        val alleAdGrupper = poaoTilgangClient.hentAdGrupper(UUID.fromString(navAnsattAzureId))
+        log.info("Unleash: Alle AD-grupper: ${alleAdGrupper}")
+
+        return alleAdGrupper
+            .map { adGrupper ->
+                adGrupper.mapNotNull {
+                    it.navn.split(ENHET_PREFIKS).getOrNull(1)
+                }
+            }
             .getOrThrow()
     }
 
