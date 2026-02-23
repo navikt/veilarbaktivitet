@@ -24,6 +24,8 @@ class ByEnhetStrategy(
 
     override fun isEnabled(parameters: Map<String, String>, context: UnleashContext): Boolean {
         // NavAnsattAzure id fra oid claim, se FeatureController
+        log.info("Unleash: Brukers enheter: ${brukersEnheter(context.userId.orElseGet { "" })}")
+
         return context.userId
             .flatMap { userId ->
                 Optional.ofNullable(parameters[PARAM])
