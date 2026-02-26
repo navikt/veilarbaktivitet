@@ -21,7 +21,8 @@ class ByEnhetStrategyTest {
         poaoTilgangClient = mock<PoaoTilgangClient> {
             on { hentAdGrupper(any()) } doReturn ApiResult.success(listOf(
                 AdGruppe(UUID.randomUUID(), "0000-GA-ENHET_1111"),
-                AdGruppe(UUID.randomUUID(), "0000-GA-ENHET_2222")
+                AdGruppe(UUID.randomUUID(), "0000-GA-ENHET_2222"),
+                AdGruppe(UUID.randomUUID(), "En Annen Gruppe")
             ))
         }
 
@@ -46,7 +47,16 @@ class ByEnhetStrategyTest {
     @Test
     fun `skal returnere true når brukers enhet finnes i listen over påskrudde enheter`() {
         val enabled = byEnhetStrategy.isEnabled(
-            mapOf("valgtEnhet" to "1234,1111"),
+            mapOf("valgtEnhet" to "1234,1111, Team DAB"),
+            UnleashContext(UUID.randomUUID().toString(), "", "", emptyMap()),
+        )
+        assertThat(enabled).isTrue()
+    }
+
+    @Test
+    fun `skal returnere true når brukers enhet finnes i listen over påskrudde enheter selv om AD-gruppa ikke begynner med 0000-GA-ENHET_`() {
+        val enabled = byEnhetStrategy.isEnabled(
+            mapOf("valgtEnhet" to "En Annen Gruppe"),
             UnleashContext(UUID.randomUUID().toString(), "", "", emptyMap()),
         )
         assertThat(enabled).isTrue()

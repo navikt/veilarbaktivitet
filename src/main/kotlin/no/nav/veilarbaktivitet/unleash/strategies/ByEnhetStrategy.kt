@@ -42,7 +42,11 @@ class ByEnhetStrategy(
 
     private fun hentEnheter(navAnsattAzureId: String): List<String> {
         return poaoTilgangClient.hentAdGrupper(UUID.fromString(navAnsattAzureId))
-            .map { adGrupper -> adGrupper.mapNotNull { it.navn.split(ENHET_PREFIKS).getOrNull(1) } }
+            .map { adGrupper ->
+                adGrupper.mapNotNull {
+                    it.navn.substringAfter(ENHET_PREFIKS)
+                }
+            }
             .getOrThrow()
     }
 

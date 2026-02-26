@@ -39,8 +39,6 @@ spec:
     - secret: veilarbaktivitet-unleash-api-token
     - secret: veilarbaktivitet-kassering-identer
   leaderElection: true
-  secureLogs:
-    enabled: true
   kafka:
     pool: nav-prod
   tokenx:
@@ -89,6 +87,8 @@ spec:
         - application: poao-admin
           cluster: prod-gcp
           namespace: poao
+        - application: inngar
+          namespace: dab
     outbound:
       external:
         - host: veilarbarena.prod-fss-pub.nais.io
@@ -106,6 +106,8 @@ spec:
         - application: orkivar
         - application: norg2
           namespace: org
+        - application: logging
+          namespace: nais-system
   gcp:
     sqlInstances:
       - name: veilarbaktivitet-gcp
