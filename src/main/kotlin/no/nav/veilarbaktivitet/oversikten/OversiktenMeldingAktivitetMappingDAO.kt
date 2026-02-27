@@ -2,7 +2,6 @@ package no.nav.veilarbaktivitet.oversikten
 
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarbaktivitet.aktivitet.AktivitetId
-import no.nav.veilarbaktivitet.person.Person
 import org.springframework.dao.EmptyResultDataAccessException
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
@@ -12,9 +11,9 @@ import java.sql.ResultSet
 import java.util.*
 
 @Repository
-open class OversiktenMeldingAktivitetMappingDAO(private val template: NamedParameterJdbcTemplate) {
+ class OversiktenMeldingAktivitetMappingDAO(private val template: NamedParameterJdbcTemplate) {
 
-    open fun lagreKoblingMellomOversiktenMeldingOgAktivitet(
+    fun lagreKoblingMellomOversiktenMeldingOgAktivitet(
         oversiktenMeldingKey: MeldingKey,
         aktivitetId: AktivitetId,
         kategori: OversiktenMelding.Kategori
@@ -22,6 +21,7 @@ open class OversiktenMeldingAktivitetMappingDAO(private val template: NamedParam
         val sql = """
             insert into oversikten_melding_aktivitet_mapping (oversikten_melding_key, aktivitet_id, kategori)
             values (:oversiktenMeldingKey, :aktivitetId, :kategori::OVERSIKTEN_KATEGORI)
+            on conflict (aktivitet_id, kategori) do update set oversikten_melding_key = :oversiktenMeldingKey
         """.trimIndent()
         val params = MapSqlParameterSource()
             .addValue("oversiktenMeldingKey", oversiktenMeldingKey)
@@ -30,7 +30,7 @@ open class OversiktenMeldingAktivitetMappingDAO(private val template: NamedParam
         template.update(sql, params)
     }
 
-    open fun hentMeldingKeyForAktivitet(aktivitetId: AktivitetId, kategori: OversiktenMelding.Kategori): UUID? {
+     fun hentMeldingKeyForAktivitet(aktivitetId: AktivitetId, kategori: OversiktenMelding.Kategori): UUID? {
         val sql = """
         select oversikten_melding_key 
         from oversikten_melding_aktivitet_mapping
