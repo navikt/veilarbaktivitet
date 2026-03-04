@@ -35,6 +35,7 @@ definitions:
       - STUDIESPESIALISERING
       - FAG_OG_YRKESOPPLAERING
       - HOYERE_YRKESFAGLIG_UTDANNING
+      - FIREARIG_LONNSTILSKUDD
     description: |
       Aktivitetskort typer som er tillatt å opprette via tjenesten. Denne enumereringen vil utvides etterhvert.
       MIDLERTIDIG_LONNSTILSKUDD - Midlertidig lønnstilskudd (Team Tiltak)
@@ -60,6 +61,7 @@ definitions:
       STUDIESPESIALISERING - Ny tiltakskode for GRUPPEAMO og ENKELAMO etter ny forskrift (bokstav c) (Team Komet)
       FAG_OG_YRKESOPPLAERING - GRUFAGYRK og ENKFAGYRK etter ny forskrift(bokstav d) (Team Komet)
       HOYERE_YRKESFAGLIG_UTDANNING - GRUFAGYRK og ENKFAGYRK etter ny forskrift(bokstav e) (Team Komet)
+      FIREARIG_LONNSTILSKUDD - Fireårig lønnstilskudd
   errorType:
     description: Alle mulige funksjonelle-feil som kan oppstå under prosessering av aktivitetskort-meldinger og kasserings-meldinger
     type: string
