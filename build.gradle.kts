@@ -1,7 +1,7 @@
 val spring_boot_version = "3.5.9"
 val common_version = "3.2025.10.10_08.21-bb7c7830d93c"
 val dab_common_version = "2025.12.15-10.38.4f649aa03352"
-val poao_tilgang_version = "2025.07.04_08.56-814fa50f6740"
+val poao_tilgang_version = "2026.03.04_14.58-9f4d1bacb1e0"
 val shedlock_version = "6.10.0"
 val avroVersion = "1.12.1"
 val confluentKafkaAvroVersion = "8.1.0"
@@ -73,11 +73,12 @@ repositories {
     }
 
     maven("https://github-package-registry-mirror.gc.nav.no/cached/maven-release")
-
+    maven {
+        url = uri("https://maven.pkg.github.com/navikt/poao-tilgang")
+    }
     maven {
         url = uri("https://jitpack.io")
     }
-
 }
 
 tasks.generateAvroJava {
