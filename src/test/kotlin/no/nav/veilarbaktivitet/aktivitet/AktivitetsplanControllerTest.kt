@@ -287,7 +287,7 @@ internal class AktivitetsplanControllerTest: SpringBootTestBase() {
         val aktivitet = aktivitetTestService.opprettAktivitet(
             happyBruker,
             veileder,
-            AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE).setReferat(null)
+            AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE).setReferat(null).setErReferatPublisert(false)
         )
 
         aktivitet.setReferat("Et referat")
@@ -312,5 +312,44 @@ internal class AktivitetsplanControllerTest: SpringBootTestBase() {
 
         val meldingerTilOversikten = oversiktenMeldingMedMetadataRepository.hentAlleSomSkalSendes()
         assertThat(meldingerTilOversikten).isEmpty()
+    }
+
+    @Test
+    fun `Ikke send startmelding når allerede delt referat tømmes og fylles igjen`() {
+        val happyBruker = navMockService.createBruker()
+        val veileder = navMockService.createVeileder(happyBruker)
+
+        // Opprett møte uten referat
+        val aktivitet = aktivitetTestService.opprettAktivitet(
+            happyBruker,
+            veileder,
+            AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE).setReferat(null).setErReferatPublisert(false)
+        )
+
+        // Legg til referat - dette sender START-melding
+        aktivitet.setReferat("Et referat")
+        val aktivitetMedReferat = aktivitetTestService.oppdaterReferat(aktivitet, veileder)
+        assertThat(oversiktenMeldingMedMetadataRepository.hentAlleSomSkalSendes().size).isEqualTo(1)
+
+        // Del referatet med bruker - dette sender STOPP-melding
+        aktivitetTestService.publiserReferat(aktivitetMedReferat, veileder)
+        val meldingerEtterDeling = oversiktenMeldingMedMetadataRepository.hentAlleSomSkalSendes()
+        assertThat(meldingerEtterDeling.size).isEqualTo(2)
+        assertThat(meldingerEtterDeling.maxBy { it.opprettet }.operasjon).isEqualTo(OversiktenMelding.Operasjon.STOPP)
+
+        // Hent oppdatert aktivitet etter publisering
+        val aktivitetEtterPublisering = aktivitetTestService.hentAktivitet(happyBruker, veileder, aktivitetMedReferat.id)
+
+        // Tøm referatet
+        aktivitetEtterPublisering.setReferat("")
+        val aktivitetMedTomtReferat = aktivitetTestService.oppdaterReferat(aktivitetEtterPublisering, veileder)
+
+        // Fyll inn nytt referat - skal IKKE sende ny START-melding siden referatet allerede er delt
+        aktivitetMedTomtReferat.setReferat("Et nytt referat")
+        aktivitetTestService.oppdaterReferat(aktivitetMedTomtReferat, veileder)
+
+        // Verifiser at det fortsatt bare er 2 meldinger (START og STOPP fra før)
+        val meldingerEtterNyttReferat = oversiktenMeldingMedMetadataRepository.hentAlleSomSkalSendes()
+        assertThat(meldingerEtterNyttReferat.size).isEqualTo(2)
     }
 }
