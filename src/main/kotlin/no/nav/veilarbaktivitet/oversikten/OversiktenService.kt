@@ -67,6 +67,23 @@ open class OversiktenService(
         }
     }
 
+    /**
+     * Engangsjobb for å rydde opp i tilfeller der det er sendt START-melding til oversikten,
+     * men referatet allerede er publisert (referat_publisert = 1).
+     */
+    @Scheduled(cron = "0 00 16 * * ?")
+    @SchedulerLock(name = "oversikten_stopp_publiserte_referat_scheduledTask", lockAtMostFor = "PT15M")
+    open fun sendStoppMeldingForPubliserteReferaterMedFeilaktigStartMelding() {
+        log.info("Starter opprydding av feilaktige START-meldinger for publiserte referater")
+        val feilaktigeStartMeldinger = oversiktenMeldingMedMetadataRepository.hentPubliserteSamtalereferaterMedStartMeldingUtenStoppMelding()
+        log.info("Fant ${feilaktigeStartMeldinger.size} publiserte referater med START-melding uten STOPP-melding")
+        feilaktigeStartMeldinger.forEach {
+            log.info("Sender STOPP-melding for aktivitet ${it.aktivitetId}")
+            lagreStoppMeldingOmUdeltSamtalereferatIUtboks(AktorId(it.aktorId.get()), it.aktivitetId)
+        }
+        log.info("Ferdig med opprydding av feilaktige START-meldinger")
+    }
+
     open fun lagreStartMeldingOmUdeltSamtalereferatIUtboks(aktorId: AktorId, aktivitetId: AktivitetId) {
         val fnr = aktorOppslagClient.hentFnr(no.nav.common.types.identer.AktorId.of(aktorId.get()))
         val melding =

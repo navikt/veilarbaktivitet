@@ -164,6 +164,49 @@ open class OversiktenMeldingMedMetadataDAO(
         }
     }
 
+    /**
+     * Finner aktiviteter der det er sendt START-melding til oversikten, men ingen STOPP-melding,
+     * selv om referatet er publisert (referat_publisert = 1).
+     */
+    open fun hentPubliserteSamtalereferaterMedStartMeldingUtenStoppMelding(): List<UdeltSamtalereferatUtenMelding> {
+        val sql = """
+            WITH start_meldinger AS (
+                SELECT
+                    map.aktivitet_id,
+                    om.melding_key
+                FROM oversikten_melding_aktivitet_mapping map
+                JOIN oversikten_melding_med_metadata om
+                    ON om.melding_key = map.oversikten_melding_key
+                WHERE om.operasjon = 'START'
+                  AND om.kategori = 'UDELT_SAMTALEREFERAT'
+            ),
+            stopp_meldinger AS (
+                SELECT DISTINCT melding_key
+                FROM oversikten_melding_med_metadata
+                WHERE operasjon = 'STOPP'
+                  AND kategori = 'UDELT_SAMTALEREFERAT'
+            )
+            SELECT
+                a.aktivitet_id,
+                a.aktor_id
+            FROM start_meldinger sm
+            JOIN aktivitet a
+                ON a.aktivitet_id = sm.aktivitet_id
+                AND a.gjeldende = 1
+            JOIN mote m
+                ON m.aktivitet_id = a.aktivitet_id
+                AND m.versjon = a.versjon
+            LEFT JOIN stopp_meldinger stopp
+                ON stopp.melding_key = sm.melding_key
+            WHERE stopp.melding_key IS NULL
+              AND m.referat_publisert = 1
+        """.trimIndent()
+
+        return jdbc.query(sql) { rs: ResultSet, rowNum: Int ->
+            UdeltSamtalereferatUtenMelding(AktorId.of(rs.getString("aktor_id")), rs.getLong("aktivitet_id"))
+        }
+    }
+
 
     data class UdeltSamtalereferatUtenMelding(
         val aktorId: AktorId,
