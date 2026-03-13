@@ -16,6 +16,7 @@ import no.nav.veilarbaktivitet.norg2.Norg2Client
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeService
 import no.nav.veilarbaktivitet.person.EksternNavnService
 import no.nav.veilarbaktivitet.person.UserInContext
+import no.nav.veilarbaktivitet.util.DateUtils.norskDato
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -115,14 +116,17 @@ class ArkiveringsController(
     @AuthorizeFnr(auditlogMessage = "journalføre aktivitetsplan og dialog", resourceType = OppfolgingsperiodeResource::class, resourceIdParamName = "oppfolgingsperiodeId")
     fun arkiverAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID, @RequestBody journalførInboundDTO: JournalførInboundDTO): JournalførtOutboundDTO {
         if(!authService.erInternBruker()) throw ResponseStatusException(HttpStatus.FORBIDDEN)
-        val pdfPayloadResult = pdfPayloadService.lagPdfPayloadForJournalføring(userInContext.eksternBruker, oppfølgingsperiodeId, EnhetId.of(journalførInboundDTO.journalførendeEnhetId), journalførInboundDTO.forhaandsvisningOpprettet)
-        val pdfPayload = pdfPayloadResult.getOrElse {
-            val statusCode = (it as? ResponseStatusException)?.statusCode ?: HttpStatus.INTERNAL_SERVER_ERROR
-            throw ResponseStatusException(statusCode)
-        }
+        val bruker = userInContext.eksternBruker
         val sak = oppfølgingsperiodeService.hentSak(oppfølgingsperiodeId) ?: throw RuntimeException("Kunne ikke hente sak for oppfølgingsperiode: $oppfølgingsperiodeId")
+        val navn = navnService.hentNavn(bruker.fnr)
+        val oppfølgingsperiode = oppfølgingsperiodeService.hentOppfolgingsperiode(bruker.aktorId, oppfølgingsperiodeId) ?: throw RuntimeException("Fant ingen oppfølgingsperiode for $oppfølgingsperiodeId")
+
         val arkivPayload = mapTilArkivPayload(
-            pdfPayload = pdfPayload,
+            fnr = bruker.fnr,
+            navn = navn,
+            oppfolgingsperiodeId = oppfølgingsperiodeId,
+            oppfølgingsperiodeStart = norskDato(oppfølgingsperiode.startDato),
+            oppfølgingsperiodeSlutt = oppfølgingsperiode.sluttDato?.let { norskDato(it) },
             sakDTO = sak,
             journalførendeEnhetId = EnhetId.of(journalførInboundDTO.journalførendeEnhetId),
             tema = Tema_AktivitetsplanMedDialog,
@@ -143,21 +147,22 @@ class ArkiveringsController(
     @AuthorizeFnr(auditlogMessage = "Send aktivitetsplan til bruker", resourceType = OppfolgingsperiodeResource::class, resourceIdParamName = "oppfolgingsperiodeId")
     fun sendAktivitetsplanTilBruker(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID, @RequestBody sendTilBrukerInboundDTO: SendTilBrukerInboundDTO): ResponseEntity<Unit> {
         if(!authService.erInternBruker()) throw ResponseStatusException(HttpStatus.FORBIDDEN)
-        val pdfPayloadResult = pdfPayloadService.lagPdfPayloadForSendTilBruker(
-            bruker = userInContext.eksternBruker,
-            oppfølgingsperiodeId = oppfølgingsperiodeId,
-            journalførendeEnhetId = EnhetId.of(sendTilBrukerInboundDTO.journalførendeEnhetId),
-            tekstTilBruker = sendTilBrukerInboundDTO.tekstTilBruker,
-            filter = sendTilBrukerInboundDTO.filter,
-            forhåndsvisningsTidspunkt = sendTilBrukerInboundDTO.forhaandsvisningOpprettet
-        )
-        val pdfPayload = pdfPayloadResult.getOrElse {
-            val statusCode = (it as? ResponseStatusException)?.statusCode ?: HttpStatus.INTERNAL_SERVER_ERROR
-            throw ResponseStatusException(statusCode)
-        }
-
+        val bruker = userInContext.eksternBruker
         val sak = oppfølgingsperiodeService.hentSak(oppfølgingsperiodeId) ?: throw RuntimeException("Kunne ikke hente sak for oppfølgingsperiode: $oppfølgingsperiodeId")
-        val arkivPayload = mapTilArkivPayload(pdfPayload, sak, EnhetId.of(sendTilBrukerInboundDTO.journalførendeEnhetId), Tema_AktivitetsplanMedDialog, sendTilBrukerInboundDTO.uuidCachetPdf)
+        val navn = navnService.hentNavn(bruker.fnr)
+        val oppfølgingsperiode = oppfølgingsperiodeService.hentOppfolgingsperiode(bruker.aktorId, oppfølgingsperiodeId) ?: throw RuntimeException("Fant ingen oppfølgingsperiode for $oppfølgingsperiodeId")
+
+        val arkivPayload = mapTilArkivPayload(
+            fnr = bruker.fnr,
+            navn = navn,
+            oppfolgingsperiodeId = oppfølgingsperiodeId,
+            oppfølgingsperiodeStart = norskDato(oppfølgingsperiode.startDato),
+            oppfølgingsperiodeSlutt = oppfølgingsperiode.sluttDato?.let { norskDato(it) },
+            sakDTO = sak,
+            journalførendeEnhetId = EnhetId.of(sendTilBrukerInboundDTO.journalførendeEnhetId),
+            tema = Tema_AktivitetsplanMedDialog,
+            uuidCachetPdf = sendTilBrukerInboundDTO.uuidCachetPdf,
+        )
         val manuellStatus = manuellStatusClient.get(userInContext.aktorId).getOrNull()
         val erManuell = manuellStatus?.isErUnderManuellOppfolging ?: false
 

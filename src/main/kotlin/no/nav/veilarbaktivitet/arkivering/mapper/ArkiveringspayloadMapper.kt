@@ -4,9 +4,12 @@ import no.nav.common.types.identer.EnhetId
 import no.nav.veilarbaktivitet.aktivitet.AktivitetId
 import no.nav.veilarbaktivitet.aktivitet.Historikk
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
+import no.nav.veilarbaktivitet.aktivitetskort.OppfolgingsperiodeId
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO
 import no.nav.veilarbaktivitet.arkivering.*
 import no.nav.veilarbaktivitet.oppfolging.client.SakDTO
+import no.nav.veilarbaktivitet.person.Navn
+import no.nav.veilarbaktivitet.person.Person
 import no.nav.veilarbaktivitet.util.DateUtils.norskDato
 import org.slf4j.LoggerFactory
 
@@ -15,18 +18,26 @@ object ArkiveringspayloadMapper {
     private val logger = LoggerFactory.getLogger(this::class.java)
 
     fun mapTilArkivPayload(
-        pdfPayload: PdfPayload,
+        fnr: Person.Fnr,
+        navn: Navn,
+        oppfolgingsperiodeId: OppfolgingsperiodeId,
+        oppfølgingsperiodeStart: String,
+        oppfølgingsperiodeSlutt: String?,
         sakDTO: SakDTO,
         journalførendeEnhetId: EnhetId,
         tema: String,
         uuidCachetPdf: String,
         ): JournalføringPayload {
         return JournalføringPayload(
+            fnr = fnr.get(),
+            navn = navn.tilFornavnMellomnavnEtternavn(),
+            oppfølgingsperiodeId = oppfolgingsperiodeId,
+            oppfølgingsperiodeStart = oppfølgingsperiodeStart,
+            oppfølgingsperiodeSlutt = oppfølgingsperiodeSlutt,
             sakId = sakDTO.sakId,
             fagsaksystem = sakDTO.fagsaksystem,
             tema = tema,
             journalførendeEnhetId = journalførendeEnhetId.get(),
-            pdfPayload = pdfPayload,
             uuidCachetPdf = uuidCachetPdf,
         )
     }

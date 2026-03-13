@@ -444,36 +444,6 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
     }
 
     @Test
-    fun `Når man journalfører skal kun riktig oppfølgingsperiode være inkludert`() {
-        val (bruker, veileder) = hentBrukerOgVeileder("Sølvi", "Normalbakke")
-        val oppfølgingsperiodeForArkivering = bruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
-        val annenOppfølgingsperiode = UUID.randomUUID()
-        val aktivititetIAnnenOppfolgingsperiode = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
-            .toBuilder().oppfolgingsperiodeId(annenOppfølgingsperiode).build()
-        aktivitetTestService.opprettAktivitet(bruker, bruker, aktivititetIAnnenOppfolgingsperiode)
-        stubDialogTråder(
-            fnr = bruker.fnr,
-            oppfølgingsperiodeId = annenOppfølgingsperiode.toString(),
-            aktivitetId = "dummy"
-        )
-        stubIngenArenaAktiviteter(bruker.fnr)
-        val cachedPdfUuid = UUID.randomUUID().toString()
-        val arkiveringsUrl =
-            "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiodeForArkivering"
-
-        veileder
-            .createRequest(bruker)
-            .body(ArkiveringsController.JournalførInboundDTO(ZonedDateTime.now(), "1234", cachedPdfUuid))
-            .post(arkiveringsUrl)
-
-        val journalforingsrequest =
-            wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
-        val journalføringPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, JournalføringPayload::class.java)
-        assertThat(journalføringPayload.pdfPayload.aktiviteter).isEmpty()
-        assertThat(journalføringPayload.pdfPayload.dialogtråder).isEmpty()
-    }
-
-    @Test
     fun `Når man journalfører på bruker i KVP skal aktiviteter og dialoger med kontorsperre ekskluderes`() {
         val (kvpBruker, veileder) = hentKvpBrukerOgVeileder("Sølvi", "Normalbakke")
         val oppfølgingsperiode = kvpBruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId

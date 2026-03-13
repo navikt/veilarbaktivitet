@@ -6,11 +6,15 @@ import java.util.*
 typealias ArkivAktivitetStatus = String
 
 data class JournalføringPayload(
+    val fnr: String,
+    val navn: String,
+    val oppfølgingsperiodeId: UUID,
+    val oppfølgingsperiodeStart: String,
+    val oppfølgingsperiodeSlutt: String?,
     val sakId: Long,
     val fagsaksystem: String,
     val tema: String,
     val journalførendeEnhetId: String,
-    val pdfPayload: PdfPayload,
     val uuidCachetPdf: String,
 )
 
