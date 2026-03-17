@@ -88,8 +88,8 @@ open class OversiktenService(
      * Engangsjobb for å rydde opp i kasserte aktiviteter (beskrivelse = 'Kassert av NAV')
      * der det er sendt START-melding til oversikten, men ingen STOPP-melding.
      */
-//    @Scheduled(cron = "0 0 12 * * ?")
-//    @SchedulerLock(name = "oversikten_stopp_kasserte_aktiviteter_scheduledTask", lockAtMostFor = "PT15M")
+    @Scheduled(cron = "0 35 15 * * ?")
+    @SchedulerLock(name = "oversikten_stopp_kasserte_aktiviteter_scheduledTask", lockAtMostFor = "PT15M")
     open fun sendStoppMeldingForKasserteAktiviteter() {
         log.info("Starter opprydding av START-meldinger for kasserte aktiviteter")
         val kasserteAktiviteter = oversiktenMeldingMedMetadataRepository.hentKasserteAktiviteterMedStartMeldingUtenStoppMelding()
