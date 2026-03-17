@@ -71,7 +71,7 @@ open class OversiktenService(
      * Engangsjobb for å rydde opp i tilfeller der det er sendt START-melding til oversikten,
      * men referatet allerede er publisert (referat_publisert = 1).
      */
-//    @Scheduled(cron = "0 6 16 * * ?")
+//    @Scheduled(cron = "0 0 12 * * ?")
 //    @SchedulerLock(name = "oversikten_stopp_publiserte_referat_scheduledTask", lockAtMostFor = "PT15M")
     open fun sendStoppMeldingForPubliserteReferaterMedFeilaktigStartMelding() {
         log.info("Starter opprydding av feilaktige START-meldinger for publiserte referater")
@@ -82,6 +82,23 @@ open class OversiktenService(
             lagreStoppMeldingOmUdeltSamtalereferatIUtboks(AktorId(it.aktorId.get()), it.aktivitetId)
         }
         log.info("Ferdig med opprydding av feilaktige START-meldinger")
+    }
+
+    /**
+     * Engangsjobb for å rydde opp i kasserte aktiviteter (beskrivelse = 'Kassert av NAV')
+     * der det er sendt START-melding til oversikten, men ingen STOPP-melding.
+     */
+//    @Scheduled(cron = "0 0 12 * * ?")
+//    @SchedulerLock(name = "oversikten_stopp_kasserte_aktiviteter_scheduledTask", lockAtMostFor = "PT15M")
+    open fun sendStoppMeldingForKasserteAktiviteter() {
+        log.info("Starter opprydding av START-meldinger for kasserte aktiviteter")
+        val kasserteAktiviteter = oversiktenMeldingMedMetadataRepository.hentKasserteAktiviteterMedStartMeldingUtenStoppMelding()
+        log.info("Fant ${kasserteAktiviteter.size} kasserte aktiviteter med START-melding uten STOPP-melding")
+        kasserteAktiviteter.forEach {
+            log.info("Sender STOPP-melding for kassert aktivitet ${it.aktivitetId}")
+            lagreStoppMeldingOmUdeltSamtalereferatIUtboks(AktorId(it.aktorId.get()), it.aktivitetId)
+        }
+        log.info("Ferdig med opprydding av kasserte aktiviteter")
     }
 
     open fun lagreStartMeldingOmUdeltSamtalereferatIUtboks(aktorId: AktorId, aktivitetId: AktivitetId) {
