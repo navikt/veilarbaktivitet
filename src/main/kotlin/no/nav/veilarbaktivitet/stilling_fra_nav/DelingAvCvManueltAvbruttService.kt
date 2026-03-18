@@ -18,7 +18,7 @@ open class DelingAvCvManueltAvbruttService(
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
-    @Timed(value = "stillingFraNavAvbruttEllerFullfortUtenSvar", histogram = true)
+    @Timed(value = "stillingFraNavAvbruttEllerFullfortUtenSvarBatch", histogram = true)
     open fun notifiserFullfortEllerAvbruttUtenSvar(maxantall: Int): Int {
         return batchTrackingDao.withOffset(BatchJob.Deling_av_cv_avbrutt_eller_fuulfort_uten_svar) { sisteProsesserteVersjonFørBatch ->
             val aktivitetData = delingAvCvDAO.hentStillingFraNavSomErFullfortEllerAvbruttUtenSvar(maxantall.toLong(), sisteProsesserteVersjonFørBatch)

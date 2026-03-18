@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory
       STUDIESPESIALISERING - Ny tiltakskode for GRUPPEAMO og ENKELAMO etter ny forskrift (bokstav c)
       FAG_OG_YRKESOPPLAERING - GRUFAGYRK og ENKFAGYRK etter ny forskrift(bokstav d)
       HOYERE_YRKESFAGLIG_UTDANNING - GRUFAGYRK og ENKFAGYRK etter ny forskrift(bokstav e)
+      FIREARIG_LONNSTILSKUDD - Fireårig lønnstilskudd
 
 */
 enum class AktivitetskortType {
@@ -53,7 +54,8 @@ enum class AktivitetskortType {
     NORSKOPPLAERING_GRUNNLEGGENDE_FERDIGHETER_FOV,
     STUDIESPESIALISERING,
     FAG_OG_YRKESOPPLAERING,
-    HOYERE_YRKESFAGLIG_UTDANNING;
+    HOYERE_YRKESFAGLIG_UTDANNING,
+    FIREARIG_LONNSTILSKUDD;
 
     companion object {
         private val logger = LoggerFactory.getLogger(this::class.java)

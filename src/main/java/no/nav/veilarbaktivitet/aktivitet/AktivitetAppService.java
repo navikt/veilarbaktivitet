@@ -272,13 +272,16 @@ public class AktivitetAppService {
 
         var referatHarNåFåttInnhold = forrigeReferat.isEmpty() && !nesteReferat.isEmpty();
         var referatHarNåBlittDeltMedBruker = !originalAktivitet.getMoteData().isReferatPublisert() && oppdatertAktivitet.getMoteData().isReferatPublisert();
+        var referatVarAlleredeDelt = originalAktivitet.getMoteData().isReferatPublisert();
 
-        if (referatHarNåFåttInnhold && !referatHarNåBlittDeltMedBruker) {
+        if (referatHarNåFåttInnhold && !referatHarNåBlittDeltMedBruker && !referatVarAlleredeDelt) {
             return Optional.of(EventType.SAMTALEREFERAT_OPPRETTET);
         } else if (referatHarNåFåttInnhold && referatHarNåBlittDeltMedBruker) {
             return Optional.of(EventType.SAMTALEREFERAT_OPPRETTET_OG_DELT_MED_BRUKER);
         } else if (!referatHarNåFåttInnhold && referatHarNåBlittDeltMedBruker) {
             return Optional.of(EventType.SAMTALEREFERAT_DELT_MED_BRUKER);
+        } else if (referatHarNåFåttInnhold && referatVarAlleredeDelt) {
+            return Optional.of(EventType.SAMTALEREFERAT_FIKK_INNHOLD);
         } else {
             return Optional.empty();
         }
