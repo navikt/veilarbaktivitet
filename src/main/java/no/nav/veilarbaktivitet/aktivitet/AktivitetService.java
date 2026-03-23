@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
 
-import static java.util.Optional.ofNullable;
 import static no.nav.common.utils.StringUtils.nullOrEmpty;
 
 @Service
