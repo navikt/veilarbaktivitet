@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.arkivering
 
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData
 import no.nav.veilarbaktivitet.aktivitet.mappers.Helpers
 import no.nav.veilarbaktivitet.util.DateUtils
 import java.time.ZonedDateTime
@@ -103,6 +104,26 @@ private fun ArkiveringsData.filtrerPaAktivitetType(filter: ArkiveringsController
         if (filter.aktivitetTypeFilter.contains(ArkiveringsController.AktivitetTypeFilter.ARENA_TILTAK)) this.arenaAktiviteter else emptyList()
 
     return this.copy(aktiviteter = filtrerteAktiviteter, arenaAktiviteter = filtrerteArenaAktiviteter)
+}
+
+private fun ArkiveringsData.filtrerPåDatoPeriode(filter: ArkiveringsController.Filter): ArkiveringsData {
+    if (filter.datoPeriode == null) return this
+    val filtrerteAktiviteter = aktiviteter.filter {
+        when (it.aktivitetType) {
+            AktivitetTypeData.EGENAKTIVITET -> DateUtils.dateToZonedDateTime(it.fraDato).iTidsrom(filter.datoPeriode.fra, filter.datoPeriode.til)
+            AktivitetTypeData.JOBBSOEKING -> DateUtils.dateToZonedDateTime(it.fraDato).iTidsrom(filter.datoPeriode.fra, filter.datoPeriode.til)
+            AktivitetTypeData.SOKEAVTALE -> TODO()
+            AktivitetTypeData.IJOBB -> TODO()
+            AktivitetTypeData.BEHANDLING -> TODO()
+            AktivitetTypeData.MOTE -> TODO()
+            AktivitetTypeData.SAMTALEREFERAT -> TODO()
+            AktivitetTypeData.STILLING_FRA_NAV -> TODO()
+            AktivitetTypeData.EKSTERNAKTIVITET -> TODO()
+        }
+    }
+
+    // TODO: aktiviteter, arenaAktiviteter og dialoger
+    return this.copy(aktiviteter = filtrerteAktiviteter)
 }
 
 private fun ArkiveringsData.filtrerInkluderDialoger(filter: ArkiveringsController.Filter): ArkiveringsData {
