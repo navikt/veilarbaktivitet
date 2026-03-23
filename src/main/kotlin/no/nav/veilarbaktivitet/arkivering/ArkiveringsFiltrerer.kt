@@ -13,6 +13,7 @@ fun filtrerArkiveringsData(
     filter: ArkiveringsController.Filter
 ): ArkiveringsData {
     return arkiveringsData
+        .filtrerPåDatoPeriode(filter)
         .filtrerPåHistorikk(filter)
         .filtrerPåAvtaltMedNavn(filter)
         .filtrerPåStillingsstatus(filter)
