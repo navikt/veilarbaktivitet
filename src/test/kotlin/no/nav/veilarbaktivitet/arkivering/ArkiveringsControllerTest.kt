@@ -1117,6 +1117,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         aktivitetAvtaltMedNavFilter = emptyList(),
         stillingsstatusFilter = emptyList(),
         arenaAktivitetStatusFilter = emptyList(),
-        aktivitetTypeFilter = emptyList()
+        aktivitetTypeFilter = emptyList(),
+        datoPeriode = null,
     )
 }

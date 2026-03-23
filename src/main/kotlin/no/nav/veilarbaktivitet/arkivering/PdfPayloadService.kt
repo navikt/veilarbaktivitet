@@ -82,6 +82,7 @@ class PdfPayloadService(
         inkluderHistorikk = true,
         kvpUtvalgskriterie = KvpUtvalgskriterie(EKSKLUDER_KVP_AKTIVITETER),
         inkluderDialoger = true,
+        datoPeriode = null,
         aktivitetAvtaltMedNavFilter = emptyList(),
         stillingsstatusFilter = emptyList(),
         arenaAktivitetStatusFilter = emptyList(),

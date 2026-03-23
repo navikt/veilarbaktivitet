@@ -57,6 +57,7 @@ class ArkiveringFilterTest {
         arenaAktivitetStatusFilter = emptyList(),
         aktivitetTypeFilter = emptyList(),
         inkluderDialoger = true,
+        datoPeriode = null,
         kvpUtvalgskriterie = ArkiveringsController.KvpUtvalgskriterie(
             alternativ = INKLUDER_KVP_AKTIVITETER,
             start = null,
