@@ -7,6 +7,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
 import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvFerdigAktivitetException;
 import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvHistoriskAktivitetException;
+import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortCompareUtil;
 import no.nav.veilarbaktivitet.eventsLogger.BigQueryClient;
 import no.nav.veilarbaktivitet.eventsLogger.EventType;
 import no.nav.veilarbaktivitet.oversikten.OversiktenService;
@@ -161,14 +162,15 @@ public class AktivitetAppService {
     }
 
     private void oppdaterSomNav(AktivitetData aktivitet, AktivitetData original) {
-        if (original.isAvtalt()) {
-            if (original.getAktivitetType() == AktivitetTypeData.MOTE) {
-                aktivitetService.oppdaterMoteTidStedOgKanal(original, aktivitet);
-            } else {
-                aktivitetService.oppdaterAktivitetFrist(original, aktivitet);
-            }
+        if (original.isAvtalt() && original.getAktivitetType() != AktivitetTypeData.MOTE) {
+            aktivitetService.oppdaterAktivitetFrist(original, aktivitet);
         } else {
-            aktivitetService.oppdaterAktivitet(original, aktivitet);
+            /* Oppdatering av status skjer i eget endepukt og er ikke en del av sammenligningen */
+            if (AktivitetskortCompareUtil.INSTANCE.erFaktiskOppdatert(original, aktivitet)) {
+                aktivitetService.oppdaterAktivitet(original, aktivitet);
+            } else {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Aktiviteten har ikke blitt endret");
+            }
         }
     }
 
