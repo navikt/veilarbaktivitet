@@ -55,7 +55,7 @@ internal class AktivitetsCompareUtilTest {
     }
 
     @Test
-    fun `aktivitetsstatus endring er ikke faktisk endring fordi dette skjer i egne endepunkter og transaksjoner`() {
+    fun aktivitetsstatus_endring_er_ikke_faktisk_endring() {
         val gammelAktivitet = AktivitetDataTestBuilder.nyEksternAktivitet()
             .withStatus(AktivitetStatus.GJENNOMFORES)
         val nyAktivitet = gammelAktivitet
