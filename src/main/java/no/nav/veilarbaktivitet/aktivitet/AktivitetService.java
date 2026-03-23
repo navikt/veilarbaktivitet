@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
 
-import static java.util.Optional.ofNullable;
 import static no.nav.common.utils.StringUtils.nullOrEmpty;
 
 @Service
@@ -155,23 +154,6 @@ public class AktivitetService {
                 .endretDato(aktivitetData.getEndretDato())
                 .transaksjonsType(AktivitetTransaksjonsType.AVTALT_DATO_ENDRET)
                 .tilDato(aktivitetData.getTilDato())
-                .build();
-        aktivitetDAO.oppdaterAktivitet(oppdatertAktivitetMedNyFrist);
-    }
-
-    public void oppdaterMoteTidStedOgKanal(AktivitetData originalAktivitet, AktivitetData aktivitetData) {
-        final var oppdatertAktivitetMedNyFrist = originalAktivitet
-                .toBuilder()
-                .endretAvType(aktivitetData.getEndretAvType())
-                .endretAv(aktivitetData.getEndretAv())
-                .endretDato(aktivitetData.getEndretDato())
-                .transaksjonsType(AktivitetTransaksjonsType.MOTE_TID_OG_STED_ENDRET)
-                .fraDato(aktivitetData.getFraDato())
-                .tilDato(aktivitetData.getTilDato())
-                .moteData(ofNullable(originalAktivitet.getMoteData()).map(moteData ->
-                        moteData.withAdresse(aktivitetData.getMoteData().getAdresse())
-                                .withKanal(aktivitetData.getMoteData().getKanal())
-                ).orElse(null))
                 .build();
         aktivitetDAO.oppdaterAktivitet(oppdatertAktivitetMedNyFrist);
     }
