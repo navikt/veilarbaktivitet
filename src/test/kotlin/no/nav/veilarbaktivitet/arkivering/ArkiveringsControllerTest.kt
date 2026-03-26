@@ -574,6 +574,49 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
     }
 
     @Test
+    fun `Skal kunne definere datoperiode i filteret`() {
+        val (bruker, veileder) = hentBrukerOgVeileder("Sølvi", "Normalbakke")
+        val oppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
+        val aktivitetIPeriode = aktivitetTestService.opprettAktivitet(
+            bruker,
+            veileder,
+            AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
+                .toBuilder().tittel("iPeriode").oppfolgingsperiodeId(oppfølgingsperiode).build()
+        )
+        val datoPeriode = ArkiveringsController.DatoPeriode(
+            fra = dateToZonedDateTime(aktivitetIPeriode.fraDato).minusDays(1),
+            til = dateToZonedDateTime(aktivitetIPeriode.fraDato).plusDays(1)
+        )
+        val aktivitetUtaforPeriode = aktivitetTestService.opprettAktivitet(
+            bruker,
+            veileder,
+            AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
+                .toBuilder().oppfolgingsperiodeId(oppfølgingsperiode).opprettetDato(Date.from(datoPeriode.til.plusDays(2).toInstant())).build()
+        )
+        stubIngenDialogTråder()
+        stubIngenArenaAktiviteter(bruker.fnr)
+        val url = "http://localhost:$port/veilarbaktivitet/api/arkivering/forhaandsvisning-send-til-bruker?oppfolgingsperiodeId=$oppfølgingsperiode"
+        val body = ArkiveringsController.ForhaandsvisningSendTilBrukerInboundDto(
+            tekstTilBruker = "Tekst til bruker",
+            filter = defaultFilter(kvpAlternativ = INKLUDER_KVP_AKTIVITETER, datoPeriode = datoPeriode),
+            journalførendeEnhetId = "1234",
+        )
+
+        val response = veileder
+            .createRequest(bruker)
+            .body(body)
+            .post(url)
+
+        assertThat(response.statusCode).isEqualTo(200)
+        val forhaandsvisningRequest =
+            wireMock.getAllServeEvents().first { it.request.url.contains("forhaandsvisning-send-til-bruker") }
+        val payload = JsonUtils.fromJson(forhaandsvisningRequest.request.bodyAsString, PdfPayload::class.java)
+        val aktiviteterIPayload = payload.aktiviteter.values.flatten()
+        assertThat(aktiviteterIPayload.size).isEqualTo(1)
+        assertThat(aktiviteterIPayload.first().tittel).isEqualTo(aktivitetIPeriode.tittel)
+    }
+
+    @Test
     fun `Når man journalfører på bruker som har vært i KVP skal aktiviteter utenom KVP-perioden inkluderes`() {
         val (bruker, veileder) = hentKvpBrukerOgVeileder("Sølvi", "Normalbakke")
         val oppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
@@ -1106,7 +1149,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         return Pair(bruker, veileder)
     }
 
-    private fun defaultFilter(kvpAlternativ: ArkiveringsController.KvpUtvalgskriterieAlternativ = EKSKLUDER_KVP_AKTIVITETER) = ArkiveringsController.Filter(
+    private fun defaultFilter(kvpAlternativ: ArkiveringsController.KvpUtvalgskriterieAlternativ = EKSKLUDER_KVP_AKTIVITETER, datoPeriode: ArkiveringsController.DatoPeriode? = null) = ArkiveringsController.Filter(
         inkluderHistorikk = true,
         inkluderDialoger = true,
         kvpUtvalgskriterie = ArkiveringsController.KvpUtvalgskriterie(
@@ -1118,6 +1161,6 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         stillingsstatusFilter = emptyList(),
         arenaAktivitetStatusFilter = emptyList(),
         aktivitetTypeFilter = emptyList(),
-        datoPeriode = null,
+        datoPeriode = datoPeriode,
     )
 }
