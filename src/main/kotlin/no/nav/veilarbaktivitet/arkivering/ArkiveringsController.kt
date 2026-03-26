@@ -16,6 +16,7 @@ import no.nav.veilarbaktivitet.norg2.Norg2Client
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeService
 import no.nav.veilarbaktivitet.person.EksternNavnService
 import no.nav.veilarbaktivitet.person.UserInContext
+import no.nav.veilarbaktivitet.util.DateUtils.norskDato
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -222,7 +223,8 @@ class ArkiveringsController(
                 "Avtalt med Nav" to aktivitetAvtaltMedNavFilter.map { it.tekst },
                 "Stillingsstatus" to stillingsstatusFilter.map { it.tekst },
                 "Status for Arena-aktivitet" to arenaAktivitetStatusFilter.map { it.toArkivEtikett().tekst },
-                "Aktivitetstype" to aktivitetTypeFilter.map { it.tekst }
+                "Aktivitetstype" to aktivitetTypeFilter.map { it.tekst },
+                "Periode valgt" to if(datoPeriode != null) { listOf("Fra ${norskDato(datoPeriode.fra)} til ${norskDato(datoPeriode.til)}")} else emptyList(),
             ).filter { it.value.isNotEmpty() }
         }
     }
