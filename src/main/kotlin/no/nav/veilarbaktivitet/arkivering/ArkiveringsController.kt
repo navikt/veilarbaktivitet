@@ -211,6 +211,7 @@ class ArkiveringsController(
         val inkluderHistorikk: Boolean,
         val kvpUtvalgskriterie: KvpUtvalgskriterie,
         val inkluderDialoger: Boolean,
+        val datoPeriode: DatoPeriode?,
         val aktivitetAvtaltMedNavFilter: List<AvtaltMedNavFilter>,
         val stillingsstatusFilter: List<SøknadsstatusFilter>,
         val arenaAktivitetStatusFilter: List<ArenaStatusEtikettDTO>,
@@ -225,6 +226,11 @@ class ArkiveringsController(
             ).filter { it.value.isNotEmpty() }
         }
     }
+
+    data class DatoPeriode(
+        val fra: ZonedDateTime,
+        val til: ZonedDateTime
+    )
 
     data class KvpUtvalgskriterie(
         val alternativ: KvpUtvalgskriterieAlternativ,

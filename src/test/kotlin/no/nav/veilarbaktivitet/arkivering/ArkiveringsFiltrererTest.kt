@@ -343,10 +343,153 @@ class ArkiveringsFiltrererTest {
         assertThat(filtrertData.dialoger).hasSize(1)
     }
 
+    @Test
+    fun `Skal kunne ekskludere aktiviteter utafor periode`() {
+        val periodeStart = ZonedDateTime.now()
+        val periodeSlutt = ZonedDateTime.now().plusDays(10)
+
+        val aktivitetMedStartIPerioden = AktivitetDataTestBuilder.nyAktivitet()
+            .fraDato(Date.from(periodeStart.plusDays(1).toInstant()))
+            .tilDato(Date.from(periodeSlutt.plusDays(5).toInstant()))
+            .build()
+        val aktivitetMedSluttIPerioden = AktivitetDataTestBuilder.nyAktivitet()
+            .fraDato(Date.from(periodeStart.minusDays(5).toInstant()))
+            .tilDato(Date.from(periodeSlutt.minusDays(1).toInstant()))
+            .build()
+        val aktivitetUtenSluttdatoMedStartFørPerioden = AktivitetDataTestBuilder.nyAktivitet()
+            .fraDato(Date.from(periodeStart.minusDays(2).toInstant()))
+            .tilDato(null)
+            .build()
+        val aktivitetHeltFørPerioden = AktivitetDataTestBuilder.nyAktivitet()
+            .fraDato(Date.from(periodeStart.minusDays(20).toInstant()))
+            .tilDato(Date.from(periodeStart.minusDays(15).toInstant()))
+            .build()
+        val aktivitetHeltEtterPerioden = AktivitetDataTestBuilder.nyAktivitet()
+            .fraDato(Date.from(periodeSlutt.plusDays(15).toInstant()))
+            .tilDato(Date.from(periodeSlutt.plusDays(20).toInstant()))
+            .build()
+
+        val arkiveringsData = defaultArkiveringsData.copy(
+            aktiviteter = listOf(
+                aktivitetMedStartIPerioden,
+                aktivitetMedSluttIPerioden,
+                aktivitetUtenSluttdatoMedStartFørPerioden,
+                aktivitetHeltFørPerioden,
+                aktivitetHeltEtterPerioden,
+            )
+        )
+        val filter = defaultFilter.copy(
+            datoPeriode = ArkiveringsController.DatoPeriode(fra = periodeStart, til = periodeSlutt)
+        )
+        val filtrertData = filtrerArkiveringsData(arkiveringsData, filter)
+        assertThat(filtrertData.aktiviteter).hasSize(3)
+    }
+
+    @Test
+    fun `Skal kunne ekskludere Arena-aktiviteter utafor periode`() {
+        val periodeStart = ZonedDateTime.now()
+        val periodeSlutt = ZonedDateTime.now().plusDays(10)
+
+        val arenaAktivitetMedStartIPerioden = ArenaAktivitetDTO.builder()
+            .fraDato(Date.from(periodeStart.plusDays(1).toInstant()))
+            .tilDato(Date.from(periodeSlutt.plusDays(5).toInstant()))
+            .build()
+        val arenaAktivitetMedSluttIPerioden = ArenaAktivitetDTO.builder()
+            .fraDato(Date.from(periodeStart.minusDays(5).toInstant()))
+            .tilDato(Date.from(periodeSlutt.minusDays(1).toInstant()))
+            .build()
+        val arenaAktivitetUtenSluttdatoMedStartFørPerioden = ArenaAktivitetDTO.builder()
+            .fraDato(Date.from(periodeStart.minusDays(2).toInstant()))
+            .tilDato(null)
+            .build()
+        val arenaAktivitetHeltFørPerioden = ArenaAktivitetDTO.builder()
+            .fraDato(Date.from(periodeStart.minusDays(20).toInstant()))
+            .tilDato(Date.from(periodeStart.minusDays(15).toInstant()))
+            .build()
+        val arenaAktivitetHeltEtterPerioden = ArenaAktivitetDTO.builder()
+            .fraDato(Date.from(periodeSlutt.plusDays(15).toInstant()))
+            .tilDato(Date.from(periodeSlutt.plusDays(20).toInstant()))
+            .build()
+
+        val arkiveringsData = defaultArkiveringsData.copy(
+            arenaAktiviteter = listOf(
+                arenaAktivitetMedStartIPerioden,
+                arenaAktivitetMedSluttIPerioden,
+                arenaAktivitetUtenSluttdatoMedStartFørPerioden,
+                arenaAktivitetHeltFørPerioden,
+                arenaAktivitetHeltEtterPerioden,
+            )
+        )
+        val filter = defaultFilter.copy(
+            datoPeriode = ArkiveringsController.DatoPeriode(fra = periodeStart, til = periodeSlutt)
+        )
+        val filtrertData = filtrerArkiveringsData(arkiveringsData, filter)
+        assertThat(filtrertData.arenaAktiviteter).hasSize(3)
+    }
+
+    @Test
+    fun `Skal kunne ekskludere dialoger utafor periode`() {
+        val periodeStart = ZonedDateTime.now()
+        val periodeSlutt = ZonedDateTime.now().plusDays(10)
+
+        fun lagMelding(sendt: ZonedDateTime) = DialogClient.Melding(
+            id = UUID.randomUUID().toString(),
+            dialogId = "123",
+            avsender = Avsender.VEILEDER,
+            avsenderId = "421",
+            sendt = sendt,
+            lest = true,
+            viktig = false,
+            tekst = "Melding"
+        )
+
+        val dialogMedOpprettetIPerioden = defaultDialogtråd.copy(
+            id = "1",
+            opprettetDato = periodeStart.plusDays(1),
+            meldinger = listOf(lagMelding(periodeSlutt.plusDays(5)))
+        )
+        val dialogMedSisteMeldingIPerioden = defaultDialogtråd.copy(
+            id = "2",
+            opprettetDato = periodeStart.minusDays(5),
+            meldinger = listOf(lagMelding(periodeSlutt.minusDays(1)))
+        )
+        val dialogMedBådeOpprettetOgSisteMeldingIPerioden = defaultDialogtråd.copy(
+            id = "3",
+            opprettetDato = periodeStart.plusDays(2),
+            meldinger = listOf(lagMelding(periodeStart.plusDays(3)))
+        )
+        val dialogHeltFørPerioden = defaultDialogtråd.copy(
+            id = "4",
+            opprettetDato = periodeStart.minusDays(20),
+            meldinger = listOf(lagMelding(periodeStart.minusDays(15)))
+        )
+        val dialogHeltEtterPerioden = defaultDialogtråd.copy(
+            id = "5",
+            opprettetDato = periodeSlutt.plusDays(15),
+            meldinger = listOf(lagMelding(periodeSlutt.plusDays(20)))
+        )
+
+        val arkiveringsData = defaultArkiveringsData.copy(
+            dialoger = listOf(
+                dialogMedOpprettetIPerioden,
+                dialogMedSisteMeldingIPerioden,
+                dialogMedBådeOpprettetOgSisteMeldingIPerioden,
+                dialogHeltFørPerioden,
+                dialogHeltEtterPerioden,
+            )
+        )
+        val filter = defaultFilter.copy(
+            datoPeriode = ArkiveringsController.DatoPeriode(fra = periodeStart, til = periodeSlutt)
+        )
+        val filtrertData = filtrerArkiveringsData(arkiveringsData, filter)
+        assertThat(filtrertData.dialoger).hasSize(3)
+    }
+
     val defaultFilter = ArkiveringsController.Filter(
         inkluderHistorikk = true,
         aktivitetAvtaltMedNavFilter = emptyList(),
         stillingsstatusFilter = emptyList(),
+        datoPeriode = null,
         arenaAktivitetStatusFilter = emptyList(),
         aktivitetTypeFilter = emptyList(),
         inkluderDialoger = true,

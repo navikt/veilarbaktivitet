@@ -210,7 +210,8 @@ class PdfPayloadServiceTest {
         aktivitetAvtaltMedNavFilter = emptyList(),
         stillingsstatusFilter = emptyList(),
         arenaAktivitetStatusFilter = emptyList(),
-        aktivitetTypeFilter = emptyList()
+        aktivitetTypeFilter = emptyList(),
+        datoPeriode = null,
     )
 
     fun pdfPayloadService(
