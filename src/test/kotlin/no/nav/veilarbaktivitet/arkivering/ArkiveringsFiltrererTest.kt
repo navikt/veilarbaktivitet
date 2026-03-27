@@ -428,20 +428,45 @@ class ArkiveringsFiltrererTest {
     }
 
     @Test
+    fun `Periode slutt skal tolkes inclusive`() {
+        val periodeStart = ZonedDateTime.parse("2026-03-26T23:00:00.000Z")
+        val periodeSlutt = ZonedDateTime.parse("2026-03-26T23:00:00.000Z")
+
+        val aktivitet = AktivitetDataTestBuilder.nyAktivitet()
+            .fraDato(Date.from(periodeStart.plusDays(1).toInstant()))
+            .tilDato(Date.from(periodeSlutt.plusDays(5).toInstant()))
+            .build()
+        val arenaAktivitet = ArenaAktivitetDTO.builder()
+            .fraDato(Date.from(periodeStart.minusDays(20).toInstant()))
+            .tilDato(Date.from(periodeStart.minusDays(15).toInstant()))
+            .build()
+        val dialog = defaultDialogtråd.copy(
+            id = "1",
+            opprettetDato = periodeStart.plusDays(1),
+            meldinger = listOf(lagMelding(periodeSlutt.plusDays(5)))
+        )
+
+        val arkiveringsData = defaultArkiveringsData.copy(
+            aktiviteter = listOf(
+                aktivitet
+            ),
+            arenaAktiviteter = listOf(
+                arenaAktivitet
+            ),
+            dialoger = listOf(dialog)
+        )
+
+        val filter = defaultFilter.copy(
+            datoPeriode = ArkiveringsController.DatoPeriode(fra = periodeStart, til = periodeSlutt)
+        )
+        val filtrertData = filtrerArkiveringsData(arkiveringsData, filter)
+        assertThat(filtrertData.aktiviteter).hasSize(3)
+    }
+
+    @Test
     fun `Skal kunne ekskludere dialoger utafor periode`() {
         val periodeStart = ZonedDateTime.now()
         val periodeSlutt = ZonedDateTime.now().plusDays(10)
-
-        fun lagMelding(sendt: ZonedDateTime) = DialogClient.Melding(
-            id = UUID.randomUUID().toString(),
-            dialogId = "123",
-            avsender = Avsender.VEILEDER,
-            avsenderId = "421",
-            sendt = sendt,
-            lest = true,
-            viktig = false,
-            tekst = "Melding"
-        )
 
         val dialogMedOpprettetIPerioden = defaultDialogtråd.copy(
             id = "1",
@@ -539,5 +564,16 @@ class ArkiveringsFiltrererTest {
         opprettetDato = ZonedDateTime.now().minusSeconds(10),
         kontorsperreEnhetId = null,
         sisteDato = ZonedDateTime.now()
+    )
+
+    fun lagMelding(sendt: ZonedDateTime) = DialogClient.Melding(
+        id = UUID.randomUUID().toString(),
+        dialogId = "123",
+        avsender = Avsender.VEILEDER,
+        avsenderId = "421",
+        sendt = sendt,
+        lest = true,
+        viktig = false,
+        tekst = "Melding"
     )
 }
