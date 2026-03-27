@@ -620,15 +620,13 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
     fun `Skal kunne filtrere på møte ved å velge møtets tidspunkt som datoperiode`() {
         val (bruker, veileder) = hentBrukerOgVeileder("Sølvi", "Normalbakke")
         val oppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
-        val aktivitetIPeriode = aktivitetTestService.opprettAktivitet(
-            bruker,
-            veileder,
-            AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE)
-                .toBuilder().oppfolgingsperiodeId(oppfølgingsperiode).build()
-        )
-        val datoPeriode = ArkiveringsController.DatoPeriode(
-            fra = dateToZonedDateTime(aktivitetIPeriode.fraDato).minusDays(1),
-            til = dateToZonedDateTime(aktivitetIPeriode.fraDato).plusDays(1)
+        val møteAktivitet = aktivitetTestService.opprettAktivitet(bruker, veileder, AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE)
+            .toBuilder()
+            .tittel("Møtet ditt")
+            .fraDato(Date.from(Instant.parse("2026-03-18T13:00:00.000Z")))
+            .tilDato(Date.from(Instant.parse("2026-03-18T13:10:00.000Z")))
+            .oppfolgingsperiodeId(oppfølgingsperiode)
+            .build()
         )
         stubIngenDialogTråder()
         stubIngenArenaAktiviteter(bruker.fnr)
@@ -653,7 +651,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                         "arenaAktivitetStatusFilter": [],
                         "aktivitetTypeFilter": []
                     },
-                    "journalførendeEnhetId": "0124",
+                    "journalførendeEnhetId": "1234",
                     "tekstTilBruker": ""
                 }
             """.trimIndent())
@@ -665,6 +663,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val payload = JsonUtils.fromJson(forhaandsvisningRequest.request.bodyAsString, PdfPayload::class.java)
         val aktiviteterIPayload = payload.aktiviteter.values.flatten()
         assertThat(aktiviteterIPayload.size).isEqualTo(1)
+        assertThat(aktiviteterIPayload.first().tittel).isEqualTo(møteAktivitet.tittel)
     }
 
     @Test
