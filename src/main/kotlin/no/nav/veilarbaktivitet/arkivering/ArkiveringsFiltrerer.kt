@@ -109,7 +109,7 @@ private fun ArkiveringsData.filtrerPaAktivitetType(filter: ArkiveringsController
 
 private fun ArkiveringsData.filtrerPåDatoPeriode(filter: ArkiveringsController.Filter): ArkiveringsData {
     if (filter.datoPeriode == null) return this
-    val tilDatoInclusive = filter.datoPeriode.til.toLocalDate().plusDays(1).atStartOfDay(filter.datoPeriode.til.zone).minusSeconds(1)
+    val tilDatoInclusive = filter.datoPeriode.til.toLocalDate().plusDays(1).atStartOfDay(filter.datoPeriode.til.zone)
     val datoPeriodeInclusive = DatoPeriode(filter.datoPeriode.fra, tilDatoInclusive)
     val filtrerteAktiviteter = aktiviteter.filter {
         datoPeriodeInclusive.overlapper(
@@ -139,8 +139,7 @@ private fun ArkiveringsData.filtrerInkluderDialoger(filter: ArkiveringsControlle
 }
 
 private fun ZonedDateTime.iTidsrom(fra: ZonedDateTime?, til: ZonedDateTime?) =
-    (this.isEqual(fra) || this.isAfter(fra)) &&
-            (this.isBefore(til) || this.isEqual(til))
+    (this.isEqual(fra) || this.isAfter(fra)) && this.isBefore(til)
 
 private fun DatoPeriode.overlapper(start: ZonedDateTime, slutt: ZonedDateTime?): Boolean {
     val startIPerioden = start.iTidsrom(this.fra, this.til)

@@ -542,6 +542,28 @@ class ArkiveringsFiltrererTest {
         assertThat(filtrertData.dialoger).hasSize(1)
     }
 
+    @Test
+    fun `Aktivitet som starter på periode slutt skal ikke være med`() {
+        val periodeStart = ZonedDateTime.parse("2026-03-26T00:00:00.000Z")
+        val periodeSlutt = ZonedDateTime.parse("2026-03-26T00:00:00.000Z") // Skal inkludere aktiviteter hele datoen 26.03
+
+        val aktivitetSomStarterVedMidnattSlutt = AktivitetDataTestBuilder.nyAktivitet()
+            .fraDato(Date.from(periodeSlutt.plusDays(1).toInstant()))
+            .tilDato(Date.from(periodeSlutt.plusDays(5).toInstant()))
+            .build()
+
+        val arkiveringsData = defaultArkiveringsData.copy(
+            aktiviteter = listOf(aktivitetSomStarterVedMidnattSlutt)
+        )
+        val filter = defaultFilter.copy(
+            datoPeriode = ArkiveringsController.DatoPeriode(fra = periodeStart, til = periodeSlutt)
+        )
+
+        val filtrertData = filtrerArkiveringsData(arkiveringsData, filter)
+
+        assertThat(filtrertData.aktiviteter).hasSize(0)
+    }
+
 
     val defaultFilter = ArkiveringsController.Filter(
         inkluderHistorikk = true,
