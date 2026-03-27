@@ -428,40 +428,6 @@ class ArkiveringsFiltrererTest {
     }
 
     @Test
-    fun `Periode slutt skal tolkes inclusive`() {
-        val periodeStart = ZonedDateTime.parse("2026-03-26T00:00:00.000Z")
-        val periodeSlutt = ZonedDateTime.parse("2026-03-26T00:00:00.000Z")
-
-        val aktivitetSomStarterPåSisteDag = AktivitetDataTestBuilder.nyAktivitet()
-            .fraDato(Date.from(periodeSlutt.plusHours(5).toInstant()))
-            .tilDato(Date.from(periodeSlutt.plusDays(5).toInstant()))
-            .build()
-        val arenaAktivitetSomStarterPåSisteDag = ArenaAktivitetDTO.builder()
-            .fraDato(Date.from(periodeSlutt.plusHours(5).toInstant()))
-            .tilDato(Date.from(periodeSlutt.plusDays(5).toInstant()))
-            .build()
-        val dialogSomStarterPåSisteDag = defaultDialogtråd.copy(
-            id = "1",
-            opprettetDato = periodeSlutt.plusHours(5),
-            meldinger = listOf(lagMelding(periodeSlutt.plusDays(5)))
-        )
-        val arkiveringsData = defaultArkiveringsData.copy(
-            aktiviteter = listOf(aktivitetSomStarterPåSisteDag),
-            arenaAktiviteter = listOf(arenaAktivitetSomStarterPåSisteDag),
-            dialoger = listOf(dialogSomStarterPåSisteDag)
-        )
-        val filter = defaultFilter.copy(
-            datoPeriode = ArkiveringsController.DatoPeriode(fra = periodeStart, til = periodeSlutt)
-        )
-
-        val filtrertData = filtrerArkiveringsData(arkiveringsData, filter)
-
-        assertThat(filtrertData.aktiviteter).hasSize(1)
-        assertThat(filtrertData.arenaAktiviteter).hasSize(1)
-        assertThat(filtrertData.dialoger).hasSize(1)
-    }
-
-    @Test
     fun `Skal kunne ekskludere dialoger utafor periode`() {
         val periodeStart = ZonedDateTime.now()
         val periodeSlutt = ZonedDateTime.now().plusDays(10)
@@ -506,6 +472,40 @@ class ArkiveringsFiltrererTest {
         )
         val filtrertData = filtrerArkiveringsData(arkiveringsData, filter)
         assertThat(filtrertData.dialoger).hasSize(3)
+    }
+
+    @Test
+    fun `Periode slutt skal tolkes inclusive`() {
+        val periodeStart = ZonedDateTime.parse("2026-03-26T00:00:00.000Z")
+        val periodeSlutt = ZonedDateTime.parse("2026-03-26T00:00:00.000Z")
+
+        val aktivitetSomStarterPåSisteDag = AktivitetDataTestBuilder.nyAktivitet()
+            .fraDato(Date.from(periodeSlutt.plusHours(5).toInstant()))
+            .tilDato(Date.from(periodeSlutt.plusDays(5).toInstant()))
+            .build()
+        val arenaAktivitetSomStarterPåSisteDag = ArenaAktivitetDTO.builder()
+            .fraDato(Date.from(periodeSlutt.plusHours(5).toInstant()))
+            .tilDato(Date.from(periodeSlutt.plusDays(5).toInstant()))
+            .build()
+        val dialogSomStarterPåSisteDag = defaultDialogtråd.copy(
+            id = "1",
+            opprettetDato = periodeSlutt.plusHours(5),
+            meldinger = listOf(lagMelding(periodeSlutt.plusDays(5)))
+        )
+        val arkiveringsData = defaultArkiveringsData.copy(
+            aktiviteter = listOf(aktivitetSomStarterPåSisteDag),
+            arenaAktiviteter = listOf(arenaAktivitetSomStarterPåSisteDag),
+            dialoger = listOf(dialogSomStarterPåSisteDag)
+        )
+        val filter = defaultFilter.copy(
+            datoPeriode = ArkiveringsController.DatoPeriode(fra = periodeStart, til = periodeSlutt)
+        )
+
+        val filtrertData = filtrerArkiveringsData(arkiveringsData, filter)
+
+        assertThat(filtrertData.aktiviteter).hasSize(1)
+        assertThat(filtrertData.arenaAktiviteter).hasSize(1)
+        assertThat(filtrertData.dialoger).hasSize(1)
     }
 
     val defaultFilter = ArkiveringsController.Filter(
