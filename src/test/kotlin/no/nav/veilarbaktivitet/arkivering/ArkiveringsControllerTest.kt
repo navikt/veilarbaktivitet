@@ -617,6 +617,57 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
     }
 
     @Test
+    fun `Skal kunne filtrere på møte ved å velge møtets tidspunkt som datoperiode`() {
+        val (bruker, veileder) = hentBrukerOgVeileder("Sølvi", "Normalbakke")
+        val oppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
+        val aktivitetIPeriode = aktivitetTestService.opprettAktivitet(
+            bruker,
+            veileder,
+            AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE)
+                .toBuilder().oppfolgingsperiodeId(oppfølgingsperiode).build()
+        )
+        val datoPeriode = ArkiveringsController.DatoPeriode(
+            fra = dateToZonedDateTime(aktivitetIPeriode.fraDato).minusDays(1),
+            til = dateToZonedDateTime(aktivitetIPeriode.fraDato).plusDays(1)
+        )
+        stubIngenDialogTråder()
+        stubIngenArenaAktiviteter(bruker.fnr)
+        val url = "http://localhost:$port/veilarbaktivitet/api/arkivering/forhaandsvisning-send-til-bruker?oppfolgingsperiodeId=$oppfølgingsperiode"
+
+        val response = veileder
+            .createRequest(bruker)
+            .body("""
+                {
+                    "filter": {
+                        "inkluderHistorikk": false,
+                        "inkluderDialoger": true,
+                        "datoPeriode": {
+                            "fra": "2026-03-17T23:00:00.000Z",
+                            "til": "2026-03-17T23:00:00.000Z"
+                        },
+                        "kvpUtvalgskriterie": {
+                            "alternativ": "EKSKLUDER_KVP_AKTIVITETER"
+                        },
+                        "aktivitetAvtaltMedNavFilter": [],
+                        "stillingsstatusFilter": [],
+                        "arenaAktivitetStatusFilter": [],
+                        "aktivitetTypeFilter": []
+                    },
+                    "journalførendeEnhetId": "0124",
+                    "tekstTilBruker": ""
+                }
+            """.trimIndent())
+            .post(url)
+
+        assertThat(response.statusCode).isEqualTo(200)
+        val forhaandsvisningRequest =
+            wireMock.getAllServeEvents().first { it.request.url.contains("forhaandsvisning-send-til-bruker") }
+        val payload = JsonUtils.fromJson(forhaandsvisningRequest.request.bodyAsString, PdfPayload::class.java)
+        val aktiviteterIPayload = payload.aktiviteter.values.flatten()
+        assertThat(aktiviteterIPayload.size).isEqualTo(1)
+    }
+
+    @Test
     fun `Når man journalfører på bruker som har vært i KVP skal aktiviteter utenom KVP-perioden inkluderes`() {
         val (bruker, veileder) = hentKvpBrukerOgVeileder("Sølvi", "Normalbakke")
         val oppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
