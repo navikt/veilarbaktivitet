@@ -109,7 +109,7 @@ private fun ArkiveringsData.filtrerPaAktivitetType(filter: ArkiveringsController
 
 private fun ArkiveringsData.filtrerPåDatoPeriode(filter: ArkiveringsController.Filter): ArkiveringsData {
     if (filter.datoPeriode == null) return this
-    val tilDatoInclusive = filter.datoPeriode.til.toLocalDate().plusDays(1).atStartOfDay(filter.datoPeriode.til.zone)
+    val tilDatoInclusive = filter.datoPeriode.til.toLocalDate().plusDays(1).atStartOfDay(filter.datoPeriode.til.zone).minusSeconds(1)
     val datoPeriodeInclusive = DatoPeriode(filter.datoPeriode.fra, tilDatoInclusive)
     val filtrerteAktiviteter = aktiviteter.filter {
         datoPeriodeInclusive.overlapper(
