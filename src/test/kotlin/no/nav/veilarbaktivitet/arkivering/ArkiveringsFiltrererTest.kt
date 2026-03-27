@@ -508,6 +508,41 @@ class ArkiveringsFiltrererTest {
         assertThat(filtrertData.dialoger).hasSize(1)
     }
 
+    @Test
+    fun `Skal ta med aktiviteter som startet nøyaktig på periodeStart`() {
+        val periodeStart = ZonedDateTime.parse("2026-03-26T00:00:00.000Z")
+        val periodeSlutt = ZonedDateTime.parse("2026-03-26T00:00:00.000Z")
+
+        val aktivitet = AktivitetDataTestBuilder.nyAktivitet()
+            .fraDato(Date.from(periodeStart.toInstant()))
+            .tilDato(Date.from(periodeSlutt.plusDays(5).toInstant()))
+            .build()
+        val arenaAktivitet = ArenaAktivitetDTO.builder()
+            .fraDato(Date.from(periodeStart.toInstant()))
+            .tilDato(Date.from(periodeStart.toInstant()))
+            .build()
+        val dialog = defaultDialogtråd.copy(
+            id = "1",
+            opprettetDato = periodeStart,
+            meldinger = listOf(lagMelding(periodeStart))
+        )
+        val arkiveringsData = defaultArkiveringsData.copy(
+            aktiviteter = listOf(aktivitet),
+            arenaAktiviteter = listOf(arenaAktivitet),
+            dialoger = listOf(dialog)
+        )
+        val filter = defaultFilter.copy(
+            datoPeriode = ArkiveringsController.DatoPeriode(fra = periodeStart, til = periodeSlutt)
+        )
+
+        val filtrertData = filtrerArkiveringsData(arkiveringsData, filter)
+
+        assertThat(filtrertData.aktiviteter).hasSize(1)
+        assertThat(filtrertData.arenaAktiviteter).hasSize(1)
+        assertThat(filtrertData.dialoger).hasSize(1)
+    }
+
+
     val defaultFilter = ArkiveringsController.Filter(
         inkluderHistorikk = true,
         aktivitetAvtaltMedNavFilter = emptyList(),

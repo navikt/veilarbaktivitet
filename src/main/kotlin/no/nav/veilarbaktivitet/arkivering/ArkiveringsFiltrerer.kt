@@ -113,20 +113,20 @@ private fun ArkiveringsData.filtrerPåDatoPeriode(filter: ArkiveringsController.
     val datoPeriodeInclusive = DatoPeriode(filter.datoPeriode.fra, tilDatoInclusive)
     val filtrerteAktiviteter = aktiviteter.filter {
         datoPeriodeInclusive.overlapper(
-            fra = DateUtils.dateToZonedDateTime(it.fraDato),
-            til = DateUtils.dateToZonedDateTime(it.tilDato)
+            start = DateUtils.dateToZonedDateTime(it.fraDato),
+            slutt = DateUtils.dateToZonedDateTime(it.tilDato)
         )
     }
     val filtrerteArenaAktiviteter = this.arenaAktiviteter.filter {
         datoPeriodeInclusive.overlapper(
-            fra = DateUtils.dateToZonedDateTime(it.fraDato),
-            til = DateUtils.dateToZonedDateTime(it.tilDato)
+            start = DateUtils.dateToZonedDateTime(it.fraDato),
+            slutt = DateUtils.dateToZonedDateTime(it.tilDato)
         )
     }
     val filtrerteDialoger = this.dialoger.filter {
         datoPeriodeInclusive.overlapper(
-            fra = it.opprettetDato,
-            til = it.meldinger.maxBy { it.sendt }.sendt
+            start = it.opprettetDato,
+            slutt = it.meldinger.maxBy { it.sendt }.sendt
         )
     }
 
@@ -139,11 +139,12 @@ private fun ArkiveringsData.filtrerInkluderDialoger(filter: ArkiveringsControlle
 }
 
 private fun ZonedDateTime.iTidsrom(fra: ZonedDateTime?, til: ZonedDateTime?) =
-    this.isAfter(fra) && this.isBefore(til)
+    (this.isEqual(fra) || this.isAfter(fra)) &&
+            (this.isBefore(til) || this.isEqual(til))
 
-private fun DatoPeriode.overlapper(fra: ZonedDateTime, til: ZonedDateTime?): Boolean {
-    val fraErIPerioden = fra.iTidsrom(this.fra, this.til)
-    val tilErIPerioden = til?.iTidsrom(this.fra, this.til) ?: false
-    val fraErFørPeriodenMenTilErIkkeSattSåGyldigIPerioden = til == null && fra.isBefore(this.fra)
-    return fraErIPerioden || tilErIPerioden || fraErFørPeriodenMenTilErIkkeSattSåGyldigIPerioden
+private fun DatoPeriode.overlapper(start: ZonedDateTime, slutt: ZonedDateTime?): Boolean {
+    val startIPerioden = start.iTidsrom(this.fra, this.til)
+    val sluttIPerioden = slutt?.iTidsrom(this.fra, this.til) ?: false
+    val startFørPeriodenOgSluttEtterPerioden = start.isBefore(this.fra) && (slutt?.isAfter(this.til) ?: true)
+    return startIPerioden || sluttIPerioden || startFørPeriodenOgSluttEtterPerioden
 }
