@@ -1,12 +1,10 @@
 package no.nav.veilarbaktivitet.arkivering
 
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
-import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData
 import no.nav.veilarbaktivitet.aktivitet.mappers.Helpers
 import no.nav.veilarbaktivitet.arkivering.ArkiveringsController.DatoPeriode
 import no.nav.veilarbaktivitet.util.DateUtils
 import java.time.ZonedDateTime
-import kotlin.time.Duration
 
 fun filtrerArkiveringsData(
     arkiveringsData: ArkiveringsData,
@@ -111,20 +109,22 @@ private fun ArkiveringsData.filtrerPaAktivitetType(filter: ArkiveringsController
 
 private fun ArkiveringsData.filtrerPåDatoPeriode(filter: ArkiveringsController.Filter): ArkiveringsData {
     if (filter.datoPeriode == null) return this
+    val tilDatoInclusive = filter.datoPeriode.til.toLocalDate().plusDays(1).atStartOfDay(filter.datoPeriode.til.zone)
+    val datoPeriodeInclusive = DatoPeriode(filter.datoPeriode.fra, tilDatoInclusive)
     val filtrerteAktiviteter = aktiviteter.filter {
-        filter.datoPeriode.overlapper(
+        datoPeriodeInclusive.overlapper(
             fra = DateUtils.dateToZonedDateTime(it.fraDato),
             til = DateUtils.dateToZonedDateTime(it.tilDato)
         )
     }
     val filtrerteArenaAktiviteter = this.arenaAktiviteter.filter {
-        filter.datoPeriode.overlapper(
+        datoPeriodeInclusive.overlapper(
             fra = DateUtils.dateToZonedDateTime(it.fraDato),
             til = DateUtils.dateToZonedDateTime(it.tilDato)
         )
     }
     val filtrerteDialoger = this.dialoger.filter {
-        filter.datoPeriode.overlapper(
+        datoPeriodeInclusive.overlapper(
             fra = it.opprettetDato,
             til = it.meldinger.maxBy { it.sendt }.sendt
         )
