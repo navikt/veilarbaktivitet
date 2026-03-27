@@ -430,30 +430,28 @@ class ArkiveringsFiltrererTest {
     @Test
     fun `Periode slutt skal tolkes inclusive`() {
         val periodeStart = ZonedDateTime.parse("2026-03-26T23:00:00.000Z")
+        // Typisk input fra frontend som tolkes som 2026-03-27T00:00:00.000 norsk tid
+        // 27.03 skal tolkes inklusivt
         val periodeSlutt = ZonedDateTime.parse("2026-03-26T23:00:00.000Z")
 
-        val aktivitet = AktivitetDataTestBuilder.nyAktivitet()
-            .fraDato(Date.from(periodeStart.plusDays(1).toInstant()))
+        val aktivitetSomStarterPåSisteDag = AktivitetDataTestBuilder.nyAktivitet()
+            .fraDato(Date.from(periodeSlutt.plusHours(5).toInstant()))
             .tilDato(Date.from(periodeSlutt.plusDays(5).toInstant()))
             .build()
-        val arenaAktivitet = ArenaAktivitetDTO.builder()
-            .fraDato(Date.from(periodeStart.minusDays(20).toInstant()))
-            .tilDato(Date.from(periodeStart.minusDays(15).toInstant()))
+        val arenaAktivitetSomStarterPåSisteDag = ArenaAktivitetDTO.builder()
+            .fraDato(Date.from(periodeSlutt.plusHours(5).toInstant()))
+            .tilDato(Date.from(periodeSlutt.plusDays(5).toInstant()))
             .build()
-        val dialog = defaultDialogtråd.copy(
+        val dialogSomStarterPåSisteDag = defaultDialogtråd.copy(
             id = "1",
-            opprettetDato = periodeStart.plusDays(1),
+            opprettetDato = periodeSlutt.plusHours(5),
             meldinger = listOf(lagMelding(periodeSlutt.plusDays(5)))
         )
 
         val arkiveringsData = defaultArkiveringsData.copy(
-            aktiviteter = listOf(
-                aktivitet
-            ),
-            arenaAktiviteter = listOf(
-                arenaAktivitet
-            ),
-            dialoger = listOf(dialog)
+            aktiviteter = listOf(aktivitetSomStarterPåSisteDag),
+            arenaAktiviteter = listOf(arenaAktivitetSomStarterPåSisteDag),
+            dialoger = listOf(dialogSomStarterPåSisteDag)
         )
 
         val filter = defaultFilter.copy(
