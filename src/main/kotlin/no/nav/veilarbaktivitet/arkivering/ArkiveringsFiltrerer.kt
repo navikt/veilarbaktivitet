@@ -4,6 +4,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
 import no.nav.veilarbaktivitet.aktivitet.mappers.Helpers
 import no.nav.veilarbaktivitet.arkivering.ArkiveringsController.DatoPeriode
 import no.nav.veilarbaktivitet.util.DateUtils
+import java.time.LocalDate
 import java.time.ZonedDateTime
 
 fun filtrerArkiveringsData(
@@ -109,22 +110,22 @@ private fun ArkiveringsData.filtrerPaAktivitetType(filter: ArkiveringsController
 
 private fun ArkiveringsData.filtrerPåDatoPeriode(filter: ArkiveringsController.Filter): ArkiveringsData {
     if (filter.datoPeriode == null) return this
-    val tilDatoInclusive = filter.datoPeriode.til.toLocalDate().plusDays(1).atStartOfDay(filter.datoPeriode.til.zone)
-    val datoPeriodeInclusive = DatoPeriode(filter.datoPeriode.fra, tilDatoInclusive)
+//    val tilDatoInclusive = filter.datoPeriode.til.plusDays(1)
+//    val datoPeriodeInclusive = DatoPeriode(filter.datoPeriode.fra, tilDatoInclusive)
     val filtrerteAktiviteter = aktiviteter.filter {
-        datoPeriodeInclusive.overlapper(
+        filter.datoPeriode.overlapper(
             start = DateUtils.dateToZonedDateTime(it.fraDato),
             slutt = DateUtils.dateToZonedDateTime(it.tilDato)
         )
     }
     val filtrerteArenaAktiviteter = this.arenaAktiviteter.filter {
-        datoPeriodeInclusive.overlapper(
+        filter.datoPeriode.overlapper(
             start = DateUtils.dateToZonedDateTime(it.fraDato),
             slutt = DateUtils.dateToZonedDateTime(it.tilDato)
         )
     }
     val filtrerteDialoger = this.dialoger.filter {
-        datoPeriodeInclusive.overlapper(
+        filter.datoPeriode.overlapper(
             start = it.opprettetDato,
             slutt = it.meldinger.maxBy { it.sendt }.sendt
         )
@@ -141,9 +142,15 @@ private fun ArkiveringsData.filtrerInkluderDialoger(filter: ArkiveringsControlle
 private fun ZonedDateTime.iTidsrom(fra: ZonedDateTime?, til: ZonedDateTime?) =
     (this.isEqual(fra) || this.isAfter(fra)) && this.isBefore(til)
 
+private fun ZonedDateTime.iTidsrom(fra: LocalDate?, til: LocalDate?): Boolean {
+    val tidspunktSomLocalDate = this.toLocalDate()
+    return (tidspunktSomLocalDate.isEqual(fra) || tidspunktSomLocalDate.isAfter(fra)) &&
+            (tidspunktSomLocalDate.isEqual(til) || tidspunktSomLocalDate.isBefore(til))
+}
+
 private fun DatoPeriode.overlapper(start: ZonedDateTime, slutt: ZonedDateTime?): Boolean {
     val startIPerioden = start.iTidsrom(this.fra, this.til)
     val sluttIPerioden = slutt?.iTidsrom(this.fra, this.til) ?: false
-    val startFørPeriodenOgSluttEtterPerioden = start.isBefore(this.fra) && (slutt?.isAfter(this.til) ?: true)
+    val startFørPeriodenOgSluttEtterPerioden = start.toLocalDate().isBefore(this.fra) && (slutt?.toLocalDate()?.isAfter(this.til) ?: true)
     return startIPerioden || sluttIPerioden || startFørPeriodenOgSluttEtterPerioden
 }

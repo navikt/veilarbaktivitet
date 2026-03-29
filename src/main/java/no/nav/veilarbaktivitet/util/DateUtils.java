@@ -108,6 +108,11 @@ public class DateUtils {
         return date.withZoneSameInstant(ZoneId.systemDefault()).format(norskDatoformat);
     }
 
+    public static String norskDato(LocalDate date) {
+        if (date == null) return "";
+        return date.format(norskDatoformat);
+    }
+
     public static String norskDatoOgKlokkeslett(ZonedDateTime date) {
         if (date == null) return "";
         return date.withZoneSameInstant(ZoneId.systemDefault()).format(norskDatoOgKlokkeslettFormat);

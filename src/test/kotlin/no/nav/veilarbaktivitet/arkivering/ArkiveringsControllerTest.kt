@@ -584,14 +584,17 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                 .toBuilder().tittel("iPeriode").oppfolgingsperiodeId(oppfølgingsperiode).build()
         )
         val datoPeriode = ArkiveringsController.DatoPeriode(
-            fra = dateToZonedDateTime(aktivitetIPeriode.fraDato).minusDays(1),
-            til = dateToZonedDateTime(aktivitetIPeriode.fraDato).plusDays(1)
+            fra = dateToLocalDate(aktivitetIPeriode.fraDato).minusDays(1),
+            til = dateToLocalDate(aktivitetIPeriode.fraDato).plusDays(1)
         )
         val aktivitetUtaforPeriode = aktivitetTestService.opprettAktivitet(
             bruker,
             veileder,
             AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
-                .toBuilder().oppfolgingsperiodeId(oppfølgingsperiode).opprettetDato(Date.from(datoPeriode.til.plusDays(2).toInstant())).build()
+                .toBuilder()
+                .oppfolgingsperiodeId(oppfølgingsperiode)
+                .opprettetDato(toDate(datoPeriode.til.plusDays(2)))
+                .build()
         )
         stubIngenDialogTråder()
         stubIngenArenaAktiviteter(bruker.fnr)
@@ -623,8 +626,8 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val møteAktivitet = aktivitetTestService.opprettAktivitet(bruker, veileder, AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE)
             .toBuilder()
             .tittel("Møtet ditt")
-            .fraDato(Date.from(Instant.parse("2026-03-18T13:00:00.000Z")))
-            .tilDato(Date.from(Instant.parse("2026-03-18T13:10:00.000Z")))
+            .fraDato(Date.from(Instant.parse("2026-03-12T13:00:00.000Z")))
+            .tilDato(Date.from(Instant.parse("2026-03-12T13:10:00.000Z")))
             .oppfolgingsperiodeId(oppfølgingsperiode)
             .build()
         )
@@ -640,8 +643,8 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                         "inkluderHistorikk": false,
                         "inkluderDialoger": true,
                         "datoPeriode": {
-                            "fra": "2026-03-17T23:00:00.000Z",
-                            "til": "2026-03-17T23:00:00.000Z"
+                            "fra": "2026-03-12",
+                            "til": "2026-03-12"
                         },
                         "kvpUtvalgskriterie": {
                             "alternativ": "EKSKLUDER_KVP_AKTIVITETER"
