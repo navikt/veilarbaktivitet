@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.arkivering
 
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData
 import no.nav.veilarbaktivitet.aktivitet.mappers.Helpers
 import no.nav.veilarbaktivitet.arkivering.ArkiveringsController.DatoPeriode
 import no.nav.veilarbaktivitet.util.DateUtils
@@ -110,12 +111,11 @@ private fun ArkiveringsData.filtrerPaAktivitetType(filter: ArkiveringsController
 
 private fun ArkiveringsData.filtrerPåDatoPeriode(filter: ArkiveringsController.Filter): ArkiveringsData {
     if (filter.datoPeriode == null) return this
-//    val tilDatoInclusive = filter.datoPeriode.til.plusDays(1)
-//    val datoPeriodeInclusive = DatoPeriode(filter.datoPeriode.fra, tilDatoInclusive)
     val filtrerteAktiviteter = aktiviteter.filter {
+        val tilDato = if (it.aktivitetType == AktivitetTypeData.SAMTALEREFERAT) it.fraDato else it.tilDato
         filter.datoPeriode.overlapper(
             start = DateUtils.dateToZonedDateTime(it.fraDato),
-            slutt = DateUtils.dateToZonedDateTime(it.tilDato)
+            slutt = DateUtils.dateToZonedDateTime(tilDato)
         )
     }
     val filtrerteArenaAktiviteter = this.arenaAktiviteter.filter {
