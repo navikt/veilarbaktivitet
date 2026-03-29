@@ -22,6 +22,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.util.*
@@ -230,8 +231,8 @@ class ArkiveringsController(
     }
 
     data class DatoPeriode(
-        val fra: ZonedDateTime,
-        val til: ZonedDateTime
+        val fra: LocalDate,
+        val til: LocalDate
     )
 
     data class KvpUtvalgskriterie(
