@@ -31,14 +31,13 @@ object ArkiveringspayloadMapper {
         )
     }
 
-    fun mapTilPdfPayload(arkiveringsData: ArkiveringsData, tekstTilBruker: String?, filter: ArkiveringsController.Filter?): PdfPayload {
+    fun mapTilPdfPayload(arkiveringsData: ArkiveringsData, filter: ArkiveringsController.Filter?): PdfPayload {
         val (arkivaktiviteter, arkivdialoger) = lagDataTilOrkivar(arkiveringsData.aktiviteter, arkiveringsData.dialoger, arkiveringsData.historikkForAktiviteter, arkiveringsData.arenaAktiviteter)
 
         return PdfPayload(
             navn = arkiveringsData.navn.tilFornavnMellomnavnEtternavn(),
             fnr = arkiveringsData.fnr.get(),
             brukteFiltre = filter?.mapTilBrukteFiltre() ?: emptyMap(),
-            tekstTilBruker = tekstTilBruker,
             journalførendeEnhetNavn = arkiveringsData.journalførendeEnhetNavn,
             oppfølgingsperiodeStart = norskDato(arkiveringsData.oppfølgingsperiode.startDato),
             oppfølgingsperiodeSlutt = arkiveringsData.oppfølgingsperiode.sluttDato?.let { norskDato(it) },

@@ -106,7 +106,6 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                       "navn": "${bruker.navn.tilFornavnMellomnavnEtternavn()}",
                       "fnr": "${bruker.fnr}",
                       "brukteFiltre": { },
-                      "tekstTilBruker" : null,
                       "journalførendeEnhetNavn" : "Nav Helsfyr",
                       "oppfølgingsperiodeStart": "${norskDato(sisteOppfølgingsperiode.startTid)}",
                       "oppfølgingsperiodeSlutt": ${sisteOppfølgingsperiode.sluttTid?.let { norskDato(it) }},
@@ -298,7 +297,6 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                             "navn": "${bruker.navn.tilFornavnMellomnavnEtternavn()}",
                             "fnr": "${bruker.fnr}",
                             "brukteFiltre": {},
-                            "tekstTilBruker": null,
                             "journalførendeEnhetNavn": "Nav Helsfyr",
                             "oppfølgingsperiodeStart": "${norskDato(sisteOppfølgingsperiode.startTid)}",
                             "oppfølgingsperiodeSlutt": ${sisteOppfølgingsperiode?.sluttTid?.let { norskDato(it) } ?: null},
@@ -516,7 +514,6 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val sendTilBrukerInbound = ArkiveringsController.SendTilBrukerInboundDTO(
             forhaandsvisningOpprettet = ZonedDateTime.now(),
             journalførendeEnhetId = "1234",
-            tekstTilBruker = "Dette er en tekst til bruker",
             filter = defaultFilter(),
             uuidCachetPdf = cachedPdfUuid.toString(),
         )
@@ -552,7 +549,6 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         stubIngenArenaAktiviteter(kvpBruker.fnr)
         val url = "http://localhost:$port/veilarbaktivitet/api/arkivering/forhaandsvisning-send-til-bruker?oppfolgingsperiodeId=$oppfølgingsperiode"
         val body = ArkiveringsController.ForhaandsvisningSendTilBrukerInboundDto(
-            tekstTilBruker = "Tekst til bruker",
             filter = defaultFilter(kvpAlternativ = INKLUDER_KVP_AKTIVITETER),
             journalførendeEnhetId = "1234",
         )
@@ -600,7 +596,6 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         stubIngenArenaAktiviteter(bruker.fnr)
         val url = "http://localhost:$port/veilarbaktivitet/api/arkivering/forhaandsvisning-send-til-bruker?oppfolgingsperiodeId=$oppfølgingsperiode"
         val body = ArkiveringsController.ForhaandsvisningSendTilBrukerInboundDto(
-            tekstTilBruker = "Tekst til bruker",
             filter = defaultFilter(kvpAlternativ = INKLUDER_KVP_AKTIVITETER, datoPeriode = datoPeriode),
             journalførendeEnhetId = "1234",
         )
@@ -654,8 +649,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                         "arenaAktivitetStatusFilter": [],
                         "aktivitetTypeFilter": []
                     },
-                    "journalførendeEnhetId": "1234",
-                    "tekstTilBruker": ""
+                    "journalførendeEnhetId": "1234"
                 }
             """.trimIndent())
             .post(url)
@@ -947,7 +941,6 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                                 "navn": "Sølvi Normalbakke",
                                 "fnr": "${bruker.fnr}",
                                 "brukteFiltre": {},
-                                "tekstTilBruker": null,
                                 "journalførendeEnhetNavn": "Nav Helsfyr",
                                 "oppfølgingsperiodeStart": "${norskDato(oppfølgingsperiode.startTid)}",
                                 "oppfølgingsperiodeSlutt": null,
