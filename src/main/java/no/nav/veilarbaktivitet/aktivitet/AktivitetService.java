@@ -159,9 +159,11 @@ public class AktivitetService {
         aktivitetDAO.oppdaterAktivitet(oppdatertAktivitetMedNyFrist);
     }
 
-    public void oppdaterMoteTidStedOgKanal(AktivitetData originalAktivitet, AktivitetData aktivitetData) {
+    public void oppdaterMoteData(AktivitetData originalAktivitet, AktivitetData aktivitetData) {
         final var oppdatertAktivitetMedNyFrist = originalAktivitet
                 .toBuilder()
+                .tittel(aktivitetData.getTittel())
+                .beskrivelse(aktivitetData.getBeskrivelse())
                 .endretAvType(aktivitetData.getEndretAvType())
                 .endretAv(aktivitetData.getEndretAv())
                 .endretDato(aktivitetData.getEndretDato())
@@ -171,6 +173,7 @@ public class AktivitetService {
                 .moteData(ofNullable(originalAktivitet.getMoteData()).map(moteData ->
                         moteData.withAdresse(aktivitetData.getMoteData().getAdresse())
                                 .withKanal(aktivitetData.getMoteData().getKanal())
+                                .withForberedelser(aktivitetData.getMoteData().getForberedelser())
                 ).orElse(null))
                 .build();
         aktivitetDAO.oppdaterAktivitet(oppdatertAktivitetMedNyFrist);

@@ -164,7 +164,7 @@ public class AktivitetAppServiceTest {
         appService.oppdaterAktivitet(oppdatertAktivitet);
         verify(aktivitetService, times(0)).oppdaterAktivitet(any(), any());
         verify(aktivitetService, times(0)).oppdaterAktivitetFrist(any(), any());
-        verify(aktivitetService, times(1)).oppdaterMoteTidStedOgKanal(any(), any());
+        verify(aktivitetService, times(1)).oppdaterMoteData(any(), any());
     }
 
     @Test
@@ -287,7 +287,7 @@ public class AktivitetAppServiceTest {
         verify(aktivitetService, never()).oppdaterAktivitet(any(), any());
         verify(aktivitetService, never()).oppdaterAktivitetFrist(any(), any());
         verify(aktivitetService, never()).oppdaterEtikett(any(), any());
-        verify(aktivitetService, never()).oppdaterMoteTidStedOgKanal(any(), any());
+        verify(aktivitetService, never()).oppdaterMoteData(any(), any());
         verify(aktivitetService, never()).oppdaterReferat(any(), any());
 
     }
@@ -313,7 +313,7 @@ public class AktivitetAppServiceTest {
         verify(aktivitetService, never()).oppdaterAktivitet(any(), any());
         verify(aktivitetService, never()).oppdaterAktivitetFrist(any(), any());
         verify(aktivitetService, never()).oppdaterEtikett(any(), any());
-        verify(aktivitetService, never()).oppdaterMoteTidStedOgKanal(any(), any());
+        verify(aktivitetService, never()).oppdaterMoteData(any(), any());
         verify(aktivitetService, never()).oppdaterReferat(any(), any());
 
     }

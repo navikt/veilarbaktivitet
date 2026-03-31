@@ -163,7 +163,7 @@ public class AktivitetAppService {
     private void oppdaterSomNav(AktivitetData aktivitet, AktivitetData original) {
         if (original.isAvtalt()) {
             if (original.getAktivitetType() == AktivitetTypeData.MOTE) {
-                aktivitetService.oppdaterMoteTidStedOgKanal(original, aktivitet);
+                aktivitetService.oppdaterMoteData(original, aktivitet);
             } else {
                 aktivitetService.oppdaterAktivitetFrist(original, aktivitet);
             }
