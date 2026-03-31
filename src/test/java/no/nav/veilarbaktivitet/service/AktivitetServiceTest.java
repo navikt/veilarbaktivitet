@@ -234,7 +234,7 @@ class AktivitetServiceTest {
         var oppdatertAktivitet = aktivitet
                 .withEndretDato(new Date())
                 .withTilDato(nyFrist).withFraDato(nyFrist).withMoteData(aktivitet.getMoteData().withAdresse(nyAdresse));
-        aktivitetService.oppdaterMoteData(aktivitet, oppdatertAktivitet);
+        aktivitetService.oppdaterMoteTidOgSted(aktivitet, oppdatertAktivitet);
 
         captureOppdaterAktivitetArgument();
         AktivitetData capturedAktivitet = getCapturedAktivitet();

@@ -487,7 +487,6 @@ public class AktivitetAppServiceTest {
         verify(aktivitetService, never()).oppdaterAktivitet(any(), any());
         verify(aktivitetService, never()).oppdaterAktivitetFrist(any(), any());
         verify(aktivitetService, never()).oppdaterEtikett(any(), any());
-        verify(aktivitetService, never()).oppdaterMoteData(any(), any());
         verify(aktivitetService, never()).oppdaterReferat(any(), any());
 
     }
@@ -513,7 +512,6 @@ public class AktivitetAppServiceTest {
         verify(aktivitetService, never()).oppdaterAktivitet(any(), any());
         verify(aktivitetService, never()).oppdaterAktivitetFrist(any(), any());
         verify(aktivitetService, never()).oppdaterEtikett(any(), any());
-        verify(aktivitetService, never()).oppdaterMoteData(any(), any());
         verify(aktivitetService, never()).oppdaterReferat(any(), any());
 
     }
