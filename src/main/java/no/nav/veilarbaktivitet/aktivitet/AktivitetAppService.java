@@ -169,8 +169,6 @@ public class AktivitetAppService {
 
                 if (tidOgStedEndret) {
                     aktivitetService.oppdaterMoteTidOgSted(original, aktivitet);
-                    // Hent oppdatert aktivitet for eventuell detaljer-oppdatering
-                    original = aktivitetService.hentAktivitetMedForhaandsorientering(original.getId());
                 }
                 if (detaljerEndret) {
                     aktivitetService.oppdaterMoteDetaljer(original, aktivitet);
