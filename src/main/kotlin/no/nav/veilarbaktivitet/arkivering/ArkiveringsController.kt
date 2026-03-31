@@ -22,6 +22,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.util.*
@@ -95,7 +96,6 @@ class ArkiveringsController(
             bruker = userInContext.eksternBruker,
             oppfølgingsperiodeId = oppfølgingsperiodeId,
             journalførendeEnhetId = if (journalførendeEnhetId != null && journalførendeEnhetId.isNotBlank()) EnhetId.of(journalførendeEnhetId) else null,
-            tekstTilBruker = forhaandsvisningSendTilBrukerInboundDto.tekstTilBruker,
             filter = forhaandsvisningSendTilBrukerInboundDto.filter
         )
         val timedForhaandsvisningResultat = measureTimedValue {
@@ -148,7 +148,6 @@ class ArkiveringsController(
             bruker = userInContext.eksternBruker,
             oppfølgingsperiodeId = oppfølgingsperiodeId,
             journalførendeEnhetId = EnhetId.of(sendTilBrukerInboundDTO.journalførendeEnhetId),
-            tekstTilBruker = sendTilBrukerInboundDTO.tekstTilBruker,
             filter = sendTilBrukerInboundDTO.filter,
             forhåndsvisningsTidspunkt = sendTilBrukerInboundDTO.forhaandsvisningOpprettet
         )
@@ -197,13 +196,11 @@ class ArkiveringsController(
     data class SendTilBrukerInboundDTO(
         val forhaandsvisningOpprettet: ZonedDateTime,
         val journalførendeEnhetId: String,
-        val tekstTilBruker: String,
         val filter: Filter,
         val uuidCachetPdf: String,
     )
 
     data class ForhaandsvisningSendTilBrukerInboundDto(
-        val tekstTilBruker: String,
         val journalførendeEnhetId: String?,
         val filter: Filter,
     )
@@ -230,8 +227,8 @@ class ArkiveringsController(
     }
 
     data class DatoPeriode(
-        val fra: ZonedDateTime,
-        val til: ZonedDateTime
+        val fra: LocalDate,
+        val til: LocalDate
     )
 
     data class KvpUtvalgskriterie(

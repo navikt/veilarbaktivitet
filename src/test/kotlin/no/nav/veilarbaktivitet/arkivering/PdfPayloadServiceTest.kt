@@ -46,7 +46,7 @@ class PdfPayloadServiceTest {
     @Test
     fun `Skal ikke inkludere aktiviteter og dialoger med kontorsperre når man sender til bruker og filter ekskluderer KVP`() {
         val pdfPayloadResult = pdfPayloadServiceMedKontorsperretData()
-            .lagPdfPayloadForSendTilBruker(bruker, oppfølgingsperiodeId, defaultEnhetId, null, tomtFilterUtenKvp,ZonedDateTime.now())
+            .lagPdfPayloadForSendTilBruker(bruker, oppfølgingsperiodeId, defaultEnhetId, tomtFilterUtenKvp,ZonedDateTime.now())
         assertThat(pdfPayloadResult.getOrThrow().dialogtråder).isEmpty()
         assertThat(pdfPayloadResult.getOrThrow().aktiviteter).isEmpty()
     }
@@ -54,7 +54,7 @@ class PdfPayloadServiceTest {
     @Test
     fun `Returner feil hvis man forsøker å inkludere KVP-data når man sender til bruker`() {
         val inkluderKvpFilter = tomtFilterUtenKvp.copy(kvpUtvalgskriterie = ArkiveringsController.KvpUtvalgskriterie(INKLUDER_KVP_AKTIVITETER))
-        val pdfPayloadResult = pdfPayloadServiceMedKontorsperretData().lagPdfPayloadForSendTilBruker(bruker, oppfølgingsperiodeId, defaultEnhetId, null, inkluderKvpFilter,ZonedDateTime.now())
+        val pdfPayloadResult = pdfPayloadServiceMedKontorsperretData().lagPdfPayloadForSendTilBruker(bruker, oppfølgingsperiodeId, defaultEnhetId, inkluderKvpFilter,ZonedDateTime.now())
         assertThat(pdfPayloadResult.isFailure).isTrue
     }
 
@@ -62,7 +62,7 @@ class PdfPayloadServiceTest {
     fun `Skal kunne inkludere aktiviteter og dialoger med kontorsperre når man lager payload for forhåndsvisning for utskrift`() {
         val inkluderKvpFilter = tomtFilterUtenKvp.copy(kvpUtvalgskriterie = ArkiveringsController.KvpUtvalgskriterie(INKLUDER_KVP_AKTIVITETER))
         val pdfPayload = pdfPayloadServiceMedKontorsperretData()
-            .lagPdfPayloadForForhåndsvisningUtskrift(bruker, oppfølgingsperiodeId, defaultEnhetId, null, inkluderKvpFilter)
+            .lagPdfPayloadForForhåndsvisningUtskrift(bruker, oppfølgingsperiodeId, defaultEnhetId, inkluderKvpFilter)
         assertThat(pdfPayload.dialogtråder).hasSize(1)
         assertThat(pdfPayload.aktiviteter).hasSize(1)
     }
@@ -72,7 +72,7 @@ class PdfPayloadServiceTest {
         val inkluderKvpFilter = tomtFilterUtenKvp.copy(kvpUtvalgskriterie = ArkiveringsController.KvpUtvalgskriterie(INKLUDER_KVP_AKTIVITETER))
         val pdfPayloadService = pdfPayloadServiceMedKontorsperretData(harTilgangTilEnhet = false)
         val pdfPayload = pdfPayloadService
-            .lagPdfPayloadForForhåndsvisningUtskrift(bruker, oppfølgingsperiodeId, defaultEnhetId, null, inkluderKvpFilter)
+            .lagPdfPayloadForForhåndsvisningUtskrift(bruker, oppfølgingsperiodeId, defaultEnhetId,  inkluderKvpFilter)
         assertThat(pdfPayload.dialogtråder).hasSize(0)
         assertThat(pdfPayload.aktiviteter).hasSize(0)
     }
@@ -106,7 +106,7 @@ class PdfPayloadServiceTest {
             aktiviteter = listOf(nyAktivitet(sistOppdatert = forhåndsvisningstidspunkt.plusSeconds(1))),
         )
         val pdfPayloadResult = pdfPayloadService
-            .lagPdfPayloadForSendTilBruker(bruker, oppfølgingsperiodeId, defaultEnhetId, null, tomtFilterUtenKvp,forhåndsvisningstidspunkt)
+            .lagPdfPayloadForSendTilBruker(bruker, oppfølgingsperiodeId, defaultEnhetId, tomtFilterUtenKvp,forhåndsvisningstidspunkt)
         assertThat(pdfPayloadResult.isFailure).isTrue
     }
 
@@ -117,7 +117,7 @@ class PdfPayloadServiceTest {
             dialoger = listOf(nyDialogtråd(sistOppdatert = forhåndsvisningstidspunkt.plusSeconds(1))),
         )
         val pdfPayloadResult = pdfPayloadService
-            .lagPdfPayloadForSendTilBruker(bruker, oppfølgingsperiodeId, defaultEnhetId, null, tomtFilterUtenKvp,forhåndsvisningstidspunkt)
+            .lagPdfPayloadForSendTilBruker(bruker, oppfølgingsperiodeId, defaultEnhetId, tomtFilterUtenKvp,forhåndsvisningstidspunkt)
         assertThat(pdfPayloadResult.isFailure).isTrue
     }
 
@@ -136,11 +136,11 @@ class PdfPayloadServiceTest {
         assertThat(pdfPayloadResultJournalføring.getOrThrow().dialogtråder).isEmpty()
         assertThat(pdfPayloadResultJournalføring.getOrThrow().aktiviteter).isEmpty()
 
-        val pdfPayloadForhåndsvisningUtskrift = pdfPayloadService.lagPdfPayloadForForhåndsvisningUtskrift(bruker, oppfølgingsperiodeId, defaultEnhetId, null, tomtFilterUtenKvp)
+        val pdfPayloadForhåndsvisningUtskrift = pdfPayloadService.lagPdfPayloadForForhåndsvisningUtskrift(bruker, oppfølgingsperiodeId, defaultEnhetId,  tomtFilterUtenKvp)
         assertThat(pdfPayloadForhåndsvisningUtskrift.dialogtråder).isEmpty()
         assertThat(pdfPayloadForhåndsvisningUtskrift.aktiviteter).isEmpty()
 
-        val pdfPayloadSendTilBruker = pdfPayloadService.lagPdfPayloadForSendTilBruker(bruker, oppfølgingsperiodeId, defaultEnhetId, null, tomtFilterUtenKvp,
+        val pdfPayloadSendTilBruker = pdfPayloadService.lagPdfPayloadForSendTilBruker(bruker, oppfølgingsperiodeId, defaultEnhetId, tomtFilterUtenKvp,
             ZonedDateTime.now())
         assertThat(pdfPayloadSendTilBruker.getOrThrow().dialogtråder).isEmpty()
         assertThat(pdfPayloadSendTilBruker.getOrThrow().aktiviteter).isEmpty()
