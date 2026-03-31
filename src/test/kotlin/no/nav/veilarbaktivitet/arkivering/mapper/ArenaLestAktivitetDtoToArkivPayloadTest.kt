@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
 import java.time.Month
 
-class ArenaAktivitetDtoToArkivPayloadTest {
+class ArenaLestAktivitetDtoToArkivPayloadTest {
 
     @Test
     fun `Skal mappe avtaltMedNav til riktig etikett`() {

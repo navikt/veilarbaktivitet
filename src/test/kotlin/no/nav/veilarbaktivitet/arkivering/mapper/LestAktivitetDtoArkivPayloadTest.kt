@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test
 import java.sql.Date
 import java.time.Instant
 
-class AktivitetDtoArkivPayloadTest {
+class LestAktivitetDtoArkivPayloadTest {
 
     @Test
     fun `Møte har riktige felt`() {
