@@ -179,6 +179,39 @@ public class AktivitetService {
         aktivitetDAO.oppdaterAktivitet(oppdatertAktivitetMedNyFrist);
     }
 
+    public void oppdaterMoteTidOgSted(AktivitetData originalAktivitet, AktivitetData aktivitetData) {
+        final var oppdatertAktivitet = originalAktivitet
+                .toBuilder()
+                .endretAvType(aktivitetData.getEndretAvType())
+                .endretAv(aktivitetData.getEndretAv())
+                .endretDato(aktivitetData.getEndretDato())
+                .transaksjonsType(AktivitetTransaksjonsType.MOTE_TID_OG_STED_ENDRET)
+                .fraDato(aktivitetData.getFraDato())
+                .tilDato(aktivitetData.getTilDato())
+                .moteData(ofNullable(originalAktivitet.getMoteData()).map(moteData ->
+                        moteData.withAdresse(aktivitetData.getMoteData().getAdresse())
+                                .withKanal(aktivitetData.getMoteData().getKanal())
+                ).orElse(null))
+                .build();
+        aktivitetDAO.oppdaterAktivitet(oppdatertAktivitet);
+    }
+
+    public void oppdaterMoteDetaljer(AktivitetData originalAktivitet, AktivitetData aktivitetData) {
+        final var oppdatertAktivitet = originalAktivitet
+                .toBuilder()
+                .tittel(aktivitetData.getTittel())
+                .beskrivelse(aktivitetData.getBeskrivelse())
+                .endretAvType(aktivitetData.getEndretAvType())
+                .endretAv(aktivitetData.getEndretAv())
+                .endretDato(aktivitetData.getEndretDato())
+                .transaksjonsType(AktivitetTransaksjonsType.DETALJER_ENDRET)
+                .moteData(ofNullable(originalAktivitet.getMoteData()).map(moteData ->
+                        moteData.withForberedelser(aktivitetData.getMoteData().getForberedelser())
+                ).orElse(null))
+                .build();
+        aktivitetDAO.oppdaterAktivitet(oppdatertAktivitet);
+    }
+
     public AktivitetData oppdaterReferat(
             AktivitetData originalAktivitet,
             AktivitetData aktivitetData
