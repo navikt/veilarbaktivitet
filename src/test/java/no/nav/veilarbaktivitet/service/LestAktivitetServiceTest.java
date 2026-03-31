@@ -42,7 +42,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class AktivitetServiceTest {
+class LestAktivitetServiceTest {
 
     private static final long AKTIVITET_ID = 69L;
     private static final String KONTORSPERRE_ENHET_ID = "1337";

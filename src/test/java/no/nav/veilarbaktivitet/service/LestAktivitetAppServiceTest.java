@@ -40,7 +40,7 @@ import static org.mockito.Mockito.*;
 
 
 @ExtendWith(MockitoExtension.class)
-public class AktivitetAppServiceTest {
+public class LestAktivitetAppServiceTest {
 
     private final String AVTALT_BESKRIVELSE = "Avtalt beskrivelse";
     @Mock
