@@ -4,13 +4,16 @@ import lombok.RequiredArgsConstructor;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
+import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.AktivitetMuterbareFelter;
+import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.SporingsData;
+import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.StillingFraNav;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAktivitetIder;
 import no.nav.veilarbaktivitet.brukernotifikasjon.kvittering.KvitteringDAO;
 import no.nav.veilarbaktivitet.person.Person;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
+import java.time.ZonedDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -32,12 +35,25 @@ public class BehandleNotifikasjonForDelingAvCvService {
         }
 
         var endretAv = Person.systemUser();
+        var sporing = new SporingsData(
+                endretAv.get(),
+                endretAv.tilInnsenderType(),
+                ZonedDateTime.now()
+        );
+        var nyAktivitet = new StillingFraNav.Endre(
+                aktivitetData.getId(),
+                aktivitetData.getVersjon(),
+                new AktivitetMuterbareFelter(
+                        aktivitetData.getTittel(),
+                        aktivitetData.getBeskrivelse(),
+                        aktivitetData.getFraDato(),
+                        aktivitetData.getTilDato(),
+                        aktivitetData.getLenke()
+                ),
+                sporing,
+                aktivitetData.getStillingFraNavData().withLivslopsStatus(LivslopsStatus.HAR_VARSLET)
+        );
 
-        AktivitetData nyAktivitet = aktivitetData.toBuilder()
-                .endretAv(endretAv.get())
-                .endretAvType(endretAv.tilInnsenderType())
-                .endretDato(new Date())
-                .stillingFraNavData(aktivitetData.getStillingFraNavData().withLivslopsStatus(LivslopsStatus.HAR_VARSLET)).build();
         aktivitetService.oppdaterAktivitet(aktivitetData, nyAktivitet);
         kvitteringDAO.setFerdigBehandlet(brukernotifikasjon.getId());
 
@@ -53,11 +69,25 @@ public class BehandleNotifikasjonForDelingAvCvService {
             return;
         }
         var endretAv = Person.systemUser();
+        var sporing = new SporingsData(
+                endretAv.get(),
+                endretAv.tilInnsenderType(),
+                ZonedDateTime.now()
+        );
+        var nyAktivitet = new StillingFraNav.Endre(
+                aktivitetData.getId(),
+                aktivitetData.getVersjon(),
+                new AktivitetMuterbareFelter(
+                        aktivitetData.getTittel(),
+                        aktivitetData.getBeskrivelse(),
+                        aktivitetData.getFraDato(),
+                        aktivitetData.getTilDato(),
+                        aktivitetData.getLenke()
+                ),
+                sporing,
+                aktivitetData.getStillingFraNavData().withLivslopsStatus(LivslopsStatus.KAN_IKKE_VARSLE)
+        );
 
-        AktivitetData nyAktivitet = aktivitetData.toBuilder()
-                .endretAv(endretAv.get())
-                .endretAvType(endretAv.tilInnsenderType())
-                .stillingFraNavData(aktivitetData.getStillingFraNavData().withLivslopsStatus(LivslopsStatus.KAN_IKKE_VARSLE)).build();
         aktivitetService.oppdaterAktivitet(aktivitetData, nyAktivitet);
         kvitteringDAO.setFerdigBehandlet(brukernotifikasjon.getId());
 

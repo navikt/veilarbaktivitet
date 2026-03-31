@@ -80,8 +80,7 @@ class AktivitetsplanController(
         @RequestBody aktivitet: AktivitetDTO,
         @RequestParam(required = false, defaultValue = "false") automatisk: Boolean
     ): AktivitetDTO {
-        return aktivitetDataMapperService.mapTilAktivitetData(aktivitet)
-            .withAutomatiskOpprettet(automatisk)
+        return aktivitetDataMapperService.mapTilOpprettAktivitetData(aktivitet, automatisk)
             .let { aktivitetData -> appService.opprettNyAktivitet(aktivitetData) }
             .let { a -> AktivitetDTOMapper.mapTilAktivitetDTO(a, authService.erEksternBruker()) }
     }
@@ -91,7 +90,7 @@ class AktivitetsplanController(
     fun oppdaterAktivitet(@RequestBody aktivitet: AktivitetDTO): AktivitetDTO {
         val erEksternBruker = authService.erEksternBruker()
         return Optional.of(aktivitet)
-            .map { aktivitetDTO -> aktivitetDataMapperService.mapTilAktivitetData(aktivitetDTO) }
+            .map { aktivitetDTO -> aktivitetDataMapperService.mapTilOppdaterAktivitetData(aktivitetDTO) }
             .map { aktivitet -> appService.oppdaterAktivitet(aktivitet) }
             .map { a -> AktivitetDTOMapper.mapTilAktivitetDTO(a, erEksternBruker) }
             .orElseThrow { RuntimeException() }
@@ -102,7 +101,7 @@ class AktivitetsplanController(
     fun oppdaterEtikett(@RequestBody aktivitet: AktivitetDTO): AktivitetDTO {
         val erEksternBruker = authService.erEksternBruker()
         return Optional.of(aktivitet)
-            .map { aktivitetDTO -> aktivitetDataMapperService.mapTilAktivitetData(aktivitetDTO) }
+            .map { aktivitetDTO -> aktivitetDataMapperService.mapTilOppdaterEtikett(aktivitetDTO) }
             .map { aktivitet -> appService.oppdaterEtikett(aktivitet) }
             .map { a -> AktivitetDTOMapper.mapTilAktivitetDTO(a, erEksternBruker) }
             .orElseThrow { RuntimeException() }
@@ -113,7 +112,7 @@ class AktivitetsplanController(
     fun oppdaterStatus(@RequestBody aktivitet: AktivitetDTO): AktivitetDTO {
         val erEksternBruker = authService.erEksternBruker()
         return Optional.of(aktivitet)
-            .map { aktivitetDTO -> aktivitetDataMapperService.mapTilAktivitetData(aktivitetDTO) }
+            .map { aktivitetDTO -> aktivitetDataMapperService.mapTilOppdaterStatus(aktivitetDTO) }
             .map { aktivitet -> appService.oppdaterStatus(aktivitet) }
             .map { a -> AktivitetDTOMapper.mapTilAktivitetDTO(a, erEksternBruker) }
             .orElseThrow { RuntimeException() }
@@ -124,7 +123,7 @@ class AktivitetsplanController(
     @OnlyInternBruker
     fun oppdaterReferat(@RequestBody aktivitetDTO: AktivitetDTO): AktivitetDTO {
         return Optional.of(aktivitetDTO)
-            .map { aktivitetDTO -> aktivitetDataMapperService.mapTilAktivitetData(aktivitetDTO) }
+            .map { aktivitetDTO -> aktivitetDataMapperService.mapTilOppdaterReferat(aktivitetDTO) }
             .map { aktivitet -> appService.oppdaterReferat(aktivitet) }
             .map { a -> AktivitetDTOMapper.mapTilAktivitetDTO(a, false) }
             .orElseThrow { RuntimeException() }
