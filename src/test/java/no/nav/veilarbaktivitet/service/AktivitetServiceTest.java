@@ -226,7 +226,7 @@ class AktivitetServiceTest {
     }
 
     @Test
-    void oppdaterMoteTidOgSted() {
+    void oppdaterMoteTidStedOgKanal() {
         AktivitetData aktivitet = AktivitetDataTestBuilder.nyMoteAktivitet();
 
         Date nyFrist = new Date();
@@ -234,7 +234,7 @@ class AktivitetServiceTest {
         var oppdatertAktivitet = aktivitet
                 .withEndretDato(new Date())
                 .withTilDato(nyFrist).withFraDato(nyFrist).withMoteData(aktivitet.getMoteData().withAdresse(nyAdresse));
-        aktivitetService.oppdaterMoteTidOgSted(aktivitet, oppdatertAktivitet);
+        aktivitetService.oppdaterMoteTidStedOgKanal(aktivitet, oppdatertAktivitet);
 
         captureOppdaterAktivitetArgument();
         AktivitetData capturedAktivitet = getCapturedAktivitet();

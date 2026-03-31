@@ -159,7 +159,7 @@ public class AktivitetService {
         aktivitetDAO.oppdaterAktivitet(oppdatertAktivitetMedNyFrist);
     }
 
-    public void oppdaterMoteTidOgSted(AktivitetData originalAktivitet, AktivitetData aktivitetData) {
+    public void oppdaterMoteTidStedOgKanal(AktivitetData originalAktivitet, AktivitetData aktivitetData) {
         final var oppdatertAktivitet = originalAktivitet
                 .toBuilder()
                 .endretAvType(aktivitetData.getEndretAvType())

@@ -168,7 +168,7 @@ public class AktivitetAppService {
                 boolean detaljerEndret = erMoteDetaljerEndret(original, aktivitet);
 
                 if (tidOgStedEndret) {
-                    aktivitetService.oppdaterMoteTidOgSted(original, aktivitet);
+                    aktivitetService.oppdaterMoteTidStedOgKanal(original, aktivitet);
                 }
                 if (detaljerEndret) {
                     aktivitetService.oppdaterMoteDetaljer(original, aktivitet);

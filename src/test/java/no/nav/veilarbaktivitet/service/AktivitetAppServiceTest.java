@@ -166,7 +166,7 @@ public class AktivitetAppServiceTest {
         appService.oppdaterAktivitet(oppdatertAktivitet);
         verify(aktivitetService, times(0)).oppdaterAktivitet(any(), any());
         verify(aktivitetService, times(0)).oppdaterAktivitetFrist(any(), any());
-        verify(aktivitetService, times(1)).oppdaterMoteTidOgSted(any(), any());
+        verify(aktivitetService, times(1)).oppdaterMoteTidStedOgKanal(any(), any());
         verify(aktivitetService, times(0)).oppdaterMoteDetaljer(any(), any());
     }
 
@@ -194,7 +194,7 @@ public class AktivitetAppServiceTest {
 
         appService.oppdaterAktivitet(oppdatertAktivitet);
 
-        verify(aktivitetService, times(1)).oppdaterMoteTidOgSted(any(), any());
+        verify(aktivitetService, times(1)).oppdaterMoteTidStedOgKanal(any(), any());
         verify(aktivitetService, times(0)).oppdaterMoteDetaljer(any(), any());
         verify(aktivitetService, times(0)).oppdaterAktivitet(any(), any());
     }
@@ -223,7 +223,7 @@ public class AktivitetAppServiceTest {
 
         appService.oppdaterAktivitet(oppdatertAktivitet);
 
-        verify(aktivitetService, times(1)).oppdaterMoteTidOgSted(any(), any());
+        verify(aktivitetService, times(1)).oppdaterMoteTidStedOgKanal(any(), any());
         verify(aktivitetService, times(0)).oppdaterMoteDetaljer(any(), any());
         verify(aktivitetService, times(0)).oppdaterAktivitet(any(), any());
     }
@@ -248,7 +248,7 @@ public class AktivitetAppServiceTest {
 
         appService.oppdaterAktivitet(oppdatertAktivitet);
 
-        verify(aktivitetService, times(0)).oppdaterMoteTidOgSted(any(), any());
+        verify(aktivitetService, times(0)).oppdaterMoteTidStedOgKanal(any(), any());
         verify(aktivitetService, times(1)).oppdaterMoteDetaljer(any(), any());
         verify(aktivitetService, times(0)).oppdaterAktivitet(any(), any());
     }
@@ -273,7 +273,7 @@ public class AktivitetAppServiceTest {
 
         appService.oppdaterAktivitet(oppdatertAktivitet);
 
-        verify(aktivitetService, times(0)).oppdaterMoteTidOgSted(any(), any());
+        verify(aktivitetService, times(0)).oppdaterMoteTidStedOgKanal(any(), any());
         verify(aktivitetService, times(1)).oppdaterMoteDetaljer(any(), any());
         verify(aktivitetService, times(0)).oppdaterAktivitet(any(), any());
     }
@@ -302,7 +302,7 @@ public class AktivitetAppServiceTest {
 
         appService.oppdaterAktivitet(oppdatertAktivitet);
 
-        verify(aktivitetService, times(0)).oppdaterMoteTidOgSted(any(), any());
+        verify(aktivitetService, times(0)).oppdaterMoteTidStedOgKanal(any(), any());
         verify(aktivitetService, times(1)).oppdaterMoteDetaljer(any(), any());
         verify(aktivitetService, times(0)).oppdaterAktivitet(any(), any());
     }
@@ -336,7 +336,7 @@ public class AktivitetAppServiceTest {
 
         appService.oppdaterAktivitet(oppdatertAktivitet);
 
-        verify(aktivitetService, times(1)).oppdaterMoteTidOgSted(any(), any());
+        verify(aktivitetService, times(1)).oppdaterMoteTidStedOgKanal(any(), any());
         verify(aktivitetService, times(1)).oppdaterMoteDetaljer(any(), any());
         verify(aktivitetService, times(0)).oppdaterAktivitet(any(), any());
     }
@@ -362,7 +362,7 @@ public class AktivitetAppServiceTest {
 
         appService.oppdaterAktivitet(oppdatertAktivitet);
 
-        verify(aktivitetService, times(0)).oppdaterMoteTidOgSted(any(), any());
+        verify(aktivitetService, times(0)).oppdaterMoteTidStedOgKanal(any(), any());
         verify(aktivitetService, times(0)).oppdaterMoteDetaljer(any(), any());
         verify(aktivitetService, times(1)).oppdaterAktivitet(any(), any());
     }
