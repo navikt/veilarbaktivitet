@@ -226,7 +226,7 @@ class AktivitetServiceTest {
     }
 
     @Test
-    void oppdaterMoteTidOgSted() {
+    void oppdaterMoteTidStedOgKanal() {
         AktivitetData aktivitet = AktivitetDataTestBuilder.nyMoteAktivitet();
 
         Date nyFrist = new Date();

@@ -7,6 +7,8 @@ import no.nav.veilarbaktivitet.aktivitet.MetricService;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.domain.BehandlingAktivitetData;
+import no.nav.veilarbaktivitet.aktivitet.domain.MoteData;
+import no.nav.veilarbaktivitet.aktivitet.dto.KanalDTO;
 import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvFerdigAktivitetException;
 import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvHistoriskAktivitetException;
 import no.nav.veilarbaktivitet.eventsLogger.BigQueryClient;
@@ -165,6 +167,204 @@ public class AktivitetAppServiceTest {
         verify(aktivitetService, times(0)).oppdaterAktivitet(any(), any());
         verify(aktivitetService, times(0)).oppdaterAktivitetFrist(any(), any());
         verify(aktivitetService, times(1)).oppdaterMoteTidStedOgKanal(any(), any());
+        verify(aktivitetService, times(0)).oppdaterMoteDetaljer(any(), any());
+    }
+
+    @Test
+    void nav_skal_kun_oppdatere_tid_og_sted_naar_kun_tid_endres_paa_avtalt_mote() {
+        MoteData originalMoteData = MoteData.builder()
+                .adresse("Gammel adresse")
+                .kanal(KanalDTO.OPPMOTE)
+                .forberedelser("Forberedelser")
+                .build();
+        AktivitetData gammelAktivitet = nyMoteAktivitet()
+                .withAvtalt(true)
+                .withTittel("Original tittel")
+                .withBeskrivelse("Original beskrivelse")
+                .withFraDato(toJavaUtilDate("2022-01-01"))
+                .withTilDato(toJavaUtilDate("2022-01-02"))
+                .withMoteData(originalMoteData);
+
+        AktivitetData oppdatertAktivitet = gammelAktivitet
+                .withFraDato(toJavaUtilDate("2022-02-01"))
+                .withTilDato(toJavaUtilDate("2022-02-02"));
+
+        loggetInnSom(NAV);
+        when(aktivitetService.hentAktivitetMedForhaandsorientering(oppdatertAktivitet.getId())).thenReturn(gammelAktivitet);
+
+        appService.oppdaterAktivitet(oppdatertAktivitet);
+
+        verify(aktivitetService, times(1)).oppdaterMoteTidStedOgKanal(any(), any());
+        verify(aktivitetService, times(0)).oppdaterMoteDetaljer(any(), any());
+        verify(aktivitetService, times(0)).oppdaterAktivitet(any(), any());
+    }
+
+    @Test
+    void nav_skal_kun_oppdatere_tid_og_sted_naar_kun_sted_endres_paa_avtalt_mote() {
+        MoteData originalMoteData = MoteData.builder()
+                .adresse("Gammel adresse")
+                .kanal(KanalDTO.OPPMOTE)
+                .forberedelser("Forberedelser")
+                .build();
+        MoteData nyMoteData = MoteData.builder()
+                .adresse("Ny adresse")
+                .kanal(KanalDTO.TELEFON)
+                .forberedelser("Forberedelser")
+                .build();
+        AktivitetData gammelAktivitet = nyMoteAktivitet()
+                .withAvtalt(true)
+                .withTittel("Original tittel")
+                .withMoteData(originalMoteData);
+
+        AktivitetData oppdatertAktivitet = gammelAktivitet.withMoteData(nyMoteData);
+
+        loggetInnSom(NAV);
+        when(aktivitetService.hentAktivitetMedForhaandsorientering(oppdatertAktivitet.getId())).thenReturn(gammelAktivitet);
+
+        appService.oppdaterAktivitet(oppdatertAktivitet);
+
+        verify(aktivitetService, times(1)).oppdaterMoteTidStedOgKanal(any(), any());
+        verify(aktivitetService, times(0)).oppdaterMoteDetaljer(any(), any());
+        verify(aktivitetService, times(0)).oppdaterAktivitet(any(), any());
+    }
+
+    @Test
+    void nav_skal_kun_oppdatere_detaljer_naar_kun_tittel_endres_paa_avtalt_mote() {
+        MoteData moteData = MoteData.builder()
+                .adresse("Adresse")
+                .kanal(KanalDTO.OPPMOTE)
+                .forberedelser("Forberedelser")
+                .build();
+        AktivitetData gammelAktivitet = nyMoteAktivitet()
+                .withAvtalt(true)
+                .withTittel("Original tittel")
+                .withBeskrivelse("Original beskrivelse")
+                .withMoteData(moteData);
+
+        AktivitetData oppdatertAktivitet = gammelAktivitet.withTittel("Ny tittel");
+
+        loggetInnSom(NAV);
+        when(aktivitetService.hentAktivitetMedForhaandsorientering(oppdatertAktivitet.getId())).thenReturn(gammelAktivitet);
+
+        appService.oppdaterAktivitet(oppdatertAktivitet);
+
+        verify(aktivitetService, times(0)).oppdaterMoteTidStedOgKanal(any(), any());
+        verify(aktivitetService, times(1)).oppdaterMoteDetaljer(any(), any());
+        verify(aktivitetService, times(0)).oppdaterAktivitet(any(), any());
+    }
+
+    @Test
+    void nav_skal_kun_oppdatere_detaljer_naar_kun_beskrivelse_endres_paa_avtalt_mote() {
+        MoteData moteData = MoteData.builder()
+                .adresse("Adresse")
+                .kanal(KanalDTO.OPPMOTE)
+                .forberedelser("Forberedelser")
+                .build();
+        AktivitetData gammelAktivitet = nyMoteAktivitet()
+                .withAvtalt(true)
+                .withTittel("Original tittel")
+                .withBeskrivelse("Original beskrivelse")
+                .withMoteData(moteData);
+
+        AktivitetData oppdatertAktivitet = gammelAktivitet.withBeskrivelse("Ny beskrivelse");
+
+        loggetInnSom(NAV);
+        when(aktivitetService.hentAktivitetMedForhaandsorientering(oppdatertAktivitet.getId())).thenReturn(gammelAktivitet);
+
+        appService.oppdaterAktivitet(oppdatertAktivitet);
+
+        verify(aktivitetService, times(0)).oppdaterMoteTidStedOgKanal(any(), any());
+        verify(aktivitetService, times(1)).oppdaterMoteDetaljer(any(), any());
+        verify(aktivitetService, times(0)).oppdaterAktivitet(any(), any());
+    }
+
+    @Test
+    void nav_skal_kun_oppdatere_detaljer_naar_kun_forberedelser_endres_paa_avtalt_mote() {
+        MoteData originalMoteData = MoteData.builder()
+                .adresse("Adresse")
+                .kanal(KanalDTO.OPPMOTE)
+                .forberedelser("Original forberedelser")
+                .build();
+        MoteData nyMoteData = MoteData.builder()
+                .adresse("Adresse")
+                .kanal(KanalDTO.OPPMOTE)
+                .forberedelser("Nye forberedelser")
+                .build();
+        AktivitetData gammelAktivitet = nyMoteAktivitet()
+                .withAvtalt(true)
+                .withTittel("Original tittel")
+                .withMoteData(originalMoteData);
+
+        AktivitetData oppdatertAktivitet = gammelAktivitet.withMoteData(nyMoteData);
+
+        loggetInnSom(NAV);
+        when(aktivitetService.hentAktivitetMedForhaandsorientering(oppdatertAktivitet.getId())).thenReturn(gammelAktivitet);
+
+        appService.oppdaterAktivitet(oppdatertAktivitet);
+
+        verify(aktivitetService, times(0)).oppdaterMoteTidStedOgKanal(any(), any());
+        verify(aktivitetService, times(1)).oppdaterMoteDetaljer(any(), any());
+        verify(aktivitetService, times(0)).oppdaterAktivitet(any(), any());
+    }
+
+    @Test
+    void nav_skal_oppdatere_baade_tid_sted_og_detaljer_naar_begge_endres_paa_avtalt_mote() {
+        MoteData originalMoteData = MoteData.builder()
+                .adresse("Gammel adresse")
+                .kanal(KanalDTO.OPPMOTE)
+                .forberedelser("Original forberedelser")
+                .build();
+        MoteData nyMoteData = MoteData.builder()
+                .adresse("Ny adresse")
+                .kanal(KanalDTO.TELEFON)
+                .forberedelser("Nye forberedelser")
+                .build();
+        AktivitetData gammelAktivitet = nyMoteAktivitet()
+                .withAvtalt(true)
+                .withTittel("Original tittel")
+                .withBeskrivelse("Original beskrivelse")
+                .withFraDato(toJavaUtilDate("2022-01-01"))
+                .withMoteData(originalMoteData);
+
+        AktivitetData oppdatertAktivitet = gammelAktivitet
+                .withTittel("Ny tittel")
+                .withFraDato(toJavaUtilDate("2022-02-01"))
+                .withMoteData(nyMoteData);
+
+        loggetInnSom(NAV);
+        when(aktivitetService.hentAktivitetMedForhaandsorientering(oppdatertAktivitet.getId())).thenReturn(gammelAktivitet);
+
+        appService.oppdaterAktivitet(oppdatertAktivitet);
+
+        verify(aktivitetService, times(1)).oppdaterMoteTidStedOgKanal(any(), any());
+        verify(aktivitetService, times(1)).oppdaterMoteDetaljer(any(), any());
+        verify(aktivitetService, times(0)).oppdaterAktivitet(any(), any());
+    }
+
+    @Test
+    void nav_skal_bruke_vanlig_oppdater_naar_mote_ikke_er_avtalt() {
+        MoteData moteData = MoteData.builder()
+                .adresse("Adresse")
+                .kanal(KanalDTO.OPPMOTE)
+                .forberedelser("Forberedelser")
+                .build();
+        AktivitetData gammelAktivitet = nyMoteAktivitet()
+                .withAvtalt(false)
+                .withTittel("Original tittel")
+                .withMoteData(moteData);
+
+        AktivitetData oppdatertAktivitet = gammelAktivitet
+                .withTittel("Ny tittel")
+                .withFraDato(toJavaUtilDate("2022-02-01"));
+
+        loggetInnSom(NAV);
+        when(aktivitetService.hentAktivitetMedForhaandsorientering(oppdatertAktivitet.getId())).thenReturn(gammelAktivitet);
+
+        appService.oppdaterAktivitet(oppdatertAktivitet);
+
+        verify(aktivitetService, times(0)).oppdaterMoteTidStedOgKanal(any(), any());
+        verify(aktivitetService, times(0)).oppdaterMoteDetaljer(any(), any());
+        verify(aktivitetService, times(1)).oppdaterAktivitet(any(), any());
     }
 
     @Test
@@ -287,7 +487,6 @@ public class AktivitetAppServiceTest {
         verify(aktivitetService, never()).oppdaterAktivitet(any(), any());
         verify(aktivitetService, never()).oppdaterAktivitetFrist(any(), any());
         verify(aktivitetService, never()).oppdaterEtikett(any(), any());
-        verify(aktivitetService, never()).oppdaterMoteTidStedOgKanal(any(), any());
         verify(aktivitetService, never()).oppdaterReferat(any(), any());
 
     }
@@ -313,7 +512,6 @@ public class AktivitetAppServiceTest {
         verify(aktivitetService, never()).oppdaterAktivitet(any(), any());
         verify(aktivitetService, never()).oppdaterAktivitetFrist(any(), any());
         verify(aktivitetService, never()).oppdaterEtikett(any(), any());
-        verify(aktivitetService, never()).oppdaterMoteTidStedOgKanal(any(), any());
         verify(aktivitetService, never()).oppdaterReferat(any(), any());
 
     }

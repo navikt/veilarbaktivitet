@@ -16,11 +16,13 @@ import no.nav.veilarbaktivitet.norg2.Norg2Client
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeService
 import no.nav.veilarbaktivitet.person.EksternNavnService
 import no.nav.veilarbaktivitet.person.UserInContext
+import no.nav.veilarbaktivitet.util.DateUtils.norskDato
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.util.*
@@ -94,7 +96,6 @@ class ArkiveringsController(
             bruker = userInContext.eksternBruker,
             oppfølgingsperiodeId = oppfølgingsperiodeId,
             journalførendeEnhetId = if (journalførendeEnhetId != null && journalførendeEnhetId.isNotBlank()) EnhetId.of(journalførendeEnhetId) else null,
-            tekstTilBruker = forhaandsvisningSendTilBrukerInboundDto.tekstTilBruker,
             filter = forhaandsvisningSendTilBrukerInboundDto.filter
         )
         val timedForhaandsvisningResultat = measureTimedValue {
@@ -147,7 +148,6 @@ class ArkiveringsController(
             bruker = userInContext.eksternBruker,
             oppfølgingsperiodeId = oppfølgingsperiodeId,
             journalførendeEnhetId = EnhetId.of(sendTilBrukerInboundDTO.journalførendeEnhetId),
-            tekstTilBruker = sendTilBrukerInboundDTO.tekstTilBruker,
             filter = sendTilBrukerInboundDTO.filter,
             forhåndsvisningsTidspunkt = sendTilBrukerInboundDTO.forhaandsvisningOpprettet
         )
@@ -196,13 +196,11 @@ class ArkiveringsController(
     data class SendTilBrukerInboundDTO(
         val forhaandsvisningOpprettet: ZonedDateTime,
         val journalførendeEnhetId: String,
-        val tekstTilBruker: String,
         val filter: Filter,
         val uuidCachetPdf: String,
     )
 
     data class ForhaandsvisningSendTilBrukerInboundDto(
-        val tekstTilBruker: String,
         val journalførendeEnhetId: String?,
         val filter: Filter,
     )
@@ -211,6 +209,7 @@ class ArkiveringsController(
         val inkluderHistorikk: Boolean,
         val kvpUtvalgskriterie: KvpUtvalgskriterie,
         val inkluderDialoger: Boolean,
+        val datoPeriode: DatoPeriode?,
         val aktivitetAvtaltMedNavFilter: List<AvtaltMedNavFilter>,
         val stillingsstatusFilter: List<SøknadsstatusFilter>,
         val arenaAktivitetStatusFilter: List<ArenaStatusEtikettDTO>,
@@ -221,10 +220,16 @@ class ArkiveringsController(
                 "Avtalt med Nav" to aktivitetAvtaltMedNavFilter.map { it.tekst },
                 "Stillingsstatus" to stillingsstatusFilter.map { it.tekst },
                 "Status for Arena-aktivitet" to arenaAktivitetStatusFilter.map { it.toArkivEtikett().tekst },
-                "Aktivitetstype" to aktivitetTypeFilter.map { it.tekst }
+                "Aktivitetstype" to aktivitetTypeFilter.map { it.tekst },
+                "Periode valgt" to if(datoPeriode != null) { listOf("Fra ${norskDato(datoPeriode.fra)} til ${norskDato(datoPeriode.til)}")} else emptyList(),
             ).filter { it.value.isNotEmpty() }
         }
     }
+
+    data class DatoPeriode(
+        val fra: LocalDate,
+        val til: LocalDate
+    )
 
     data class KvpUtvalgskriterie(
         val alternativ: KvpUtvalgskriterieAlternativ,

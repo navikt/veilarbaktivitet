@@ -43,7 +43,7 @@ class PdfPayloadService(
 
     fun lagPdfPayloadForForhåndsvisning(bruker: EksternBruker, oppfølgingsperiodeId: UUID, journalførendeEnhetId: EnhetId): PdfPayload {
         val arkiveringsdata = hentArkiveringsData(bruker, oppfølgingsperiodeId, journalførendeEnhetId, tomtFilterUtenKvp)
-        return mapTilPdfPayload(arkiveringsData = arkiveringsdata,  tekstTilBruker = null, filter = tomtFilterUtenKvp)
+        return mapTilPdfPayload(arkiveringsData = arkiveringsdata, filter = tomtFilterUtenKvp)
     }
 
     fun lagPdfPayloadForJournalføring(bruker: EksternBruker, oppfølgingsperiodeId: UUID, journalførendeEnhetId: EnhetId, forhåndsvisningsTidspunkt: ZonedDateTime): Result<PdfPayload> {
@@ -52,15 +52,15 @@ class PdfPayloadService(
         if (oppdatertEtterForhaandsvisning) {
             return Result.failure(ResponseStatusException(HttpStatus.CONFLICT))
         }
-        return Result.success(mapTilPdfPayload(arkiveringsData = arkiveringsdata,  tekstTilBruker = null, filter = tomtFilterUtenKvp))
+        return Result.success(mapTilPdfPayload(arkiveringsData = arkiveringsdata, filter = tomtFilterUtenKvp))
     }
 
-    fun lagPdfPayloadForForhåndsvisningUtskrift(bruker: EksternBruker, oppfølgingsperiodeId: UUID, journalførendeEnhetId: EnhetId?, tekstTilBruker: String?, filter: Filter): PdfPayload {
+    fun lagPdfPayloadForForhåndsvisningUtskrift(bruker: EksternBruker, oppfølgingsperiodeId: UUID, journalførendeEnhetId: EnhetId?, filter: Filter): PdfPayload {
         val arkiveringsdata = hentArkiveringsData(bruker, oppfølgingsperiodeId, journalførendeEnhetId, filter)
-        return mapTilPdfPayload(arkiveringsData = arkiveringsdata, filter = filter, tekstTilBruker = tekstTilBruker)
+        return mapTilPdfPayload(arkiveringsData = arkiveringsdata, filter = filter)
     }
 
-    fun lagPdfPayloadForSendTilBruker(bruker: EksternBruker, oppfølgingsperiodeId: UUID, journalførendeEnhetId: EnhetId, tekstTilBruker: String?, filter: Filter, forhåndsvisningsTidspunkt: ZonedDateTime): Result<PdfPayload> {
+    fun lagPdfPayloadForSendTilBruker(bruker: EksternBruker, oppfølgingsperiodeId: UUID, journalførendeEnhetId: EnhetId, filter: Filter, forhåndsvisningsTidspunkt: ZonedDateTime): Result<PdfPayload> {
         val inkludererKvpAktiviteter = filter.kvpUtvalgskriterie.alternativ != EKSKLUDER_KVP_AKTIVITETER
         if (inkludererKvpAktiviteter) {
             return Result.failure(ResponseStatusException(HttpStatus.UNAVAILABLE_FOR_LEGAL_REASONS))
@@ -70,7 +70,7 @@ class PdfPayloadService(
         if (oppdatertEtterForhaandsvisning) {
             return Result.failure(ResponseStatusException(HttpStatus.CONFLICT))
         }
-        return Result.success(mapTilPdfPayload(arkiveringsData = arkiveringsdata, tekstTilBruker = tekstTilBruker, filter = filter))
+        return Result.success(mapTilPdfPayload(arkiveringsData = arkiveringsdata, filter = filter))
     }
 
     private fun hentArkiveringsData(bruker: EksternBruker, oppfølgingsperiodeId: UUID, journalførendeEnhetId: EnhetId?, filter: Filter): ArkiveringsData {
@@ -82,6 +82,7 @@ class PdfPayloadService(
         inkluderHistorikk = true,
         kvpUtvalgskriterie = KvpUtvalgskriterie(EKSKLUDER_KVP_AKTIVITETER),
         inkluderDialoger = true,
+        datoPeriode = null,
         aktivitetAvtaltMedNavFilter = emptyList(),
         stillingsstatusFilter = emptyList(),
         arenaAktivitetStatusFilter = emptyList(),

@@ -5,6 +5,7 @@ import no.nav.poao.dab.spring_auth.IAuthService;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
+import no.nav.veilarbaktivitet.aktivitet.domain.MoteData;
 import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvFerdigAktivitetException;
 import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvHistoriskAktivitetException;
 import no.nav.veilarbaktivitet.eventsLogger.BigQueryClient;
@@ -163,13 +164,51 @@ public class AktivitetAppService {
     private void oppdaterSomNav(AktivitetData aktivitet, AktivitetData original) {
         if (original.isAvtalt()) {
             if (original.getAktivitetType() == AktivitetTypeData.MOTE) {
-                aktivitetService.oppdaterMoteTidStedOgKanal(original, aktivitet);
+                boolean tidOgStedEndret = erMoteTidOgStedEndret(original, aktivitet);
+                boolean detaljerEndret = erMoteDetaljerEndret(original, aktivitet);
+
+                if (tidOgStedEndret) {
+                    aktivitetService.oppdaterMoteTidStedOgKanal(original, aktivitet);
+                    // Hent oppdatert aktivitet for eventuell detaljer-oppdatering
+                    original = aktivitetService.hentAktivitetMedForhaandsorientering(original.getId());
+                }
+                if (detaljerEndret) {
+                    aktivitetService.oppdaterMoteDetaljer(original, aktivitet);
+                }
             } else {
                 aktivitetService.oppdaterAktivitetFrist(original, aktivitet);
             }
         } else {
             aktivitetService.oppdaterAktivitet(original, aktivitet);
         }
+    }
+
+    private boolean erMoteTidOgStedEndret(AktivitetData original, AktivitetData aktivitet) {
+        boolean fraDatoEndret = !Objects.equals(original.getFraDato(), aktivitet.getFraDato());
+        boolean tilDatoEndret = !Objects.equals(original.getTilDato(), aktivitet.getTilDato());
+
+        MoteData originalMote = original.getMoteData();
+        MoteData nyMote = aktivitet.getMoteData();
+
+        boolean adresseEndret = originalMote != null && nyMote != null &&
+                !Objects.equals(originalMote.getAdresse(), nyMote.getAdresse());
+        boolean kanalEndret = originalMote != null && nyMote != null &&
+                !Objects.equals(originalMote.getKanal(), nyMote.getKanal());
+
+        return fraDatoEndret || tilDatoEndret || adresseEndret || kanalEndret;
+    }
+
+    private boolean erMoteDetaljerEndret(AktivitetData original, AktivitetData aktivitet) {
+        boolean tittelEndret = !Objects.equals(original.getTittel(), aktivitet.getTittel());
+        boolean beskrivelseEndret = !Objects.equals(original.getBeskrivelse(), aktivitet.getBeskrivelse());
+
+        MoteData originalMote = original.getMoteData();
+        MoteData nyMote = aktivitet.getMoteData();
+
+        boolean forberedelserEndret = originalMote != null && nyMote != null &&
+                !Objects.equals(originalMote.getForberedelser(), nyMote.getForberedelser());
+
+        return tittelEndret || beskrivelseEndret || forberedelserEndret;
     }
 
     private void oppdaterSomEksternBruker(AktivitetData aktivitet, AktivitetData original) {

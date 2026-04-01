@@ -160,7 +160,7 @@ public class AktivitetService {
     }
 
     public void oppdaterMoteTidStedOgKanal(AktivitetData originalAktivitet, AktivitetData aktivitetData) {
-        final var oppdatertAktivitetMedNyFrist = originalAktivitet
+        final var oppdatertAktivitet = originalAktivitet
                 .toBuilder()
                 .endretAvType(aktivitetData.getEndretAvType())
                 .endretAv(aktivitetData.getEndretAv())
@@ -173,7 +173,23 @@ public class AktivitetService {
                                 .withKanal(aktivitetData.getMoteData().getKanal())
                 ).orElse(null))
                 .build();
-        aktivitetDAO.oppdaterAktivitet(oppdatertAktivitetMedNyFrist);
+        aktivitetDAO.oppdaterAktivitet(oppdatertAktivitet);
+    }
+
+    public void oppdaterMoteDetaljer(AktivitetData originalAktivitet, AktivitetData aktivitetData) {
+        final var oppdatertAktivitet = originalAktivitet
+                .toBuilder()
+                .tittel(aktivitetData.getTittel())
+                .beskrivelse(aktivitetData.getBeskrivelse())
+                .endretAvType(aktivitetData.getEndretAvType())
+                .endretAv(aktivitetData.getEndretAv())
+                .endretDato(aktivitetData.getEndretDato())
+                .transaksjonsType(AktivitetTransaksjonsType.DETALJER_ENDRET)
+                .moteData(ofNullable(originalAktivitet.getMoteData()).map(moteData ->
+                        moteData.withForberedelser(aktivitetData.getMoteData().getForberedelser())
+                ).orElse(null))
+                .build();
+        aktivitetDAO.oppdaterAktivitet(oppdatertAktivitet);
     }
 
     public AktivitetData oppdaterReferat(

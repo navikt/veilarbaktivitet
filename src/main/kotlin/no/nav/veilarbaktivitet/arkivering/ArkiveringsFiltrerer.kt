@@ -1,8 +1,11 @@
 package no.nav.veilarbaktivitet.arkivering
 
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData
 import no.nav.veilarbaktivitet.aktivitet.mappers.Helpers
+import no.nav.veilarbaktivitet.arkivering.ArkiveringsController.DatoPeriode
 import no.nav.veilarbaktivitet.util.DateUtils
+import java.time.LocalDate
 import java.time.ZonedDateTime
 
 fun filtrerArkiveringsData(
@@ -10,6 +13,7 @@ fun filtrerArkiveringsData(
     filter: ArkiveringsController.Filter
 ): ArkiveringsData {
     return arkiveringsData
+        .filtrerPåDatoPeriode(filter)
         .filtrerPåHistorikk(filter)
         .filtrerPåAvtaltMedNavn(filter)
         .filtrerPåStillingsstatus(filter)
@@ -105,10 +109,48 @@ private fun ArkiveringsData.filtrerPaAktivitetType(filter: ArkiveringsController
     return this.copy(aktiviteter = filtrerteAktiviteter, arenaAktiviteter = filtrerteArenaAktiviteter)
 }
 
+private fun ArkiveringsData.filtrerPåDatoPeriode(filter: ArkiveringsController.Filter): ArkiveringsData {
+    if (filter.datoPeriode == null) return this
+    val filtrerteAktiviteter = aktiviteter.filter {
+        val tilDato = if (it.aktivitetType == AktivitetTypeData.SAMTALEREFERAT) it.fraDato else it.tilDato
+        filter.datoPeriode.overlapper(
+            start = DateUtils.dateToZonedDateTime(it.fraDato),
+            slutt = DateUtils.dateToZonedDateTime(tilDato)
+        )
+    }
+    val filtrerteArenaAktiviteter = this.arenaAktiviteter.filter {
+        filter.datoPeriode.overlapper(
+            start = DateUtils.dateToZonedDateTime(it.fraDato),
+            slutt = DateUtils.dateToZonedDateTime(it.tilDato)
+        )
+    }
+    val filtrerteDialoger = this.dialoger.filter {
+        filter.datoPeriode.overlapper(
+            start = it.opprettetDato,
+            slutt = it.meldinger.maxBy { it.sendt }.sendt
+        )
+    }
+
+    return this.copy(aktiviteter = filtrerteAktiviteter, arenaAktiviteter = filtrerteArenaAktiviteter, dialoger = filtrerteDialoger)
+}
+
 private fun ArkiveringsData.filtrerInkluderDialoger(filter: ArkiveringsController.Filter): ArkiveringsData {
     if (filter.inkluderDialoger) return this
     return this.copy(dialoger = emptyList())
 }
 
 private fun ZonedDateTime.iTidsrom(fra: ZonedDateTime?, til: ZonedDateTime?) =
-    this.isAfter(fra) && this.isBefore(til)
+    (this.isEqual(fra) || this.isAfter(fra)) && this.isBefore(til)
+
+private fun ZonedDateTime.iTidsrom(fra: LocalDate?, til: LocalDate?): Boolean {
+    val tidspunktSomLocalDate = this.toLocalDate()
+    return (tidspunktSomLocalDate.isEqual(fra) || tidspunktSomLocalDate.isAfter(fra)) &&
+            (tidspunktSomLocalDate.isEqual(til) || tidspunktSomLocalDate.isBefore(til))
+}
+
+private fun DatoPeriode.overlapper(start: ZonedDateTime, slutt: ZonedDateTime?): Boolean {
+    val startIPerioden = start.iTidsrom(this.fra, this.til)
+    val sluttIPerioden = slutt?.iTidsrom(this.fra, this.til) ?: false
+    val startFørPeriodenOgSluttEtterPerioden = start.toLocalDate().isBefore(this.fra) && (slutt?.toLocalDate()?.isAfter(this.til) ?: true)
+    return startIPerioden || sluttIPerioden || startFørPeriodenOgSluttEtterPerioden
+}
