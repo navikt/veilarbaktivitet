@@ -6,7 +6,6 @@ on:
       - main
       - gcp-main
     paths:
-      - '.github/workflows/unleash-apitoken.yaml'
       - 'nais/unleash-apitoken-dev.yaml'
       - 'nais/unleash-apitoken.yaml'
       - 'nais/unleash-apitoken-dev-gcp.yaml'
