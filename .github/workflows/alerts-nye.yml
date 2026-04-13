@@ -22,12 +22,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
       - name: deploy to dev-gcp
-        uses: nais/deploy/actions/deploy@v2
+        uses: nais/deploy/actions/deploy@fa754451577294aae42872a69b888b3470478ec1
         env:
           CLUSTER: dev-gcp
           RESOURCE: nais/alerts-feilrate.yaml
       - name: deploy to prod-gcp
-        uses: nais/deploy/actions/deploy@v2
+        uses: nais/deploy/actions/deploy@fa754451577294aae42872a69b888b3470478ec1
         env:
           CLUSTER: prod-gcp
           RESOURCE: nais/alerts-feilrate.yaml

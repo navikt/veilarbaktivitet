@@ -9,7 +9,7 @@ on:
       - 'nais/alerts-prod-low-priority.yaml'
       - 'nais/alerts-dev.yaml'
       - 'nais/alerts-dev-low-priority.yaml'
-      - '.github/workflows/alerts.yaml'
+      - '.github/workflows/alerts.yml'
 
 concurrency:
   group: deploy_alerts_prod
@@ -25,12 +25,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
       - name: deploy to dev
-        uses: nais/deploy/actions/deploy@v2
+        uses: nais/deploy/actions/deploy@fa754451577294aae42872a69b888b3470478ec1
         env:
           CLUSTER: dev-gcp
           RESOURCE: nais/alerts-dev.yaml
       - name: deploy arena alert
-        uses: nais/deploy/actions/deploy@v2
+        uses: nais/deploy/actions/deploy@fa754451577294aae42872a69b888b3470478ec1
         env:
           CLUSTER: dev-gcp
           RESOURCE: nais/alerts-dev-low-priority.yaml
@@ -43,12 +43,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
       - name: deploy to prod
-        uses: nais/deploy/actions/deploy@v2
+        uses: nais/deploy/actions/deploy@fa754451577294aae42872a69b888b3470478ec1
         env:
           CLUSTER: prod-gcp
           RESOURCE: nais/alerts-prod.yaml
       - name: deploy arena alert
-        uses: nais/deploy/actions/deploy@v2
+        uses: nais/deploy/actions/deploy@fa754451577294aae42872a69b888b3470478ec1
         env:
           CLUSTER: prod-gcp
           RESOURCE: nais/alerts-prod-low-priority.yaml

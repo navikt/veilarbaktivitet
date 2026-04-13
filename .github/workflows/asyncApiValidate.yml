@@ -18,7 +18,7 @@ jobs:
           node-version: 19
 
       - name: install generator
-        run: npm install -g @asyncapi/cli
+        run: npm install -g @asyncapi/cli --ignore-scripts
 
       - name: generate documentaion (denne tar litt tid)
         working-directory: src/main/resources/schemas/akaas
