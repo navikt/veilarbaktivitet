@@ -31,6 +31,13 @@ import org.slf4j.LoggerFactory
       SOMMERJOBB - Sommerjobb
 
 */
+
+/*
+Huskeliste når man legger til nye typer:
+ - veilarbaktivitet: nytt innslag i denne enumen - pass på mapping til obo-topic, mapping til navn i pdf-generering for utskrift og GraphQL-schemas
+ - aktivitetsplan: mapping enum til navn
+ - arbeidsrettet dialog: mapping enum til navn
+ */
 enum class AktivitetskortType {
     MIDLERTIDIG_LONNSTILSKUDD,
     VARIG_LONNSTILSKUDD,
