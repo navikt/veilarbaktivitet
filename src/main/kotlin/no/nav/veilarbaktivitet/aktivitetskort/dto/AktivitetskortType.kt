@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory
       FAG_OG_YRKESOPPLAERING - GRUFAGYRK og ENKFAGYRK etter ny forskrift(bokstav d)
       HOYERE_YRKESFAGLIG_UTDANNING - GRUFAGYRK og ENKFAGYRK etter ny forskrift(bokstav e)
       FIREARIG_LONNSTILSKUDD - Fireårig lønnstilskudd
+      SOMMERJOBB - Sommerjobb
 
 */
 enum class AktivitetskortType {
@@ -55,7 +56,8 @@ enum class AktivitetskortType {
     STUDIESPESIALISERING,
     FAG_OG_YRKESOPPLAERING,
     HOYERE_YRKESFAGLIG_UTDANNING,
-    FIREARIG_LONNSTILSKUDD;
+    FIREARIG_LONNSTILSKUDD,
+    SOMMERJOBB;
 
     companion object {
         private val logger = LoggerFactory.getLogger(this::class.java)
