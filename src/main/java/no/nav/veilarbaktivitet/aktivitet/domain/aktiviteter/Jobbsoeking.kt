@@ -2,10 +2,7 @@ package no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter
 
 import no.nav.veilarbaktivitet.aktivitet.domain.StillingsoekAktivitetData
 
-class Jobbsoeking(
-    baseData: AktivitetBaseData,
-    val stillingsSoekAktivitetData: StillingsoekAktivitetData,
-) : LestAktivitet(baseData) {
+class Jobbsoeking {
 
     class Opprett(
         override val opprettFelter: AktivitetBareOpprettFelter,

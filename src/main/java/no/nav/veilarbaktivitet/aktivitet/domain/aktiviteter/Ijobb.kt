@@ -2,10 +2,7 @@ package no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter
 
 import no.nav.veilarbaktivitet.aktivitet.domain.IJobbAktivitetData
 
-class Ijobb(
-    baseData: AktivitetBaseData,
-    val iJobbAktivitetData: IJobbAktivitetData,
-) : LestAktivitet(baseData) {
+class Ijobb {
 
     class Opprett(
         override val opprettFelter: AktivitetBareOpprettFelter,

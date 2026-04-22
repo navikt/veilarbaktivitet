@@ -2,10 +2,7 @@ package no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter
 
 import no.nav.veilarbaktivitet.aktivitet.domain.SokeAvtaleAktivitetData
 
-class Sokeavtale(
-    baseData: AktivitetBaseData,
-    val sokeAvtaleAktivitetData: SokeAvtaleAktivitetData,
-) : LestAktivitet(baseData) {
+class Sokeavtale {
 
     class Opprett(
         override val opprettFelter: AktivitetBareOpprettFelter,

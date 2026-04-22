@@ -2,7 +2,7 @@ package no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter
 
 import no.nav.veilarbaktivitet.aktivitet.domain.BehandlingAktivitetData
 
-class Behandling() {
+class Behandling {
 
     class Opprett(
         override val opprettFelter: AktivitetBareOpprettFelter,

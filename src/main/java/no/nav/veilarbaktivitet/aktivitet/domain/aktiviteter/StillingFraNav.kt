@@ -3,10 +3,7 @@ package no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData
 
-class StillingFraNav(
-    baseData: AktivitetBaseData,
-    val stillingFraNavData: StillingFraNavData,
-) : LestAktivitet(baseData) {
+class StillingFraNav {
 
     class Opprett(
         val status: AktivitetStatus,

@@ -8,17 +8,6 @@ import no.nav.veilarbaktivitet.person.Person
 import java.time.ZonedDateTime
 import java.util.*
 
-data class AktivitetBaseData(
-    // Selector field, kan velges av klient
-    val id: Long,
-    // Conflict check, kan velges av klient
-    val versjon: Long,
-
-    val opprettFelter: AktivitetBareOpprettFelter,
-    val muterbareFelter: AktivitetMuterbareFelter,
-    val genererteFelter: AktivitetGenererteFelter
-)
-
 /**
 * Felter som kan endres på aktiviteter
 */
@@ -77,32 +66,3 @@ class AktivitetGenererteFelter(
         val forhaandsorientering: Forhaandsorientering?,
     )
 }
-
-sealed class LestAktivitet(val baseData: AktivitetBaseData) {
-    val id get() = baseData.id
-    val funksjonellId get() = baseData.genererteFelter.funksjonellId
-    val versjon get() = baseData.versjon
-    val aktorId get() = baseData.opprettFelter.aktorId
-    val tittel get() = baseData.muterbareFelter.tittel
-    val beskrivelse get() = baseData.muterbareFelter.beskrivelse
-    val status get() = baseData.genererteFelter.status
-    val avsluttetKommentar get() = baseData.genererteFelter.avsluttetKommentar
-    val endretAvType get() = baseData.genererteFelter.sporingsData.endretAvType
-    val fraDato get() = baseData.muterbareFelter.fraDato
-    val tilDato get() = baseData.muterbareFelter.tilDato
-    val lenke get() = baseData.muterbareFelter.lenke
-    val opprettetDato get() = baseData.opprettFelter.opprettetDato
-    val endretDato get() = baseData.genererteFelter.sporingsData.endretDato
-    val endretAv get() = baseData.genererteFelter.sporingsData.endretAv
-    val avtalt get() = baseData.genererteFelter.avtaltMedNav.erAvtalt
-    val forhaandsorientering get() = baseData.genererteFelter.avtaltMedNav.forhaandsorientering
-    val transaksjonsType get() = baseData.genererteFelter.transaksjonsType
-    val historiskDato get() = baseData.genererteFelter.historiskDato
-    val kontorsperreEnhetId get() = baseData.opprettFelter.kontorsperreEnhetId
-    val lestAvBrukerForsteGang get() = baseData.genererteFelter.lestAvBrukerForsteGang
-    val automatiskOpprettet get() = baseData.opprettFelter.automatiskOpprettet
-    val malid get() = baseData.opprettFelter.malid
-    val fhoId get() = baseData.genererteFelter.avtaltMedNav.fhoId
-    val oppfolgingsperiodeId get() = baseData.opprettFelter.oppfolgingsperiodeId
-}
-

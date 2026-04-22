@@ -2,10 +2,7 @@ package no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter
 
 import no.nav.veilarbaktivitet.aktivitet.domain.MoteData
 
-class Mote(
-    baseData: AktivitetBaseData,
-    val moteData: MoteData,
-) : LestAktivitet(baseData) {
+class Mote {
 
     class Opprett(
         override val opprettFelter: AktivitetBareOpprettFelter,
