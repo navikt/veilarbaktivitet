@@ -202,10 +202,11 @@ public class LestAktivitetAppServiceTest {
                 .withFraDato(toJavaUtilDate("2022-02-01"))
                 .withTilDato(toJavaUtilDate("2022-02-02"));
 
+
         loggetInnSom(NAV);
         when(aktivitetService.hentAktivitetMedForhaandsorientering(oppdatertAktivitet.getId())).thenReturn(gammelAktivitet);
 
-        appService.oppdaterAktivitet(oppdatertAktivitet);
+        appService.oppdaterAktivitet(toMoteEndring(oppdatertAktivitet));
 
         verify(aktivitetService, times(1)).oppdaterMoteTidStedOgKanal(any(), any());
         verify(aktivitetService, times(0)).oppdaterMoteDetaljer(any(), any());
@@ -234,7 +235,7 @@ public class LestAktivitetAppServiceTest {
         loggetInnSom(NAV);
         when(aktivitetService.hentAktivitetMedForhaandsorientering(oppdatertAktivitet.getId())).thenReturn(gammelAktivitet);
 
-        appService.oppdaterAktivitet(oppdatertAktivitet);
+        appService.oppdaterAktivitet(toMoteEndring(oppdatertAktivitet));
 
         verify(aktivitetService, times(1)).oppdaterMoteTidStedOgKanal(any(), any());
         verify(aktivitetService, times(0)).oppdaterMoteDetaljer(any(), any());
@@ -259,7 +260,7 @@ public class LestAktivitetAppServiceTest {
         loggetInnSom(NAV);
         when(aktivitetService.hentAktivitetMedForhaandsorientering(oppdatertAktivitet.getId())).thenReturn(gammelAktivitet);
 
-        appService.oppdaterAktivitet(oppdatertAktivitet);
+        appService.oppdaterAktivitet(toMoteEndring(oppdatertAktivitet));
 
         verify(aktivitetService, times(0)).oppdaterMoteTidStedOgKanal(any(), any());
         verify(aktivitetService, times(1)).oppdaterMoteDetaljer(any(), any());
@@ -284,7 +285,7 @@ public class LestAktivitetAppServiceTest {
         loggetInnSom(NAV);
         when(aktivitetService.hentAktivitetMedForhaandsorientering(oppdatertAktivitet.getId())).thenReturn(gammelAktivitet);
 
-        appService.oppdaterAktivitet(oppdatertAktivitet);
+        appService.oppdaterAktivitet(toMoteEndring(oppdatertAktivitet));
 
         verify(aktivitetService, times(0)).oppdaterMoteTidStedOgKanal(any(), any());
         verify(aktivitetService, times(1)).oppdaterMoteDetaljer(any(), any());
@@ -313,7 +314,7 @@ public class LestAktivitetAppServiceTest {
         loggetInnSom(NAV);
         when(aktivitetService.hentAktivitetMedForhaandsorientering(oppdatertAktivitet.getId())).thenReturn(gammelAktivitet);
 
-        appService.oppdaterAktivitet(oppdatertAktivitet);
+        appService.oppdaterAktivitet(toMoteEndring(oppdatertAktivitet));
 
         verify(aktivitetService, times(0)).oppdaterMoteTidStedOgKanal(any(), any());
         verify(aktivitetService, times(1)).oppdaterMoteDetaljer(any(), any());
@@ -347,7 +348,7 @@ public class LestAktivitetAppServiceTest {
         loggetInnSom(NAV);
         when(aktivitetService.hentAktivitetMedForhaandsorientering(oppdatertAktivitet.getId())).thenReturn(gammelAktivitet);
 
-        appService.oppdaterAktivitet(oppdatertAktivitet);
+        appService.oppdaterAktivitet(toMoteEndring(oppdatertAktivitet));
 
         verify(aktivitetService, times(1)).oppdaterMoteTidStedOgKanal(any(), any());
         verify(aktivitetService, times(1)).oppdaterMoteDetaljer(any(), any());
@@ -373,7 +374,7 @@ public class LestAktivitetAppServiceTest {
         loggetInnSom(NAV);
         when(aktivitetService.hentAktivitetMedForhaandsorientering(oppdatertAktivitet.getId())).thenReturn(gammelAktivitet);
 
-        appService.oppdaterAktivitet(oppdatertAktivitet);
+        appService.oppdaterAktivitet(toMoteEndring(oppdatertAktivitet));
 
         verify(aktivitetService, times(0)).oppdaterMoteTidStedOgKanal(any(), any());
         verify(aktivitetService, times(0)).oppdaterMoteDetaljer(any(), any());
