@@ -81,6 +81,7 @@ fun AktivitetData.toArkivTypeTekst(): String {
                 AktivitetskortType.HOYERE_YRKESFAGLIG_UTDANNING -> "Høyere yrkesfaglig utdanning"
                 AktivitetskortType.FIREARIG_LONNSTILSKUDD -> "Fireårig lønnstilskudd"
                 AktivitetskortType.SOMMERJOBB -> "Sommerjobb"
+                AktivitetskortType.TILPASSET_JOBBSTOTTE -> "Tilpasset jobbstøtte"
             }
         }
     }
