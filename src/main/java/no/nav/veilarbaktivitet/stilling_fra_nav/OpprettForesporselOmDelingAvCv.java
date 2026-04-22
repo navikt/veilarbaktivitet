@@ -66,11 +66,9 @@ public class OpprettForesporselOmDelingAvCv {
             log.error("OpprettForesporselOmDelingAvCv.createAktivitet AktorId=null");
         }
 
-//        boolean underOppfolging;
         UUID oppfolginsgperiodeId;
         try {
             oppfolginsgperiodeId = sistePeriodeService.hentGjeldendeOppfolgingsperiodeMedFallback(aktorId);
-//            underOppfolging = true;
         } catch (IngenGjeldendeIdentException exception) {
             producerClient.sendUgyldigInput(melding.getBestillingsId(), aktorId.get(), "Finner ingen gyldig ident for aktorId");
             log.warn("*** Kan ikke behandle melding. Årsak: {} ***. Se teamLogs for payload.", exception.getMessage());

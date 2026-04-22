@@ -12,8 +12,6 @@ sealed interface AktivitetsEndring {
     val id: Long
     val versjon: Long
     val sporing: SporingsData
-
-//    open fun berikMedAktivitetsTypeSpesifikkData(): AktivitetData
 }
 
 object AktivitetsEndringUtil {
