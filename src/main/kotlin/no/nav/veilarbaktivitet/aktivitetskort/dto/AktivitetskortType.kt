@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory
       HOYERE_YRKESFAGLIG_UTDANNING - GRUFAGYRK og ENKFAGYRK etter ny forskrift(bokstav e)
       FIREARIG_LONNSTILSKUDD - Fireårig lønnstilskudd
       SOMMERJOBB - Sommerjobb
+      TILPASSET_JOBBSTOTTE - Varig tilrettelagt arbeid i ordninær bedrift (VTA-O) etter ny forskrift
 
 */
 
@@ -64,7 +65,8 @@ enum class AktivitetskortType {
     FAG_OG_YRKESOPPLAERING,
     HOYERE_YRKESFAGLIG_UTDANNING,
     FIREARIG_LONNSTILSKUDD,
-    SOMMERJOBB;
+    SOMMERJOBB,
+    TILPASSET_JOBBSTOTTE;
 
     companion object {
         private val logger = LoggerFactory.getLogger(this::class.java)
