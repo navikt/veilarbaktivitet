@@ -10,7 +10,6 @@ import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.spesialEndringer.Eti
 import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.spesialEndringer.ReferatEndring
 import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.spesialEndringer.StatusEndring
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO
-import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDataMapperService.IdAndVersjon
 import no.nav.veilarbaktivitet.kvp.KvpService
 import no.nav.veilarbaktivitet.oppfolging.periode.Oppfolgingsperiode
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeService
