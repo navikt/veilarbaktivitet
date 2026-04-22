@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter
 
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData
 
 class StillingFraNav(
@@ -8,9 +9,10 @@ class StillingFraNav(
 ) : LestAktivitet(baseData) {
 
     class Opprett(
+        val status: AktivitetStatus,
         override val opprettFelter: AktivitetBareOpprettFelter,
         override val muterbareFelter: AktivitetMuterbareFelter,
-        override val sproring: SporingsData,
+        override val sporing: SporingsData,
         val stillingFraNavData: StillingFraNavData,
     ): AktivitetsOpprettelse
 

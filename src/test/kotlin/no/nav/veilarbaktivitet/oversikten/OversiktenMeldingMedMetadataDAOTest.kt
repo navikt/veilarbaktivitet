@@ -5,13 +5,13 @@ import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO
 import no.nav.veilarbaktivitet.db.DbTestUtils
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker
-import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder
+import no.nav.veilarbaktivitet.testUtils.AktivitetDtoTestBuilder
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
-open class OversiktenMeldingMedMetadataDAOTest: SpringBootTestBase() {
+class OversiktenMeldingMedMetadataDAOTest: SpringBootTestBase() {
 
     @Autowired
     lateinit var oversiktenService: OversiktenService
@@ -89,11 +89,13 @@ open class OversiktenMeldingMedMetadataDAOTest: SpringBootTestBase() {
     private fun settOppUdeltSamtalereferatUtenMelding(aktivitetType: AktivitetTypeDTO): Pair<MockBruker, AktivitetDTO> {
         val happyBruker = navMockService.createBruker()
         val veileder = navMockService.createVeileder(happyBruker)
-        val aktivitet = aktivitetTestService.opprettAktivitet(
+        val aktivitet = aktivitetTestService.opprettAktivitetViaHttp(
             happyBruker,
             veileder,
             AktivitetDtoTestBuilder.nyAktivitet(aktivitetType).setErReferatPublisert(false)
                 .setReferat("Et referat")
+                .setOppfolgingsperiodeId(happyBruker.oppfolgingsperiodeId)
+                .setAvsluttetKommentar(null)
         )
 
         jdbcTemplate.execute("TRUNCATE OVERSIKTEN_MELDING_AKTIVITET_MAPPING")
@@ -105,11 +107,14 @@ open class OversiktenMeldingMedMetadataDAOTest: SpringBootTestBase() {
     private fun settOppDeltSamtalereferatUtenMelding(aktivitetType: AktivitetTypeDTO): Pair<MockBruker, AktivitetDTO> {
         val happyBruker = navMockService.createBruker()
         val veileder = navMockService.createVeileder(happyBruker)
-        val aktivitet = aktivitetTestService.opprettAktivitet(
+        val aktivitet = aktivitetTestService.opprettAktivitetViaHttp(
             happyBruker,
             veileder,
-            AktivitetDtoTestBuilder.nyAktivitet(aktivitetType).setErReferatPublisert(true)
+            AktivitetDtoTestBuilder.nyAktivitet(aktivitetType)
+                .setErReferatPublisert(true)
                 .setReferat("Et referat")
+                .setOppfolgingsperiodeId(happyBruker.oppfolgingsperiodeId)
+                .setAvsluttetKommentar(null)
         )
 
         jdbcTemplate.execute("TRUNCATE OVERSIKTEN_MELDING_AKTIVITET_MAPPING")

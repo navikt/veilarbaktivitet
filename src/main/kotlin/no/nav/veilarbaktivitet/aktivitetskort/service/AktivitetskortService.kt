@@ -42,6 +42,8 @@ class AktivitetskortService(
         return when {
             gammelAktivitetMaybe.isPresent -> {
                 val gammelAktivitet = gammelAktivitetMaybe.get()
+                if (gammelAktivitet.aktorId != bestilling.aktorId) throw UlovligEndringFeil("Kan ikke endre bruker på samme aktivitetskort")
+
                 val nyAktivitet = bestilling.toAktivitetsDataUpdate(gammelAktivitet.id, gammelAktivitet.versjon)
                 // Arenaaktiviteter blir vanlig "ekstern"-aktivitet etter de har blitt opprettet
                 val oppdatertAktivitet = when  {
@@ -81,10 +83,8 @@ class AktivitetskortService(
         } catch (e: IngenGjeldendePeriodeException) {
             throw ManglerOppfolgingsperiodeFeil()
         }
-        val aktivitetData: AktivitetData = bestilling.toAktivitetsDataInsert()
-        return aktivitetService.opprettAktivitet(
-            aktivitetData.withOppfolgingsperiodeId(oppfolgingsperiode),
-        )
+        val aktivitetData: Eksternaktivitet.Opprett = bestilling.toAktivitetsDataInsert(oppfolgingsperiode)
+        return aktivitetService.opprettAktivitetIDB(aktivitetData)
     }
 
     private fun oppdaterDetaljer(aktivitet: AktivitetData, nyAktivitet: Eksternaktivitet.Endre): AktivitetData {
@@ -104,7 +104,7 @@ class AktivitetskortService(
                     id = nyAktivitet.id,
                     versjon = nyAktivitet.versjon,
                     sporingsData = nyAktivitet.sporing,
-                    status = aktivitet.status,
+                    status = nyAktivitet.status,
                     avsluttetKommentar = null
                 )
             )
@@ -115,14 +115,13 @@ class AktivitetskortService(
 
     @Throws(UlovligEndringFeil::class)
     private fun oppdaterAktivitet(gammelAktivitet: AktivitetData, nyAktivitet: Eksternaktivitet.Endre, arenaAclOppdatering: Boolean): AktivitetData {
-//        if (gammelAktivitet.aktorId != nyAktivitet.aktorId) throw UlovligEndringFeil("Kan ikke endre bruker på samme aktivitetskort")
         // Arena-ACL kan foreløpig oppdatere historiske kort
         if (gammelAktivitet.historiskDato != null && !arenaAclOppdatering) throw UlovligEndringFeil("Kan ikke endre aktiviteter som er historiske (avsluttet oppfølgingsperiode)")
         if (gammelAktivitet.isAvtalt && !nyAktivitet.erAvtalt) throw UlovligEndringFeil("Kan ikke oppdatere fra avtalt til ikke-avtalt")
         return gammelAktivitet
-            .let { aktivitet: AktivitetData -> settAvtaltHvisAvtalt(aktivitet, nyAktivitet) }
-            .let { aktivitet: AktivitetData -> oppdaterDetaljer(aktivitet, nyAktivitet) }
-            .let { aktivitet: AktivitetData -> oppdaterStatus(aktivitet, nyAktivitet) }
+            .let { aktivitet -> settAvtaltHvisAvtalt(aktivitet, nyAktivitet) }
+            .let { aktivitet -> oppdaterDetaljer(aktivitet, nyAktivitet) }
+            .let { aktivitet -> oppdaterStatus(aktivitet, nyAktivitet) }
     }
 
     private fun settAvtaltHvisAvtalt(originalAktivitet: AktivitetData, nyAktivitet: Eksternaktivitet.Endre): AktivitetData {

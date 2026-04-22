@@ -8,8 +8,8 @@ import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAssertsConfi
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
 import no.nav.veilarbaktivitet.mock_nav_modell.NavMockService;
+import no.nav.veilarbaktivitet.testUtils.AktivitetDtoTestBuilder;
 import no.nav.veilarbaktivitet.testutils.AktivitetAssertUtils;
-import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +42,7 @@ class AvtaltMedNavTest extends SpringBootTestBase {
         ForhaandsorienteringDTO fho = testFho(Type.SEND_FORHAANDSORIENTERING);
 
         AvtaltMedNavDTO avtaltDTO = new AvtaltMedNavDTO();
-        AktivitetDTO utenFHO = aktivitetTestService.opprettAktivitet(brukerSomIkkeKanVarsles, AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.EGEN));
+        AktivitetDTO utenFHO = aktivitetTestService.opprettAktivitetViaHttp(brukerSomIkkeKanVarsles, AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.EGEN));
         avtaltDTO.setAktivitetVersjon(Long.parseLong(utenFHO.getVersjon()));
         avtaltDTO.setForhaandsorientering(fho);
         veileder
@@ -83,7 +83,7 @@ class AvtaltMedNavTest extends SpringBootTestBase {
     void IkkeOppretteFHOFEilAktivitetVersion() {
         MockBruker happyBruker = navMockService.createHappyBruker();
         MockVeileder veileder = navMockService.createVeileder(happyBruker);
-        AktivitetDTO utenFHO = aktivitetTestService.opprettAktivitet(happyBruker, AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.EGEN));
+        AktivitetDTO utenFHO = aktivitetTestService.opprettAktivitetViaHttp(happyBruker, AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.EGEN));
         ForhaandsorienteringDTO fho = testFho(Type.IKKE_SEND_FORHAANDSORIENTERING);
 
         AvtaltMedNavDTO avtaltDTO = new AvtaltMedNavDTO();
@@ -148,7 +148,7 @@ class AvtaltMedNavTest extends SpringBootTestBase {
 
     private AktivitetDTO oppretFHO(ForhaandsorienteringDTO fho, MockVeileder veileder, MockBruker happyBruker) {
         AvtaltMedNavDTO avtaltDTO = new AvtaltMedNavDTO();
-        AktivitetDTO utenFHO = aktivitetTestService.opprettAktivitet(happyBruker, AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.EGEN));
+        AktivitetDTO utenFHO = aktivitetTestService.opprettAktivitetViaHttp(happyBruker, AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.EGEN));
         avtaltDTO.setAktivitetVersjon(Long.parseLong(utenFHO.getVersjon()));
         avtaltDTO.setForhaandsorientering(fho);
         AktivitetDTO medFHO = veileder

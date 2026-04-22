@@ -1,8 +1,8 @@
 package no.nav.veilarbaktivitet.aktivitetskort
 
-import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData
 import no.nav.veilarbaktivitet.aktivitet.domain.EksternAktivitetData
+import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.AktivitetBareOpprettFelter
 import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.AktivitetMuterbareFelter
 import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.Eksternaktivitet
 import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.SporingsData
@@ -36,13 +36,12 @@ object AktivitetskortMapper {
         }
     }
 
-    fun ArenaAktivitetskortBestilling.toAktivitetsDataInsert(): AktivitetData {
-        return this.toAktivitet(this.aktivitetskort.endretTidspunkt, this.oppfolgingsperiodeSlutt)
-            .withOppfolgingsperiodeId(this.oppfolgingsperiode)
+    fun ArenaAktivitetskortBestilling.toAktivitetsDataInsert(oppfolgingsperiode: UUID): Eksternaktivitet.Opprett {
+        return this.toAktivitet(this.aktivitetskort.endretTidspunkt, this.oppfolgingsperiodeSlutt, oppfolgingsperiode)
     }
 
-    fun EksternAktivitetskortBestilling.toAktivitetsDataInsert(): AktivitetData {
-        return this.toAktivitet(this.aktivitetskort.endretTidspunkt, null)
+    fun EksternAktivitetskortBestilling.toAktivitetsDataInsert(oppfolgingsperiode: UUID): Eksternaktivitet.Opprett {
+        return this.toAktivitet(this.aktivitetskort.endretTidspunkt, null, oppfolgingsperiode)
     }
 
     fun AktivitetskortBestilling.toAktivitetsDataUpdate(aktivitetId: Long, versjon: Long): Eksternaktivitet.Endre {
@@ -69,28 +68,43 @@ object AktivitetskortMapper {
     }
 
     private fun AktivitetskortBestilling.toAktivitet(
-        opprettetDato: ZonedDateTime?,
-        historiskTidspunkt: ZonedDateTime?
-    ): AktivitetData {
+        opprettetDato: ZonedDateTime,
+        historiskTidspunkt: ZonedDateTime?,
+        oppfolgingsperiode: UUID,
+    ): Eksternaktivitet.Opprett {
         val (id, _, tittel, beskrivelse, aktivitetStatus, startDato, sluttDato, endretAv, _, avtaltMedNav, _, _, _, _) = this.aktivitetskort
         val eksternAktivitetData = this.getEksternAktivitetData(historiskTidspunkt)
 
-        return AktivitetData.builder()
-            .funksjonellId(id)
-            .aktorId(this.aktorId)
-            .avtalt(avtaltMedNav)
-            .tittel(tittel)
-            .fraDato(DateUtils.toDate(startDato))
-            .tilDato(DateUtils.toDate(sluttDato))
-            .beskrivelse(beskrivelse)
-            .status(aktivitetStatus.toAktivitetStatus())
-            .aktivitetType(AktivitetTypeData.EKSTERNAKTIVITET)
-            .endretAv(endretAv.ident)
-            .endretAvType(endretAv.identType.toInnsender())
-            .opprettetDato(DateUtils.zonedDateTimeToDate(opprettetDato))
-            .endretDato(DateUtils.zonedDateTimeToDate(ZonedDateTime.now()))
-            .eksternAktivitetData(eksternAktivitetData)
-            .build()
+        val opprettFelter = AktivitetBareOpprettFelter(
+            aktorId = aktorId,
+            aktivitetType = AktivitetTypeData.EKSTERNAKTIVITET,
+            status = aktivitetStatus.toAktivitetStatus(),
+            malid = null,
+            kontorsperreEnhetId = null,
+            opprettetDato = opprettetDato,
+            automatiskOpprettet = false,
+            oppfolgingsperiodeId = oppfolgingsperiode,
+        )
+        val muterbareFelter = AktivitetMuterbareFelter(
+            tittel = tittel,
+            fraDato = DateUtils.toDate(startDato),
+            tilDato = DateUtils.toDate(sluttDato),
+            beskrivelse = beskrivelse,
+            lenke = null
+        )
+        val sporing = SporingsData(
+            endretAv.ident,
+            endretAv.identType.toInnsender(),
+            endretDato = ZonedDateTime.now()
+        )
+        return Eksternaktivitet.Opprett(
+            id,
+            avtaltMedNav,
+            opprettFelter,
+            muterbareFelter,
+            sporing,
+            eksternAktivitetData,
+        )
     }
 
     fun AktivitetskortBestilling.toMuterbareFelter(): AktivitetMuterbareFelter {

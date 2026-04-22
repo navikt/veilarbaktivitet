@@ -13,7 +13,6 @@ import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.spesialEndringer.Ref
 import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.spesialEndringer.StatusEndring;
 import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvFerdigAktivitetException;
 import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvHistoriskAktivitetException;
-import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortCompareUtil;
 import no.nav.veilarbaktivitet.eventsLogger.BigQueryClient;
 import no.nav.veilarbaktivitet.eventsLogger.EventType;
 import no.nav.veilarbaktivitet.oversikten.OversiktenService;
@@ -130,7 +129,7 @@ public class AktivitetAppService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Eksternbruker kan ikke opprette denne aktivitetstypen. Fikk: " + aktivitetData.getOpprettFelter().getAktivitetType());
         }
 
-        AktivitetData nyAktivitet = aktivitetService.opprettAktivitet(aktivitetData);
+        AktivitetData nyAktivitet = aktivitetService.opprettAktivitetIDB(aktivitetData);
 
         if (nyopprettetAktivitetKanHaReferat(nyAktivitet)) {
             if (referatErDeltMedBruker(nyAktivitet)) {
@@ -170,11 +169,11 @@ public class AktivitetAppService {
             aktivitetService.oppdaterAktivitetFrist(original, aktivitet);
         } else {
             /* Oppdatering av status skjer i eget endepukt og er ikke en del av sammenligningen */
-            if (AktivitetskortCompareUtil.INSTANCE.erFaktiskOppdatert(original, aktivitet)) {
+//            if (AktivitetskortCompareUtil.INSTANCE.erFaktiskOppdatert(aktivitet, original)) {
                 aktivitetService.oppdaterAktivitet(original, aktivitet);
-            } else {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Aktiviteten har ikke blitt endret");
-            }
+//            } else {
+//                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Aktiviteten har ikke blitt endret");
+//            }
         }
     }
 

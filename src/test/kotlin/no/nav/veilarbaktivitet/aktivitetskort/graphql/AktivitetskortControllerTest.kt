@@ -7,7 +7,7 @@ import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder
 import no.nav.veilarbaktivitet.oppfolging.periode.SisteOppfolgingsperiodeV1
-import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder
+import no.nav.veilarbaktivitet.testUtils.AktivitetDtoTestBuilder
 import no.nav.veilarbaktivitet.util.DateUtils
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
@@ -45,7 +45,7 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
         val nyPeriode = mockBruker.oppfolgingsperiodeId
         val jobbAktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
             .toBuilder().oppfolgingsperiodeId(gammelPeriodeId).build()
-        aktivitetTestService.opprettAktivitet(mockBruker, mockBruker, jobbAktivitet)
+        aktivitetTestService.opprettAktivitetViaHttp(mockBruker, mockBruker, jobbAktivitet)
         val aktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.EGEN)
             .toBuilder().oppfolgingsperiodeId(nyPeriode).build()
         aktivitetTestService.upsertOppfolgingsperiode(SisteOppfolgingsperiodeV1.builder()
@@ -55,7 +55,7 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
             .sluttDato(gammelperiodeSlutt)
             .build()
         )
-        aktivitetTestService.opprettAktivitet(mockBruker, mockBruker, aktivitet)
+        aktivitetTestService.opprettAktivitetViaHttp(mockBruker, mockBruker, aktivitet)
         val result = aktivitetTestService.queryAktivitetskort(mockBruker, mockBruker, query)
         val nyestePeriode = result.data?.perioder?.first()
         val gammelPeriode = result.data?.perioder?.last()
@@ -82,7 +82,7 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
             }
         """.trimIndent().replace("\n", "")
         val jobbAktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
-        aktivitetTestService.opprettAktivitet(mockBruker, mockVeileder, jobbAktivitet)
+        aktivitetTestService.opprettAktivitetViaHttp(mockBruker, mockVeileder, jobbAktivitet)
         val result = aktivitetTestService.queryAktivitetskort(mockBruker, mockVeileder, query)
         assertThat(result.errors).isNull()
         assertThat(result.data?.perioder).hasSize(1)
@@ -102,7 +102,7 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
             }
         """.trimIndent().replace("\n", "")
         val jobbAktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
-        aktivitetTestService.opprettAktivitet(bruker, bruker, jobbAktivitet)
+        aktivitetTestService.opprettAktivitetViaHttp(bruker, bruker, jobbAktivitet)
         val result = aktivitetTestService.queryAktivitetskort(bruker, mockVeileder, query)
         assertThat(result.data?.perioder).isNull()
         assertThat(result.errors!!.first().message).isEqualTo("Ikke tilgang")
@@ -127,7 +127,7 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
             }
         """.trimIndent().replace("\n", "")
         val jobbAktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
-        aktivitetTestService.opprettAktivitet(kvpBruker, kvpBruker, jobbAktivitet)
+        aktivitetTestService.opprettAktivitetViaHttp(kvpBruker, kvpBruker, jobbAktivitet)
         val result = aktivitetTestService.queryAktivitetskort(kvpBruker, veileder, query)
         assertThat(result.data?.perioder?.firstOrNull()?.aktiviteter).isEmpty()
         assertThat(result.errors).isNull()
@@ -151,7 +151,7 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
     @Test
     fun `Skal gi bad request når man endrer status på en fullført aktivitet`() {
         val aktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE).setStatus(AktivitetStatus.FULLFORT)
-        val opprettetAktivitet = aktivitetTestService.opprettAktivitet(mockBruker, mockVeileder, aktivitet)
+        val opprettetAktivitet = aktivitetTestService.opprettAktivitetViaHttp(mockBruker, mockVeileder, aktivitet)
 
         val result = mockVeileder
             .createRequest(mockBruker)
@@ -170,7 +170,7 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
     fun `skal kunne hente eier av aktivitetskort`() {
         val jobbAktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
             .toBuilder().oppfolgingsperiodeId(mockBruker.oppfolgingsperiodeId).build()
-        val aktivitet = aktivitetTestService.opprettAktivitet(mockBruker, mockBruker, jobbAktivitet)
+        val aktivitet = aktivitetTestService.opprettAktivitetViaHttp(mockBruker, mockBruker, jobbAktivitet)
         val aktivitetIdParam = "\$aktivitetId"
         val query = """
             query($aktivitetIdParam: String!) {
@@ -192,7 +192,7 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
     fun `skal kunne hente historikk`() {
         val jobbAktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
             .toBuilder().oppfolgingsperiodeId(mockBruker.oppfolgingsperiodeId).build()
-        val aktivitet = aktivitetTestService.opprettAktivitet(mockBruker, mockBruker, jobbAktivitet)
+        val aktivitet = aktivitetTestService.opprettAktivitetViaHttp(mockBruker, mockBruker, jobbAktivitet)
         aktivitetTestService.oppdaterAktivitetStatus(mockBruker, mockVeileder, aktivitet, AktivitetStatus.GJENNOMFORES)
         val aktivitetIdParam = "\$aktivitetId"
         val query = """
@@ -224,7 +224,7 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
         val fraDatoIso = "2024-04-30T22:00:00.000+00:00"
         val jobbAktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
             .toBuilder().oppfolgingsperiodeId(mockBruker.oppfolgingsperiodeId).fraDato(DateUtils.dateFromISO8601(fraDatoIso)).build()
-        val aktivitet = aktivitetTestService.opprettAktivitet(mockBruker, mockBruker, jobbAktivitet)
+        val aktivitet = aktivitetTestService.opprettAktivitetViaHttp(mockBruker, mockBruker, jobbAktivitet)
         aktivitetTestService.oppdaterAktivitetStatus(mockBruker, mockVeileder, aktivitet, AktivitetStatus.GJENNOMFORES)
         val aktivitetIdParam = "\$aktivitetId"
         val query = """
@@ -246,7 +246,7 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
         val fraDatoIso = "2024-04-30T22:00:00.000+00:00"
         val jobbAktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
             .toBuilder().oppfolgingsperiodeId(mockBruker.oppfolgingsperiodeId).fraDato(DateUtils.dateFromISO8601(fraDatoIso)).build()
-        val aktivitet = aktivitetTestService.opprettAktivitet(mockBruker, mockBruker, jobbAktivitet)
+        val aktivitet = aktivitetTestService.opprettAktivitetViaHttp(mockBruker, mockBruker, jobbAktivitet)
         aktivitetTestService.oppdaterAktivitetStatus(mockBruker, mockVeileder, aktivitet, AktivitetStatus.GJENNOMFORES)
         val fnrParam = "\$fnr"
         val aktivitetIdParam = "\$aktivitetId"
@@ -278,7 +278,7 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
         val fraDatoIso = "2024-04-30T21:00:00.000+00:00"
         val jobbAktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
             .toBuilder().oppfolgingsperiodeId(nyPeriode).fraDato(DateUtils.dateFromISO8601(fraDatoIso)).build()
-        val aktivitet = aktivitetTestService.opprettAktivitet(mockBruker, mockBruker, jobbAktivitet)
+        val aktivitet = aktivitetTestService.opprettAktivitetViaHttp(mockBruker, mockBruker, jobbAktivitet)
         aktivitetTestService.oppdaterAktivitetStatus(mockBruker, mockVeileder, aktivitet, AktivitetStatus.GJENNOMFORES)
         val aktivitetIdParam = "\$aktivitetId"
         val query = """

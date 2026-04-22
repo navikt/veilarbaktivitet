@@ -15,9 +15,7 @@ import no.nav.veilarbaktivitet.oppfolging.periode.SistePeriodeService;
 import no.nav.veilarbaktivitet.oversikten.OversiktenService;
 import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.person.Person;
-import no.nav.veilarbaktivitet.stilling_fra_nav.CvKanDelesData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.LivslopsStatus;
-import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
 import no.nav.veilarbaktivitet.util.DateUtils;
 import no.nav.veilarbaktivitet.util.MappingUtils;
 import org.springframework.stereotype.Service;
@@ -31,6 +29,7 @@ import java.util.UUID;
 import java.util.function.Function;
 
 import static no.nav.common.utils.StringUtils.nullOrEmpty;
+import static no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.AktivitetsOpprettelseUtil.tilAktivitetsData;
 
 @Service
 @AllArgsConstructor
@@ -81,11 +80,8 @@ public class AktivitetService {
         }
     }
 
-    public AktivitetData opprettAktivitet(AktivitetsOpprettelse aktivitet) throws IngenGjeldendePeriodeException {
-        var nyAktivivitet = enforceOppfolgingsPeriode(aktivitet, aktivitet.getOpprettFelter().getAktorId())
-                .toBuilder()
-                .transaksjonsType(AktivitetTransaksjonsType.OPPRETTET)
-                .build();
+    public AktivitetData opprettAktivitetIDB(AktivitetsOpprettelse aktivitet) throws IngenGjeldendePeriodeException {
+        var nyAktivivitet = tilAktivitetsData(aktivitet);
         var opprettetAktivitet = aktivitetDAO.opprettNyAktivitet(nyAktivivitet);
         metricService.opprettNyAktivitetMetrikk(opprettetAktivitet);
         return opprettetAktivitet;
@@ -280,66 +276,6 @@ public class AktivitetService {
                 );
     }
 
-    public static BehandlingAktivitetData mergeBehandlingAktivitetData(BehandlingAktivitetData originalBehandlingAktivitetData, BehandlingAktivitetData behandlingAktivitetData) {
-        return originalBehandlingAktivitetData
-                .withBehandlingType(behandlingAktivitetData.getBehandlingType())
-                .withBehandlingSted(behandlingAktivitetData.getBehandlingSted())
-                .withEffekt(behandlingAktivitetData.getEffekt())
-                .withBehandlingOppfolging(behandlingAktivitetData.getBehandlingOppfolging());
-    }
-
-    public static IJobbAktivitetData mergeIJobbAktivitetData(IJobbAktivitetData originalIJobbAktivitetData, IJobbAktivitetData iJobbAktivitetData) {
-        return originalIJobbAktivitetData
-                .withJobbStatusType(iJobbAktivitetData.getJobbStatusType())
-                .withAnsettelsesforhold(iJobbAktivitetData.getAnsettelsesforhold())
-                .withArbeidstid(iJobbAktivitetData.getArbeidstid());
-    }
-
-    public static SokeAvtaleAktivitetData mergeSokeAvtaleAktivitetData(SokeAvtaleAktivitetData originalSokeAvtaleAktivitetData, SokeAvtaleAktivitetData sokeAvtaleAktivitetData) {
-        return originalSokeAvtaleAktivitetData
-                .withAntallStillingerSokes(sokeAvtaleAktivitetData.getAntallStillingerSokes())
-                .withAntallStillingerIUken(sokeAvtaleAktivitetData.getAntallStillingerIUken())
-                .withAvtaleOppfolging(sokeAvtaleAktivitetData.getAvtaleOppfolging());
-    }
-
-    public static EgenAktivitetData mergeEgenAktivitetData(EgenAktivitetData originalEgenAktivitetData, EgenAktivitetData egenAktivitetData) {
-        return originalEgenAktivitetData
-                .withOppfolging(egenAktivitetData.getOppfolging())
-                .withHensikt(egenAktivitetData.getHensikt());
-    }
-
-    public static MoteData mergeMoteData(MoteData originalMoteData, MoteData moteData) {
-        // Referat-felter settes gjennom egne operasjoner, se oppdaterReferat()
-        return originalMoteData
-                .withAdresse(moteData.getAdresse())
-                .withForberedelser(moteData.getForberedelser())
-                .withKanal(moteData.getKanal());
-    }
-
-    public static StillingsoekAktivitetData mergeStillingSok(StillingsoekAktivitetData originalStillingsoekAktivitetData, StillingsoekAktivitetData stillingsoekAktivitetData) {
-        return originalStillingsoekAktivitetData
-                .withArbeidsgiver(stillingsoekAktivitetData.getArbeidsgiver())
-                .withArbeidssted(stillingsoekAktivitetData.getArbeidssted())
-                .withKontaktPerson(stillingsoekAktivitetData.getKontaktPerson())
-                .withStillingsTittel(stillingsoekAktivitetData.getStillingsTittel());
-    }
-
-    public static EksternAktivitetData mergeEksternAktivitet(EksternAktivitetData original, EksternAktivitetData newData) {
-        return original.copy(
-                    newData.getSource(),
-                    newData.getTiltaksKode(),
-                    original.getOpprettetSomHistorisk(),
-                    original.getOppfolgingsperiodeSlutt(),
-                    newData.getArenaId(),
-                    newData.getType(),
-                    newData.getOppgave(),
-                    newData.getHandlinger(),
-                    newData.getDetaljer(),
-                    newData.getEtiketter(),
-                    newData.getEndretTidspunktKilde()
-                );
-    }
-
     @Transactional
     public void settAktiviteterTilHistoriske(UUID oppfolgingsperiodeId, ZonedDateTime sluttDato) {
         Date sluttDatoDate = new Date(sluttDato.toInstant().toEpochMilli());
@@ -372,32 +308,6 @@ public class AktivitetService {
                 .findAny()
                 .orElse(null)
         );
-    }
-
-
-    private CvKanDelesData mergeCVKanDelesData(CvKanDelesData existing, CvKanDelesData updated) {
-        return existing
-                .withKanDeles(updated.getKanDeles())
-                .withEndretAv(updated.getEndretAv())
-                .withAvtaltDato(updated.getAvtaltDato())
-                .withEndretAvType(updated.getEndretAvType())
-                .withEndretTidspunkt(new Date());
-    }
-    private StillingFraNavData mergeStillingFraNav(StillingFraNavData existing, StillingFraNavData updated) {
-        return existing
-            .withArbeidssted(updated.getArbeidssted())
-            .withArbeidsgiver(updated.getArbeidsgiver())
-            .withCvKanDelesData(
-                MappingUtils.merge(existing.getCvKanDelesData(), updated.getCvKanDelesData())
-                    .merge(this::mergeCVKanDelesData)
-            )
-            .withLivslopsStatus(updated.getLivslopsStatus())
-            .withSoknadsstatus(updated.getSoknadsstatus())
-            .withBestillingsId(updated.getBestillingsId())
-            .withSvarfrist(updated.getSvarfrist())
-            .withKontaktpersonData(updated.getKontaktpersonData())
-            .withDetaljer(updated.getDetaljer())
-            .withVarselId(updated.getVarselId());
     }
 
 }

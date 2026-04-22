@@ -668,12 +668,14 @@ class AktivitetskortConsumerIntegrationTest(
         val tiltaksaktivitet = aktivitetskort(funksjonellId, AktivitetskortStatus.AVBRUTT)
         val tiltaksaktivitetEndret = aktivitetskort(funksjonellId, AktivitetskortStatus.PLANLAGT)
         val context = arenaMeldingHeaders(mockBruker)
+
         aktivitetTestService.opprettEksterntArenaKort(
             listOf(
                 ArenaKort(tiltaksaktivitet, context),
                 ArenaKort(tiltaksaktivitetEndret, context)
             )
         )
+
         val aktivitet = hentAktivitet(funksjonellId)
         assertThat(aktivitet.status).isEqualTo(AktivitetStatus.PLANLAGT)
     }

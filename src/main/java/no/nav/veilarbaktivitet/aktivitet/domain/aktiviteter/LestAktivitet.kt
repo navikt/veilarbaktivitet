@@ -24,7 +24,7 @@ data class AktivitetBaseData(
 */
 class AktivitetMuterbareFelter(
     val tittel: String,
-    val beskrivelse: String,
+    val beskrivelse: String?,
     val fraDato: Date?,
     val tilDato: Date?,
     val lenke: String?,
@@ -36,6 +36,7 @@ class AktivitetMuterbareFelter(
 class AktivitetBareOpprettFelter(
     val aktorId: Person.AktorId,
     val aktivitetType: AktivitetTypeData,
+    val status: AktivitetStatus,
     val kontorsperreEnhetId: String?, // Tror denne bør være konsistent alltid
     val malid: String?,
     val opprettetDato: ZonedDateTime,

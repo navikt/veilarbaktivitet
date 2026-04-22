@@ -88,7 +88,7 @@ class StillingFraNavTilVeilarbportefoljeTest extends SpringBootTestBase {
         MockBruker mockBruker = navMockService.createHappyBruker();
         AktivitetData annenAktivitet = AktivitetDataTestBuilder.nyEgenaktivitet().withId(1337L);
         AktivitetDTO aktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(annenAktivitet, false);
-        aktivitetTestService.opprettAktivitet(mockBruker, aktivitetDTO);
+        aktivitetTestService.opprettAktivitetViaHttp(mockBruker, aktivitetDTO);
 
         clearKafkaTopic();
         aktiviteterTilKafkaService.sendOppTil5000AktiviterTilPortefolje();
