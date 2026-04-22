@@ -72,15 +72,6 @@ public class AktivitetService {
         return aktivitetDAO.hentAktivitetVersjoner(id);
     }
 
-    private AktivitetData enforceOppfolgingsPeriode(AktivitetData aktivitet, Person.AktorId aktorId) throws IngenGjeldendePeriodeException {
-        if (aktivitet.getOppfolgingsperiodeId() == null) {
-            var oppfolgingsperiode = sistePeriodeService.hentGjeldendeOppfolgingsperiodeMedFallback(aktorId);
-            return aktivitet.withOppfolgingsperiodeId(oppfolgingsperiode);
-        } else {
-            return aktivitet;
-        }
-    }
-
     public AktivitetData opprettAktivitetIDB(AktivitetsOpprettelse aktivitet) throws IngenGjeldendePeriodeException {
         var nyAktivivitet = tilAktivitetsData(aktivitet);
         var opprettetAktivitet = aktivitetDAO.opprettNyAktivitet(nyAktivivitet);
