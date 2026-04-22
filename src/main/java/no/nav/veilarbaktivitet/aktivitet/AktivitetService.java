@@ -5,6 +5,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.AktivitetsEndring;
 import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.AktivitetsEndringUtil;
 import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.AktivitetsOpprettelse;
+import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.Mote;
 import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.spesialEndringer.EtikettEndring;
 import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.spesialEndringer.ReferatEndring;
 import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.spesialEndringer.StatusEndring;
@@ -161,15 +162,15 @@ public class AktivitetService {
         aktivitetDAO.oppdaterAktivitet(oppdatertAktivitetMedNyFrist);
     }
 
-    public void oppdaterMoteTidStedOgKanal(AktivitetData originalAktivitet, AktivitetData aktivitetData) {
+    public void oppdaterMoteTidStedOgKanal(AktivitetData originalAktivitet, Mote.Endre aktivitetData) {
         final var oppdatertAktivitet = originalAktivitet
                 .toBuilder()
-                .endretAvType(aktivitetData.getEndretAvType())
-                .endretAv(aktivitetData.getEndretAv())
-                .endretDato(aktivitetData.getEndretDato())
+                .endretAvType(aktivitetData.getSporing().getEndretAvType())
+                .endretAv(aktivitetData.getSporing().getEndretAv())
+                .endretDato(DateUtils.zonedDateTimeToDate(aktivitetData.getSporing().getEndretDato()))
                 .transaksjonsType(AktivitetTransaksjonsType.MOTE_TID_OG_STED_ENDRET)
-                .fraDato(aktivitetData.getFraDato())
-                .tilDato(aktivitetData.getTilDato())
+                .fraDato(aktivitetData.getMuterbareFelter().getFraDato())
+                .tilDato(aktivitetData.getMuterbareFelter().getTilDato())
                 .moteData(ofNullable(originalAktivitet.getMoteData()).map(moteData ->
                         moteData.withAdresse(aktivitetData.getMoteData().getAdresse())
                                 .withKanal(aktivitetData.getMoteData().getKanal())
@@ -178,14 +179,14 @@ public class AktivitetService {
         aktivitetDAO.oppdaterAktivitet(oppdatertAktivitet);
     }
 
-    public void oppdaterMoteDetaljer(AktivitetData originalAktivitet, AktivitetData aktivitetData) {
+    public void oppdaterMoteDetaljer(AktivitetData originalAktivitet, Mote.Endre aktivitetData) {
         final var oppdatertAktivitet = originalAktivitet
                 .toBuilder()
-                .tittel(aktivitetData.getTittel())
-                .beskrivelse(aktivitetData.getBeskrivelse())
-                .endretAvType(aktivitetData.getEndretAvType())
-                .endretAv(aktivitetData.getEndretAv())
-                .endretDato(aktivitetData.getEndretDato())
+                .tittel(aktivitetData.getMuterbareFelter().getTittel())
+                .beskrivelse(aktivitetData.getMuterbareFelter().getBeskrivelse())
+                .endretAvType(aktivitetData.getSporing().getEndretAvType())
+                .endretAv(aktivitetData.getSporing().getEndretAv())
+                .endretDato(DateUtils.zonedDateTimeToDate(aktivitetData.getSporing().getEndretDato()))
                 .transaksjonsType(AktivitetTransaksjonsType.DETALJER_ENDRET)
                 .moteData(ofNullable(originalAktivitet.getMoteData()).map(moteData ->
                         moteData.withForberedelser(aktivitetData.getMoteData().getForberedelser())

@@ -177,7 +177,6 @@ public class LestAktivitetAppServiceTest {
         when(aktivitetService.hentAktivitetMedForhaandsorientering(oppdatertAktivitet.getId())).thenReturn(gammelAktivitet);
 
         appService.oppdaterAktivitet(oppdatertAktivitet);
-        verify(aktivitetService, times(1)).oppdaterAktivitet(any(), any());
         verify(aktivitetService, times(0)).oppdaterAktivitetFrist(any(), any());
         verify(aktivitetService, times(1)).oppdaterMoteTidStedOgKanal(any(), any());
         verify(aktivitetService, times(0)).oppdaterMoteDetaljer(any(), any());

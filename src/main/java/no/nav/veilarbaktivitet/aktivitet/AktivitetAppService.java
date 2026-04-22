@@ -8,6 +8,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
 import no.nav.veilarbaktivitet.aktivitet.domain.MoteData;
 import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.AktivitetsEndring;
 import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.AktivitetsOpprettelse;
+import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.Mote;
 import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.spesialEndringer.EtikettEndring;
 import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.spesialEndringer.ReferatEndring;
 import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.spesialEndringer.StatusEndring;
@@ -165,8 +166,22 @@ public class AktivitetAppService {
     }
 
     private void oppdaterSomNav(AktivitetsEndring aktivitet, AktivitetData original) {
-        if (original.isAvtalt() && original.getAktivitetType() != AktivitetTypeData.MOTE) {
-            aktivitetService.oppdaterAktivitetFrist(original, aktivitet);
+        if (original.isAvtalt()) {
+            if (original.getAktivitetType() == AktivitetTypeData.MOTE) {
+                boolean tidOgStedEndret = erMoteTidOgStedEndret(original, (Mote.Endre) aktivitet);
+                boolean detaljerEndret = erMoteDetaljerEndret(original, (Mote.Endre) aktivitet);
+
+                if (tidOgStedEndret) {
+                    aktivitetService.oppdaterMoteTidStedOgKanal(original, (Mote.Endre) aktivitet);
+                    // Hent oppdatert aktivitet for eventuell detaljer-oppdatering
+                    original = aktivitetService.hentAktivitetMedForhaandsorientering(original.getId());
+                }
+                if (detaljerEndret) {
+                    aktivitetService.oppdaterMoteDetaljer(original, (Mote.Endre) aktivitet);
+                }
+            } else {
+                aktivitetService.oppdaterAktivitetFrist(original, aktivitet);
+            }
         } else {
             /* Oppdatering av status skjer i eget endepukt og er ikke en del av sammenligningen */
 //            if (AktivitetskortCompareUtil.INSTANCE.erFaktiskOppdatert(aktivitet, original)) {
@@ -177,9 +192,9 @@ public class AktivitetAppService {
         }
     }
 
-    private boolean erMoteTidOgStedEndret(AktivitetData original, AktivitetData aktivitet) {
-        boolean fraDatoEndret = !Objects.equals(original.getFraDato(), aktivitet.getFraDato());
-        boolean tilDatoEndret = !Objects.equals(original.getTilDato(), aktivitet.getTilDato());
+    private boolean erMoteTidOgStedEndret(AktivitetData original, Mote.Endre aktivitet) {
+        boolean fraDatoEndret = !Objects.equals(original.getFraDato(), aktivitet.getMuterbareFelter().getFraDato());
+        boolean tilDatoEndret = !Objects.equals(original.getTilDato(), aktivitet.getMuterbareFelter().getTilDato());
 
         MoteData originalMote = original.getMoteData();
         MoteData nyMote = aktivitet.getMoteData();
@@ -192,9 +207,9 @@ public class AktivitetAppService {
         return fraDatoEndret || tilDatoEndret || adresseEndret || kanalEndret;
     }
 
-    private boolean erMoteDetaljerEndret(AktivitetData original, AktivitetData aktivitet) {
-        boolean tittelEndret = !Objects.equals(original.getTittel(), aktivitet.getTittel());
-        boolean beskrivelseEndret = !Objects.equals(original.getBeskrivelse(), aktivitet.getBeskrivelse());
+    private boolean erMoteDetaljerEndret(AktivitetData original, Mote.Endre aktivitet) {
+        boolean tittelEndret = !Objects.equals(original.getTittel(), aktivitet.getMuterbareFelter().getTittel());
+        boolean beskrivelseEndret = !Objects.equals(original.getBeskrivelse(), aktivitet.getMuterbareFelter().getBeskrivelse());
 
         MoteData originalMote = original.getMoteData();
         MoteData nyMote = aktivitet.getMoteData();
