@@ -18,7 +18,6 @@ import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.stilling_fra_nav.LivslopsStatus;
 import no.nav.veilarbaktivitet.util.DateUtils;
-import no.nav.veilarbaktivitet.util.MappingUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -236,7 +235,6 @@ public class AktivitetService {
     }
 
     public AktivitetData oppdaterAktivitet(AktivitetData originalAktivitet, AktivitetsEndring aktivitet) {
-        final var merger = MappingUtils.merge(originalAktivitet, aktivitet);
         var oppdatertAktivitetBuilder = originalAktivitet
                 .toBuilder()
                 .beskrivelse(aktivitet.getMuterbareFelter().getBeskrivelse())
@@ -248,17 +246,6 @@ public class AktivitetService {
                 .tilDato(aktivitet.getMuterbareFelter().getTilDato())
                 .tittel(aktivitet.getMuterbareFelter().getTittel())
                 .transaksjonsType(AktivitetTransaksjonsType.DETALJER_ENDRET).build();
-                // Disse settes basert på input-aktivitet-typen
-                /*
-                .behandlingAktivitetData(merger.map(AktivitetData::getBehandlingAktivitetData).merge(this::mergeBehandlingAktivitetData))
-                .egenAktivitetData(merger.map(AktivitetData::getEgenAktivitetData).merge(this::mergeEgenAktivitetData))
-                .iJobbAktivitetData(merger.map(AktivitetData::getIJobbAktivitetData).merge(this::mergeIJobbAktivitetData))
-                .moteData(merger.map(AktivitetData::getMoteData).merge(this::mergeMoteData))
-                .sokeAvtaleAktivitetData(merger.map(AktivitetData::getSokeAvtaleAktivitetData).merge(this::mergeSokeAvtaleAktivitetData))
-                .stillingFraNavData(merger.map(AktivitetData::getStillingFraNavData).merge(this::mergeStillingFraNav))
-                .stillingsSoekAktivitetData(merger.map(AktivitetData::getStillingsSoekAktivitetData).merge(this::mergeStillingSok))
-                .eksternAktivitetData(merger.map(AktivitetData::getEksternAktivitetData).merge(this::mergeEksternAktivitet));
-                */
         var oppdatertAktivitet = AktivitetsEndringUtil.berikMedAktivitetsTypeSpesifikkData(oppdatertAktivitetBuilder, aktivitet);
         final var result = aktivitetDAO.oppdaterAktivitet(oppdatertAktivitet);
 
