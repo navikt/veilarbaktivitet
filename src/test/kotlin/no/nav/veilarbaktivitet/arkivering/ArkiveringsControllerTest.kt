@@ -30,6 +30,7 @@ import no.nav.veilarbaktivitet.testUtils.AktivitetDtoTestBuilder
 import no.nav.veilarbaktivitet.util.DateUtils.*
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.http.HttpStatus
 import java.net.URI
@@ -40,6 +41,11 @@ import java.time.temporal.ChronoUnit
 import java.util.*
 
 internal class ArkiveringsControllerTest : SpringBootTestBase() {
+
+    @BeforeEach
+    fun resetWireMock() {
+        wireMock.resetAll()
+    }
 
     @Test
     fun `Når man ber om forhåndsvist pdf skal man sende data til orkivar og returnere resultat`() {
@@ -507,7 +513,6 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
 
     @Test
     fun `Skal aldri arkivere kontorsperrede aktiviteter og dialoger når man skal sende aktivitetsplan til bruker`() {
-        wireMock.resetAll()
         val (kvpBruker, veileder) = hentKvpBrukerOgVeileder("Sølvi", "Normalbakke")
         val oppfølgingsperiode = kvpBruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
         val kvpAktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
