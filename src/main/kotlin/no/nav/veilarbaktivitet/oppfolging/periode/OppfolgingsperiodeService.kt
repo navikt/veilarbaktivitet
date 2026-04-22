@@ -74,4 +74,8 @@ class OppfolgingsperiodeService(
     private fun hentOppfolgingsperiode(oppfolgingsperiodeId: UUID): Oppfolgingsperiode? {
         return oppfolgingsperiodeDAO.getOppfolgingsperiode(oppfolgingsperiodeId)
     }
+
+    fun hentNåværedeÅpenPeriode(aktorId: AktorId): Oppfolgingsperiode? {
+        return oppfolgingsperiodeDAO.getByAktorId(aktorId).singleOrNull { it.sluttTid == null }
+    }
 }

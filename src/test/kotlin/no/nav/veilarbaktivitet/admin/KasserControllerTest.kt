@@ -8,7 +8,7 @@ import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder
 import no.nav.veilarbaktivitet.person.Innsender
-import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder
+import no.nav.veilarbaktivitet.testUtils.AktivitetDtoTestBuilder
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -31,7 +31,7 @@ internal class KasserControllerTest : SpringBootTestBase() {
     @Test
     fun `skal kke kunne kassere aktivitet uten tilgang`() {
         val veilederUtenKasseringstilgang = navMockService.createVeileder(mockBruker = mockBruker)
-        val aktivitet = aktivitetTestService.opprettAktivitet(
+        val aktivitet = aktivitetTestService.opprettAktivitetViaHttp(
             mockBruker, AktivitetDtoTestBuilder.nyAktivitet(
                 AktivitetTypeDTO.STILLING
             )
@@ -47,7 +47,7 @@ internal class KasserControllerTest : SpringBootTestBase() {
 
     @Test
     fun `skal lage ny versjon av aktivitet ved kassering`() {
-        val opprettetAktivitet = aktivitetTestService.opprettAktivitet(
+        val opprettetAktivitet = aktivitetTestService.opprettAktivitetViaHttp(
             mockBruker, AktivitetDtoTestBuilder.nyAktivitet(
                 AktivitetTypeDTO.STILLING
             )
@@ -68,7 +68,7 @@ internal class KasserControllerTest : SpringBootTestBase() {
 
     @Test
     fun `skal overskrive bestemte felter på alle versjoner av aktiviteten når man kasserer`() {
-        val opprettetAktivitet = aktivitetTestService.opprettAktivitet(mockBruker, AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.STILLING))
+        val opprettetAktivitet = aktivitetTestService.opprettAktivitetViaHttp(mockBruker, AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.STILLING))
         val aktivitetId = opprettetAktivitet.id
 
         aktivitetTestService.kasserAktivitetskort(veilederSomKanKassere, opprettetAktivitet.id)
@@ -85,7 +85,7 @@ internal class KasserControllerTest : SpringBootTestBase() {
     @Test
     fun `skal ikke overskrive endret-felter og statusfelt på tidligere versjoner av aktiviteten når man kasserer`() {
         val annenVeileder = navMockService.createVeileder(mockBruker = mockBruker)
-        val opprettetAktivitet = aktivitetTestService.opprettAktivitet(mockBruker, annenVeileder, AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.STILLING))
+        val opprettetAktivitet = aktivitetTestService.opprettAktivitetViaHttp(mockBruker, annenVeileder, AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.STILLING))
         val aktivitetId = opprettetAktivitet.id
 
         aktivitetTestService.kasserAktivitetskort(veilederSomKanKassere, opprettetAktivitet.id)

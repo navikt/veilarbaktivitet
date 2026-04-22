@@ -10,8 +10,12 @@ import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.spesialEndringer.Eti
 import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.spesialEndringer.ReferatEndring
 import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.spesialEndringer.StatusEndring
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO
+import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDataMapperService.IdAndVersjon
 import no.nav.veilarbaktivitet.kvp.KvpService
+import no.nav.veilarbaktivitet.oppfolging.periode.Oppfolgingsperiode
+import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeService
 import no.nav.veilarbaktivitet.person.Innsender
+import no.nav.veilarbaktivitet.person.Person
 import no.nav.veilarbaktivitet.person.UserInContext
 import org.springframework.stereotype.Service
 import java.time.ZonedDateTime
@@ -23,6 +27,7 @@ class AktivitetDataMapperService(
     private val aktorOppslagClient: AktorOppslagClient,
     private val userInContext: UserInContext,
     private val kvpService: KvpService,
+    private val oppfolgingPeriodeService: OppfolgingsperiodeService
 ) {
 
     private fun getEndretAv(bruker: Id?): String {
@@ -32,19 +37,30 @@ class AktivitetDataMapperService(
         throw IllegalArgumentException("Bruker må være AktorId, NavIdent eller Fnr")
     }
 
+    private fun getCurrentOppfolgingsperiode(aktorId: Person.AktorId): Oppfolgingsperiode {
+        val nåværendeÅpenPeriode = oppfolgingPeriodeService.hentNåværedeÅpenPeriode(aktorId)
+        if (nåværendeÅpenPeriode != null) {
+            return nåværendeÅpenPeriode
+        } else {
+            throw IllegalArgumentException("Bruker må være AktorId, NavIdent eller Fnr")
+        }
+    }
+
     private fun getOpprettFelter(aktivitetDTO: AktivitetDTO, automatisk: Boolean, aktivitetType: AktivitetTypeData): AktivitetBareOpprettFelter {
         val aktorId = userInContext.getAktorId()
         val kontorSperreEnhet: String? = kvpService.getKontorSperreEnhet(aktorId)
             .map { it.get() }
             .orElse(null)
+
         return AktivitetBareOpprettFelter(
             aktorId = aktorId,
             automatiskOpprettet = automatisk,
             opprettetDato = ZonedDateTime.now(),
             malid = aktivitetDTO.malid,
-            oppfolgingsperiodeId = aktivitetDTO.oppfolgingsperiodeId,
+            oppfolgingsperiodeId = getCurrentOppfolgingsperiode(aktorId).oppfolgingsperiodeId,
             kontorsperreEnhetId = kontorSperreEnhet,
-            aktivitetType = aktivitetType
+            aktivitetType = aktivitetType,
+            status = aktivitetDTO.status
         )
     }
 
@@ -106,9 +122,6 @@ class AktivitetDataMapperService(
             )
             AktivitetTypeData.MOTE, AktivitetTypeData.SAMTALEREFERAT -> Mote.Opprett(
                 opprettFelter, muterbareFelter, sporing, moteData(aktivitetDTO)
-            )
-            AktivitetTypeData.STILLING_FRA_NAV -> StillingFraNav.Opprett(
-                opprettFelter, muterbareFelter,sporing, aktivitetDTO.getStillingFraNavData()
             )
             else -> throw IllegalStateException("Unexpected value: " + aktivitetType)
         }

@@ -6,7 +6,7 @@ import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO
 import no.nav.veilarbaktivitet.oversikten.OversiktenMelding
 import no.nav.veilarbaktivitet.oversikten.OversiktenMeldingMedMetadataDAO
 import no.nav.veilarbaktivitet.oversikten.UtsendingStatus
-import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder
+import no.nav.veilarbaktivitet.testUtils.AktivitetDtoTestBuilder
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.Assertions
@@ -25,30 +25,31 @@ internal class AktivitetsplanControllerTest: SpringBootTestBase() {
     fun veileder_skal_kunne_oprette_aktivitet() {
         val happyBruker = navMockService.createBruker()
         val veileder = navMockService.createVeileder(happyBruker)
-        aktivitetTestService.opprettAktivitet(
+        aktivitetTestService.opprettAktivitetViaHttp(
             happyBruker, veileder, AktivitetDtoTestBuilder.nyAktivitet(
                 AktivitetTypeDTO.EGEN
-            )
+            ).setOppfolgingsperiodeId(happyBruker.oppfolgingsperiodeId)
         )
     }
 
     @Test
     fun bruker_skal_kunne_oprette_aktivitet() {
         val happyBruker = navMockService.createBruker()
-        aktivitetTestService.opprettAktivitet(happyBruker, AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.EGEN))
+        aktivitetTestService.opprettAktivitetViaHttp(happyBruker, AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.EGEN))
     }
 
     @Test
     fun bruker_skal_ikke_kunne_oprette_aktivitet_på_annen_bruker() {
         val happyBruker = navMockService.createBruker()
         val evilUser = navMockService.createBruker()
-        val aktivitetPayloadJson = JsonUtils.toJson(AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.EGEN))
-        val response = evilUser
+        val aktivitetPayloadJson = JsonUtils.toJson(AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.EGEN)
+            .setOppfolgingsperiodeId(happyBruker.oppfolgingsperiodeId))
+        evilUser
             .createRequest()
             .and()
             .body(aktivitetPayloadJson)
             .`when`()
-            .post("http://localhost:$port/veilarbaktivitet/api/aktivitet/${happyBruker.oppfolgingsperiodeId}/ny?fnr=${happyBruker.fnr}")
+            .post("http://localhost:$port/veilarbaktivitet/api/aktivitet/${happyBruker.oppfolgingsperiodeId}/ny")
             .then()
             .assertThat()
             .statusCode(HttpStatus.OK.value())
@@ -57,7 +58,7 @@ internal class AktivitetsplanControllerTest: SpringBootTestBase() {
         val skalVæreTom = aktivitetTestService.hentAktiviteterForFnr(happyBruker)
         Assertions.assertTrue(skalVæreTom.aktiviteter.isEmpty())
         val skalHaEnAktivitet = aktivitetTestService.hentAktiviteterForFnr(evilUser)
-        Assertions.assertFalse(skalHaEnAktivitet.aktiviteter.isEmpty())
+        Assertions.assertSame(1, skalHaEnAktivitet.aktiviteter.size)
     }
 
     @Test
@@ -92,7 +93,7 @@ internal class AktivitetsplanControllerTest: SpringBootTestBase() {
     fun veileder_uten_tilgang_skal_ikke_kunne_hente_en_aktivitet() {
         val happyBruker = navMockService.createBruker()
         val veileder = navMockService.createVeileder()
-        val aktivitet = aktivitetTestService.opprettAktivitet(happyBruker, AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.EGEN))
+        val aktivitet = aktivitetTestService.opprettAktivitetViaHttp(happyBruker, AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.EGEN))
         veileder
             .createRequest(happyBruker)
             .get("http://localhost:$port/veilarbaktivitet/api/aktivitet/${aktivitet.id}")
@@ -105,7 +106,7 @@ internal class AktivitetsplanControllerTest: SpringBootTestBase() {
     fun veileder_uten_tilgang_skal_ikke_kunne_hente_aktivitetsversjoner() {
         val happyBruker = navMockService.createBruker()
         val veileder = navMockService.createVeileder()
-        val aktivitet = aktivitetTestService.opprettAktivitet(happyBruker, AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.EGEN))
+        val aktivitet = aktivitetTestService.opprettAktivitetViaHttp(happyBruker, AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.EGEN))
         veileder
             .createRequest(happyBruker)
             .get("http://localhost:$port/veilarbaktivitet/api/aktivitet/${aktivitet.id}/versjoner")
@@ -118,7 +119,7 @@ internal class AktivitetsplanControllerTest: SpringBootTestBase() {
     fun veileder_uten_tilgang_skal_ikke_kunne_oppdatere_aktiviteter() {
         val happyBruker = navMockService.createBruker()
         val veileder = navMockService.createVeileder()
-        val aktivitet = aktivitetTestService.opprettAktivitet(happyBruker, AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.EGEN))
+        val aktivitet = aktivitetTestService.opprettAktivitetViaHttp(happyBruker, AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.EGEN))
         val aktivitetPayloadJson = JsonUtils.toJson(aktivitet)
         veileder
             .createRequest(happyBruker)
@@ -133,7 +134,7 @@ internal class AktivitetsplanControllerTest: SpringBootTestBase() {
     fun veileder_uten_tilgang_skal_ikke_kunne_oppdatere_etiketter() {
         val happyBruker = navMockService.createBruker()
         val veileder = navMockService.createVeileder()
-        val aktivitet = aktivitetTestService.opprettAktivitet(happyBruker, AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.EGEN))
+        val aktivitet = aktivitetTestService.opprettAktivitetViaHttp(happyBruker, AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.EGEN))
         val aktivitetPayloadJson = JsonUtils.toJson(aktivitet)
         veileder
             .createRequest(happyBruker)
@@ -148,7 +149,7 @@ internal class AktivitetsplanControllerTest: SpringBootTestBase() {
     fun veileder_uten_tilgang_skal_ikke_kunne_oppdatere_status() {
         val happyBruker = navMockService.createBruker()
         val veileder = navMockService.createVeileder()
-        val aktivitet = aktivitetTestService.opprettAktivitet(happyBruker, AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.EGEN))
+        val aktivitet = aktivitetTestService.opprettAktivitetViaHttp(happyBruker, AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.EGEN))
         val aktivitetPayloadJson = JsonUtils.toJson(aktivitet)
         veileder
             .createRequest(happyBruker)
@@ -163,7 +164,7 @@ internal class AktivitetsplanControllerTest: SpringBootTestBase() {
     fun veileder_uten_tilgang_skal_ikke_kunne_oppdatere_referat() {
         val happyBruker = navMockService.createBruker()
         val veileder = navMockService.createVeileder()
-        val aktivitet = aktivitetTestService.opprettAktivitet(happyBruker, AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.EGEN))
+        val aktivitet = aktivitetTestService.opprettAktivitetViaHttp(happyBruker, AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.EGEN))
         val aktivitetPayloadJson = JsonUtils.toJson(aktivitet)
         veileder
             .createRequest(happyBruker)
@@ -178,7 +179,8 @@ internal class AktivitetsplanControllerTest: SpringBootTestBase() {
     fun bruker_skal_ikke_kunne_publisere_referat() {
         val happyBruker = navMockService.createBruker()
         val veileder = navMockService.createVeileder(happyBruker)
-        val aktivitet = aktivitetTestService.opprettAktivitet(happyBruker, veileder, AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE))
+        val aktivitet = aktivitetTestService.opprettAktivitetViaHttp(happyBruker, veileder, AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE)
+            .setOppfolgingsperiodeId(happyBruker.oppfolgingsperiodeId))
         val aktivitetPayloadJson = JsonUtils.toJson(aktivitet)
         happyBruker
             .createRequest()
@@ -193,10 +195,13 @@ internal class AktivitetsplanControllerTest: SpringBootTestBase() {
     fun når_udelt_referat_opprettes_så_sendes_melding_til_oversikten() {
         val happyBruker = navMockService.createBruker()
         val veileder = navMockService.createVeileder(happyBruker)
-        val aktivitet = aktivitetTestService.opprettAktivitet(
+        val aktivitet = aktivitetTestService.opprettAktivitetViaHttp(
             happyBruker,
             veileder,
-            AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE).setErReferatPublisert(false).setReferat(null)
+            AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE)
+                .setErReferatPublisert(false)
+                .setReferat(null)
+                .setOppfolgingsperiodeId(happyBruker.oppfolgingsperiodeId)
         )
         val oppdatertAktivitet = aktivitet
         oppdatertAktivitet.setReferat("Et referat")
@@ -224,10 +229,13 @@ internal class AktivitetsplanControllerTest: SpringBootTestBase() {
     fun skal_ikke_sende_startmelding_når_referat_oppdateres() {
         val happyBruker = navMockService.createBruker()
         val veileder = navMockService.createVeileder(happyBruker)
-        val aktivitet = aktivitetTestService.opprettAktivitet(
+        val aktivitet = aktivitetTestService.opprettAktivitetViaHttp(
             happyBruker,
             veileder,
-            AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE).setErReferatPublisert(false).setReferat("Et referat")
+            AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE)
+                .setErReferatPublisert(false)
+                .setOppfolgingsperiodeId(happyBruker.oppfolgingsperiodeId)
+                .setReferat("Et referat")
         )
         val oppdatertAktivitet = aktivitet
         oppdatertAktivitet.setReferat("Et oppdatert referat")
@@ -251,10 +259,13 @@ internal class AktivitetsplanControllerTest: SpringBootTestBase() {
         val happyBruker = navMockService.createBruker()
         val veileder = navMockService.createVeileder(happyBruker)
 
-        aktivitetTestService.opprettAktivitet(
+        aktivitetTestService.opprettAktivitetViaHttp(
             happyBruker,
             veileder,
-            AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.SAMTALEREFERAT).setErReferatPublisert(false).setReferat("Et referat")
+            AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.SAMTALEREFERAT)
+                .setErReferatPublisert(false)
+                .setReferat("Et referat")
+                .setOppfolgingsperiodeId(happyBruker.oppfolgingsperiodeId)
         )
 
         val antallMeldingerTilOversikten = oversiktenMeldingMedMetadataRepository.hentAlleSomSkalSendes().size
@@ -265,10 +276,13 @@ internal class AktivitetsplanControllerTest: SpringBootTestBase() {
     fun når_samtalereferat_deles_med_bruker_sendes_stoppmelding_til_oversikten(){
         val happyBruker = navMockService.createBruker()
         val veileder = navMockService.createVeileder(happyBruker)
-        val aktivitet = aktivitetTestService.opprettAktivitet(
+        val aktivitet = aktivitetTestService.opprettAktivitetViaHttp(
             happyBruker,
             veileder,
-            AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.SAMTALEREFERAT).setErReferatPublisert(false).setReferat("Et referat")
+            AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.SAMTALEREFERAT)
+                .setErReferatPublisert(false)
+                .setReferat("Et referat")
+                .setOppfolgingsperiodeId(happyBruker.oppfolgingsperiodeId)
         )
         assertThat(oversiktenMeldingMedMetadataRepository.hentAlleSomSkalSendes().size).isEqualTo(1)
 
@@ -284,10 +298,13 @@ internal class AktivitetsplanControllerTest: SpringBootTestBase() {
     fun når_referat_på_møte_opprettes_sendes_melding_til_oversikten() {
         val happyBruker = navMockService.createBruker()
         val veileder = navMockService.createVeileder(happyBruker)
-        val aktivitet = aktivitetTestService.opprettAktivitet(
+        val aktivitet = aktivitetTestService.opprettAktivitetViaHttp(
             happyBruker,
             veileder,
-            AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE).setReferat(null).setErReferatPublisert(false)
+            AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE)
+                .setReferat(null)
+                .setErReferatPublisert(false)
+                .setOppfolgingsperiodeId(happyBruker.oppfolgingsperiodeId)
         )
 
         aktivitet.setReferat("Et referat")
@@ -304,10 +321,13 @@ internal class AktivitetsplanControllerTest: SpringBootTestBase() {
         val happyBruker = navMockService.createBruker()
         val veileder = navMockService.createVeileder(happyBruker)
 
-        aktivitetTestService.opprettAktivitet(
+        aktivitetTestService.opprettAktivitetViaHttp(
             happyBruker,
             veileder,
-            AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.SAMTALEREFERAT).setErReferatPublisert(true).setReferat("Et referat")
+            AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.SAMTALEREFERAT)
+                .setErReferatPublisert(true)
+                .setReferat("Et referat")
+                .setOppfolgingsperiodeId(happyBruker.oppfolgingsperiodeId)
         )
 
         val meldingerTilOversikten = oversiktenMeldingMedMetadataRepository.hentAlleSomSkalSendes()
@@ -320,10 +340,13 @@ internal class AktivitetsplanControllerTest: SpringBootTestBase() {
         val veileder = navMockService.createVeileder(happyBruker)
 
         // Opprett møte uten referat
-        val aktivitet = aktivitetTestService.opprettAktivitet(
+        val aktivitet = aktivitetTestService.opprettAktivitetViaHttp(
             happyBruker,
             veileder,
-            AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE).setReferat(null).setErReferatPublisert(false)
+            AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE)
+                .setReferat(null)
+                .setErReferatPublisert(false)
+                .setOppfolgingsperiodeId(happyBruker.oppfolgingsperiodeId)
         )
 
         // Legg til referat - dette sender START-melding

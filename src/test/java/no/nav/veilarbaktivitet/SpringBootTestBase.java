@@ -8,6 +8,7 @@ import io.restassured.RestAssured;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
 import no.nav.poao_tilgang.poao_tilgang_test_wiremock.PoaoTilgangWiremock;
+import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.config.SharedSpies;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaJsonTemplate;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
@@ -52,6 +53,9 @@ public abstract class SpringBootTestBase {
 
     @Autowired
     protected JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    public AktivitetDAO aktivitetDAO;
 
     @Autowired
     protected NamedParameterJdbcTemplate namedParameterJdbcTemplate;

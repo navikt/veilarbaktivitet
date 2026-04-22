@@ -16,7 +16,7 @@ import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
 import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
-import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder;
+import no.nav.veilarbaktivitet.testUtils.AktivitetDtoTestBuilder;
 import no.nav.veilarbaktivitet.util.AktivitetTestService;
 import no.nav.veilarbaktivitet.util.DateUtils;
 import org.apache.kafka.clients.consumer.Consumer;
@@ -186,7 +186,7 @@ class StillingFraNavControllerITest extends SpringBootTestBase {
         MockVeileder veileder = navMockService.createVeileder(mockBruker);
         AktivitetDTO aktivitetDTO = AktivitetDtoTestBuilder.nyAktivitet(typeDTO);
 
-        AktivitetDTO oppretetDto = aktivitetTestService.opprettAktivitet(mockBruker, veileder, aktivitetDTO);
+        AktivitetDTO oppretetDto = aktivitetTestService.opprettAktivitetViaHttp(mockBruker, veileder, aktivitetDTO);
 
         DelingAvCvDTO delingAvCvDTO = DelingAvCvDTO.builder()
                 .aktivitetVersjon(Long.parseLong(oppretetDto.getVersjon()))

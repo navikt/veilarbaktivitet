@@ -83,7 +83,7 @@ class AktiviteterTilKafkaAivenServiceTest extends SpringBootTestBase {
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO skalSendes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
 
-        AktivitetDTO opprettetAktivitet = aktivitetTestService.opprettAktivitet(mockBruker, navMockService.createVeileder(mockBruker), skalSendes);
+        AktivitetDTO opprettetAktivitet = aktivitetTestService.opprettAktivitetViaHttp(mockBruker, navMockService.createVeileder(mockBruker), skalSendes);
         cronService.sendOppTil5000AktiviterTilPortefolje();
 
         ConsumerRecord<String, String> portefojeRecord = getSingleRecord(portefoljeConsumer, portefoljeTopic, DEFAULT_WAIT_TIMEOUT_DURATION);
@@ -148,8 +148,8 @@ class AktiviteterTilKafkaAivenServiceTest extends SpringBootTestBase {
         AktivitetDTO skalSendes1 = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData1, false);
         AktivitetDTO skalSendes2 = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData2, false);
 
-        aktivitetTestService.opprettAktivitet(mockBruker, navMockService.createVeileder(mockBruker), skalSendes1);
-        aktivitetTestService.opprettAktivitet(mockBruker, navMockService.createVeileder(mockBruker), skalSendes2);
+        aktivitetTestService.opprettAktivitetViaHttp(mockBruker, navMockService.createVeileder(mockBruker), skalSendes1);
+        aktivitetTestService.opprettAktivitetViaHttp(mockBruker, navMockService.createVeileder(mockBruker), skalSendes2);
 
         Mockito
                 .doCallRealMethod()

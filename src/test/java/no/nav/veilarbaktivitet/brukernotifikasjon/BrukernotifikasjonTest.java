@@ -118,7 +118,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
         MockBruker mockBruker = navMockService.createBruker(BrukerOptions.happyBruker());
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
-        AktivitetDTO aktivitetDTO = aktivitetTestService.opprettAktivitet(mockBruker, skalOpprettes);
+        AktivitetDTO aktivitetDTO = aktivitetTestService.opprettAktivitetViaHttp(mockBruker, skalOpprettes);
 
         final OpprettVarselDto oppgaveRecord = opprettOppgave(mockBruker, aktivitetDTO);
         oppgaveErIOutbox(oppgaveRecord);
@@ -131,7 +131,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
         MockBruker mockBruker = navMockService.createBruker(BrukerOptions.happyBruker());
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
-        AktivitetDTO aktivitetDTO = aktivitetTestService.opprettAktivitet(mockBruker, skalOpprettes);
+        AktivitetDTO aktivitetDTO = aktivitetTestService.opprettAktivitetViaHttp(mockBruker, skalOpprettes);
 
         String epostTitel = "epostTitel";
         String epostTekst = "EpostTekst";
@@ -168,7 +168,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
         MockBruker mockBruker = navMockService.createHappyBruker();
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
-        AktivitetDTO aktivitetDTO = aktivitetTestService.opprettAktivitet(mockBruker, skalOpprettes);
+        AktivitetDTO aktivitetDTO = aktivitetTestService.opprettAktivitetViaHttp(mockBruker, skalOpprettes);
 
         String epostTitel = "epostTitel";
         String epostTekst = "EpostTekst";
@@ -201,7 +201,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
         MockBruker mockBruker = navMockService.createHappyBruker();
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
-        AktivitetDTO aktivitetDTO = aktivitetTestService.opprettAktivitet(mockBruker, skalOpprettes);
+        AktivitetDTO aktivitetDTO = aktivitetTestService.opprettAktivitetViaHttp(mockBruker, skalOpprettes);
 
         brukernotifikasjonService.opprettVarselPaaAktivitet(new AktivitetVarsel(
                 Long.parseLong(aktivitetDTO.getId()),
@@ -224,7 +224,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
         MockBruker mockBruker = navMockService.createHappyBruker();
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
-        AktivitetDTO aktivitetDTO = aktivitetTestService.opprettAktivitet(mockBruker, skalOpprettes);
+        AktivitetDTO aktivitetDTO = aktivitetTestService.opprettAktivitetViaHttp(mockBruker, skalOpprettes);
 
         brukernotifikasjonService.opprettVarselPaaAktivitet(new AktivitetVarsel(Long.parseLong(aktivitetDTO.getId()), Long.parseLong(aktivitetDTO.getVersjon()), mockBruker.getAktorId(), "Testvarsel", VarselType.STILLING_FRA_NAV, null, null, null));
         brukernotifikasjonService.setDone(Long.parseLong(aktivitetDTO.getId()), VarselType.STILLING_FRA_NAV);
@@ -242,7 +242,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
 
-        AktivitetDTO aktivitetDTO = aktivitetTestService.opprettAktivitet(mockBruker, skalOpprettes);
+        AktivitetDTO aktivitetDTO = aktivitetTestService.opprettAktivitetViaHttp(mockBruker, skalOpprettes);
         brukernotifikasjonService.opprettVarselPaaAktivitet(new AktivitetVarsel(
                 Long.parseLong(aktivitetDTO.getId()),
                 Long.parseLong(aktivitetDTO.getVersjon()),
@@ -281,7 +281,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
         MockBruker mockBruker = navMockService.createHappyBruker();
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
-        AktivitetDTO aktivitetDTO = aktivitetTestService.opprettAktivitet(mockBruker, skalOpprettes);
+        AktivitetDTO aktivitetDTO = aktivitetTestService.opprettAktivitetViaHttp(mockBruker, skalOpprettes);
 
         // When
         var oppgave = opprettOppgave(mockBruker, aktivitetDTO);

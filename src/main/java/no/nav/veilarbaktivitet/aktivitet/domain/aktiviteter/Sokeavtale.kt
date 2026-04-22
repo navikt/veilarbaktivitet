@@ -10,7 +10,7 @@ class Sokeavtale(
     class Opprett(
         override val opprettFelter: AktivitetBareOpprettFelter,
         override val muterbareFelter: AktivitetMuterbareFelter,
-        override val sproring: SporingsData,
+        override val sporing: SporingsData,
         val sokeAvtaleAktivitetData: SokeAvtaleAktivitetData,
     ): AktivitetsOpprettelse
 

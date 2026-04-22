@@ -184,11 +184,16 @@ public class AktivitetTestService {
      * @param aktivitetDTO payload
      * @return Aktiviteten
      */
-    public AktivitetDTO opprettAktivitet(MockBruker mockBruker, AktivitetDTO aktivitetDTO) {
-        return opprettAktivitet(mockBruker, mockBruker, aktivitetDTO);
+    public AktivitetDTO opprettAktivitetViaHttp(MockBruker mockBruker, AktivitetDTO aktivitetDTO) {
+        var aktivitetMedPeriode =  (aktivitetDTO.getOppfolgingsperiodeId() == null)
+                ? aktivitetDTO.toBuilder().oppfolgingsperiodeId(mockBruker.oppfolgingsperiodeId).build()
+                : aktivitetDTO;
+        if (mockBruker.oppfolgingsperiodeId == null) throw new IllegalStateException("Ikke lov å lage aktivitet uten bruker med oppfølgingsperiode");
+        if (aktivitetMedPeriode.getOppfolgingsperiodeId() == null) throw new IllegalStateException("Ikke lov å lage aktivitet uten oppfølgingsperiode");
+        return opprettAktivitetViaHttp(mockBruker, mockBruker, aktivitetMedPeriode);
     }
 
-    public AktivitetDTO opprettAktivitet(MockBruker mockBruker, RestassuredUser user, AktivitetDTO aktivitetDTO) {
+    public AktivitetDTO opprettAktivitetViaHttp(MockBruker mockBruker, RestassuredUser user, AktivitetDTO aktivitetDTO) {
         String aktivitetPayloadJson = JsonUtils.toJson(aktivitetDTO);
 
         Response response = user
@@ -210,7 +215,7 @@ public class AktivitetTestService {
         return aktivitet;
     }
 
-    public ValidatableResponse oppdatterAktivitet(MockBruker mockBruker, RestassuredUser user, AktivitetDTO aktivitetDTO) {
+    public ValidatableResponse oppdaterAktivitetViaHttp(MockBruker mockBruker, RestassuredUser user, AktivitetDTO aktivitetDTO) {
         String aktivitetPayloadJson = JsonUtils.toJson(aktivitetDTO);
 
         return user
@@ -222,7 +227,7 @@ public class AktivitetTestService {
                 .then();
     }
     public AktivitetDTO oppdaterAktivitetOk(MockBruker mockBruker, RestassuredUser user, AktivitetDTO aktivitetDTO) {
-        Response response = oppdatterAktivitet(mockBruker, user, aktivitetDTO)
+        Response response = oppdaterAktivitetViaHttp(mockBruker, user, aktivitetDTO)
                 .assertThat().statusCode(HttpStatus.OK.value())
                 .extract()
                 .response();
@@ -237,7 +242,7 @@ public class AktivitetTestService {
 
 
     public AktivitetDTO opprettAktivitetSomVeileder(MockVeileder veileder, MockBruker mockBruker, AktivitetDTO aktivitetDTO) {
-        return opprettAktivitet(mockBruker, veileder, aktivitetDTO);
+        return opprettAktivitetViaHttp(mockBruker, veileder, aktivitetDTO);
     }
 
     public static AktivitetDTO finnAktivitet(AktivitetsplanDTO aktivitetsplanDTO, String id) {

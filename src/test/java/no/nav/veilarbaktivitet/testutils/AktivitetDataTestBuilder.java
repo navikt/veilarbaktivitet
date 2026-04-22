@@ -31,7 +31,7 @@ public class AktivitetDataTestBuilder {
                 .beskrivelse("beskrivelse")
                 .versjon(new Random().nextLong())
                 .status(AktivitetStatus.PLANLAGT)
-                .avsluttetKommentar("avsluttetKommentar")
+//                .avsluttetKommentar("avsluttetKommentar")
                 .endretAvType(Innsender.NAV)
                 .opprettetDato(nyDato())
                 .lenke("lenke")

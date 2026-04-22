@@ -11,8 +11,8 @@ import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvUtdatertVersjonException;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
 import no.nav.veilarbaktivitet.person.Person;
+import no.nav.veilarbaktivitet.testUtils.AktivitetDtoTestBuilder;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
-import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -171,7 +171,7 @@ class AvtaltMedNavServiceTest extends SpringBootTestBase {
     @Test
     void oppdateringer_paa_samme_versjon_skal_feile() {
         var aktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.BEHANDLING);
-        var opprettetAktivitet = aktivitetTestService.opprettAktivitet(bruker, aktivitet);
+        var opprettetAktivitet = aktivitetTestService.opprettAktivitetViaHttp(bruker, aktivitet);
         var aktivitetId = Long.parseLong(opprettetAktivitet.getId());
         var avtaltDTO = new AvtaltMedNavDTO()
                 .setAktivitetVersjon(Long.parseLong(opprettetAktivitet.getVersjon()))
@@ -187,7 +187,7 @@ class AvtaltMedNavServiceTest extends SpringBootTestBase {
     @Test
     void oppdateringer_paa_samme_versjon_skal_feile_innenfor_controller_for_aa_hindre_race_conditions() {
         var aktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.BEHANDLING);
-        var opprettetAktivitet = aktivitetTestService.opprettAktivitet(bruker, aktivitet);
+        var opprettetAktivitet = aktivitetTestService.opprettAktivitetViaHttp(bruker, aktivitet);
         var aktivitetId = Long.parseLong(opprettetAktivitet.getId());
 
 
@@ -210,7 +210,7 @@ class AvtaltMedNavServiceTest extends SpringBootTestBase {
     @Test
     void skal_ikke_kunne_opprette_FHO_pa_aktivitet_med_FHO() {
         var aktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.BEHANDLING);
-        var opprettetAktivitet = aktivitetTestService.opprettAktivitet(bruker, aktivitet);
+        var opprettetAktivitet = aktivitetTestService.opprettAktivitetViaHttp(bruker, aktivitet);
         var aktivitetId = Long.parseLong(opprettetAktivitet.getId());
         var avtaltDTO = new AvtaltMedNavDTO()
                 .setAktivitetVersjon(Long.parseLong(opprettetAktivitet.getVersjon()))

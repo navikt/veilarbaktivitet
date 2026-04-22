@@ -4,6 +4,8 @@ import com.github.tomakehurst.wiremock.client.WireMock.*
 import no.nav.common.json.JsonUtils
 import no.nav.veilarbaktivitet.SpringBootTestBase
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData
+import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.AktivitetsOpprettelseUtil.tilAktivitetsData
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortUtil
 import no.nav.veilarbaktivitet.aktivitetskort.ArenaKort
@@ -24,7 +26,7 @@ import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder
 import no.nav.veilarbaktivitet.person.Navn
-import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder
+import no.nav.veilarbaktivitet.testUtils.AktivitetDtoTestBuilder
 import no.nav.veilarbaktivitet.util.DateUtils.*
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
@@ -50,12 +52,12 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             .toBuilder().oppfolgingsperiodeId(sisteOppfølgingsperiode.oppfolgingsperiodeId).build()
         jobbAktivitetPlanlegger.status = AktivitetStatus.PLANLAGT
         val opprettetJobbAktivitetPlanlegger =
-            aktivitetTestService.opprettAktivitet(bruker, bruker, jobbAktivitetPlanlegger)
+            aktivitetTestService.opprettAktivitetViaHttp(bruker, bruker, jobbAktivitetPlanlegger)
 
         val jobbAktivitetAvbrutt = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
             .toBuilder().oppfolgingsperiodeId(sisteOppfølgingsperiode.oppfolgingsperiodeId).build()
         jobbAktivitetAvbrutt.status = AktivitetStatus.AVBRUTT
-        val opprettetJobbAktivitetAvbrutt = aktivitetTestService.opprettAktivitet(bruker, bruker, jobbAktivitetAvbrutt)
+        val opprettetJobbAktivitetAvbrutt = aktivitetTestService.opprettAktivitetViaHttp(bruker, bruker, jobbAktivitetAvbrutt)
 
         val oppfølgingsperiodeId = sisteOppfølgingsperiode.oppfolgingsperiodeId.toString()
         val meldingerSendtTidspunktUtc = "2024-02-05T13:31:22.238+00:00"
@@ -242,7 +244,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val jobbAktivitetPlanlegger = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
             .toBuilder().oppfolgingsperiodeId(sisteOppfølgingsperiode.oppfolgingsperiodeId).build()
         jobbAktivitetPlanlegger.status = AktivitetStatus.PLANLAGT
-        val opprettetJobbAktivitet = aktivitetTestService.opprettAktivitet(bruker, bruker, jobbAktivitetPlanlegger)
+        val opprettetJobbAktivitet = aktivitetTestService.opprettAktivitetViaHttp(bruker, bruker, jobbAktivitetPlanlegger)
         val opprettetJobbAktivitetMedFHO = aktivitetTestService.opprettFHOForInternAktivitet(
             bruker,
             veileder,
@@ -413,12 +415,15 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
 
     @Test
     fun `Når man forhåndsviser PDF skal kun riktig oppfølgingsperiode være inkludert`() {
+
         val (bruker, veileder) = hentBrukerOgVeileder("Sølvi", "Normalbakke")
         val oppfølgingsperiodeForArkivering = bruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
-        val annenOppfølgingsperiode = UUID.randomUUID()
-        val aktivititetIAnnenOppfolgingsperiode = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
-            .toBuilder().oppfolgingsperiodeId(annenOppfølgingsperiode).build()
-        aktivitetTestService.opprettAktivitet(bruker, bruker, aktivititetIAnnenOppfolgingsperiode)
+        // Aktiviteter generert med nyAktivitet får en tilfeldig oppfølgingsperiode
+        val aktivitetIAnnenOppfølgingsPeriode = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeData.IJOBB)
+            .let { tilAktivitetsData(it) }
+            .let { aktivitetDAO.opprettNyAktivitet(it) }
+        val annenOppfølgingsperiode = aktivitetIAnnenOppfølgingsPeriode.oppfolgingsperiodeId
+
         stubDialogTråder(
             fnr = bruker.fnr,
             oppfølgingsperiodeId = annenOppfølgingsperiode.toString(),
@@ -434,7 +439,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             .post(arkiveringsUrl)
 
         val journalforingsrequest =
-            wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/forhaandsvisning") }.first()
+            wireMock.allServeEvents.first { it.request.url.contains("orkivar/forhaandsvisning") }
         val arkivPayload =
             JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, PdfPayload::class.java)
         assertThat(arkivPayload.aktiviteter).isEmpty()
@@ -445,10 +450,10 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
     fun `Når man journalfører skal kun riktig oppfølgingsperiode være inkludert`() {
         val (bruker, veileder) = hentBrukerOgVeileder("Sølvi", "Normalbakke")
         val oppfølgingsperiodeForArkivering = bruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
-        val annenOppfølgingsperiode = UUID.randomUUID()
-        val aktivititetIAnnenOppfolgingsperiode = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
-            .toBuilder().oppfolgingsperiodeId(annenOppfølgingsperiode).build()
-        aktivitetTestService.opprettAktivitet(bruker, bruker, aktivititetIAnnenOppfolgingsperiode)
+        val aktivititetIAnnenOppfolgingsperiode = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeData.IJOBB)
+            .let { tilAktivitetsData(it) }
+            .let { aktivitetDAO.opprettNyAktivitet(it) }
+        val annenOppfølgingsperiode = aktivititetIAnnenOppfolgingsperiode.oppfolgingsperiodeId
         stubDialogTråder(
             fnr = bruker.fnr,
             oppfølgingsperiodeId = annenOppfølgingsperiode.toString(),
@@ -465,7 +470,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             .post(arkiveringsUrl)
 
         val journalforingsrequest =
-            wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
+            wireMock.allServeEvents.first { it.request.url.contains("orkivar/arkiver") }
         val journalføringPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, JournalføringPayload::class.java)
         assertThat(journalføringPayload.pdfPayload.aktiviteter).isEmpty()
         assertThat(journalføringPayload.pdfPayload.dialogtråder).isEmpty()
@@ -478,7 +483,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         // Aktiviteten vil få satt kontorsperre fordi bruker er under KVP
         val kvpAktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
             .toBuilder().oppfolgingsperiodeId(oppfølgingsperiode).build()
-        aktivitetTestService.opprettAktivitet(kvpBruker, veileder, kvpAktivitet)
+        aktivitetTestService.opprettAktivitetViaHttp(kvpBruker, veileder, kvpAktivitet)
         stubDialogTråder(kvpBruker.fnr, oppfølgingsperiode.toString(), "dummyAktivitetId", kontorsperreEnhetId = "1234")
         stubIngenArenaAktiviteter(kvpBruker.fnr)
         val arkiveringsUrl =
@@ -507,7 +512,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val oppfølgingsperiode = kvpBruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
         val kvpAktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
             .toBuilder().oppfolgingsperiodeId(oppfølgingsperiode).build()
-        aktivitetTestService.opprettAktivitet(kvpBruker, veileder, kvpAktivitet)
+        aktivitetTestService.opprettAktivitetViaHttp(kvpBruker, veileder, kvpAktivitet)
         stubDialogTråder(kvpBruker.fnr, oppfølgingsperiode.toString(), "dummyAktivitetId")
         stubIngenArenaAktiviteter(kvpBruker.fnr)
         val cachedPdfUuid = UUID.randomUUID()
@@ -538,7 +543,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
     fun `Skal kunne hente dialoger og aktiviteter med kontorsperre når man forhåndsviser`() {
         val (kvpBruker, veileder) = hentKvpBrukerOgVeileder("Sølvi", "Normalbakke")
         val oppfølgingsperiode = kvpBruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
-        val aktivitet = aktivitetTestService.opprettAktivitet(
+        val aktivitet = aktivitetTestService.opprettAktivitetViaHttp(
             kvpBruker,
             veileder,
             AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
@@ -573,7 +578,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
     fun `Skal kunne definere datoperiode i filteret`() {
         val (bruker, veileder) = hentBrukerOgVeileder("Sølvi", "Normalbakke")
         val oppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
-        val aktivitetIPeriode = aktivitetTestService.opprettAktivitet(
+        val aktivitetIPeriode = aktivitetTestService.opprettAktivitetViaHttp(
             bruker,
             veileder,
             AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
@@ -583,7 +588,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             fra = dateToLocalDate(aktivitetIPeriode.fraDato).minusDays(1),
             til = dateToLocalDate(aktivitetIPeriode.fraDato).plusDays(1)
         )
-        val aktivitetUtaforPeriode = aktivitetTestService.opprettAktivitet(
+        val aktivitetUtaforPeriode = aktivitetTestService.opprettAktivitetViaHttp(
             bruker,
             veileder,
             AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
@@ -618,7 +623,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
     fun `Skal kunne filtrere på møte ved å velge møtets tidspunkt som datoperiode`() {
         val (bruker, veileder) = hentBrukerOgVeileder("Sølvi", "Normalbakke")
         val oppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
-        val møteAktivitet = aktivitetTestService.opprettAktivitet(bruker, veileder, AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE)
+        val møteAktivitet = aktivitetTestService.opprettAktivitetViaHttp(bruker, veileder, AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE)
             .toBuilder()
             .tittel("Møtet ditt")
             .fraDato(Date.from(Instant.parse("2026-03-12T13:00:00.000Z")))
@@ -669,12 +674,12 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val oppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
         val kvpAktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
             .toBuilder().oppfolgingsperiodeId(oppfølgingsperiode).build()
-        aktivitetTestService.opprettAktivitet(bruker, veileder, kvpAktivitet)
+        aktivitetTestService.opprettAktivitetViaHttp(bruker, veileder, kvpAktivitet)
         navMockService.updateBruker(bruker, bruker.getBrukerOptions().toBuilder().erUnderKvp(false).build())
         val ikkeKvpAktivitetTittel = "IkkeKvpAktivitet"
         val ikkeKvpAktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
             .toBuilder().oppfolgingsperiodeId(oppfølgingsperiode).tittel(ikkeKvpAktivitetTittel).build()
-        aktivitetTestService.opprettAktivitet(bruker, veileder, ikkeKvpAktivitet)
+        aktivitetTestService.opprettAktivitetViaHttp(bruker, veileder, ikkeKvpAktivitet)
         stubIngenArenaAktiviteter(bruker.fnr)
         stubDialogTråder(bruker.fnr, oppfølgingsperiode.toString(), "dummyAktivitetId")
         val cachedPdfUuid = UUID.randomUUID().toString()
@@ -832,11 +837,11 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val samtalereferatIkkeDelt =
             AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.SAMTALEREFERAT).setErReferatPublisert(false)
                 .toBuilder().oppfolgingsperiodeId(oppfølgingsperiode).build()
-        aktivitetTestService.opprettAktivitet(bruker, veileder, samtalereferatIkkeDelt)
+        aktivitetTestService.opprettAktivitetViaHttp(bruker, veileder, samtalereferatIkkeDelt)
         val samtaleReferatDelt =
             AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.SAMTALEREFERAT).setErReferatPublisert(true)
                 .setTittel(referatPublisertTittel).toBuilder().oppfolgingsperiodeId(oppfølgingsperiode).build()
-        aktivitetTestService.opprettAktivitet(bruker, veileder, samtaleReferatDelt)
+        aktivitetTestService.opprettAktivitetViaHttp(bruker, veileder, samtaleReferatDelt)
             .setTittel(referatPublisertTittel).toBuilder().oppfolgingsperiodeId(oppfølgingsperiode).build()
         stubDialogTråder(bruker.fnr, oppfølgingsperiode.toString(), "dummyAktivitetId")
         stubIngenArenaAktiviteter(bruker.fnr)
@@ -863,7 +868,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val oppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
         val møteAktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE).setErReferatPublisert(false)
             .toBuilder().oppfolgingsperiodeId(oppfølgingsperiode).build()
-        aktivitetTestService.opprettAktivitet(bruker, veileder, møteAktivitet)
+        aktivitetTestService.opprettAktivitetViaHttp(bruker, veileder, møteAktivitet)
         stubDialogTråder(bruker.fnr, oppfølgingsperiode.toString(), "dummyAktivitetId")
         stubIngenArenaAktiviteter(bruker.fnr)
         val cachedPdfUuid = UUID.randomUUID().toString()
@@ -889,7 +894,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val referat = "Dette er et referat"
         val møteAktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE).setErReferatPublisert(true)
             .setReferat(referat).toBuilder().oppfolgingsperiodeId(oppfølgingsperiode).build()
-        aktivitetTestService.opprettAktivitet(bruker, veileder, møteAktivitet)
+        aktivitetTestService.opprettAktivitetViaHttp(bruker, veileder, møteAktivitet)
         stubDialogTråder(bruker.fnr, oppfølgingsperiode.toString(), "dummyAktivitetId")
         stubIngenArenaAktiviteter(bruker.fnr)
         val cachedPdfUuid = UUID.randomUUID().toString()

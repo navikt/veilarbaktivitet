@@ -2,13 +2,16 @@ package no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter
 
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
 import no.nav.veilarbaktivitet.aktivitet.domain.EksternAktivitetData
+import java.util.*
 
 class Eksternaktivitet {
 
     class Opprett(
+        val funksjonellId: UUID,
+        val avtaltMedNav: Boolean,
         override val opprettFelter: AktivitetBareOpprettFelter,
         override val muterbareFelter: AktivitetMuterbareFelter,
-        override val sproring: SporingsData,
+        override val sporing: SporingsData,
         val eksternAktivitetData: EksternAktivitetData,
     ): AktivitetsOpprettelse
 
