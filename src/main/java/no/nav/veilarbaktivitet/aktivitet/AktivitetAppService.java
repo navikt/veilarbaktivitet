@@ -237,8 +237,7 @@ public class AktivitetAppService {
         if (orginalAktivitet.getVersjon() != sisteVersjon) {
             throw new ResponseStatusException(HttpStatus.CONFLICT);
         } else if (!orginalAktivitet.endringTillatt()) {
-            log.warn(String.format("Kan ikke endre aktivitet [%s] i en ferdig status",
-                    orginalAktivitet.getId()));
+            log.warn("Kan ikke endre aktivitet {} i en ferdig status", orginalAktivitet.getId());
             throw new EndringAvFerdigAktivitetException("Kan ikke endre aktivitet i en ferdig status");
         }
     }
@@ -248,7 +247,7 @@ public class AktivitetAppService {
             throw new ResponseStatusException(HttpStatus.CONFLICT);
         } else if (orginalAktivitet.getHistoriskDato() != null) {
             // Etikett skal kunne endres selv om aktivitet er fullført eller avbrutt
-            log.warn(String.format("Kan ikke endre etikett på historisk aktivitet [%s]", orginalAktivitet.getId()));
+            log.warn("Kan ikke endre etikett på historisk aktivitet {}", orginalAktivitet.getId());
             throw new EndringAvHistoriskAktivitetException("Kan ikke endre etikett på historisk aktivitet");
         }
     }
