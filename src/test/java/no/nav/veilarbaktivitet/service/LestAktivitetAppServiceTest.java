@@ -41,8 +41,7 @@ import java.util.UUID;
 import static no.nav.veilarbaktivitet.person.Innsender.BRUKER;
 import static no.nav.veilarbaktivitet.person.Innsender.NAV;
 import static no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.*;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -481,26 +480,18 @@ public class LestAktivitetAppServiceTest {
     }
 
     private void testAlleOppdateringsmetoder(final AktivitetData aktivitet) {
-        try {
-            appService.oppdaterStatus(toStatusEndring(aktivitet));
-            fail();
-        } catch (EndringAvFerdigAktivitetException ignored) {
-        }
-        try {
-            appService.oppdaterEtikett(toEtikettEndring(aktivitet));
-            fail();
-        } catch (EndringAvHistoriskAktivitetException ignored) {
-        }
-        try {
-            appService.oppdaterReferat(toReferatEndring(aktivitet));
-            fail();
-        } catch (EndringAvFerdigAktivitetException ignored) {
-        }
-        try {
-            appService.oppdaterAktivitet(toJobbsoekingEndring(aktivitet));
-            fail();
-        } catch (EndringAvFerdigAktivitetException ignored) {
-        }
+        assertThrows(EndringAvFerdigAktivitetException.class,
+                () -> appService.oppdaterStatus(toStatusEndring(aktivitet))
+        );
+        assertThrows(EndringAvHistoriskAktivitetException.class,
+                () -> appService.oppdaterEtikett(toEtikettEndring(aktivitet))
+        );
+        assertThrows(EndringAvFerdigAktivitetException.class,
+                () -> appService.oppdaterReferat(toReferatEndring(aktivitet))
+        );
+        assertThrows(EndringAvFerdigAktivitetException.class,
+                () -> appService.oppdaterAktivitet(toJobbsoekingEndring(aktivitet))
+        );
 
         verify(aktivitetService, never()).oppdaterStatus(any(), any());
         verify(aktivitetService, never()).oppdaterAktivitet(any(), any());

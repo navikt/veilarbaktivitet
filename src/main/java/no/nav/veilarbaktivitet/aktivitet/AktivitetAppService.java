@@ -183,12 +183,7 @@ public class AktivitetAppService {
                 aktivitetService.oppdaterAktivitetFrist(original, aktivitet);
             }
         } else {
-            /* Oppdatering av status skjer i eget endepukt og er ikke en del av sammenligningen */
-//            if (AktivitetskortCompareUtil.INSTANCE.erFaktiskOppdatert(aktivitet, original)) {
-                aktivitetService.oppdaterAktivitet(original, aktivitet);
-//            } else {
-//                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Aktiviteten har ikke blitt endret");
-//            }
+            aktivitetService.oppdaterAktivitet(original, aktivitet);
         }
     }
 
