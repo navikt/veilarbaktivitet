@@ -23,9 +23,9 @@ import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder
 import no.nav.veilarbaktivitet.person.Innsender
-import no.nav.veilarbaktivitet.testUtils.AktivitetDtoTestBuilder.nyStillingFraNav
-import no.nav.veilarbaktivitet.testUtils.AktivitetDtoTestBuilder.nyStillingFraNavMedCVKanDeles
-import no.nav.veilarbaktivitet.testUtils.AktivitetDtoTestBuilder.nyttStillingssok
+import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder.nyStillingFraNav
+import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder.nyStillingFraNavMedCVKanDeles
+import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder.nyttStillingssok
 import org.hamcrest.MatcherAssert
 import org.hamcrest.Matchers
 import org.hamcrest.collection.IsCollectionWithSize

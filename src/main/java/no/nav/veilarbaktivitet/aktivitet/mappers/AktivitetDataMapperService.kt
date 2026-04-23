@@ -41,7 +41,7 @@ class AktivitetDataMapperService(
         if (nåværendeÅpenPeriode != null) {
             return nåværendeÅpenPeriode
         } else {
-            throw IllegalArgumentException("Bruker må være AktorId, NavIdent eller Fnr")
+            throw IllegalArgumentException("Fant ingen gjeldende åpen oppfølgingsperiode for person")
         }
     }
 

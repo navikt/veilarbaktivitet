@@ -7,7 +7,7 @@ import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder
 import no.nav.veilarbaktivitet.oppfolging.periode.SisteOppfolgingsperiodeV1
-import no.nav.veilarbaktivitet.testUtils.AktivitetDtoTestBuilder
+import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder
 import no.nav.veilarbaktivitet.util.DateUtils
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within

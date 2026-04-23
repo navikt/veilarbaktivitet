@@ -45,7 +45,6 @@ object AktivitetsOpprettelseUtil {
             is Samtalereferat.Opprett -> builder.moteData(opprettelse.moteData)
             is StillingFraNav.Opprett -> builder
                 .stillingFraNavData(opprettelse.stillingFraNavData)
-                .status(opprettelse.status)
             is Eksternaktivitet.Opprett -> builder
                 .eksternAktivitetData(opprettelse.eksternAktivitetData)
                 .funksjonellId(opprettelse.funksjonellId)

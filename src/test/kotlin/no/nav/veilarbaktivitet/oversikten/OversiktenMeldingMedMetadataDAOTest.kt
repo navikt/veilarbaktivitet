@@ -5,7 +5,7 @@ import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO
 import no.nav.veilarbaktivitet.db.DbTestUtils
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker
-import no.nav.veilarbaktivitet.testUtils.AktivitetDtoTestBuilder
+import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test

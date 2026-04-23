@@ -6,7 +6,7 @@ import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO
 import no.nav.veilarbaktivitet.oversikten.OversiktenMelding
 import no.nav.veilarbaktivitet.oversikten.OversiktenMeldingMedMetadataDAO
 import no.nav.veilarbaktivitet.oversikten.UtsendingStatus
-import no.nav.veilarbaktivitet.testUtils.AktivitetDtoTestBuilder
+import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.Assertions

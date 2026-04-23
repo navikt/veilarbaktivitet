@@ -10,8 +10,8 @@ import no.nav.veilarbaktivitet.internapi.model.Egenaktivitet;
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
-import no.nav.veilarbaktivitet.testUtils.AktivitetDtoTestBuilder;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
+import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 

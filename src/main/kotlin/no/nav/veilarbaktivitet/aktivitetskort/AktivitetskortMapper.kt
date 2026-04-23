@@ -110,7 +110,7 @@ object AktivitetskortMapper {
     fun AktivitetskortBestilling.toMuterbareFelter(): AktivitetMuterbareFelter {
         return AktivitetMuterbareFelter(
             tittel = this.aktivitetskort.tittel,
-            beskrivelse = this.aktivitetskort.tittel,
+            beskrivelse = this.aktivitetskort.beskrivelse,
             fraDato = DateUtils.zonedDateTimeToDate(this.aktivitetskort.startDato?.atStartOfDay(ZoneId.systemDefault())),
             tilDato = DateUtils.zonedDateTimeToDate(this.aktivitetskort.sluttDato?.atStartOfDay(ZoneId.systemDefault())),
             lenke = null

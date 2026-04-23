@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.testUtils
+package no.nav.veilarbaktivitet.testutils
 
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData
@@ -13,8 +13,6 @@ import no.nav.veilarbaktivitet.avtalt_med_nav.Type
 import no.nav.veilarbaktivitet.mock.TestData
 import no.nav.veilarbaktivitet.person.Innsender
 import no.nav.veilarbaktivitet.person.Person
-import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder
-import no.nav.veilarbaktivitet.testutils.AktivitetTypeDataTestBuilder
 import org.apache.commons.lang3.time.DateUtils
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -86,7 +84,6 @@ object AktivitetDtoTestBuilder {
         oppfolgingsperiode: UUID? = null
     ): StillingFraNav.Opprett {
         return StillingFraNav.Opprett(
-            AktivitetStatus.PLANLAGT,
             nyOpprettFelter(AktivitetTypeData.STILLING_FRA_NAV, oppfolgingsperiode ?: UUID.randomUUID(), aktorId ?: TestData.KJENT_AKTOR_ID),
             nyMuterbareFelter(),
             nySporingsData(aktorId),
@@ -100,7 +97,6 @@ object AktivitetDtoTestBuilder {
         oppfolgingsperiode: UUID? = null
     ): StillingFraNav.Opprett {
         return StillingFraNav.Opprett(
-            AktivitetStatus.PLANLAGT,
             nyOpprettFelter(AktivitetTypeData.STILLING_FRA_NAV, oppfolgingsperiode ?: UUID.randomUUID(), aktorId),
             nyMuterbareFelter(),
             nySporingsData(aktorId),
@@ -220,7 +216,9 @@ object AktivitetDtoTestBuilder {
     }
 
     fun nyDato(): Date? {
-        return DateUtils.truncate(Date(Random().nextLong() % System.currentTimeMillis()), Calendar.SECOND)
+        val now = System.currentTimeMillis()
+        val randomMillis = Random().nextLong(0, now)
+        return DateUtils.truncate(Date(randomMillis), Calendar.SECOND)
     }
 
     fun nyZonedDateTime(): ZonedDateTime {

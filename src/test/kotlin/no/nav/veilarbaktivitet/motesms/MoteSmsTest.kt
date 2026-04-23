@@ -13,7 +13,7 @@ import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendMinsideVarselFraOut
 import no.nav.veilarbaktivitet.db.DbTestUtils
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker
-import no.nav.veilarbaktivitet.testUtils.AktivitetDtoTestBuilder
+import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
