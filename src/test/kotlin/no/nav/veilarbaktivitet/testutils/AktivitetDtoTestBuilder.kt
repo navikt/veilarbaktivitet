@@ -59,7 +59,7 @@ object AktivitetDtoTestBuilder {
     fun nySporingsData(aktorId: Person.AktorId? = null): SporingsData {
         return SporingsData(
             aktorId?.get() ?: TestData.KJENT_SAKSBEHANDLER.get(),
-            Innsender.NAV,
+            if (aktorId != null) Innsender.BRUKER else Innsender.NAV,
             nyZonedDateTime()
         )
     }
