@@ -16,7 +16,9 @@ import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeService
 import no.nav.veilarbaktivitet.person.Innsender
 import no.nav.veilarbaktivitet.person.Person
 import no.nav.veilarbaktivitet.person.UserInContext
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
+import org.springframework.web.server.ResponseStatusException
 import java.time.ZonedDateTime
 
 @RequiredArgsConstructor
@@ -33,7 +35,7 @@ class AktivitetDataMapperService(
         if (bruker is AktorId) return bruker.get()
         if (bruker is NavIdent) return bruker.get()
         if (bruker is Fnr) return aktorOppslagClient.hentAktorId(bruker).get()
-        throw IllegalArgumentException("Bruker må være AktorId, NavIdent eller Fnr")
+        throw IllegalArgumentException("Bruker må være AktorId, NavIdent eller Fnr men fikk ${bruker?.javaClass?.simpleName}")
     }
 
     private fun getCurrentOppfolgingsperiode(aktorId: Person.AktorId): Oppfolgingsperiode {
@@ -122,7 +124,7 @@ class AktivitetDataMapperService(
             AktivitetTypeData.MOTE, AktivitetTypeData.SAMTALEREFERAT -> Mote.Opprett(
                 opprettFelter, muterbareFelter, sporing, moteData(aktivitetDTO)
             )
-            else -> throw IllegalStateException("Unexpected value: " + aktivitetType)
+            else -> throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Aktivitet med type $aktivitetType kan ikke oppdateres via endepunkt i AktivitetsController")
         }
     }
 

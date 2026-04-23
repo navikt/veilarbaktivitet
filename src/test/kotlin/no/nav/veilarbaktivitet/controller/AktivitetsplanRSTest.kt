@@ -300,7 +300,7 @@ internal class AktivitetsplanRSTest(
 
     private fun gitt_at_jeg_har_folgende_aktiviteter(aktiviteter: kotlin.collections.List<AktivitetsOpprettelse>) {
         lagredeAktivitetsIder = aktiviteter
-            .map { aktivitet -> aktivitetService!!.opprettAktivitetIDB(aktivitet) }
+            .map { aktivitet -> aktivitetService.opprettAktivitetIDB(aktivitet) }
             .map { it.id }
             .toMutableList()
     }
