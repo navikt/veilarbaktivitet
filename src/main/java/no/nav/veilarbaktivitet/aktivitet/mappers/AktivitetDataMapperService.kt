@@ -37,7 +37,7 @@ class AktivitetDataMapperService(
     }
 
     private fun getCurrentOppfolgingsperiode(aktorId: Person.AktorId): Oppfolgingsperiode {
-        val nåværendeÅpenPeriode = oppfolgingPeriodeService.hentNåværedeÅpenPeriode(aktorId)
+        val nåværendeÅpenPeriode = oppfolgingPeriodeService.hentNåværendeÅpenPeriode(aktorId)
         if (nåværendeÅpenPeriode != null) {
             return nåværendeÅpenPeriode
         } else {

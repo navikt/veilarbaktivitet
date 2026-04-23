@@ -2,7 +2,6 @@ package no.nav.veilarbaktivitet.controller
 
 import no.nav.common.types.identer.NavIdent
 import no.nav.veilarbaktivitet.SpringBootTestBase
-import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType
@@ -35,25 +34,18 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
-import org.springframework.jdbc.core.JdbcTemplate
 import java.time.ZonedDateTime
 import java.util.*
 
 /**
  * Aktivitetsplan interaksjoner der pålogget bruker er saksbehandler
  */
-internal class AktivitetsplanRSTest : SpringBootTestBase() {
-    @Autowired
-    private val jdbcTemplate: JdbcTemplate? = null
-
-    @Autowired
-    private val aktivitetDAO: AktivitetDAO? = null
-
-    @Autowired
-    private val aktivitetService: AktivitetService? = null
-
-    @Autowired
-    private val avtaltMedNavService: AvtaltMedNavService? = null
+internal class AktivitetsplanRSTest(
+    @param:Autowired
+    private val aktivitetService: AktivitetService,
+    @param:Autowired
+    private val avtaltMedNavService: AvtaltMedNavService,
+) : SpringBootTestBase() {
 
     private var orignalAktivitet: AktivitetDTO? = null
     private val nyAktivitetStatus = AktivitetStatus.AVBRUTT
@@ -83,27 +75,27 @@ internal class AktivitetsplanRSTest : SpringBootTestBase() {
 
     @Test
     fun hentAktivitetVersjoner_returnererIkkeForhaandsorientering() {
-        val aktivitet = aktivitetDAO!!.opprettNyAktivitet(
+        val aktivitet = aktivitetDAO.opprettNyAktivitet(
             tilAktivitetsData(
                 nyttStillingssok(mockBruker!!.aktorId, mockBruker!!.getOppfolgingsperiodeId())
             )
         )
-        val aktivitetId = aktivitet.getId()
+        val aktivitetId = aktivitet.id
         val statusEndring = StatusEndring(
-            aktivitet.getId(),
-            aktivitet.getVersjon(),
+            aktivitet.id,
+            aktivitet.versjon,
             SporingsData(
-                aktivitet.getEndretAv(),
+                aktivitet.endretAv,
                 Innsender.NAV,
                 ZonedDateTime.now()
             ),
             AktivitetStatus.GJENNOMFORES,
             null
         )
-        aktivitetService!!.oppdaterStatus(aktivitet, statusEndring)
+        aktivitetService.oppdaterStatus(aktivitet, statusEndring)
         val sisteAktivitetVersjon = aktivitetService.hentAktivitetMedForhaandsorientering(aktivitetId)
         val fho = ForhaandsorienteringDTO.builder().tekst("fho tekst").type(Type.SEND_FORHAANDSORIENTERING).build()
-        avtaltMedNavService!!.opprettFHO(
+        avtaltMedNavService.opprettFHO(
             AvtaltMedNavDTO().setAktivitetVersjon(sisteAktivitetVersjon.versjon).setForhaandsorientering(fho),
             aktivitetId,
             mockBruker!!.aktorId,
@@ -121,7 +113,7 @@ internal class AktivitetsplanRSTest : SpringBootTestBase() {
 
     @Test
     fun hentAktivitetsplan_henterAktiviteterMedForhaandsorientering() {
-        val aktivitetDataMedForhaandsorientering = aktivitetDAO!!.opprettNyAktivitet(
+        val aktivitetDataMedForhaandsorientering = aktivitetDAO.opprettNyAktivitet(
             tilAktivitetsData(
                 nyttStillingssok(
                     mockBruker!!.aktorId,
@@ -138,7 +130,7 @@ internal class AktivitetsplanRSTest : SpringBootTestBase() {
         )
 
         val fho = ForhaandsorienteringDTO.builder().tekst("fho tekst").type(Type.SEND_FORHAANDSORIENTERING).build()
-        avtaltMedNavService!!.opprettFHO(
+        avtaltMedNavService.opprettFHO(
             AvtaltMedNavDTO().setAktivitetVersjon(aktivitetDataMedForhaandsorientering.versjon)
                 .setForhaandsorientering(fho),
             aktivitetDataMedForhaandsorientering.id,
@@ -191,8 +183,8 @@ internal class AktivitetsplanRSTest : SpringBootTestBase() {
         val resultat = aktivitetTestService.hentAktiviteterForFnr(mockBruker, mockBrukersVeileder)
         val resultatAktivitet: AktivitetDTO = resultat.getAktiviteter().first()
         Assertions.assertEquals(1, resultat.getAktiviteter().size)
-        Assertions.assertEquals(aktivitetData.getId().toString(), resultatAktivitet.getId())
-        Assertions.assertTrue(resultatAktivitet.getStillingFraNavData().getCvKanDelesData().getKanDeles())
+        Assertions.assertEquals(aktivitetData.id.toString(), resultatAktivitet.id)
+        Assertions.assertTrue(resultatAktivitet.stillingFraNavData.getCvKanDelesData().getKanDeles())
     }
 
     @Test
@@ -396,7 +388,7 @@ internal class AktivitetsplanRSTest : SpringBootTestBase() {
 
     private fun nar_jeg_oppdaterer_en_av_aktiviten() {
         val originalAktivitet =
-            aktivitetService!!.hentAktivitetMedForhaandsorientering(lagredeAktivitetsIder!!.first()!!)
+            aktivitetService.hentAktivitetMedForhaandsorientering(lagredeAktivitetsIder!!.first()!!)
         oldOpprettetDato = originalAktivitet.opprettetDato
         nyLenke = "itsOver9000.com"
 
@@ -453,7 +445,7 @@ internal class AktivitetsplanRSTest : SpringBootTestBase() {
 
     private fun da_skal_jeg_denne_aktiviteten_ligge_i_min_aktivitetsplan() {
         MatcherAssert.assertThat(
-            aktivitetService!!.hentAktiviteterForAktorId(mockBruker!!.getAktorId()),
+            aktivitetService.hentAktiviteterForAktorId(mockBruker!!.getAktorId()),
             IsCollectionWithSize.hasSize(1)
         )
     }
@@ -464,7 +456,7 @@ internal class AktivitetsplanRSTest : SpringBootTestBase() {
             Matchers.equalTo(nyAktivitetStatus)
         )
         MatcherAssert.assertThat(
-            aktivitetService!!.hentAktivitetMedForhaandsorientering(
+            aktivitetService.hentAktivitetMedForhaandsorientering(
                 aktivitet!!.id.toLong()
             ).getStatus(), Matchers.equalTo(nyAktivitetStatus)
         )

@@ -66,27 +66,27 @@ public class OpprettForesporselOmDelingAvCv {
             log.error("OpprettForesporselOmDelingAvCv.createAktivitet AktorId=null");
         }
 
-        UUID oppfolgingsgPeriodeId;
+        UUID oppfolgingsPeriodeId;
         try {
-            oppfolgingsgPeriodeId = sistePeriodeService.hentGjeldendeOppfolgingsperiodeMedFallback(aktorId);
+            oppfolgingsPeriodeId = sistePeriodeService.hentGjeldendeOppfolgingsperiodeMedFallback(aktorId);
         } catch (IngenGjeldendeIdentException exception) {
             producerClient.sendUgyldigInput(melding.getBestillingsId(), aktorId.get(), "Finner ingen gyldig ident for aktorId");
             log.warn("*** Kan ikke behandle melding. Årsak: {} ***. Se teamLogs for payload.", exception.getMessage());
             teamLog.warn("*** Kan ikke behandle melding={}. Årsak: {} ***", melding, exception.getMessage());
             return;
         } catch (IngenGjeldendePeriodeException exception) {
-            oppfolgingsgPeriodeId = null;
+            oppfolgingsPeriodeId = null;
         }
 
         boolean underKvp = kvpService.erUnderKvp(aktorId);
-        boolean underOppfolging = oppfolgingsgPeriodeId != null;
+        boolean underOppfolging = oppfolgingsPeriodeId != null;
 
         if (!underOppfolging || underKvp) {
             producerClient.sendUgyldigOppfolgingStatus(melding.getBestillingsId(), aktorId.get());
             return;
         }
         boolean kanVarsle = brukernotifikasjonService.kanVarsles(aktorId);
-        StillingFraNav.Opprett aktivitetData = map(melding, kanVarsle, oppfolgingsgPeriodeId);
+        StillingFraNav.Opprett aktivitetData = map(melding, kanVarsle, oppfolgingsPeriodeId);
         MDC.put(MetricService.SOURCE, "rekrutteringsbistand");
 
         AktivitetData aktivitet = aktivitetService.opprettAktivitetIDB(aktivitetData);
