@@ -35,7 +35,7 @@ class AktivitetDataMapperService(
         if (bruker is AktorId) return bruker.get()
         if (bruker is NavIdent) return bruker.get()
         if (bruker is Fnr) return aktorOppslagClient.hentAktorId(bruker).get()
-        throw IllegalArgumentException("Bruker må være AktorId, NavIdent eller Fnr men fikk ${bruker?.javaClass?.simpleName}")
+        throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "Bruker må være AktorId, NavIdent eller Fnr men fikk ${bruker?.javaClass?.simpleName}")
     }
 
     private fun getCurrentOppfolgingsperiode(aktorId: Person.AktorId): Oppfolgingsperiode {
@@ -43,7 +43,7 @@ class AktivitetDataMapperService(
         if (nåværendeÅpenPeriode != null) {
             return nåværendeÅpenPeriode
         } else {
-            throw IllegalArgumentException("Fant ingen gjeldende åpen oppfølgingsperiode for person")
+            throw ResponseStatusException(HttpStatus.CONFLICT ,("Fant ingen gjeldende åpen oppfølgingsperiode for person")
         }
     }
 
@@ -94,8 +94,8 @@ class AktivitetDataMapperService(
     private fun requireIdAndVersjon(aktivitetDTO: AktivitetDTO): IdAndVersjon {
         val id = (aktivitetDTO.id as? String)?.let { it.ifEmpty { null } }?.toLong()
         val versjon = (aktivitetDTO.versjon as? String)?.toLong()
-        if (id == null) throw IllegalStateException("Kan ikke endre aktivitet uten id")
-        if (versjon == null) throw IllegalStateException("Kan ikke endre aktivitet uten versjon")
+        if (id == null) throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Kan ikke endre aktivitet uten id")
+        if (versjon == null) throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Kan ikke endre aktivitet uten versjon")
         return IdAndVersjon(id, versjon)
     }
 
@@ -121,10 +121,11 @@ class AktivitetDataMapperService(
             AktivitetTypeData.BEHANDLING -> Behandling.Opprett(
                 opprettFelter, muterbareFelter, sporing, behandlingAktivitetData(aktivitetDTO)
             )
-            AktivitetTypeData.MOTE, AktivitetTypeData.SAMTALEREFERAT -> Mote.Opprett(
+            AktivitetTypeData.MOTE,
+            AktivitetTypeData.SAMTALEREFERAT -> Mote.Opprett(
                 opprettFelter, muterbareFelter, sporing, moteData(aktivitetDTO)
             )
-            else -> throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Aktivitet med type $aktivitetType kan ikke oppdateres via endepunkt i AktivitetsController")
+            else -> throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Aktivitet med type $aktivitetType kan ikke opprettes via endepunkt i AktivitetsController")
         }
     }
 
@@ -134,8 +135,8 @@ class AktivitetDataMapperService(
         val aktivitetType = Helpers.Type.getData(aktivitetDTO.type)
         val sporing = getSporingsData()
 
-        if (id == null) throw IllegalStateException("Kan ikke endre aktivitet uten id")
-        if (versjon == null) throw IllegalStateException("Kan ikke endre aktivitet uten versjon")
+        if (id == null) throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Kan ikke endre aktivitet uten id")
+        if (versjon == null) throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Kan ikke endre aktivitet uten versjon")
 
         val muterbareFelter = getMuterbareFelter(aktivitetDTO)
 
@@ -155,13 +156,14 @@ class AktivitetDataMapperService(
             AktivitetTypeData.BEHANDLING -> Behandling.Endre(
                 id, versjon,  muterbareFelter, sporing, behandlingAktivitetData(aktivitetDTO)
             )
-            AktivitetTypeData.MOTE, AktivitetTypeData.SAMTALEREFERAT -> Mote.Endre(
+            AktivitetTypeData.MOTE,
+            AktivitetTypeData.SAMTALEREFERAT -> Mote.Endre(
                 id, versjon,  muterbareFelter, sporing, moteData(aktivitetDTO)
             )
             AktivitetTypeData.STILLING_FRA_NAV -> StillingFraNav.Endre(
-                id, versjon,  muterbareFelter, sporing,aktivitetDTO.getStillingFraNavData()
+                id, versjon,  muterbareFelter, sporing,aktivitetDTO.stillingFraNavData
             )
-            else -> throw IllegalStateException("Unexpected value: " + aktivitetType)
+            else -> throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Aktivitet med type $aktivitetType kan ikke oppdateres via endepunkt i AktivitetsController")
         }
     }
 

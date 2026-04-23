@@ -42,7 +42,6 @@ object AktivitetsOpprettelseUtil {
             is Ijobb.Opprett -> builder.iJobbAktivitetData(opprettelse.iJobbAktivitetData)
             is Behandling.Opprett -> builder.behandlingAktivitetData(opprettelse.behandlingAktivitetData)
             is Mote.Opprett -> builder.moteData(opprettelse.moteData)
-            is Samtalereferat.Opprett -> builder.moteData(opprettelse.moteData)
             is StillingFraNav.Opprett -> builder
                 .stillingFraNavData(opprettelse.stillingFraNavData)
             is Eksternaktivitet.Opprett -> builder

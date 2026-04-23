@@ -33,11 +33,7 @@ object AktivitetsEndringUtil {
                     .let { input.withIJobbAktivitetData(it) }
             is Jobbsoeking.Endre -> mergeStillingSok(input.stillingsSoekAktivitetData, endring.stillingsSoekAktivitetData)
                 .let { input.withStillingsSoekAktivitetData(it) }
-            // OBS, de to neste bruker samme!
             is Mote.Endre ->
-                mergeMoteData(input.moteData, endring.moteData)
-                    .let { input.withMoteData(it) }
-            is Samtalereferat.Endre ->
                 mergeMoteData(input.moteData, endring.moteData)
                     .let { input.withMoteData(it) }
             is Sokeavtale.Endre ->

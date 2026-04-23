@@ -8,5 +8,4 @@ data class EtikettEndring(
     val versjon: Long,
     val sporingsData: SporingsData,
     val stillingsokEtikettData: StillingsoekEtikettData
-) {
-}
+)

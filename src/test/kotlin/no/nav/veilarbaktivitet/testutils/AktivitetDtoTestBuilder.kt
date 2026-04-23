@@ -166,7 +166,7 @@ object AktivitetDtoTestBuilder {
         )
     }
 
-    fun nySamtaleReferat(): Samtalereferat.Opprett {
+    fun nySamtaleReferat(): Mote.Opprett {
         val muterbareFelter = AktivitetMuterbareFelter(
             "tittel",
             "beskrivelse",
@@ -174,7 +174,7 @@ object AktivitetDtoTestBuilder {
             null,  // tilDato is null for samtalereferat
             "lenke"
         )
-        return Samtalereferat.Opprett(
+        return Mote.Opprett(
             nyOpprettFelter(AktivitetTypeData.SAMTALEREFERAT),
             muterbareFelter,
             nySporingsData(),
