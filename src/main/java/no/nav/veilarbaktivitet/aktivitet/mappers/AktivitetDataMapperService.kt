@@ -43,7 +43,7 @@ class AktivitetDataMapperService(
         if (nåværendeÅpenPeriode != null) {
             return nåværendeÅpenPeriode
         } else {
-            throw ResponseStatusException(HttpStatus.CONFLICT ,("Fant ingen gjeldende åpen oppfølgingsperiode for person")
+            throw ResponseStatusException(HttpStatus.CONFLICT , "Fant ingen gjeldende åpen oppfølgingsperiode for person")
         }
     }
 
