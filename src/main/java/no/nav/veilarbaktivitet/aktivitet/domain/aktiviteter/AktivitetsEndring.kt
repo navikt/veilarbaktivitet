@@ -5,7 +5,6 @@ import no.nav.veilarbaktivitet.stilling_fra_nav.CvKanDelesData
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData
 import no.nav.veilarbaktivitet.util.MappingUtils
 import java.util.*
-import java.util.function.BiFunction
 
 sealed interface AktivitetsEndring {
     val muterbareFelter: AktivitetMuterbareFelter
@@ -137,13 +136,10 @@ object AktivitetsEndringUtil {
             .withArbeidssted(updated.getArbeidssted())
             .withArbeidsgiver(updated.getArbeidsgiver())
             .withCvKanDelesData(
-                MappingUtils.merge<CvKanDelesData?>(existing.getCvKanDelesData(), updated.getCvKanDelesData())
-                    .merge(BiFunction { existing: CvKanDelesData?, updated: CvKanDelesData? ->
-                        this.mergeCVKanDelesData(
-                            existing!!,
-                            updated!!
-                        )
-                    })
+                MappingUtils.merge(existing.getCvKanDelesData(), updated.getCvKanDelesData())
+                    .merge { existing, updated ->
+                        this.mergeCVKanDelesData(existing, updated)
+                    }
             )
             .withLivslopsStatus(updated.getLivslopsStatus())
             .withSoknadsstatus(updated.getSoknadsstatus())

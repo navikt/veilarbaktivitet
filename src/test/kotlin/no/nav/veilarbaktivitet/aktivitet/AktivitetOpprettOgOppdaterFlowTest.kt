@@ -1,15 +1,12 @@
 package no.nav.veilarbaktivitet.aktivitet
 
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
+import no.nav.common.types.identer.EnhetId
 import no.nav.common.types.identer.Fnr
 import no.nav.common.types.identer.NavIdent
 import no.nav.poao.dab.spring_auth.IAuthService
 import no.nav.veilarbaktivitet.aktivitet.domain.*
-import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO
-import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO
-import no.nav.veilarbaktivitet.aktivitet.dto.EtikettTypeDTO
-import no.nav.veilarbaktivitet.aktivitet.dto.JobbStatusTypeDTO
-import no.nav.veilarbaktivitet.aktivitet.dto.KanalDTO
+import no.nav.veilarbaktivitet.aktivitet.dto.*
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDataMapperService
 import no.nav.veilarbaktivitet.aktivitetskort.MigreringService
@@ -211,6 +208,30 @@ class AktivitetOpprettOgOppdaterFlowTest {
             assertThat(captured.moteData).isNull()
             assertThat(captured.stillingFraNavData).isNull()
             assertThat(captured.eksternAktivitetData).isNull()
+        }
+
+        @Test
+        fun `opprett aktivitet med kontorSperreEnhet - enhet fra kvpService skal brukes som kontorSperreEnhet ved oppretting av aktivitet`() {
+            val kontorSperreEnhetId = "0219"
+            `when`(authService.getLoggedInnUser()).thenReturn(navIdent)
+            `when`(authService.erEksternBruker()).thenReturn(false)
+            `when`(authService.erSystemBruker()).thenReturn(false)
+            `when`(userInContext.getAktorId()).thenReturn(aktorId)
+            `when`(kvpService.getKontorSperreEnhet(aktorId)).thenReturn(Optional.of(EnhetId.of(kontorSperreEnhetId)))
+            `when`(oppfolgingsperiodeService.hentNåværendeÅpenPeriode(aktorId)).thenReturn(
+                Oppfolgingsperiode(aktorId.get(), oppfolgingsperiodeId, ZonedDateTime.now(), null)
+            )
+            val dto = baseDtoMedUnikeVerdier(AktivitetTypeDTO.EGEN)
+            dto.hensikt = "HENSIKT_KVP"
+            dto.oppfolging = "OPPFOLGING_KVP"
+            stubOpprettNyAktivitetReturnsInput()
+
+            controller.opprettNyAktivitetPaOppfolgingsPeriode(dto, false)
+
+            val captured = captureOpprettNyAktivitet()
+            assertThat(captured.kontorsperreEnhetId).isEqualTo(kontorSperreEnhetId)
+            assertThat(captured.aktivitetType).isEqualTo(AktivitetTypeData.EGENAKTIVITET)
+            assertThat(captured.aktorId).isEqualTo(aktorId)
         }
 
         @Test
@@ -475,6 +496,35 @@ class AktivitetOpprettOgOppdaterFlowTest {
     // =====================================================================
     @Nested
     inner class OppdaterSomNav {
+
+        @Test
+        fun `oppdater aktivitet opprettet før kontorsperre - kvpService getKontorSperreEnhet kalles ikke ved oppdatering`() {
+            /* Aktiviteter opprettet før brukere er under KVP skal ikke få kontorsperre selvom de oppdateres når bruker er under kvp
+            * Det går ikke an å sette opp unødvendige mocks i mockito og i dette tilfellet er å mocke at bruker er under KVP en
+            * unødvendig mock siden den aldri kalles  */
+            setupNavBrukerContextForOppdater()
+            val eksisterende = AktivitetDataTestBuilder.nyEgenaktivitet().toBuilder()
+                .id(99L)
+                .versjon(3L)
+                .avtalt(false)
+                .status(AktivitetStatus.PLANLAGT)
+                .historiskDato(null)
+                .kontorsperreEnhetId("0219")
+                .tittel("ORIGINAL_TITTEL").beskrivelse("ORIGINAL_BESKRIVELSE")
+                .egenAktivitetData(EgenAktivitetData.builder().hensikt("ORIGINAL_HENSIKT").oppfolging("ORIGINAL_OPPFOLGING").build())
+                .build()
+            stubHentOgOppdater(eksisterende)
+
+            val dto = AktivitetDTOMapper.mapTilAktivitetDTO(eksisterende, false)
+            dto.tittel = "NY_TITTEL"
+
+            controller.oppdaterAktivitet(dto)
+
+            val captured = captureOppdaterAktivitet().last()
+            assertThat(captured.kontorsperreEnhetId).isEqualTo("0219")
+            assertThat(captured.tittel).isEqualTo("NY_TITTEL")
+            verify(kvpService, never()).getKontorSperreEnhet(any())
+        }
 
         @Test
         fun `oppdater EGEN - ikke avtalt - endrede felter oppdateres, uendrede beholdes`() {
