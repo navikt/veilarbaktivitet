@@ -55,7 +55,7 @@ class KvpAvsluttetKafkaConsumerTest extends SpringBootTestBase {
     @Test
     void skal_avbryte_aktiviteter_i_kvp_periode() throws ExecutionException, InterruptedException, TimeoutException {
         var aktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.EGEN);
-        var opprettetAktivitet = aktivitetTestService.opprettAktivitet(mockBruker, aktivitet);
+        var opprettetAktivitet = aktivitetTestService.opprettAktivitetViaHttp(mockBruker, aktivitet);
         Assertions.assertThat(opprettetAktivitet.getStatus()).isEqualTo(AktivitetStatus.PLANLAGT);
 
         var kvpAvsluttetDato = ZonedDateTime.now();

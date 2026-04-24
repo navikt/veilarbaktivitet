@@ -20,7 +20,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.Duration
 import java.time.ZonedDateTime
-import java.util.Date
+import java.util.*
 
 
 internal class MoteSmsTest(
@@ -48,7 +48,7 @@ internal class MoteSmsTest(
         val startTid = ZonedDateTime.now().plusHours(2)
         aktivitetDTO.setFraDato(Date(startTid.toInstant().toEpochMilli()))
         aktivitetDTO.setKanal(KanalDTO.OPPMOTE)
-        val mote = aktivitetTestService.opprettAktivitet(happyBruker, veileder, aktivitetDTO)
+        val mote = aktivitetTestService.opprettAktivitetViaHttp(happyBruker, veileder, aktivitetDTO)
 
         moteSmsCronjobber()
         val orginalMelding =
@@ -95,7 +95,7 @@ internal class MoteSmsTest(
 
         for (kanal in KanalDTO.entries) {
             val aktivitet: AktivitetDTO = aktivitetDTO.setKanal(kanal)
-            val response = aktivitetTestService.opprettAktivitet(happyBruker, veileder, aktivitet)
+            val response = aktivitetTestService.opprettAktivitetViaHttp(happyBruker, veileder, aktivitet)
 
             moteSmsCronjobber()
             assertForventetMeldingSendt(kanal.name + "skal ha riktig melding", happyBruker, kanal, fraDato, response)
@@ -115,7 +115,7 @@ internal class MoteSmsTest(
             } else {
                 val aktivitet = AktivitetDtoTestBuilder.nyAktivitet(type)
                 aktivitet.setFraDato(Date(ZonedDateTime.now().plusHours(4).toInstant().toEpochMilli()))
-                aktivitetTestService.opprettAktivitet(happyBruker, veileder, aktivitet)
+                aktivitetTestService.opprettAktivitetViaHttp(happyBruker, veileder, aktivitet)
             }
         }
 
@@ -136,7 +136,7 @@ internal class MoteSmsTest(
         val aktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE)
         val startTid = ZonedDateTime.now().minusDays(10)
         aktivitet.setFraDato(Date(startTid.toInstant().toEpochMilli()))
-        val response = aktivitetTestService.opprettAktivitet(happyBruker, veileder, aktivitet)
+        val response = aktivitetTestService.opprettAktivitetViaHttp(happyBruker, veileder, aktivitet)
 
         moteSMSService!!.sendServicemeldinger(Duration.ofDays(-15), Duration.ofDays(0))
         sendMinsideVarselFraOutboxCron!!.sendBrukernotifikasjoner()
@@ -162,7 +162,7 @@ internal class MoteSmsTest(
         val startTid = ZonedDateTime.now().plusHours(2)
         aktivitetDTO.setFraDato(Date(startTid.toInstant().toEpochMilli()))
         aktivitetDTO.setKanal(KanalDTO.OPPMOTE)
-        aktivitetTestService.opprettAktivitet(happyBruker, veileder, aktivitetDTO)
+        aktivitetTestService.opprettAktivitetViaHttp(happyBruker, veileder, aktivitetDTO)
         aktivitetService!!.settAktiviteterTilHistoriske(happyBruker.getOppfolgingsperiodeId(), ZonedDateTime.now())
 
 
@@ -179,7 +179,7 @@ internal class MoteSmsTest(
         val aktivitetDTO = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE)
         val startTid = ZonedDateTime.now().plusHours(2)
         aktivitetDTO.setFraDato(Date(startTid.toInstant().toEpochMilli()))
-        val mote = aktivitetTestService.opprettAktivitet(happyBruker, veileder, aktivitetDTO)
+        val mote = aktivitetTestService.opprettAktivitetViaHttp(happyBruker, veileder, aktivitetDTO)
         aktivitetTestService.oppdaterAktivitetStatus(happyBruker, veileder, mote, AktivitetStatus.FULLFORT)
 
         moteSmsCronjobber()
@@ -195,7 +195,7 @@ internal class MoteSmsTest(
         val aktivitetDTO = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE)
         val startTid = ZonedDateTime.now().plusHours(2)
         aktivitetDTO.setFraDato(Date(startTid.toInstant().toEpochMilli()))
-        val mote = aktivitetTestService.opprettAktivitet(happyBruker, veileder, aktivitetDTO)
+        val mote = aktivitetTestService.opprettAktivitetViaHttp(happyBruker, veileder, aktivitetDTO)
         aktivitetTestService.oppdaterAktivitetStatus(happyBruker, veileder, mote, AktivitetStatus.AVBRUTT)
 
         moteSmsCronjobber()

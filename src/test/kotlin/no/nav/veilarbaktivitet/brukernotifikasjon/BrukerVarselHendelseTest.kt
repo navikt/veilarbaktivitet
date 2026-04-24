@@ -88,7 +88,7 @@ internal class BrukerVarselHendelseTest(
         val mockBruker = navMockService.createHappyBruker()
         val aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet()
         val skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false)
-        val aktivitetDTO = aktivitetTestService.opprettAktivitet(mockBruker, skalOpprettes)
+        val aktivitetDTO = aktivitetTestService.opprettAktivitetViaHttp(mockBruker, skalOpprettes)
 
 
         val oppgaveRecord = opprettVarsel(mockBruker, aktivitetDTO, VarselType.STILLING_FRA_NAV)
@@ -116,7 +116,7 @@ internal class BrukerVarselHendelseTest(
         val mockBruker = navMockService.createHappyBruker()
         val aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet()
         val skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false)
-        val aktivitetDTO = aktivitetTestService.opprettAktivitet(mockBruker, skalOpprettes)
+        val aktivitetDTO = aktivitetTestService.opprettAktivitetViaHttp(mockBruker, skalOpprettes)
 
         val beskjed = opprettVarsel(mockBruker, aktivitetDTO, VarselType.IKKE_FATT_JOBBEN)
         val eventId = UUID.fromString(beskjed.varselId)
@@ -132,7 +132,7 @@ internal class BrukerVarselHendelseTest(
         val mockBruker = navMockService.createHappyBruker()
         val aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet()
         val skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false)
-        val aktivitetDTO = aktivitetTestService.opprettAktivitet(mockBruker, skalOpprettes)
+        val aktivitetDTO = aktivitetTestService.opprettAktivitetViaHttp(mockBruker, skalOpprettes)
 
         val beskjed = opprettVarsel(mockBruker, aktivitetDTO, VarselType.STILLING_FRA_NAV)
         val eventId = UUID.fromString(beskjed.varselId)
@@ -148,7 +148,7 @@ internal class BrukerVarselHendelseTest(
         val mockBruker = navMockService.createHappyBruker()
         val aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet()
         val skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false)
-        val aktivitetDTO = aktivitetTestService.opprettAktivitet(mockBruker, skalOpprettes)
+        val aktivitetDTO = aktivitetTestService.opprettAktivitetViaHttp(mockBruker, skalOpprettes)
 
         val beskjed = opprettVarsel(mockBruker, aktivitetDTO, VarselType.STILLING_FRA_NAV)
         val varselId = UUID.fromString(beskjed.varselId)
@@ -168,7 +168,7 @@ internal class BrukerVarselHendelseTest(
         val mockBruker = navMockService.createHappyBruker()
         val aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet()
         val skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false)
-        val aktivitetDTO = aktivitetTestService.opprettAktivitet(mockBruker, skalOpprettes)
+        val aktivitetDTO = aktivitetTestService.opprettAktivitetViaHttp(mockBruker, skalOpprettes)
         Assertions.assertEquals(0, varselDao.hentAntallUkvitterteVarslerForsoktSendt(-1))
 
         val oppgaveVarsel = opprettVarsel(mockBruker, aktivitetDTO, VarselType.FORHAANDSORENTERING)

@@ -6,6 +6,12 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
 import no.nav.veilarbaktivitet.aktivitet.domain.MoteData;
+import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.AktivitetsEndring;
+import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.AktivitetsOpprettelse;
+import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.Mote;
+import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.spesialEndringer.EtikettEndring;
+import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.spesialEndringer.ReferatEndring;
+import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.spesialEndringer.StatusEndring;
 import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvFerdigAktivitetException;
 import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvHistoriskAktivitetException;
 import no.nav.veilarbaktivitet.eventsLogger.BigQueryClient;
@@ -21,8 +27,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
-
-import static no.nav.veilarbaktivitet.config.TeamLog.teamLog;
 
 @Service
 @RequiredArgsConstructor
@@ -117,16 +121,16 @@ public class AktivitetAppService {
     }
 
     @Transactional
-    public AktivitetData opprettNyAktivitet(AktivitetData aktivitetData) {
+    public AktivitetData opprettNyAktivitet(AktivitetsOpprettelse aktivitetData) {
 
-        if (aktivitetData.getAktivitetType() == AktivitetTypeData.STILLING_FRA_NAV) {
+        if (aktivitetData.getOpprettFelter().getAktivitetType() == AktivitetTypeData.STILLING_FRA_NAV) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
-        if (authService.erEksternBruker() && !TYPER_SOM_KAN_OPPRETTES_EKSTERNT.contains(aktivitetData.getAktivitetType())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Eksternbruker kan ikke opprette denne aktivitetstypen. Fikk: " + aktivitetData.getAktivitetType());
+        if (authService.erEksternBruker() && !TYPER_SOM_KAN_OPPRETTES_EKSTERNT.contains(aktivitetData.getOpprettFelter().getAktivitetType())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Eksternbruker kan ikke opprette denne aktivitetstypen. Fikk: " + aktivitetData.getOpprettFelter().getAktivitetType());
         }
 
-        AktivitetData nyAktivitet = aktivitetService.opprettAktivitet(aktivitetData);
+        AktivitetData nyAktivitet = aktivitetService.opprettAktivitetIDB(aktivitetData);
 
         if (nyopprettetAktivitetKanHaReferat(nyAktivitet)) {
             if (referatErDeltMedBruker(nyAktivitet)) {
@@ -142,9 +146,9 @@ public class AktivitetAppService {
     }
 
     @Transactional
-    public AktivitetData oppdaterAktivitet(AktivitetData aktivitet) {
+    public AktivitetData oppdaterAktivitet(AktivitetsEndring aktivitet) {
         AktivitetData original = hentAktivitet(aktivitet.getId());
-        kanEndreAktivitetGuard(original, aktivitet.getVersjon(), aktivitet.getAktorId());
+        kanEndreAktivitetGuard(original, aktivitet.getVersjon());
         if (original.getAktivitetType() == AktivitetTypeData.STILLING_FRA_NAV) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
@@ -161,19 +165,19 @@ public class AktivitetAppService {
         throw new ResponseStatusException(HttpStatus.FORBIDDEN);
     }
 
-    private void oppdaterSomNav(AktivitetData aktivitet, AktivitetData original) {
+    private void oppdaterSomNav(AktivitetsEndring aktivitet, AktivitetData original) {
         if (original.isAvtalt()) {
             if (original.getAktivitetType() == AktivitetTypeData.MOTE) {
-                boolean tidOgStedEndret = erMoteTidOgStedEndret(original, aktivitet);
-                boolean detaljerEndret = erMoteDetaljerEndret(original, aktivitet);
+                boolean tidOgStedEndret = erMoteTidOgStedEndret(original, (Mote.Endre) aktivitet);
+                boolean detaljerEndret = erMoteDetaljerEndret(original, (Mote.Endre) aktivitet);
 
                 if (tidOgStedEndret) {
-                    aktivitetService.oppdaterMoteTidStedOgKanal(original, aktivitet);
+                    aktivitetService.oppdaterMoteTidStedOgKanal(original, (Mote.Endre) aktivitet);
                     // Hent oppdatert aktivitet for eventuell detaljer-oppdatering
                     original = aktivitetService.hentAktivitetMedForhaandsorientering(original.getId());
                 }
                 if (detaljerEndret) {
-                    aktivitetService.oppdaterMoteDetaljer(original, aktivitet);
+                    aktivitetService.oppdaterMoteDetaljer(original, (Mote.Endre) aktivitet);
                 }
             } else {
                 aktivitetService.oppdaterAktivitetFrist(original, aktivitet);
@@ -183,9 +187,9 @@ public class AktivitetAppService {
         }
     }
 
-    private boolean erMoteTidOgStedEndret(AktivitetData original, AktivitetData aktivitet) {
-        boolean fraDatoEndret = !Objects.equals(original.getFraDato(), aktivitet.getFraDato());
-        boolean tilDatoEndret = !Objects.equals(original.getTilDato(), aktivitet.getTilDato());
+    private boolean erMoteTidOgStedEndret(AktivitetData original, Mote.Endre aktivitet) {
+        boolean fraDatoEndret = !Objects.equals(original.getFraDato(), aktivitet.getMuterbareFelter().getFraDato());
+        boolean tilDatoEndret = !Objects.equals(original.getTilDato(), aktivitet.getMuterbareFelter().getTilDato());
 
         MoteData originalMote = original.getMoteData();
         MoteData nyMote = aktivitet.getMoteData();
@@ -198,9 +202,9 @@ public class AktivitetAppService {
         return fraDatoEndret || tilDatoEndret || adresseEndret || kanalEndret;
     }
 
-    private boolean erMoteDetaljerEndret(AktivitetData original, AktivitetData aktivitet) {
-        boolean tittelEndret = !Objects.equals(original.getTittel(), aktivitet.getTittel());
-        boolean beskrivelseEndret = !Objects.equals(original.getBeskrivelse(), aktivitet.getBeskrivelse());
+    private boolean erMoteDetaljerEndret(AktivitetData original, Mote.Endre aktivitet) {
+        boolean tittelEndret = !Objects.equals(original.getTittel(), aktivitet.getMuterbareFelter().getTittel());
+        boolean beskrivelseEndret = !Objects.equals(original.getBeskrivelse(), aktivitet.getMuterbareFelter().getBeskrivelse());
 
         MoteData originalMote = original.getMoteData();
         MoteData nyMote = aktivitet.getMoteData();
@@ -211,7 +215,7 @@ public class AktivitetAppService {
         return tittelEndret || beskrivelseEndret || forberedelserEndret;
     }
 
-    private void oppdaterSomEksternBruker(AktivitetData aktivitet, AktivitetData original) {
+    private void oppdaterSomEksternBruker(AktivitetsEndring aktivitet, AktivitetData original) {
         boolean denneAktivitetstypenKanIkkeEndresEksternt = !TYPER_SOM_KAN_ENDRES_EKSTERNT.contains(original.getAktivitetType());
         // Når behandling er avtalt må vi begrense hva som kan oppdateres til kun sluttdato for behandlingen.
         // Når behandling ikke er avtalt, skal ekstern bruker ha mulighet til å endre flere ting.
@@ -229,39 +233,29 @@ public class AktivitetAppService {
         }
     }
 
-    private void kanEndreAktivitetGuard(AktivitetData orginalAktivitet, long sisteVersjon, Person.AktorId aktorId) {
-        if (!orginalAktivitet.getAktorId().equals(aktorId)) {
-            teamLog.error("kan ikke oppdatere aktorid på aktivitet: orginal aktorId: {}, aktorId fra context: {}, aktivitetsId: {}",
-                    orginalAktivitet.getAktorId(), aktorId, orginalAktivitet.getId());
-            throw new IllegalArgumentException("kan ikke oppdatere aktorid på aktivitet");
-        }
+    private void kanEndreAktivitetGuard(AktivitetData orginalAktivitet, long sisteVersjon) {
         if (orginalAktivitet.getVersjon() != sisteVersjon) {
             throw new ResponseStatusException(HttpStatus.CONFLICT);
         } else if (!orginalAktivitet.endringTillatt()) {
-            log.warn(String.format("Kan ikke endre aktivitet [%s] i en ferdig status",
-                    orginalAktivitet.getId()));
+            log.warn("Kan ikke endre aktivitet {} i en ferdig status", orginalAktivitet.getId());
             throw new EndringAvFerdigAktivitetException("Kan ikke endre aktivitet i en ferdig status");
         }
     }
 
-    private void kanEndreAktivitetEtikettGuard(AktivitetData orginalAktivitet, AktivitetData aktivitet) {
-        if (!orginalAktivitet.getAktorId().equals(aktivitet.getAktorId())) {
-            throw new IllegalArgumentException("kan ikke oppdatere aktorid på aktivitet");
-
-        }
+    private void kanEndreAktivitetEtikettGuard(AktivitetData orginalAktivitet, EtikettEndring aktivitet) {
         if (!Objects.equals(orginalAktivitet.getVersjon(), aktivitet.getVersjon())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT);
         } else if (orginalAktivitet.getHistoriskDato() != null) {
             // Etikett skal kunne endres selv om aktivitet er fullført eller avbrutt
-            log.warn(String.format("Kan ikke endre etikett på historisk aktivitet [%s]", orginalAktivitet.getId()));
+            log.warn("Kan ikke endre etikett på historisk aktivitet {}", orginalAktivitet.getId());
             throw new EndringAvHistoriskAktivitetException("Kan ikke endre etikett på historisk aktivitet");
         }
     }
 
     @Transactional
-    public AktivitetData oppdaterStatus(AktivitetData aktivitet) {
+    public AktivitetData oppdaterStatus(StatusEndring aktivitet) {
         final var originalAktivitet = hentAktivitet(aktivitet.getId());
-        kanEndreAktivitetGuard(originalAktivitet, aktivitet.getVersjon(), aktivitet.getAktorId());
+        kanEndreAktivitetGuard(originalAktivitet, aktivitet.getVersjon());
 
         if (authService.erEksternBruker() && !TYPER_SOM_KAN_ENDRES_EKSTERNT.contains(originalAktivitet.getAktivitetType())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
@@ -275,7 +269,7 @@ public class AktivitetAppService {
     }
 
     @Transactional
-    public AktivitetData oppdaterEtikett(AktivitetData aktivitet) {
+    public AktivitetData oppdaterEtikett(EtikettEndring aktivitet) {
         final var originalAktivitet = hentAktivitet(aktivitet.getId());
         kanEndreAktivitetEtikettGuard(originalAktivitet, aktivitet);
         aktivitetService.oppdaterEtikett(originalAktivitet, aktivitet);
@@ -283,9 +277,9 @@ public class AktivitetAppService {
     }
 
     @Transactional
-    public AktivitetData oppdaterReferat(AktivitetData aktivitet) {
+    public AktivitetData oppdaterReferat(ReferatEndring aktivitet) {
         final var originalAktivitet = hentAktivitet(aktivitet.getId());
-        kanEndreAktivitetGuard(originalAktivitet, aktivitet.getVersjon(), aktivitet.getAktorId());
+        kanEndreAktivitetGuard(originalAktivitet, aktivitet.getVersjon());
 
         var oppdatertAktivitet = aktivitetService.oppdaterReferat(originalAktivitet, aktivitet);
 
@@ -305,7 +299,7 @@ public class AktivitetAppService {
         }
     }
 
-    private Optional<EventType> hentEventTypeForReferat(AktivitetData originalAktivitet, AktivitetData oppdatertAktivitet) {
+    private Optional<EventType> hentEventTypeForReferat(AktivitetData originalAktivitet, ReferatEndring oppdatertAktivitet) {
         var forrigeReferat = Optional.ofNullable(originalAktivitet.getMoteData()).map(it -> it.getReferat()).orElse("");
         var nesteReferat = Optional.ofNullable(oppdatertAktivitet.getMoteData()).map(it -> it.getReferat()).orElse("");
 

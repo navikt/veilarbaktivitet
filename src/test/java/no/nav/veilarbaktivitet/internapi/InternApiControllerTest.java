@@ -31,7 +31,7 @@ class InternApiControllerTest extends SpringBootTestBase {
 
         AktivitetData aktivitetData2 = AktivitetDataTestBuilder.nyEgenaktivitet().withTilDato(null);
         AktivitetDTO egenAktivitet = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData2, false);
-        aktivitetTestService.opprettAktivitet(mockBruker, egenAktivitet);
+        aktivitetTestService.opprettAktivitetViaHttp(mockBruker, egenAktivitet);
 
         // Sett bruker under KVP
         BrukerOptions kvpOptions = mockBruker.getBrukerOptions().toBuilder().erUnderKvp(true).build();
@@ -80,7 +80,7 @@ class InternApiControllerTest extends SpringBootTestBase {
                 // TODO aktivitetTestService.opprettEksternAktivitet(mockBruker);
             } else {
                 AktivitetDTO aktivitetDTO = AktivitetDtoTestBuilder.nyAktivitet(type);
-                aktivitetTestService.opprettAktivitet(mockBruker, mockVeileder, aktivitetDTO);
+                aktivitetTestService.opprettAktivitetViaHttp(mockBruker, mockVeileder, aktivitetDTO);
             }
         }
 

@@ -27,8 +27,8 @@ class ArenaAktivitetskortService (
     private val log = LoggerFactory.getLogger(javaClass)
     fun opprettAktivitet(bestilling: ArenaAktivitetskortBestilling): AktivitetData? {
         // Opprett via AktivitetService
-        val aktivitetsData = bestilling.toAktivitetsDataInsert()
-        val opprettetAktivitetsData = aktivitetService.opprettAktivitet(aktivitetsData)
+        val aktivitetsData = bestilling.toAktivitetsDataInsert(bestilling.oppfolgingsperiode)
+        val opprettetAktivitetsData = aktivitetService.opprettAktivitetIDB(aktivitetsData)
         val idMapping = bestilling.idMapping(opprettetAktivitetsData.id)
 
         // Gjør arena-spesifikk migrering hvis ikke migrert allerede

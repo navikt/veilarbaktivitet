@@ -186,7 +186,7 @@ class StillingFraNavControllerITest extends SpringBootTestBase {
         MockVeileder veileder = navMockService.createVeileder(mockBruker);
         AktivitetDTO aktivitetDTO = AktivitetDtoTestBuilder.nyAktivitet(typeDTO);
 
-        AktivitetDTO oppretetDto = aktivitetTestService.opprettAktivitet(mockBruker, veileder, aktivitetDTO);
+        AktivitetDTO oppretetDto = aktivitetTestService.opprettAktivitetViaHttp(mockBruker, veileder, aktivitetDTO);
 
         DelingAvCvDTO delingAvCvDTO = DelingAvCvDTO.builder()
                 .aktivitetVersjon(Long.parseLong(oppretetDto.getVersjon()))

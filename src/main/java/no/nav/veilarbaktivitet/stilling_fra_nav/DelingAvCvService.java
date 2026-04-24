@@ -8,6 +8,10 @@ import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
+import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.AktivitetMuterbareFelter;
+import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.SporingsData;
+import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.StillingFraNav;
+import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.spesialEndringer.StatusEndring;
 import no.nav.veilarbaktivitet.brukernotifikasjon.MinsideVarselService;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
 import no.nav.veilarbaktivitet.person.Innsender;
@@ -19,6 +23,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.function.Function;
@@ -67,12 +72,24 @@ public class DelingAvCvService {
     @Timed(value = "stillingFraNavAvbruttEllerFullfortUtenSvar")
     public void notifiserAvbruttEllerFullfortUtenSvar(AktivitetData aktivitet) {
         var endretAv = Person.systemUser();
-        AktivitetData nyAktivitet = aktivitet.toBuilder()
-                .endretAv(endretAv.get())
-                .endretDato(new Date())
-                .endretAvType(endretAv.tilInnsenderType())
-                .stillingFraNavData(aktivitet.getStillingFraNavData().withLivslopsStatus(LivslopsStatus.AVBRUTT_AV_BRUKER))
-                .build();
+
+        var nyAktivitet = new StillingFraNav.Endre(
+            aktivitet.getId(),
+            aktivitet.getVersjon(),
+            new AktivitetMuterbareFelter(
+                aktivitet.getTittel(),
+                aktivitet.getBeskrivelse(),
+                aktivitet.getFraDato(),
+                aktivitet.getTilDato(),
+                aktivitet.getLenke()
+            ),
+            new SporingsData(
+                endretAv.get(),
+                endretAv.tilInnsenderType(),
+                ZonedDateTime.now()),
+            aktivitet.getStillingFraNavData().withLivslopsStatus(LivslopsStatus.AVBRUTT_AV_BRUKER)
+        );
+
         aktivitetService.oppdaterAktivitet(aktivitet, nyAktivitet);
         stillingFraNavProducerClient.sendAvbruttEllerFullfortUtenSvar(aktivitet);
         metrikker.countManuletAvbrutt(aktivitet.getEndretAvType());
@@ -167,7 +184,20 @@ public class DelingAvCvService {
                     .avsluttetKommentar("Automatisk avsluttet fordi cv ikke skal deles");
         }
 
-        return aktivitetService.oppdaterStatus(aktivitetMedCvSvar, aktivitetMedStatusOppdatering.build());
+        var oppdatertAktivitet = aktivitetMedStatusOppdatering.build();
+        var statusEndring = new StatusEndring(
+                oppdatertAktivitet.getId(),
+                oppdatertAktivitet.getVersjon(),
+                new SporingsData(
+                        innloggetBruker.get(),
+                        innloggetBruker.tilInnsenderType(),
+                        ZonedDateTime.now()
+                ),
+                oppdatertAktivitet.getStatus(),
+                oppdatertAktivitet.getAvsluttetKommentar()
+        );
+
+        return aktivitetService.oppdaterStatus(aktivitetMedCvSvar, statusEndring);
     }
 
 

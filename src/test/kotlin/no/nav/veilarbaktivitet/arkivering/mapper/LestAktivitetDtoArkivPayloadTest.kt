@@ -10,11 +10,12 @@ import org.junit.jupiter.api.Test
 import java.sql.Date
 import java.time.Instant
 
-class AktivitetDtoArkivPayloadTest {
+class LestAktivitetDtoArkivPayloadTest {
 
     @Test
-    fun `Møte har riktige felt`() {
-        val mote = AktivitetDataTestBuilder.nyMoteAktivitet().toArkivPayload(null, Historikk(emptyList()))
+    fun `toArkivPayload skal bruke riktige møte-felter i detaljer`() {
+        val mote = AktivitetDataTestBuilder.nyMoteAktivitet()
+            .toArkivPayload(null, Historikk(emptyList()))
         assertThat(mote.detaljer.map { it.tittel })
             .containsExactly(
                 "Dato",
@@ -30,7 +31,8 @@ class AktivitetDtoArkivPayloadTest {
 
     @Test
     fun `Samtalereferat har riktige felt`() {
-        val mote = AktivitetDataTestBuilder.nySamtaleReferat().toArkivPayload(null, Historikk(emptyList()))
+        val mote = AktivitetDataTestBuilder.nySamtaleReferat()
+            .toArkivPayload(null, Historikk(emptyList()))
         assertThat(mote.detaljer.map { it.tittel })
             .containsExactly(
                 "Dato",
@@ -41,7 +43,8 @@ class AktivitetDtoArkivPayloadTest {
 
     @Test
     fun `Stilling har riktige felt`() {
-        val mote = AktivitetDataTestBuilder.nyttStillingssok().toArkivPayload(null, Historikk(emptyList()))
+        val mote = AktivitetDataTestBuilder.nyttStillingssok()
+            .toArkivPayload(null, Historikk(emptyList()))
         assertThat(mote.detaljer.map { it.tittel })
             .containsExactly(
                 "Fra dato",

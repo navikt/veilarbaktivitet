@@ -6,13 +6,18 @@ import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
 import no.nav.veilarbaktivitet.aktivitet.MetricService;
 import no.nav.veilarbaktivitet.aktivitet.domain.*;
+import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.*;
+import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.spesialEndringer.EtikettEndring;
+import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.spesialEndringer.ReferatEndring;
+import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.spesialEndringer.StatusEndring;
 import no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavService;
 import no.nav.veilarbaktivitet.oppfolging.periode.SistePeriodeService;
 import no.nav.veilarbaktivitet.oversikten.OversiktenService;
 import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
-import org.joda.time.LocalDateTime;
+import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder;
+import no.nav.veilarbaktivitet.util.DateUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -31,9 +36,9 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.ZonedDateTime;
 import java.util.Date;
 
+import static no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.AktivitetsOpprettelseUtil.tilAktivitetsData;
 import static no.nav.veilarbaktivitet.mock.TestData.KJENT_KONTORSPERRE_ENHET_ID;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.util.DateUtil.now;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -42,9 +47,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class AktivitetServiceTest {
+class LestAktivitetServiceTest {
 
     private static final long AKTIVITET_ID = 69L;
+    private static final long AKTIVITET_VERSJON = 1L;
     private static final String KONTORSPERRE_ENHET_ID = "1337";
 
     @Mock
@@ -74,34 +80,36 @@ class AktivitetServiceTest {
 
     @Test
     void viktigeFelterSkalPropageresTilDaoVedOpprettAktivitet() {
-        final var aktivitet = lagEnNyAktivitet();
+        final var opprettDto = lagEnNyOpprettDto();
+        final var expectedData = tilAktivitetsData(opprettDto);
 
-        when(aktivitetDAO.opprettNyAktivitet(any(AktivitetData.class))).thenReturn(aktivitet);
-        aktivitetService.opprettAktivitet( aktivitet);
+        when(aktivitetDAO.opprettNyAktivitet(any(AktivitetData.class))).thenReturn(expectedData);
+        aktivitetService.opprettAktivitetIDB(opprettDto);
 
         captureOpprettAktivitetArgument();
 
         AktivitetData capturedAktivitet = getCapturedAktivitet();
-        assertThat(capturedAktivitet.getFraDato(), equalTo(aktivitet.getFraDato()));
-        assertThat(capturedAktivitet.getTittel(), equalTo(aktivitet.getTittel()));
+        assertThat(capturedAktivitet.getFraDato(), equalTo(expectedData.getFraDato()));
+        assertThat(capturedAktivitet.getTittel(), equalTo(expectedData.getTittel()));
 
         assertThat(capturedAktivitet.getKontorsperreEnhetId(), nullValue());
         assertNotNull(capturedAktivitet.getAktorId());
-        assertThat(capturedAktivitet.getAktorId(), equalTo(aktivitet.getAktorId()));
+        assertThat(capturedAktivitet.getAktorId(), equalTo(expectedData.getAktorId()));
         assertThat(capturedAktivitet.getTransaksjonsType(), equalTo(AktivitetTransaksjonsType.OPPRETTET));
-        assertThat(capturedAktivitet.getOpprettetDato()).isEqualTo(aktivitet.getOpprettetDato());
-        assertThat(capturedAktivitet.getEndretDato()).isEqualTo(aktivitet.getEndretDato());
+        assertThat(capturedAktivitet.getOpprettetDato()).isEqualTo(expectedData.getOpprettetDato());
+        assertThat(capturedAktivitet.getEndretDato()).isEqualTo(expectedData.getEndretDato());
         assertNotNull(capturedAktivitet.getEndretAv());
-        assertThat(capturedAktivitet.getEndretAv(), equalTo(aktivitet.getEndretAv()));
+        assertThat(capturedAktivitet.getEndretAv(), equalTo(expectedData.getEndretAv()));
         assertThat(capturedAktivitet.getEndretAvType(), equalTo(Innsender.NAV));
     }
 
     @Test
     void opprettAktivitetMedKvp() {
-        final var aktivitet = lagEnNyAktivitet().withKontorsperreEnhetId(KJENT_KONTORSPERRE_ENHET_ID);
+        final var opprettDto = lagEnNyOpprettDto(KJENT_KONTORSPERRE_ENHET_ID);
+        final var expectedData = tilAktivitetsData(opprettDto);
 
-        when(aktivitetDAO.opprettNyAktivitet(any(AktivitetData.class))).thenReturn(aktivitet);
-        aktivitetService.opprettAktivitet(aktivitet);
+        when(aktivitetDAO.opprettNyAktivitet(any(AktivitetData.class))).thenReturn(expectedData);
+        aktivitetService.opprettAktivitetIDB(opprettDto);
 
         captureOpprettAktivitetArgument();
 
@@ -110,20 +118,19 @@ class AktivitetServiceTest {
 
     @Test
     void oppdaterStatus() {
-        final var aktivitet = lagEnNyAktivitet();
+        final var aktivitet = tilAktivitetsData(lagEnNyOpprettDto());
 
         final var avsluttKommentar = "Alexander er best";
         final var nyStatus = AktivitetStatus.GJENNOMFORES;
-        final var oppdatertAktivitet = aktivitet
-                .toBuilder()
-                .endretAv("bruker")
-                .endretAvType(Innsender.BRUKER)
-                .endretDato(new Date())
-                .beskrivelse("ikke rett beskrivelse")
-                .avsluttetKommentar(avsluttKommentar)
-                .status(nyStatus)
-                .build();
-        aktivitetService.oppdaterStatus(aktivitet, oppdatertAktivitet);
+        final var sporingsData = new SporingsData("bruker", Innsender.BRUKER, ZonedDateTime.now());
+        final var statusEndring = new StatusEndring(
+                AKTIVITET_ID,
+                AKTIVITET_VERSJON,
+                sporingsData,
+                nyStatus,
+                avsluttKommentar
+        );
+        aktivitetService.oppdaterStatus(aktivitet, statusEndring);
 
         captureOppdaterAktivitetWithDateArgument();
         AktivitetData capturedAktivitet = getCapturedAktivitet();
@@ -131,43 +138,44 @@ class AktivitetServiceTest {
         assertThat(capturedAktivitet.getStatus(), equalTo(nyStatus));
         assertThat(capturedAktivitet.getAvsluttetKommentar(), equalTo(avsluttKommentar));
         assertNotNull(capturedAktivitet.getEndretAv());
-        assertThat(capturedAktivitet.getEndretAv(), equalTo(oppdatertAktivitet.getEndretAv()));
-        assertThat(capturedAktivitet.getEndretAvType(), equalTo(oppdatertAktivitet.getEndretAvType()));
-        assertThat(capturedAktivitet.getEndretDato()).isCloseTo(oppdatertAktivitet.getEndretDato(), 1);
+        assertThat(capturedAktivitet.getEndretAv(), equalTo("bruker"));
+        assertThat(capturedAktivitet.getEndretAvType(), equalTo(Innsender.BRUKER));
+        assertThat(capturedAktivitet.getEndretDato()).isCloseTo(DateUtils.zonedDateTimeToDate(sporingsData.getEndretDato()), 1);
     }
 
     @SneakyThrows
     @Test
     void oppdaterStatusMedKvpTilgang() {
-        final var aktivitet = lagEnNyAktivitet();
-        final var kvpAktivitet = aktivitet.withKontorsperreEnhetId(KONTORSPERRE_ENHET_ID);
+        final var aktivitet = tilAktivitetsData(lagEnNyOpprettDto(KONTORSPERRE_ENHET_ID));
 
         final var nyStatus = AktivitetStatus.GJENNOMFORES;
-        final var oppdatertAktivitet = kvpAktivitet
-                .toBuilder()
-                .endretDato(new Date())
-                .status(nyStatus)
-                .build();
+        final var sporingsData = new SporingsData(aktivitet.getEndretAv(), Innsender.NAV, ZonedDateTime.now());
+        final var statusEndring = new StatusEndring(
+                AKTIVITET_ID,
+                AKTIVITET_VERSJON,
+                sporingsData,
+                nyStatus,
+                null
+        );
 
-        aktivitetService.oppdaterStatus(kvpAktivitet, oppdatertAktivitet);
+        aktivitetService.oppdaterStatus(aktivitet, statusEndring);
         captureOppdaterAktivitetWithDateArgument();
         assertEquals(AktivitetStatus.GJENNOMFORES, getCapturedAktivitet().getStatus());
-        assertThat(getCapturedAktivitet().getEndretDato()).isCloseTo(oppdatertAktivitet.getEndretDato(), 1);
+        assertThat(getCapturedAktivitet().getEndretDato()).isCloseTo(DateUtils.zonedDateTimeToDate(sporingsData.getEndretDato()), 1);
     }
 
     @Test
     void oppdaterEtikett() {
-        final var aktivitet = lagEnNyAktivitet();
+        final var aktivitet = tilAktivitetsData(lagEnNyOpprettDto());
 
-        final var oppdatertAktivitet = aktivitet
-                .toBuilder()
-                .beskrivelse("Alexander er fremdeles best")
-                .endretDato(new Date())
-                .stillingsSoekAktivitetData(aktivitet
-                        .getStillingsSoekAktivitetData()
-                        .withStillingsoekEtikett(StillingsoekEtikettData.AVSLAG))
-                .build();
-        aktivitetService.oppdaterEtikett(aktivitet, oppdatertAktivitet);
+        final var sporingsData = new SporingsData(aktivitet.getEndretAv(), Innsender.NAV, ZonedDateTime.now());
+        final var etikettEndring = new EtikettEndring(
+                AKTIVITET_ID,
+                AKTIVITET_VERSJON,
+                sporingsData,
+                StillingsoekEtikettData.AVSLAG
+        );
+        aktivitetService.oppdaterEtikett(aktivitet, etikettEndring);
 
         captureOppdaterAktivitetArgument();
         AktivitetData capturedAktivitet = getCapturedAktivitet();
@@ -177,7 +185,7 @@ class AktivitetServiceTest {
         assertThat(capturedAktivitet.getEndretAvType(), equalTo(Innsender.NAV));
         assertThat(capturedAktivitet.getStillingsSoekAktivitetData().getStillingsoekEtikett(),
                 equalTo(StillingsoekEtikettData.AVSLAG));
-        assertThat(capturedAktivitet.getEndretDato()).isCloseTo(oppdatertAktivitet.getEndretDato(), 1);
+        assertThat(capturedAktivitet.getEndretDato()).isCloseTo(DateUtils.zonedDateTimeToDate(sporingsData.getEndretDato()), 1);
     }
 
     @Test
@@ -186,15 +194,16 @@ class AktivitetServiceTest {
 
         String REFERAT = "Referat";
 
-        final var oppdatertAktivitet = aktivitet
-                .toBuilder()
-                .endretDato(new Date())
-                .beskrivelse("Alexander er fremdeles best")
-                .moteData(MoteData.builder()
+        final var sporingsData = new SporingsData(aktivitet.getEndretAv(), Innsender.NAV, ZonedDateTime.now());
+        final var referatEndring = new ReferatEndring(
+                AKTIVITET_ID,
+                AKTIVITET_VERSJON,
+                sporingsData,
+                MoteData.builder()
                         .referat(REFERAT)
-                        .build())
-                .build();
-        aktivitetService.oppdaterReferat(aktivitet, oppdatertAktivitet);
+                        .build()
+        );
+        aktivitetService.oppdaterReferat(aktivitet, referatEndring);
 
         captureOppdaterAktivitetArgument();
         AktivitetData capturedAktivitet = getCapturedAktivitet();
@@ -205,16 +214,29 @@ class AktivitetServiceTest {
         assertThat(capturedAktivitet.getMoteData().getReferat(),
                 equalTo(REFERAT));
         assertThat(capturedAktivitet.getTransaksjonsType(), equalTo(AktivitetTransaksjonsType.REFERAT_ENDRET));
-        assertThat(capturedAktivitet.getEndretDato()).isCloseTo(oppdatertAktivitet.getEndretDato(), 1);
+        assertThat(capturedAktivitet.getEndretDato()).isCloseTo(DateUtils.zonedDateTimeToDate(sporingsData.getEndretDato()), 1);
     }
 
     @Test
     void oppdaterAktivitetFrist() {
-        final var aktivitet = lagEnNyAktivitet();
+        final var aktivitet = tilAktivitetsData(lagEnNyOpprettDto());
 
         final var nyFrist = new Date();
-        final var oppdatertAktivitet = aktivitet.toBuilder().endretDato(new Date()).tilDato(nyFrist).build();
-        aktivitetService.oppdaterAktivitetFrist(aktivitet, oppdatertAktivitet);
+        final var sporingsData = new SporingsData(aktivitet.getEndretAv(), Innsender.NAV, ZonedDateTime.now());
+        final var endring = new Jobbsoeking.Endre(
+                AKTIVITET_ID,
+                AKTIVITET_VERSJON,
+                new AktivitetMuterbareFelter(
+                        aktivitet.getTittel(),
+                        aktivitet.getBeskrivelse(),
+                        aktivitet.getFraDato(),
+                        nyFrist,
+                        aktivitet.getLenke()
+                ),
+                sporingsData,
+                aktivitet.getStillingsSoekAktivitetData()
+        );
+        aktivitetService.oppdaterAktivitetFrist(aktivitet, endring);
 
         captureOppdaterAktivitetArgument();
         AktivitetData capturedAktivitet = getCapturedAktivitet();
@@ -222,7 +244,7 @@ class AktivitetServiceTest {
         assertNotNull(capturedAktivitet.getEndretAv());
         assertThat(capturedAktivitet.getEndretAv(), equalTo(aktivitet.getEndretAv()));
         assertThat(capturedAktivitet.getEndretAvType(), equalTo(Innsender.NAV));
-        assertThat(capturedAktivitet.getEndretDato()).isCloseTo(oppdatertAktivitet.getEndretDato(), 1);
+        assertThat(capturedAktivitet.getEndretDato()).isCloseTo(DateUtils.zonedDateTimeToDate(sporingsData.getEndretDato()), 1);
     }
 
     @Test
@@ -231,10 +253,21 @@ class AktivitetServiceTest {
 
         Date nyFrist = new Date();
         String nyAdresse = "ny adresse";
-        var oppdatertAktivitet = aktivitet
-                .withEndretDato(new Date())
-                .withTilDato(nyFrist).withFraDato(nyFrist).withMoteData(aktivitet.getMoteData().withAdresse(nyAdresse));
-        aktivitetService.oppdaterMoteTidStedOgKanal(aktivitet, oppdatertAktivitet);
+        final var sporingsData = new SporingsData(aktivitet.getEndretAv(), Innsender.NAV, ZonedDateTime.now());
+        final var endring = new Mote.Endre(
+                AKTIVITET_ID,
+                AKTIVITET_VERSJON,
+                new AktivitetMuterbareFelter(
+                        aktivitet.getTittel(),
+                        aktivitet.getBeskrivelse(),
+                        nyFrist,
+                        nyFrist,
+                        aktivitet.getLenke()
+                ),
+                sporingsData,
+                aktivitet.getMoteData().withAdresse(nyAdresse)
+        );
+        aktivitetService.oppdaterAktivitet(aktivitet, endring);
 
         captureOppdaterAktivitetArgument();
         AktivitetData capturedAktivitet = getCapturedAktivitet();
@@ -246,34 +279,57 @@ class AktivitetServiceTest {
         assertThat(capturedAktivitet.getEndretAv(), equalTo(aktivitet.getEndretAv()));
         assertThat(capturedAktivitet.getEndretAvType(), equalTo(Innsender.NAV));
         assertNotNull(capturedAktivitet.getEndretDato());
-        assertThat(capturedAktivitet.getEndretDato()).isEqualTo(oppdatertAktivitet.getEndretDato());
+        assertThat(capturedAktivitet.getEndretDato()).isCloseTo(DateUtils.zonedDateTimeToDate(sporingsData.getEndretDato()), 1);
     }
 
     @Test
     void oppdaterAktivitet() {
-        final var aktivitet = lagEnNyAktivitet();
-        final var oppdatertAktivitet = aktivitet
-                .toBuilder()
-                .beskrivelse("Alexander er den beste")
-                .lenke("www.alexander-er-best.no")
-                .build();
+        final var aktivitet = tilAktivitetsData(lagEnNyOpprettDto());
+        final var sporingsData = new SporingsData(aktivitet.getEndretAv(), Innsender.NAV, ZonedDateTime.now());
+        final var endring = new Jobbsoeking.Endre(
+                AKTIVITET_ID,
+                AKTIVITET_VERSJON,
+                new AktivitetMuterbareFelter(
+                        aktivitet.getTittel(),
+                        "Alexander er den beste",
+                        aktivitet.getFraDato(),
+                        aktivitet.getTilDato(),
+                        "www.alexander-er-best.no"
+                ),
+                sporingsData,
+                aktivitet.getStillingsSoekAktivitetData()
+        );
 
-        aktivitetService.oppdaterAktivitet(aktivitet, oppdatertAktivitet);
+        aktivitetService.oppdaterAktivitet(aktivitet, endring);
 
         captureOppdaterAktivitetWithDateArgument();
         AktivitetData capturedAktivitet = getCapturedAktivitet();
-        assertThat(capturedAktivitet.getBeskrivelse(), equalTo(oppdatertAktivitet.getBeskrivelse()));
-        assertThat(capturedAktivitet.getLenke(), equalTo(oppdatertAktivitet.getLenke()));
+        assertThat(capturedAktivitet.getBeskrivelse(), equalTo("Alexander er den beste"));
+        assertThat(capturedAktivitet.getLenke(), equalTo("www.alexander-er-best.no"));
     }
 
     @Disabled("Må fikses")
     @Test
     void oppdaterAktivitet_skal_gi_versjonsKonflikt_hvis_to_oppdaterer_aktiviteten_samtidig() {
-        final var aktivitet = lagEnNyAktivitet();
+        final var aktivitet = tilAktivitetsData(lagEnNyOpprettDto());
         doThrow(new DuplicateKeyException("versjon fins")).when(aktivitetDAO).oppdaterAktivitet(any());
+        final var sporingsData = new SporingsData(aktivitet.getEndretAv(), Innsender.NAV, ZonedDateTime.now());
+        final var endring = new Jobbsoeking.Endre(
+                AKTIVITET_ID,
+                AKTIVITET_VERSJON,
+                new AktivitetMuterbareFelter(
+                        aktivitet.getTittel(),
+                        aktivitet.getBeskrivelse(),
+                        aktivitet.getFraDato(),
+                        aktivitet.getTilDato(),
+                        aktivitet.getLenke()
+                ),
+                sporingsData,
+                aktivitet.getStillingsSoekAktivitetData()
+        );
 
         try {
-            aktivitetService.oppdaterAktivitet(aktivitet, aktivitet);
+            aktivitetService.oppdaterAktivitet(aktivitet, endring);
         } catch (ResponseStatusException e) {
             assertEquals(HttpStatus.CONFLICT, e.getStatusCode());
         }
@@ -281,7 +337,7 @@ class AktivitetServiceTest {
 
     @Test
     void settLestAvBrukerTidspunkt_kaller_insertLestAvBrukerTidspunkt() {
-        gitt_aktivitet(lagEnNyAktivitet().withId(AKTIVITET_ID));
+        gitt_aktivitet(tilAktivitetsData(lagEnNyOpprettDto()).withId(AKTIVITET_ID));
         aktivitetService.settLestAvBrukerTidspunkt(AKTIVITET_ID);
         verify(aktivitetDAO, times(1)).insertLestAvBrukerTidspunkt(AKTIVITET_ID);
     }
@@ -300,9 +356,16 @@ class AktivitetServiceTest {
                 .kontorsperreEnhetId("9001")
                 .build();
 
-        //when(aktivitetDAO.hentAktiviteterForAktorId(aktorId)).thenReturn(List.of(aktivitet));
+        final var sporingsData = new SporingsData("system", Innsender.SYSTEM, ZonedDateTime.now());
+        final var statusEndring = new StatusEndring(
+                aktivitetId,
+                0L,
+                sporingsData,
+                AktivitetStatus.AVBRUTT,
+                null
+        );
 
-        aktivitetService.oppdaterStatus(aktivitet, aktivitet.withStatus(AktivitetStatus.AVBRUTT).withEndretDato(now()));
+        aktivitetService.oppdaterStatus(aktivitet, statusEndring);
 
         verify(oversiktenService).lagreStoppMeldingOmUdeltSamtalereferatIUtboks(aktorId, aktivitetId);
         verify(aktivitetDAO).oppdaterAktivitet(any());
@@ -312,9 +375,24 @@ class AktivitetServiceTest {
         when(aktivitetDAO.hentAktivitet(aktivitetData.getId())).thenReturn(aktivitetData);
     }
 
-    public AktivitetData lagEnNyAktivitet() {
-        return AktivitetDataTestBuilder.nyttStillingssok()
-                .withEndretDato(LocalDateTime.now().minusSeconds(1).toDate());
+    public Jobbsoeking.Opprett lagEnNyOpprettDto() {
+        return AktivitetDtoTestBuilder.nyttStillingssok(null, null, null);
+    }
+
+    public Jobbsoeking.Opprett lagEnNyOpprettDto(String kontorsperreEnhetId) {
+        var base = lagEnNyOpprettDto();
+        var opprettFelter = base.getOpprettFelter();
+        var medKvp = new AktivitetBareOpprettFelter(
+                opprettFelter.getAktorId(),
+                opprettFelter.getAktivitetType(),
+                opprettFelter.getStatus(),
+                kontorsperreEnhetId,
+                opprettFelter.getMalid(),
+                opprettFelter.getOpprettetDato(),
+                opprettFelter.getAutomatiskOpprettet(),
+                opprettFelter.getOppfolgingsperiodeId()
+        );
+        return new Jobbsoeking.Opprett(medKvp, base.getMuterbareFelter(), base.getSporing(), base.getStillingsSoekAktivitetData());
     }
 
     public void captureOppdaterAktivitetArgument() {

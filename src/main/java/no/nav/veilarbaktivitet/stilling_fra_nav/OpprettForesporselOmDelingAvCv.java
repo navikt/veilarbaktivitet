@@ -7,8 +7,11 @@ import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
 import no.nav.veilarbaktivitet.aktivitet.MetricService;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
-import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
+import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.AktivitetBareOpprettFelter;
+import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.AktivitetMuterbareFelter;
+import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.SporingsData;
+import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.StillingFraNav;
 import no.nav.veilarbaktivitet.brukernotifikasjon.MinsideVarselService;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
 import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.AktivitetVarsel;
@@ -27,7 +30,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Date;
+import java.util.UUID;
 
 import static no.nav.veilarbaktivitet.config.TeamLog.teamLog;
 import static no.nav.veilarbaktivitet.stilling_fra_nav.DelingAvCvService.utledArbeidstedtekst;
@@ -61,29 +66,30 @@ public class OpprettForesporselOmDelingAvCv {
             log.error("OpprettForesporselOmDelingAvCv.createAktivitet AktorId=null");
         }
 
-        boolean underOppfolging;
+        UUID oppfolgingsPeriodeId;
         try {
-            sistePeriodeService.hentGjeldendeOppfolgingsperiodeMedFallback(aktorId);
-            underOppfolging = true;
+            oppfolgingsPeriodeId = sistePeriodeService.hentGjeldendeOppfolgingsperiodeMedFallback(aktorId);
         } catch (IngenGjeldendeIdentException exception) {
             producerClient.sendUgyldigInput(melding.getBestillingsId(), aktorId.get(), "Finner ingen gyldig ident for aktorId");
             log.warn("*** Kan ikke behandle melding. Årsak: {} ***. Se teamLogs for payload.", exception.getMessage());
             teamLog.warn("*** Kan ikke behandle melding={}. Årsak: {} ***", melding, exception.getMessage());
             return;
         } catch (IngenGjeldendePeriodeException exception) {
-            underOppfolging = false;
+            oppfolgingsPeriodeId = null;
         }
 
         boolean underKvp = kvpService.erUnderKvp(aktorId);
+        boolean underOppfolging = oppfolgingsPeriodeId != null;
 
         if (!underOppfolging || underKvp) {
             producerClient.sendUgyldigOppfolgingStatus(melding.getBestillingsId(), aktorId.get());
             return;
         }
         boolean kanVarsle = brukernotifikasjonService.kanVarsles(aktorId);
-        AktivitetData aktivitetData = map(melding, kanVarsle);
+        StillingFraNav.Opprett aktivitetData = map(melding, kanVarsle, oppfolgingsPeriodeId);
         MDC.put(MetricService.SOURCE, "rekrutteringsbistand");
-        AktivitetData aktivitet = aktivitetService.opprettAktivitet(aktivitetData);
+
+        AktivitetData aktivitet = aktivitetService.opprettAktivitetIDB(aktivitetData);
         MDC.clear();
         if (kanVarsle) {
             brukernotifikasjonService.opprettVarselPaaAktivitet(new AktivitetVarsel(
@@ -97,12 +103,13 @@ public class OpprettForesporselOmDelingAvCv {
         metrikker.countStillingFraNavOpprettet(kanVarsle);
     }
 
-    private static AktivitetData map(ForesporselOmDelingAvCv melding, boolean kanVarsle) {
+    private static StillingFraNav.Opprett map(ForesporselOmDelingAvCv melding, boolean kanVarsle, UUID oppfolgingsPeriodeId) {
         //aktivitetdata
         String stillingstittel = melding.getStillingstittel();
         Person.AktorId aktorId = Person.aktorId(melding.getAktorId());
         Person.NavIdent navIdent = Person.navIdent(melding.getOpprettetAv());
         Instant opprettet = melding.getOpprettet();
+        ZonedDateTime opprettetWithZone = opprettet.atZone(ZoneId.systemDefault());
 
         //nye kolonner
         Date svarfrist = new Date(melding.getSvarfrist().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
@@ -127,21 +134,34 @@ public class OpprettForesporselOmDelingAvCv {
                 .livslopsStatus(kanVarsle ? LivslopsStatus.PROVER_VARSLING : LivslopsStatus.KAN_IKKE_VARSLE)
                 .build();
 
-        return AktivitetData
-                .builder()
-                .aktorId(aktorId)
-                .tittel(stillingstittel)
-                .aktivitetType(AktivitetTypeData.STILLING_FRA_NAV)
-                .status(AktivitetStatus.BRUKER_ER_INTERESSERT)
-                .transaksjonsType(AktivitetTransaksjonsType.OPPRETTET)
-                .fraDato(new Date(opprettet.toEpochMilli()))
-                .endretAvType(Innsender.NAV)
-                .endretAv(navIdent.get())
-                .automatiskOpprettet(false)
-                .opprettetDato(new Date())
-                .endretDato(new Date())
-                .stillingFraNavData(stillingFraNavData)
-                .build();
+        var sporing = new SporingsData(
+                navIdent.get(),
+                Innsender.NAV,
+                opprettetWithZone
+        );
+
+        return new StillingFraNav.Opprett(
+            new AktivitetBareOpprettFelter(
+                aktorId,
+                AktivitetTypeData.STILLING_FRA_NAV,
+                AktivitetStatus.BRUKER_ER_INTERESSERT,
+                // Hvis vi setter kontorsperre på denne aktivitet kan den komme ut av sync når vi lukker kvp perioden?
+                null,
+                null,
+                opprettetWithZone,
+                false,
+                oppfolgingsPeriodeId
+            ),
+            new AktivitetMuterbareFelter(
+                stillingstittel,
+                null,
+                new Date(opprettet.toEpochMilli()),
+                null,
+                null
+            ),
+            sporing,
+            stillingFraNavData
+        );
     }
 
     private static KontaktpersonData getKontaktInfo(KontaktInfo kontaktInfo) {

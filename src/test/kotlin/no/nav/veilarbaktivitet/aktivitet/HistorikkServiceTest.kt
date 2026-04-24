@@ -17,7 +17,7 @@ class HistorikkServiceTest {
 
     @Test
     fun `Skal lage historikk av kun én aktivitet-versjon`() {
-        val aktivitet = nyAktivitet(AktivitetTypeData.MOTE).toBuilder().build()
+        val aktivitet = nyAktivitet(AktivitetTypeData.MOTE)
 
         val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet)))
 
@@ -27,7 +27,7 @@ class HistorikkServiceTest {
 
     @Test
     fun `Skal lage historikk på endret møtetid og sted`() {
-        val aktivitet = nyAktivitet(AktivitetTypeData.MOTE).toBuilder().build()
+        val aktivitet = nyAktivitet(AktivitetTypeData.MOTE)
         val oppdatertAktivitet = endreAktivitet(aktivitet, AktivitetTransaksjonsType.MOTE_TID_OG_STED_ENDRET)
 
         val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))

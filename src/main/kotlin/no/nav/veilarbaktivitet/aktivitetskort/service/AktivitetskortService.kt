@@ -4,6 +4,8 @@ import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
 import no.nav.veilarbaktivitet.aktivitet.domain.Ident
+import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.Eksternaktivitet
+import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.spesialEndringer.StatusEndring
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetsMessageDAO
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortCompareUtil
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMapper.toAktivitetsDataInsert
@@ -17,9 +19,10 @@ import no.nav.veilarbaktivitet.aktivitetskort.feil.ManglerOppfolgingsperiodeFeil
 import no.nav.veilarbaktivitet.aktivitetskort.feil.UlovligEndringFeil
 import no.nav.veilarbaktivitet.oppfolging.periode.IngenGjeldendePeriodeException
 import no.nav.veilarbaktivitet.oppfolging.periode.SistePeriodeService
-import no.nav.veilarbaktivitet.util.DateUtils
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import java.time.LocalDateTime
+import java.time.ZoneId
 import java.util.*
 
 @Service
@@ -39,7 +42,9 @@ class AktivitetskortService(
         return when {
             gammelAktivitetMaybe.isPresent -> {
                 val gammelAktivitet = gammelAktivitetMaybe.get()
-                val nyAktivitet = bestilling.toAktivitetsDataUpdate()
+                if (gammelAktivitet.aktorId != bestilling.aktorId) throw UlovligEndringFeil("Kan ikke endre bruker på samme aktivitetskort")
+
+                val nyAktivitet = bestilling.toAktivitetsDataUpdate(gammelAktivitet.id, gammelAktivitet.versjon)
                 // Arenaaktiviteter blir vanlig "ekstern"-aktivitet etter de har blitt opprettet
                 val oppdatertAktivitet = when  {
                     bestilling is ArenaAktivitetskortBestilling && gammelAktivitet.erTattOverAvAnnetTeam() -> {
@@ -78,13 +83,11 @@ class AktivitetskortService(
         } catch (e: IngenGjeldendePeriodeException) {
             throw ManglerOppfolgingsperiodeFeil()
         }
-        val aktivitetData: AktivitetData = bestilling.toAktivitetsDataInsert()
-        return aktivitetService.opprettAktivitet(
-            aktivitetData.withOppfolgingsperiodeId(oppfolgingsperiode),
-        )
+        val aktivitetData: Eksternaktivitet.Opprett = bestilling.toAktivitetsDataInsert(oppfolgingsperiode)
+        return aktivitetService.opprettAktivitetIDB(aktivitetData)
     }
 
-    private fun oppdaterDetaljer(aktivitet: AktivitetData, nyAktivitet: AktivitetData): AktivitetData {
+    private fun oppdaterDetaljer(aktivitet: AktivitetData, nyAktivitet: Eksternaktivitet.Endre): AktivitetData {
         return if (AktivitetskortCompareUtil.erFaktiskOppdatert(nyAktivitet, aktivitet)) {
             aktivitetService.oppdaterAktivitet(
                 aktivitet,
@@ -93,11 +96,17 @@ class AktivitetskortService(
         } else aktivitet
     }
 
-    fun oppdaterStatus(aktivitet: AktivitetData, nyAktivitet: AktivitetData): AktivitetData {
+    fun oppdaterStatus(aktivitet: AktivitetData, nyAktivitet: Eksternaktivitet.Endre): AktivitetData {
         return if (aktivitet.status != nyAktivitet.status) {
             aktivitetService.oppdaterStatus(
                 aktivitet,
-                nyAktivitet
+                StatusEndring(
+                    id = nyAktivitet.id,
+                    versjon = nyAktivitet.versjon,
+                    sporingsData = nyAktivitet.sporing,
+                    status = nyAktivitet.status,
+                    avsluttetKommentar = null
+                )
             )
         } else {
             aktivitet
@@ -105,23 +114,22 @@ class AktivitetskortService(
     }
 
     @Throws(UlovligEndringFeil::class)
-    private fun oppdaterAktivitet(gammelAktivitet: AktivitetData, nyAktivitet: AktivitetData, arenaAclOppdatering: Boolean): AktivitetData {
-        if (gammelAktivitet.aktorId != nyAktivitet.aktorId) throw UlovligEndringFeil("Kan ikke endre bruker på samme aktivitetskort")
+    private fun oppdaterAktivitet(gammelAktivitet: AktivitetData, nyAktivitet: Eksternaktivitet.Endre, arenaAclOppdatering: Boolean): AktivitetData {
         // Arena-ACL kan foreløpig oppdatere historiske kort
         if (gammelAktivitet.historiskDato != null && !arenaAclOppdatering) throw UlovligEndringFeil("Kan ikke endre aktiviteter som er historiske (avsluttet oppfølgingsperiode)")
-        if (gammelAktivitet.isAvtalt && !nyAktivitet.isAvtalt) throw UlovligEndringFeil("Kan ikke oppdatere fra avtalt til ikke-avtalt")
+        if (gammelAktivitet.isAvtalt && !nyAktivitet.erAvtalt) throw UlovligEndringFeil("Kan ikke oppdatere fra avtalt til ikke-avtalt")
         return gammelAktivitet
-            .let { aktivitet: AktivitetData -> settAvtaltHvisAvtalt(aktivitet, nyAktivitet) }
-            .let { aktivitet: AktivitetData -> oppdaterDetaljer(aktivitet, nyAktivitet) }
-            .let { aktivitet: AktivitetData -> oppdaterStatus(aktivitet, nyAktivitet) }
+            .let { aktivitet -> settAvtaltHvisAvtalt(aktivitet, nyAktivitet) }
+            .let { aktivitet -> oppdaterDetaljer(aktivitet, nyAktivitet) }
+            .let { aktivitet -> oppdaterStatus(aktivitet, nyAktivitet) }
     }
 
-    private fun settAvtaltHvisAvtalt(originalAktivitet: AktivitetData, nyAktivitet: AktivitetData): AktivitetData {
-        return if (nyAktivitet.isAvtalt && !originalAktivitet.isAvtalt) {
+    private fun settAvtaltHvisAvtalt(originalAktivitet: AktivitetData, nyAktivitet: Eksternaktivitet.Endre): AktivitetData {
+        return if (nyAktivitet.erAvtalt && !originalAktivitet.isAvtalt) {
             aktivitetService.settAvtalt(
                 originalAktivitet,
-                Ident(nyAktivitet.endretAv, nyAktivitet.endretAvType),
-                DateUtils.dateToLocalDateTime(nyAktivitet.endretDato)
+                Ident(nyAktivitet.sporing.endretAv, nyAktivitet.sporing.endretAvType),
+                LocalDateTime.ofInstant(nyAktivitet.sporing.endretDato.toInstant(), ZoneId.systemDefault())
             )
         } else {
             originalAktivitet

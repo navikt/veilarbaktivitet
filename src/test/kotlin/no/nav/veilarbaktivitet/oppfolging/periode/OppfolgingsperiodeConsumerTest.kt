@@ -106,7 +106,7 @@ internal class OppfolgingsperiodeConsumerTest : SpringBootTestBase() {
     fun skal_sette_aktiviteteter_til_hitorisk_naar_oppfolging_avsluttes() {
         val bruker = navMockService.createHappyBruker()
         val aktivitet = AktivitetDTOMapper.mapTilAktivitetDTO(AktivitetDataTestBuilder.nyEgenaktivitet(), false)
-        val skalBliHistorisk = aktivitetTestService.opprettAktivitet(bruker, aktivitet)
+        val skalBliHistorisk = aktivitetTestService.opprettAktivitetViaHttp(bruker, aktivitet)
         val oppfolgingsperiodeSkalAvsluttes = bruker.getOppfolgingsperiodeId()
         // Avslutt oppfølging
         val avsluttOppfolging = SisteOppfolgingsperiodeV1.builder()
