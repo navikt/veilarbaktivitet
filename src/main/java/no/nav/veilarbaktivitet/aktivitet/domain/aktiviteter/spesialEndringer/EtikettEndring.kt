@@ -7,5 +7,5 @@ data class EtikettEndring(
     val id: Long,
     val versjon: Long,
     val sporingsData: SporingsData,
-    val stillingsokEtikettData: StillingsoekEtikettData
+    val stillingsokEtikettData: StillingsoekEtikettData?
 )

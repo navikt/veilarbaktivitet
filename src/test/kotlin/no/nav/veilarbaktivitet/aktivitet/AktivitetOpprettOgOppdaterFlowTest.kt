@@ -1062,4 +1062,148 @@ class AktivitetOpprettOgOppdaterFlowTest {
             verify(aktivitetDAO, never()).oppdaterAktivitet(any())
         }
     }
+
+    // =====================================================================
+    // OPPDATER ETIKETT TESTER
+    // =====================================================================
+    @Nested
+    inner class OppdaterEtikett {
+
+        @Test
+        fun `oppdater etikett - etikett endres til INNKALT_TIL_INTERVJU`() {
+            `when`(authService.getLoggedInnUser()).thenReturn(navIdent)
+
+            val eksisterende = AktivitetDataTestBuilder.nyttStillingssok().toBuilder()
+                .id(70L).versjon(3L).avtalt(false).status(AktivitetStatus.PLANLAGT).historiskDato(null)
+                .stillingsSoekAktivitetData(
+                    StillingsoekAktivitetData.builder()
+                        .stillingsoekEtikett(StillingsoekEtikettData.SOKNAD_SENDT)
+                        .arbeidsgiver("ARBEIDSGIVER")
+                        .arbeidssted("ARBEIDSSTED")
+                        .kontaktPerson("KONTAKTPERSON")
+                        .stillingsTittel("STILLINGSTITTEL")
+                        .build()
+                )
+                .build()
+            stubHentOgOppdater(eksisterende)
+
+            val dto = AktivitetDTOMapper.mapTilAktivitetDTO(eksisterende, false)
+            dto.etikett = EtikettTypeDTO.INNKALT_TIL_INTERVJU
+
+            controller.oppdaterEtikett(dto)
+
+            val captured = captureOppdaterAktivitet().last()
+            assertThat(captured.transaksjonsType).isEqualTo(AktivitetTransaksjonsType.ETIKETT_ENDRET)
+            assertThat(captured.stillingsSoekAktivitetData.stillingsoekEtikett).`as`("etikett").isEqualTo(StillingsoekEtikettData.INNKALT_TIL_INTERVJU)
+            // Andre felter på stillingsaktiviteten skal være uendret
+            assertThat(captured.stillingsSoekAktivitetData.arbeidsgiver).`as`("arbeidsgiver").isEqualTo("ARBEIDSGIVER")
+            assertThat(captured.stillingsSoekAktivitetData.arbeidssted).`as`("arbeidssted").isEqualTo("ARBEIDSSTED")
+            assertThat(captured.stillingsSoekAktivitetData.kontaktPerson).`as`("kontaktPerson").isEqualTo("KONTAKTPERSON")
+            assertThat(captured.stillingsSoekAktivitetData.stillingsTittel).`as`("stillingsTittel").isEqualTo("STILLINGSTITTEL")
+        }
+
+        @Test
+        fun `oppdater etikett - etikett endres til JOBBTILBUD`() {
+            `when`(authService.getLoggedInnUser()).thenReturn(navIdent)
+
+            val eksisterende = AktivitetDataTestBuilder.nyttStillingssok().toBuilder()
+                .id(71L).versjon(2L).avtalt(false).status(AktivitetStatus.PLANLAGT).historiskDato(null)
+                .stillingsSoekAktivitetData(
+                    StillingsoekAktivitetData.builder()
+                        .stillingsoekEtikett(StillingsoekEtikettData.INNKALT_TIL_INTERVJU)
+                        .arbeidsgiver("ARBEIDSGIVER2")
+                        .build()
+                )
+                .build()
+            stubHentOgOppdater(eksisterende)
+
+            val dto = AktivitetDTOMapper.mapTilAktivitetDTO(eksisterende, false)
+            dto.etikett = EtikettTypeDTO.JOBBTILBUD
+
+            controller.oppdaterEtikett(dto)
+
+            val captured = captureOppdaterAktivitet().last()
+            assertThat(captured.transaksjonsType).isEqualTo(AktivitetTransaksjonsType.ETIKETT_ENDRET)
+            assertThat(captured.stillingsSoekAktivitetData.stillingsoekEtikett).`as`("etikett").isEqualTo(StillingsoekEtikettData.JOBBTILBUD)
+            assertThat(captured.stillingsSoekAktivitetData.arbeidsgiver).`as`("arbeidsgiver").isEqualTo("ARBEIDSGIVER2")
+        }
+
+        @Test
+        fun `oppdater etikett - etikett endres til Ikke startet`() {
+            `when`(authService.getLoggedInnUser()).thenReturn(navIdent)
+
+            val eksisterende = AktivitetDataTestBuilder.nyttStillingssok().toBuilder()
+                .id(71L).versjon(2L).avtalt(false).status(AktivitetStatus.PLANLAGT).historiskDato(null)
+                .stillingsSoekAktivitetData(
+                    StillingsoekAktivitetData.builder()
+                        .stillingsoekEtikett(null)
+                        .arbeidsgiver("ARBEIDSGIVER2")
+                        .build()
+                )
+                .build()
+            stubHentOgOppdater(eksisterende)
+
+            val dto = AktivitetDTOMapper.mapTilAktivitetDTO(eksisterende, false)
+            dto.etikett = EtikettTypeDTO.JOBBTILBUD
+
+            controller.oppdaterEtikett(dto)
+
+            val captured = captureOppdaterAktivitet().last()
+            assertThat(captured.transaksjonsType).isEqualTo(AktivitetTransaksjonsType.ETIKETT_ENDRET)
+            assertThat(captured.stillingsSoekAktivitetData.stillingsoekEtikett).`as`("etikett").isEqualTo(StillingsoekEtikettData.JOBBTILBUD)
+            assertThat(captured.stillingsSoekAktivitetData.arbeidsgiver).`as`("arbeidsgiver").isEqualTo("ARBEIDSGIVER2")
+        }
+
+
+
+        @Test
+        fun `oppdater etikett - historisk aktivitet avvises`() {
+            `when`(authService.getLoggedInnUser()).thenReturn(navIdent)
+
+            val eksisterende = AktivitetDataTestBuilder.nyttStillingssok().toBuilder()
+                .id(72L).versjon(1L).avtalt(false).status(AktivitetStatus.FULLFORT).historiskDato(Date())
+                .stillingsSoekAktivitetData(
+                    StillingsoekAktivitetData.builder()
+                        .stillingsoekEtikett(StillingsoekEtikettData.SOKNAD_SENDT)
+                        .build()
+                )
+                .build()
+            `when`(aktivitetDAO.hentAktivitet(eksisterende.id)).thenReturn(eksisterende)
+            `when`(avtaltMedNavService.hentFHO(eksisterende.fhoId)).thenReturn(null)
+
+            val dto = AktivitetDTOMapper.mapTilAktivitetDTO(eksisterende, false)
+            dto.etikett = EtikettTypeDTO.AVSLAG
+
+            assertThrows<Exception> {
+                controller.oppdaterEtikett(dto)
+            }
+            verify(aktivitetDAO, never()).oppdaterAktivitet(any())
+        }
+
+        @Test
+        fun `oppdater etikett - feil versjon gir CONFLICT`() {
+            `when`(authService.getLoggedInnUser()).thenReturn(navIdent)
+
+            val eksisterende = AktivitetDataTestBuilder.nyttStillingssok().toBuilder()
+                .id(73L).versjon(5L).avtalt(false).status(AktivitetStatus.PLANLAGT).historiskDato(null)
+                .stillingsSoekAktivitetData(
+                    StillingsoekAktivitetData.builder()
+                        .stillingsoekEtikett(StillingsoekEtikettData.SOKNAD_SENDT)
+                        .build()
+                )
+                .build()
+            `when`(aktivitetDAO.hentAktivitet(eksisterende.id)).thenReturn(eksisterende)
+            `when`(avtaltMedNavService.hentFHO(eksisterende.fhoId)).thenReturn(null)
+
+            val dto = AktivitetDTOMapper.mapTilAktivitetDTO(eksisterende, false)
+            dto.etikett = EtikettTypeDTO.AVSLAG
+            dto.versjon = "999" // Wrong version
+
+            val exception = assertThrows<ResponseStatusException> {
+                controller.oppdaterEtikett(dto)
+            }
+            assertThat(exception.statusCode.value()).isEqualTo(409)
+            verify(aktivitetDAO, never()).oppdaterAktivitet(any())
+        }
+    }
 }
