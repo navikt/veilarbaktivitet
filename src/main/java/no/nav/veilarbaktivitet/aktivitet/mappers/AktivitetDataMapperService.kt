@@ -174,7 +174,7 @@ class AktivitetDataMapperService(
             versjon = idAndVersjon.versjon,
             sporingsData = getSporingsData(),
             // TODO: Handle null here??
-            stillingsokEtikettData = stillingsoekAktivitetData(aktivitetDTO).stillingsoekEtikett
+            stillingsokEtikettData = stillingsoekAktivitetData(aktivitetDTO)?.stillingsoekEtikett
         )
     }
 
