@@ -8,18 +8,18 @@ val confluentKafkaAvroVersion = "8.1.0"
 val _version: String by project
 
 plugins {
-    val kotlinVersion = "2.1.21"
+    val kotlinVersion = "2.3.21"
     id("java")
     kotlin("jvm") version kotlinVersion
     id("org.jetbrains.kotlin.plugin.spring") version kotlinVersion
     kotlin("plugin.lombok") version kotlinVersion
     id("application")
     id("maven-publish")
-    id("org.openapi.generator") version "7.17.0"
+    id("org.openapi.generator") version "7.21.0"
     id("com.github.davidmc24.gradle.plugin.avro") version "1.9.1"
     id("project-report")
     id("jacoco")
-    id("org.sonarqube") version "7.0.1.6134"
+    id("org.sonarqube") version "7.2.3.7755"
     id("org.springframework.boot") version "3.5.5"
     id("io.freefair.lombok") version "8.14.2"
 }
@@ -134,8 +134,8 @@ if (hasProperty("buildScan")) {
 }
 
 dependencies {
-    annotationProcessor("org.projectlombok:lombok:1.18.42")
-    testAnnotationProcessor("org.projectlombok:lombok:1.18.42")
+    annotationProcessor("org.projectlombok:lombok:1.18.46")
+    testAnnotationProcessor("org.projectlombok:lombok:1.18.46")
 
     implementation(enforcedPlatform("org.springframework.boot:spring-boot-dependencies:$spring_boot_version"))
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:$spring_boot_version")
@@ -179,11 +179,11 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp")
     implementation("io.micrometer:micrometer-registry-prometheus")
     implementation("org.flywaydb:flyway-database-postgresql:11.15.0")
-    implementation("org.postgresql:postgresql:42.7.8")
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.20.1")
+    implementation("org.postgresql:postgresql:42.7.10")
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.21.1")
 
     // BigQuery
-    implementation(platform("com.google.cloud:libraries-bom:26.73.0"))
+    implementation(platform("com.google.cloud:libraries-bom:26.80.0"))
     implementation("com.google.cloud:google-cloud-bigquery")
 
     implementation("io.getunleash:unleash-client-java:11.1.1")
@@ -194,7 +194,7 @@ dependencies {
     testImplementation("no.nav.poao-tilgang:poao-tilgang-test-wiremock:$poao_tilgang_version")
     testImplementation("org.awaitility:awaitility:4.3.0")
     testImplementation("com.networknt:json-schema-validator:1.5.8")
-    testImplementation("org.mockito.kotlin:mockito-kotlin:6.1.0")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:6.3.0")
 
 //spring managed test dependencies
     testImplementation("io.rest-assured:rest-assured")
@@ -203,6 +203,6 @@ dependencies {
     }
     testImplementation("org.springframework.kafka:spring-kafka-test")
     testImplementation("org.mockito:mockito-core")
-    testImplementation("io.zonky.test:embedded-database-spring-test:2.6.0")
-    testImplementation("io.zonky.test:embedded-postgres:2.1.1")
+    testImplementation("io.zonky.test:embedded-database-spring-test:2.8.0")
+    testImplementation("io.zonky.test:embedded-postgres:2.2.2")
 }
