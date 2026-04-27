@@ -202,10 +202,43 @@ open class OversiktenMeldingMedMetadataDAO(
               AND m.referat_publisert = 1
         """.trimIndent()
 
-        return jdbc.query(sql) { rs: ResultSet, rowNum: Int ->
+        return jdbc.query(sql) { rs: ResultSet, _: Int ->
             UdeltSamtalereferatUtenMelding(AktorId.of(rs.getString("aktor_id")), rs.getLong("aktivitet_id"))
         }
     }
+
+    /**
+     * Finner START-meldinger som ikke lenger finnes i mapping-tabellen
+     * og dermed aldri ville fått STOPP-melding via normal flyt. Kan slettes etter cronjob er kjørt
+     */
+    open fun hentStartMeldingerUtenStoppSomIkkeFinnesIMappingTabell(): List<ForeldreloesMelding> {
+        val sql = """
+            SELECT om.melding_key, om.fnr
+            FROM oversikten_melding_med_metadata om
+            LEFT JOIN oversikten_melding_aktivitet_mapping map
+                ON map.oversikten_melding_key = om.melding_key
+            WHERE om.operasjon = 'START'
+              AND om.kategori = 'UDELT_SAMTALEREFERAT'
+              AND map.aktivitet_id IS NULL
+              AND NOT EXISTS (
+                SELECT 1 FROM oversikten_melding_med_metadata stopp
+                WHERE stopp.melding_key = om.melding_key
+                  AND stopp.operasjon = 'STOPP'
+              )
+        """.trimIndent()
+
+        return jdbc.query(sql) { rs: ResultSet, _: Int ->
+            ForeldreloesMelding(
+                meldingKey = UUID.fromString(rs.getString("melding_key")),
+                fnr = Fnr.of(rs.getString("fnr")),
+            )
+        }
+    }
+
+    data class ForeldreloesMelding(
+        val meldingKey: UUID,
+        val fnr: Fnr,
+    )
 
     /**
      * Finner kasserte aktiviteter (beskrivelse = 'Kassert av NAV') med referat som ikke er publisert,
