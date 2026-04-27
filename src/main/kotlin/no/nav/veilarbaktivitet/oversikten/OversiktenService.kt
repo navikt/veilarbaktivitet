@@ -84,27 +84,6 @@ open class OversiktenService(
         log.info("Ferdig med opprydding av feilaktige START-meldinger")
     }
 
-    @Scheduled(cron = "0 0 14 * * ?")
-    @SchedulerLock(name = "oversikten_stopp_ikke_i_mapping_scheduledTask", lockAtMostFor = "PT15M")
-    open fun sendStoppMeldingForStartMeldingerIkkeIMappingTabell() {
-        log.info("Starter opprydding av START-meldinger")
-        val startMeldingerIkkeIMappingTabell = oversiktenMeldingMedMetadataRepository.hentStartMeldingerUtenStoppSomIkkeFinnesIMappingTabell()
-        log.info("Fant ${startMeldingerIkkeIMappingTabell.size} START-meldinger uten STOPP")
-        startMeldingerIkkeIMappingTabell.forEach {
-            log.info("Sender STOPP-melding for melding med key ${it.meldingKey}")
-            val sluttmelding = OversiktenMelding.forUdeltSamtalereferat(it.fnr.get(), OversiktenMelding.Operasjon.STOPP, erProd)
-            val oversiktenMeldingMedMetadata = OversiktenMeldingMedMetadata(
-                meldingSomJson = JsonUtils.toJson(sluttmelding),
-                fnr = it.fnr,
-                kategori = sluttmelding.kategori,
-                meldingKey = it.meldingKey,
-                operasjon = sluttmelding.operasjon,
-            )
-            oversiktenMeldingMedMetadataRepository.lagre(oversiktenMeldingMedMetadata)
-        }
-        log.info("Ferdig med opprydding av START-meldinger ikke i mappingtabell")
-    }
-
     /**
      * Engangsjobb for å rydde opp i kasserte aktiviteter (beskrivelse = 'Kassert av NAV')
      * der det er sendt START-melding til oversikten, men ingen STOPP-melding.
