@@ -102,6 +102,12 @@ open class OversiktenService(
     }
 
     open fun lagreStartMeldingOmUdeltSamtalereferatIUtboks(aktorId: AktorId, aktivitetId: AktivitetId) {
+        val eksisterendeMeldingKey = oversiktenMeldingAktivitetMappingDao.hentMeldingKeyForAktivitet(aktivitetId, UDELT_SAMTALEREFERAT)
+        if (eksisterendeMeldingKey != null) {
+            log.info("Sender STOPP på eksisterende melding-key $eksisterendeMeldingKey før ny START for aktivitet $aktivitetId")
+            lagreStoppMeldingOmUdeltSamtalereferatIUtboks(aktorId, aktivitetId)
+        }
+
         val fnr = aktorOppslagClient.hentFnr(no.nav.common.types.identer.AktorId.of(aktorId.get()))
         val melding =
             OversiktenMelding.forUdeltSamtalereferat(fnr.toString(), OversiktenMelding.Operasjon.START, erProd)

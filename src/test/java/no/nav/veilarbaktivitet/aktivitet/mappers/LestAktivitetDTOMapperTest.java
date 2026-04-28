@@ -8,14 +8,12 @@ import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Type;
-import no.nav.veilarbaktivitet.stilling_fra_nav.Soknadsstatus;
-import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.Test;
 
 
-class AktivitetDTOMapperTest {
+class LestAktivitetDTOMapperTest {
     @Test
     void skalMappeAktivitetsFelter() {
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyAktivitet()

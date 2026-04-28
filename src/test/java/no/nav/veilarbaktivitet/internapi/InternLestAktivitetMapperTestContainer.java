@@ -15,7 +15,7 @@ import java.util.stream.Stream;
 
 import static no.nav.veilarbaktivitet.internapi.InternAktivitetMapperKt.mapTilAktivitet;
 
-class InternAktivitetMapperTestContainer {
+class InternLestAktivitetMapperTestContainer {
     @Nested
     class StillingFraNavMapperTest {
         static Stream<Soknadsstatus> soknadsstatuser() {

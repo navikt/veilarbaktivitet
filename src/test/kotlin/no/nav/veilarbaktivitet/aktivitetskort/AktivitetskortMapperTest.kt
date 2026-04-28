@@ -33,6 +33,7 @@ internal class AktivitetskortMapperTest {
     @Test
     fun should_map_list_fields_to_empty_list_if_they_are_null() {
         // These fields are set to null when deserializing, but are empty lists when using builder
+        val oppfolgingsperiode = UUID.randomUUID()
         val aktivitetskortWithNullFields = aktivitetskort()
             .copy(etiketter = emptyList(), handlinger = emptyList(), detaljer = emptyList())
         val result = EksternAktivitetskortBestilling(
@@ -42,10 +43,10 @@ internal class AktivitetskortMapperTest {
             UUID.randomUUID(),
             ActionType.UPSERT_AKTIVITETSKORT_V1,
             Person.aktorId("1234567890")
-        ).toAktivitetsDataInsert()
-        result.withAktorId(Person.aktorId("adas"))
-        Assertions.assertThat(result.getEksternAktivitetData().detaljer).isEmpty()
-        Assertions.assertThat(result.getEksternAktivitetData().etiketter).isEmpty()
-        Assertions.assertThat(result.getEksternAktivitetData().handlinger).isEmpty()
+        ).toAktivitetsDataInsert(oppfolgingsperiode)
+
+        Assertions.assertThat(result.eksternAktivitetData.detaljer).isEmpty()
+        Assertions.assertThat(result.eksternAktivitetData.etiketter).isEmpty()
+        Assertions.assertThat(result.eksternAktivitetData.handlinger).isEmpty()
     }
 }

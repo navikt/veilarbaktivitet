@@ -36,7 +36,7 @@ open class OppfolgingsperiodeDAO(val jdbc: NamedParameterJdbcTemplate) {
 
     }
 
-    open fun getByAktorId(aktorId: AktorId ): List<Oppfolgingsperiode> {
+    open fun getByAktorId(aktorId: AktorId): List<Oppfolgingsperiode> {
         val params = MapSqlParameterSource()
             .addValue("aktorId", aktorId.get(), Types.VARCHAR)
         val sql = """

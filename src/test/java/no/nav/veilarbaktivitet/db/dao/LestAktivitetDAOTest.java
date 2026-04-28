@@ -36,7 +36,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 @Slf4j
 @Transactional
-class AktivitetDAOTest extends SpringBootTestBase { //TODO burde denne skrives ort fra spring test?
+class LestAktivitetDAOTest extends SpringBootTestBase { //TODO burde denne skrives ort fra spring test?
 
     private static final Person.AktorId AKTOR_ID = Person.aktorId("1234");
     private static final String KASSERT_AV_NAV = "Kassert av NAV";

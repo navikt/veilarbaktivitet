@@ -202,7 +202,7 @@ open class OversiktenMeldingMedMetadataDAO(
               AND m.referat_publisert = 1
         """.trimIndent()
 
-        return jdbc.query(sql) { rs: ResultSet, rowNum: Int ->
+        return jdbc.query(sql) { rs: ResultSet, _: Int ->
             UdeltSamtalereferatUtenMelding(AktorId.of(rs.getString("aktor_id")), rs.getLong("aktivitet_id"))
         }
     }
