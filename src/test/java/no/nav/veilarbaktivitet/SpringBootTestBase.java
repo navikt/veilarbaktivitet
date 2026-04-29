@@ -5,6 +5,7 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import io.getunleash.Unleash;
 import io.restassured.RestAssured;
+import io.restassured.config.ObjectMapperConfig;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
 import no.nav.poao_tilgang.poao_tilgang_test_wiremock.PoaoTilgangWiremock;
@@ -28,6 +29,8 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.json.JsonMapper;
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 
@@ -90,6 +93,13 @@ public abstract class SpringBootTestBase {
     @BeforeEach
     public void setup() {
         RestAssured.port = port;
+        RestAssured.config = RestAssured.config().objectMapperConfig(
+                ObjectMapperConfig.objectMapperConfig().jackson3ObjectMapperFactory(
+                        (type, charset) -> JsonMapper.builder()
+                                .disable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
+                                .build()
+                )
+        );
         DbTestUtils.cleanupTestDb(jdbcTemplate);
         JdbcTemplateLockProvider l = (JdbcTemplateLockProvider) lockProvider;
         l.clearCache();

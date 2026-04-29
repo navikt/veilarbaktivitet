@@ -78,7 +78,7 @@ internal class RekrutteringsbistandKafkaConsumerTest(
     @BeforeEach
     fun setUp() {
         meterRegistry.find(StillingFraNavMetrikker.REKRUTTERINGSBISTANDSTATUSOPPDATERING).meters()
-            .forEach { it: Meter? ->
+            .forEach { it: Meter ->
                 meterRegistry.remove(it)
             }
     }

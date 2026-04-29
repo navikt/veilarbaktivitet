@@ -1,27 +1,28 @@
-val spring_boot_version = "3.5.9"
-val common_version = "3.2025.10.10_08.21-bb7c7830d93c"
-val dab_common_version = "2025.12.15-10.38.4f649aa03352"
+val spring_boot_version = "4.0.6"
+val common_version = "4.2026.04.29_05.55-9f2b107283bc"
+val dab_common_version = "2026.04.20-16.33.4a120cb625c2"
 val poao_tilgang_version = "2025.07.04_08.56-814fa50f6740"
-val shedlock_version = "6.10.0"
+val shedlock_version = "7.7.0"
 val avroVersion = "1.12.1"
-val confluentKafkaAvroVersion = "8.1.0"
+val confluentKafkaAvroVersion = "8.2.0"
+val okhttpVersion = "5.3.2"
 val _version: String by project
 
 plugins {
-    val kotlinVersion = "2.1.21"
+    val kotlinVersion = "2.3.21"
     id("java")
     kotlin("jvm") version kotlinVersion
     id("org.jetbrains.kotlin.plugin.spring") version kotlinVersion
     kotlin("plugin.lombok") version kotlinVersion
     id("application")
     id("maven-publish")
-    id("org.openapi.generator") version "7.17.0"
-    id("com.github.davidmc24.gradle.plugin.avro") version "1.9.1"
+    id("org.openapi.generator") version "7.21.0"
+    id("io.github.androa.gradle.plugin.avro") version "0.0.12"
     id("project-report")
     id("jacoco")
-    id("org.sonarqube") version "7.0.1.6134"
-    id("org.springframework.boot") version "3.5.5"
-    id("io.freefair.lombok") version "8.14.2"
+    id("org.sonarqube") version "7.2.3.7755"
+    id("org.springframework.boot") version "4.0.6"
+    id("io.freefair.lombok") version "9.4.0"
 }
 
 java {
@@ -80,17 +81,8 @@ repositories {
 
 }
 
-tasks.generateAvroJava {
-    source(
-        "src/main/java/no/nav/veilarbaktivitet/stilling_fra_nav"
-    )
-}
-
 tasks.compileKotlin {
-    dependsOn(tasks.openApiGenerate, tasks.generateAvroJava)
-}
-tasks.compileTestKotlin {
-    dependsOn(tasks.generateTestAvroJava)
+    dependsOn(tasks.openApiGenerate)
 }
 
 openApiGenerate {
@@ -134,8 +126,8 @@ if (hasProperty("buildScan")) {
 }
 
 dependencies {
-    annotationProcessor("org.projectlombok:lombok:1.18.42")
-    testAnnotationProcessor("org.projectlombok:lombok:1.18.42")
+    annotationProcessor("org.projectlombok:lombok:1.18.46")
+    testAnnotationProcessor("org.projectlombok:lombok:1.18.46")
 
     implementation(enforcedPlatform("org.springframework.boot:spring-boot-dependencies:$spring_boot_version"))
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:$spring_boot_version")
@@ -160,49 +152,52 @@ dependencies {
     implementation("no.nav.common:util:$common_version")
     implementation("no.nav.common:types:$common_version")
     implementation("org.apache.commons:commons-collections4:4.5.0")
-    implementation("no.nav.tms.varsel:kotlin-builder:2.1.1")
+    implementation("no.nav.tms.varsel:kotlin-builder:2.2.0")
     implementation("no.nav.poao.dab:spring-auth:$dab_common_version")
     implementation("no.nav.poao.dab:spring-a2-annotations:$dab_common_version")
+    implementation("com.squareup.okhttp3:okhttp-jvm:$okhttpVersion")
 
 //spring managed runtime/compile dependencies
     implementation("org.springframework.boot:spring-boot-starter-cache")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
-    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-logging")
     implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
-    implementation("org.springframework.boot:spring-boot-starter-aop")
+    implementation("org.springframework.boot:spring-boot-starter-aspectj")
     implementation("org.springframework.boot:spring-boot-configuration-processor")
     implementation("org.springframework.boot:spring-boot-starter-quartz")
     implementation("org.springframework.boot:spring-boot-starter-graphql")
+    implementation("org.springframework.boot:spring-boot-starter-kafka")
     implementation("org.springframework.kafka:spring-kafka")
-    implementation("com.squareup.okhttp3:okhttp")
     implementation("io.micrometer:micrometer-registry-prometheus")
-    implementation("org.flywaydb:flyway-database-postgresql:11.15.0")
-    implementation("org.postgresql:postgresql:42.7.8")
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.20.1")
+    implementation("org.flywaydb:flyway-database-postgresql")
+    implementation("org.postgresql:postgresql")
+    implementation("tools.jackson.core:jackson-core")
+    implementation("tools.jackson.core:jackson-databind")
+    implementation("tools.jackson.dataformat:jackson-dataformat-yaml")
 
     // BigQuery
-    implementation(platform("com.google.cloud:libraries-bom:26.73.0"))
+    implementation(platform("com.google.cloud:libraries-bom:26.80.0"))
     implementation("com.google.cloud:google-cloud-bigquery")
 
-    implementation("io.getunleash:unleash-client-java:11.1.1")
+    implementation("io.getunleash:unleash-client-java:12.2.1")
 
     runtimeOnly("org.springframework.boot:spring-boot-devtools")
 
 //test dependencies
     testImplementation("no.nav.poao-tilgang:poao-tilgang-test-wiremock:$poao_tilgang_version")
     testImplementation("org.awaitility:awaitility:4.3.0")
-    testImplementation("com.networknt:json-schema-validator:1.5.8")
-    testImplementation("org.mockito.kotlin:mockito-kotlin:6.1.0")
+    testImplementation("com.networknt:json-schema-validator:3.0.2")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:6.3.0")
+    testImplementation("io.rest-assured:rest-assured:6.0.0")
 
 //spring managed test dependencies
-    testImplementation("io.rest-assured:rest-assured")
     testImplementation("org.springframework.boot:spring-boot-starter-test") {
         exclude(group = "com.vaadin.external.google", module = "android-json")
     }
     testImplementation("org.springframework.kafka:spring-kafka-test")
     testImplementation("org.mockito:mockito-core")
-    testImplementation("io.zonky.test:embedded-database-spring-test:2.6.0")
-    testImplementation("io.zonky.test:embedded-postgres:2.1.1")
+    testImplementation("io.zonky.test:embedded-database-spring-test:2.8.0")
+    testImplementation("io.zonky.test:embedded-postgres:2.2.2")
 }

@@ -44,7 +44,7 @@ class AktivitetsbestillingCreatorTest {
     @Test
     void should_have_correct_timezone_when_serializing() {
         var jsonNode = AktivitetskortProducerUtil.validExampleAktivitetskortRecord(Person.fnr("1234567890"));
-        var endretTidspunkt = jsonNode.path("aktivitetskort").get("endretTidspunkt").asText();
+        var endretTidspunkt = jsonNode.path("aktivitetskort").get("endretTidspunkt").asString();
         assertEquals("2022-01-01T00:00:00.001+01:00", endretTidspunkt);
     }
 

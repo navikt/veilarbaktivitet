@@ -1,6 +1,5 @@
 package no.nav.veilarbaktivitet.brukernotifikasjon
 
-import junit.framework.TestCase.assertEquals
 import no.nav.tms.varsel.action.Varseltype
 import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.InaktiverVarselDto
 import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.MinSideVarselId
@@ -12,6 +11,7 @@ import no.nav.veilarbaktivitet.person.Person.Fnr
 import no.nav.veilarbaktivitet.util.KafkaTestService
 import org.assertj.core.api.Assertions.assertThat
 import java.util.*
+import org.junit.jupiter.api.Assertions.assertEquals
 
 class BrukernotifikasjonAsserts(var config: BrukernotifikasjonAssertsConfig) {
     var brukervarselConsumer = config.createBrukerVarselConsumer(config.testService)

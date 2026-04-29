@@ -14,8 +14,7 @@ import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
-import org.springframework.boot.ssl.DefaultSslBundleRegistry;
+import org.springframework.boot.kafka.autoconfigure.KafkaProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -23,7 +22,7 @@ import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.ProducerFactory;
-import org.springframework.kafka.support.serializer.JsonDeserializer;
+import org.springframework.kafka.support.serializer.JacksonJsonSerializer;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.kafka.test.EmbeddedKafkaKraftBroker;
 import org.springframework.kafka.test.utils.KafkaTestUtils;
@@ -31,6 +30,8 @@ import org.springframework.kafka.test.utils.KafkaTestUtils;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Properties;
+
+import static org.springframework.kafka.support.serializer.JacksonJsonDeserializer.TRUSTED_PACKAGES;
 
 @Configuration
 public class KafkaTestConfig {
@@ -66,11 +67,11 @@ public class KafkaTestConfig {
     @Qualifier("stringJsonConsumerFactory")
     @Bean
     <V> ConsumerFactory<String, V> stringJsonConsumerFactory(KafkaProperties kafkaProperties, EmbeddedKafkaBroker embeddedKafka) {
-        Map<String, Object> consumerProperties = KafkaTestUtils.consumerProps(kafkaProperties.getConsumer().getGroupId(), "true", embeddedKafka);
+        Map<String, Object> consumerProperties = KafkaTestUtils.consumerProps(embeddedKafka, kafkaProperties.getConsumer().getGroupId(), true);
         consumerProperties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, embeddedKafka.getBrokersAsString());
         consumerProperties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, org.apache.kafka.common.serialization.StringDeserializer.class);
-        consumerProperties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, org.springframework.kafka.support.serializer.JsonDeserializer.class);
-        consumerProperties.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
+        consumerProperties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JacksonJsonSerializer.class);
+        consumerProperties.put(TRUSTED_PACKAGES, "*");
         return new DefaultKafkaConsumerFactory<>(consumerProperties);
     }
 
@@ -95,7 +96,7 @@ public class KafkaTestConfig {
 
     @Bean
     public Admin kafkaAdminClient(KafkaProperties properties, EmbeddedKafkaBroker embeddedKafkaBroker) {
-        Map<String, Object> config = properties.buildAdminProperties(new DefaultSslBundleRegistry());
+        Map<String, Object> config = properties.buildAdminProperties();
         config.put("bootstrap.servers", embeddedKafkaBroker.getBrokersAsString());
         return Admin.create(config);
     }

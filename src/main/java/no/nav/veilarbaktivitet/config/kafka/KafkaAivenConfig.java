@@ -8,7 +8,7 @@ import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringTemplate;
 import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
+import org.springframework.boot.kafka.autoconfigure.KafkaProperties;
 import org.springframework.boot.ssl.DefaultSslBundleRegistry;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,7 +35,7 @@ public class KafkaAivenConfig {
 
     @Bean
     <V extends SpecificRecordBase> ProducerFactory<String, V> stringAvroProducerFactory(KafkaProperties kafkaProperties) {
-        Map<String, Object> producerProperties = kafkaProperties.buildProducerProperties(new DefaultSslBundleRegistry());
+        Map<String, Object> producerProperties = kafkaProperties.buildProducerProperties();
         producerProperties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.getBootstrapServers());
         producerProperties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, org.apache.kafka.common.serialization.StringSerializer.class);
         producerProperties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, io.confluent.kafka.serializers.KafkaAvroSerializer.class);
@@ -44,7 +44,7 @@ public class KafkaAivenConfig {
 
     @Bean
     <K extends SpecificRecordBase, V extends SpecificRecordBase> ProducerFactory<K, V> avroAvroProducerFactory(KafkaProperties kafkaProperties) {
-        Map<String, Object> producerProperties = kafkaProperties.buildProducerProperties(new DefaultSslBundleRegistry());
+        Map<String, Object> producerProperties = kafkaProperties.buildProducerProperties();
         producerProperties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.getBootstrapServers());
         producerProperties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, io.confluent.kafka.serializers.KafkaAvroSerializer.class);
         producerProperties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, io.confluent.kafka.serializers.KafkaAvroSerializer.class);
@@ -53,16 +53,16 @@ public class KafkaAivenConfig {
 
     @Bean
     <V> ProducerFactory<String, V> jsonProducerFactory(KafkaProperties kafkaProperties) {
-        Map<String, Object> producerProperties = kafkaProperties.buildProducerProperties(new DefaultSslBundleRegistry());
+        Map<String, Object> producerProperties = kafkaProperties.buildProducerProperties();
         producerProperties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.getBootstrapServers());
         producerProperties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, org.apache.kafka.common.serialization.StringSerializer.class);
-        producerProperties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, org.springframework.kafka.support.serializer.JsonSerializer.class);
+        producerProperties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, org.springframework.kafka.support.serializer.JacksonJsonSerializer.class);
         return new DefaultKafkaProducerFactory<>(producerProperties);
     }
 
     @Bean
     <V> ProducerFactory<String, V> stringProducerFactory(KafkaProperties kafkaProperties) {
-        Map<String, Object> producerProperties = kafkaProperties.buildProducerProperties(new DefaultSslBundleRegistry());
+        Map<String, Object> producerProperties = kafkaProperties.buildProducerProperties();
         producerProperties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.getBootstrapServers());
         producerProperties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, org.apache.kafka.common.serialization.StringSerializer.class);
         producerProperties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, org.apache.kafka.common.serialization.StringSerializer.class);
@@ -153,7 +153,7 @@ public class KafkaAivenConfig {
 
     @Bean(name = "stringStringConsumerFactory")
     ConsumerFactory<String, String> stringStringConsumerFactory(KafkaProperties kafkaProperties) {
-        Map<String, Object> consumerProperties = kafkaProperties.buildConsumerProperties(new DefaultSslBundleRegistry());
+        Map<String, Object> consumerProperties = kafkaProperties.buildConsumerProperties();
         consumerProperties.put(ErrorHandlingDeserializer.KEY_DESERIALIZER_CLASS, org.apache.kafka.common.serialization.StringDeserializer.class);
         consumerProperties.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, org.apache.kafka.common.serialization.StringDeserializer.class);
         return new DefaultKafkaConsumerFactory<>(consumerProperties);
@@ -161,7 +161,7 @@ public class KafkaAivenConfig {
 
     @Bean(name = "stringAvroConsumerFactory")
     ConsumerFactory<String, SpecificRecordBase> stringAvroConsumerFactory(KafkaProperties kafkaProperties) {
-        Map<String, Object> consumerProperties =  kafkaProperties.buildConsumerProperties(new DefaultSslBundleRegistry());
+        Map<String, Object> consumerProperties =  kafkaProperties.buildConsumerProperties();
         consumerProperties.put(ErrorHandlingDeserializer.KEY_DESERIALIZER_CLASS, org.apache.kafka.common.serialization.StringDeserializer.class);
         consumerProperties.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, io.confluent.kafka.serializers.KafkaAvroDeserializer.class);
         return new DefaultKafkaConsumerFactory<>(consumerProperties);
@@ -169,7 +169,7 @@ public class KafkaAivenConfig {
 
     @Bean(name = "avroAvroConsumerFactory")
     ConsumerFactory<SpecificRecordBase, SpecificRecordBase> avroAvroConsumerFactory(KafkaProperties kafkaProperties) {
-        Map<String, Object> consumerProperties = kafkaProperties.buildConsumerProperties(new DefaultSslBundleRegistry());
+        Map<String, Object> consumerProperties = kafkaProperties.buildConsumerProperties();
         consumerProperties.put(ErrorHandlingDeserializer.KEY_DESERIALIZER_CLASS, io.confluent.kafka.serializers.KafkaAvroDeserializer.class);
         consumerProperties.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, io.confluent.kafka.serializers.KafkaAvroDeserializer.class);
         return new DefaultKafkaConsumerFactory<>(consumerProperties);

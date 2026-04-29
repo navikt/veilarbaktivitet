@@ -1,16 +1,16 @@
 package no.nav.veilarbaktivitet.aktivitetskort.util
 
-import com.fasterxml.jackson.core.JsonFactory
-import com.fasterxml.jackson.core.JsonToken
-import java.io.IOException
+import tools.jackson.core.JsonToken
+import tools.jackson.core.ObjectReadContext
+import tools.jackson.core.json.JsonFactory
 
 object JsonUtil {
-//    @JvmStatic
+    private val jsonFactory: JsonFactory = JsonFactory.builder().build()
+
     @JvmStatic
-    @Throws(IOException::class)
     fun extractStringPropertyFromJson(propertyName: String, json: String): String? {
         var result: String? = null
-        val parser = JsonFactory().createParser(json)
+        val parser = jsonFactory.createParser(ObjectReadContext.empty(), json)
 
         fun isEnd(token: JsonToken, level: Int): Boolean {
             return token == JsonToken.END_OBJECT && level == 0

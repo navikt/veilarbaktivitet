@@ -1,8 +1,8 @@
 package no.nav.veilarbaktivitet.aktivitetskort
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import tools.jackson.databind.DeserializationFeature
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.databind.json.JsonMapper as JacksonJsonMapper
 import no.nav.common.client.aktorregister.IngenGjeldendeIdentException
 import no.nav.common.json.JsonMapper
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.ArenaAktivitetskortBestilling
@@ -101,9 +101,10 @@ class AktivitetsbestillingCreator(
         private val mapper: ObjectMapper?
             get() {
                 if (objectMapper != null) return objectMapper
-                objectMapper = JsonMapper.defaultObjectMapper()
-                    .registerKotlinModule()
-                    .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true)
+                objectMapper = (JsonMapper.defaultObjectMapper() as JacksonJsonMapper)
+                    .rebuild()
+                    .enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                    .build()
                 return objectMapper
             }
 

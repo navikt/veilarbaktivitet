@@ -2,7 +2,7 @@ package no.nav.veilarbaktivitet.brukernotifikasjon
 
 import com.github.tomakehurst.wiremock.client.WireMock
 import io.micrometer.core.instrument.MeterRegistry
-import io.micrometer.core.instrument.cumulative.CumulativeCounter
+import io.micrometer.prometheusmetrics.PrometheusCounter
 import lombok.SneakyThrows
 import no.nav.common.json.JsonUtils
 import no.nav.veilarbaktivitet.SpringBootTestBase
@@ -183,7 +183,7 @@ internal class BrukerVarselHendelseTest(
 
         val totalVarselHendelser = meterRegistry.find(VARSEL_HENDELSE)
             .counters()
-            .filter { (it as CumulativeCounter).id.tags.any { tag -> tag.value == "sendt_ekstern" } }
+            .filter { (it as PrometheusCounter).id.tags.any { tag -> tag.value == "sendt_ekstern" } }
             .sumOf { it.count() }
         Assertions.assertEquals(1.0, totalVarselHendelser)
     }

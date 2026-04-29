@@ -23,18 +23,18 @@ const val EksternStatusOppdatertEventName = "eksternStatusOppdatert"
 
 fun String.deserialiserVarselHendelse(): VarselHendelse {
     val jsonTree = JsonUtils.getMapper().readTree(this)
-    val eventName = jsonTree["@event_name"].asText()
-    val appNavn = jsonTree["appnavn"].asText()
+    val eventName = jsonTree["@event_name"].asString()
+    val appNavn = jsonTree["appnavn"].asString()
     if (appNavn != "veilarbaktivitet") return VarselFraAnnenApp
-    val varseltype = Varseltype.valueOf(jsonTree["varseltype"].asText().replaceFirstChar { it.titlecase()})
+    val varseltype = Varseltype.valueOf(jsonTree["varseltype"].asString().replaceFirstChar { it.titlecase()})
     return when (eventName == EksternStatusOppdatertEventName) {
         true -> jsonTree.deserialiserEksternVarselHendelse()
         else -> {
             return InternVarselHendelse(
-                namespace = jsonTree["namespace"].asText(),
+                namespace = jsonTree["namespace"].asString(),
                 varseltype = varseltype,
                 appnavn = appNavn,
-                varselId = MinSideVarselId(UUID.fromString(jsonTree["varselId"].asText())),
+                varselId = MinSideVarselId(UUID.fromString(jsonTree["varselId"].asString())),
                 eventName = InternVarselHendelseType.valueOf(eventName)
             )
         }
