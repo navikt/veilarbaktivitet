@@ -4,4 +4,7 @@
     <include resource="no/nav/common/log/logback-cxf.xml"/>
     <include resource="no/nav/common/log/logback-stdout-json.xml"/>
     <include resource="logback-team-logs.xml"/>
+    <logger name="spring.jackson" level="DEBUG"/>
+    <logger name="tools.jackson" level="DEBUG"/>
+    <logger name="no.nav.common.json" level="DEBUG"/>
 </configuration>
