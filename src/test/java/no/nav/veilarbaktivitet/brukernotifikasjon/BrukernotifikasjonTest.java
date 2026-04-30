@@ -322,7 +322,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
         sendMinsideVarselFraOutboxCron.sendBrukernotifikasjoner();
         final ConsumerRecord<String, String> oppgaveRecord = getSingleRecord(brukerVarselConsumer, brukervarselTopic, DEFAULT_WAIT_TIMEOUT_DURATION);
         var lenke = JsonUtils.fromJson(oppgaveRecord.value(), OpprettVarselDto.class).getLink();
-        assertEquals(lenke, "http://localhost:3000/aktivitet/vis/%s".formatted(arenaId.id()));
+        assertEquals(lenke, "https://nav.no/aktivitet/vis/%s".formatted(arenaId.id()));
     }
 
     @Test
@@ -353,7 +353,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
 
         var oppgaveRecord = brukernotifikasjonAsserts.assertOppgaveSendt(mockBruker.getFnrAsFnr());
         var lenke = oppgaveRecord.getLink();
-        assertEquals(lenke, "http://localhost:3000/aktivitet/vis/%s".formatted(tekniskId));
+        assertEquals(lenke, "https://nav.no/aktivitet/vis/%s".formatted(tekniskId));
     }
 
     @Test

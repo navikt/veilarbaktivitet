@@ -1,13 +1,12 @@
 package no.nav.veilarbaktivitet.arena.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JsonSerializable;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.databind.JacksonSerializable;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.jsontype.TypeSerializer;
 import lombok.EqualsAndHashCode;
 
-import java.io.IOException;
 import java.util.List;
 
 /*
@@ -15,7 +14,7 @@ import java.util.List;
  * Will serialize to a single value, not a json-object with a field named "id"
  * */
 @EqualsAndHashCode(callSuper = false)
-public class ArenaId extends JsonSerializable.Base {
+public class ArenaId extends JacksonSerializable.Base {
     public static final String PREFIX_TILTAK = "TA";
     public static final String PREFIX_GRUPPE = "GA";
     public static final String PREFIX_UTDANNING = "UA";
@@ -52,12 +51,12 @@ public class ArenaId extends JsonSerializable.Base {
     }
 
     @Override
-    public void serialize(JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
+    public void serialize(JsonGenerator jsonGenerator, SerializationContext serializationContext) {
         jsonGenerator.writeString(id);
     }
 
     @Override
-    public void serializeWithType(JsonGenerator jsonGenerator, SerializerProvider serializerProvider, TypeSerializer typeSerializer) throws IOException {
+    public void serializeWithType(JsonGenerator jsonGenerator, SerializationContext serializationContext, TypeSerializer typeSerializer) {
         throw new UnsupportedOperationException("Not supported.");
     }
 }

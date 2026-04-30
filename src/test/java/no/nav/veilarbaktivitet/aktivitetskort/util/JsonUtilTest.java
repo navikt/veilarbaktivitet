@@ -3,6 +3,7 @@ package no.nav.veilarbaktivitet.aktivitetskort.util;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import tools.jackson.core.exc.StreamReadException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -10,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class JsonUtilTest {
 
     @Test
-    void extractFieldFromJson() throws IOException {
+    void extractFieldFromJson() {
 
         String someJson = """
                 {
@@ -29,7 +30,7 @@ class JsonUtilTest {
 
     @Test
     void invalidJsonYieldsNull() {
-        assertThrows(IOException.class,
+        assertThrows(StreamReadException.class,
                 () -> {
                         String invalidJson = """
                     
@@ -45,7 +46,7 @@ class JsonUtilTest {
     }
 
     @Test
-    void missingPropertyYieldsNull() throws IOException {
+    void missingPropertyYieldsNull() {
         String missingProperty = """
                 {
                   "source": "TEAM_TILTAK",
@@ -59,7 +60,7 @@ class JsonUtilTest {
     }
 
     @Test
-    void nestedElementsIsOk() throws IOException {
+    void nestedElementsIsOk() {
         String nestedElement = """
                 {
                   "source": "TEAM_TILTAK",
@@ -76,7 +77,7 @@ class JsonUtilTest {
     }
 
     @Test
-    void elementIsObject() throws IOException {
+    void elementIsObject() {
         String nestedElement = """
                 {
                   "source": "TEAM_TILTAK",
@@ -93,7 +94,7 @@ class JsonUtilTest {
     }
 
     @Test
-    void elementNotStringType() throws IOException {
+    void elementNotStringType() {
         String nestedElement = """
                 {
                   "source": "TEAM_TILTAK",

@@ -94,7 +94,6 @@ spec:
         - host: veilarbarena.prod-fss-pub.nais.io
         - host: veilarbdialog.intern.nav.no
         - host: dab-unleash-api.nav.cloud.nais.io
-        - host: axsys.prod-fss-pub.nais.io
         - host: pdl-api.prod-fss-pub.nais.io
       rules:
         - application: poao-tilgang

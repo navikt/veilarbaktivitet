@@ -1,27 +1,5 @@
 package no.nav.veilarbaktivitet.aktivitetskort
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.databind.node.ObjectNode
-import com.fasterxml.jackson.databind.node.TextNode
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import lombok.SneakyThrows
-import no.nav.common.json.JsonUtils
-import no.nav.common.types.identer.NavIdent
-import no.nav.common.types.identer.NorskIdent
-import no.nav.veilarbaktivitet.aktivitet.domain.Ident
-import no.nav.veilarbaktivitet.aktivitetskort.bestilling.KasseringsBestilling
-import no.nav.veilarbaktivitet.aktivitetskort.dto.Aktivitetskort
-import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortStatus
-import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType
-import no.nav.veilarbaktivitet.aktivitetskort.dto.KafkaAktivitetskortWrapperDTO
-import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.*
-import no.nav.veilarbaktivitet.person.Innsender
-import no.nav.veilarbaktivitet.person.Person
-import org.springframework.core.io.DefaultResourceLoader
-import org.springframework.core.io.Resource
-import org.springframework.core.io.ResourceLoader
-import org.springframework.util.FileCopyUtils
 import java.io.IOException
 import java.io.InputStreamReader
 import java.io.UncheckedIOException
@@ -30,12 +8,42 @@ import java.nio.charset.StandardCharsets
 import java.time.LocalDate
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
-import java.util.*
+import java.util.UUID
+import lombok.SneakyThrows
+import no.nav.common.json.JsonMapper
+import no.nav.common.types.identer.NavIdent
+import no.nav.common.types.identer.NorskIdent
+import no.nav.veilarbaktivitet.aktivitet.domain.Ident
+import no.nav.veilarbaktivitet.aktivitetskort.bestilling.KasseringsBestilling
+import no.nav.veilarbaktivitet.aktivitetskort.dto.Aktivitetskort
+import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortStatus
+import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType
+import no.nav.veilarbaktivitet.aktivitetskort.dto.KafkaAktivitetskortWrapperDTO
+import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Attributt
+import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Etikett
+import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.LenkeSeksjon
+import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.LenkeType
+import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.MessageSource
+import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Oppgave
+import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Oppgaver
+import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Sentiment
+import no.nav.veilarbaktivitet.person.Innsender
+import no.nav.veilarbaktivitet.person.Person
+import org.springframework.core.io.DefaultResourceLoader
+import org.springframework.core.io.Resource
+import org.springframework.core.io.ResourceLoader
+import org.springframework.util.FileCopyUtils
+import tools.jackson.databind.JsonNode
+import tools.jackson.databind.cfg.DateTimeFeature
+import tools.jackson.databind.node.ObjectNode
+import tools.jackson.databind.node.StringNode
+import tools.jackson.databind.json.JsonMapper as JacksonJsonMapper
 
 object AktivitetskortProducerUtil {
-    private val objectMapper = JsonUtils.getMapper().copy()
-        .registerModule(JavaTimeModule())
-        .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+    private val objectMapper = (JsonMapper.defaultObjectMapper() as JacksonJsonMapper)
+    .rebuild()
+    .disable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
+    .build()
 
     fun readFileToString(path: String): String {
         val resourceLoader: ResourceLoader = DefaultResourceLoader()
@@ -122,7 +130,7 @@ object AktivitetskortProducerUtil {
         val kafkaAktivitetskortWrapperDTO = kafkaArenaAktivitetWrapper(fnr)
         val jsonNode = aktivitetMessageNode(kafkaAktivitetskortWrapperDTO)
         val payload = jsonNode.path("aktivitetskort") as ObjectNode
-        payload.set<JsonNode>("startDato", TextNode("2022/-1/04T12:00:00+02:00"))
+        payload.set("startDato", StringNode("2022/-1/04T12:00:00+02:00"))
         return Pair(jsonNode.toString(), kafkaAktivitetskortWrapperDTO.messageId)
     }
 

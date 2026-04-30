@@ -1,6 +1,5 @@
 package no.nav.veilarbaktivitet.aktivitetskort
 
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import no.nav.common.json.JsonUtils
 import no.nav.common.kafka.producer.KafkaProducerClient
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMapping
@@ -22,9 +21,6 @@ class AktivitetIdMappingProducer {
     @Value("\${topic.ut.aktivitetskort-idmapping}")
     var idmappingTopic: String? = null
 
-    init {
-        JsonUtils.getMapper().registerKotlinModule()
-    }
     fun publishAktivitetskortIdMapping(idMapping: IdMapping) {
         val melding = IdMappingDto.map(idMapping)
         val producerRecord = ProducerRecord(idmappingTopic, melding.funksjonellId.toString(), JsonUtils.toJson(melding))

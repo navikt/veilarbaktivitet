@@ -235,7 +235,7 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
             }
         """.trimIndent().replace("\n", "")
         val result = aktivitetTestService.queryHistorikkRaw(mockBruker, mockBruker, query, aktivitet.id)
-        val fraDatoString = JsonMapper.defaultObjectMapper().readTree(result)["data"]["aktivitet"]["fraDato"].asText()
+        val fraDatoString = JsonMapper.defaultObjectMapper().readTree(result)["data"]["aktivitet"]["fraDato"].asString()
         assertThat(fraDatoString).isEqualTo(fraDatoIso)
     }
 
@@ -263,8 +263,8 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
         """.trimIndent().replace("\n", "")
         val result = aktivitetTestService.queryAllRaw(mockBruker, mockBruker, query, aktivitet.id.toLong())
         val jsonTree = JsonMapper.defaultObjectMapper().readTree(result)
-        val fraDatoStringAktivitet = jsonTree["data"]["aktivitet"]["fraDato"].asText()
-        val fraDatoStringPerioder = jsonTree["data"]["perioder"][0]["aktiviteter"][0]["fraDato"].asText()
+        val fraDatoStringAktivitet = jsonTree["data"]["aktivitet"]["fraDato"].asString()
+        val fraDatoStringPerioder = jsonTree["data"]["perioder"][0]["aktiviteter"][0]["fraDato"].asString()
         assertThat(fraDatoStringAktivitet).isEqualTo(fraDatoStringPerioder)
         assertThat(fraDatoStringAktivitet).isEqualTo(fraDatoIso)
         assertThat(fraDatoStringPerioder).isEqualTo(fraDatoIso)
@@ -298,7 +298,7 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
             }
         """.trimIndent().replace("\n", "")
         val result = aktivitetTestService.queryHistorikkRaw(mockBruker, mockBruker, query, aktivitet.id)
-        val fraDatoString = JsonMapper.defaultObjectMapper().readTree(result)["data"]["aktivitet"]["historikk"]["endringer"][0]["tidspunkt"].asText()
+        val fraDatoString = JsonMapper.defaultObjectMapper().readTree(result)["data"]["aktivitet"]["historikk"]["endringer"][0]["tidspunkt"].asString()
 
         val matchMedTidssone = fraDatoString.matches(Regex("^[0-9]{4}-[0-9]{2}-[0-9]{2}T([0-9]{2}:){2}[0-9]{2}\\.[0-9]{3}[+|-][0-9]{2}:[0-9]{2}$"))
         val matchZulu = fraDatoString.matches(Regex("^[0-9]{4}-[0-9]{2}-[0-9]{2}T([0-9]{2}:){2}[0-9]{2}\\.[0-9]{3}[Z]$"))

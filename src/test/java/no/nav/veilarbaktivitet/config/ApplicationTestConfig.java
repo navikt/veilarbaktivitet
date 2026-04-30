@@ -5,7 +5,6 @@ import io.getunleash.Unleash;
 import io.zonky.test.db.postgres.embedded.EmbeddedPostgres;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
-import no.nav.common.client.axsys.AxsysClient;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
@@ -93,10 +92,4 @@ public class ApplicationTestConfig {
     Unleash unleash() {
         return mock(Unleash.class);
     }
-
-    @Bean
-    public AxsysClient axsysClient() {
-        return mock(AxsysClient.class);
-    }
-
 }

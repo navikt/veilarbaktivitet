@@ -1,19 +1,19 @@
 package no.nav.veilarbaktivitet.aktivitetskort.util
 
-import com.fasterxml.jackson.core.JsonParser
-import com.fasterxml.jackson.databind.DeserializationContext
-import com.fasterxml.jackson.databind.JsonDeserializer
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer
-import com.fasterxml.jackson.datatype.jsr310.deser.key.ZonedDateTimeKeyDeserializer
+import tools.jackson.core.JsonParser
+import tools.jackson.databind.DeserializationContext
 import java.io.IOException
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import tools.jackson.databind.ValueDeserializer
+import tools.jackson.databind.ext.javatime.deser.LocalDateTimeDeserializer
+import tools.jackson.databind.ext.javatime.deser.key.ZonedDateTimeKeyDeserializer
 
-class ZonedOrNorwegianDateTimeDeserializer : JsonDeserializer<ZonedDateTime>() {
+class ZonedOrNorwegianDateTimeDeserializer : ValueDeserializer<ZonedDateTime>() {
     @Throws(IOException::class)
     override fun deserialize(jsonParser: JsonParser, deserializationContext: DeserializationContext): ZonedDateTime {
-        val dateText = jsonParser.text
+        val dateText = jsonParser.string
         val localDateTimeRegex = "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,6})?$"
         return if (dateText.matches(localDateTimeRegex.toRegex())) {
             localDateTimeDeserializer.deserialize(
