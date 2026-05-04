@@ -73,6 +73,21 @@ open class OversiktenMeldingMedMetadataDAO(
         return jdbc.queryForObject(sql, params, rowMapper)
     }
 
+    open fun hentSisteMeldingForMeldingKey(meldingKey: UUID): LagretOversiktenMeldingMedMetadata? {
+        val sql = """
+            SELECT * FROM oversikten_melding_med_metadata 
+            WHERE melding_key = :melding_key 
+            ORDER BY opprettet DESC 
+            LIMIT 1
+        """.trimIndent()
+
+        val params = VeilarbAktivitetSqlParameterSource().apply {
+            addValue("melding_key", meldingKey)
+        }
+
+        return jdbc.query(sql, params, rowMapper).firstOrNull()
+    }
+
     open fun hentUdelteSamtalereferatDerViIkkeHarSendtMeldingTilOversikten(): List<UdeltSamtalereferatUtenMelding> {
         val sql = """
             WITH oversikten_meldinger_gruppert_per_key_og_rangert AS (
