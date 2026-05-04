@@ -16,13 +16,13 @@ plugins {
     kotlin("plugin.lombok") version kotlinVersion
     id("application")
     id("maven-publish")
-    id("org.openapi.generator") version "7.21.0"
+    id("org.openapi.generator") version "7.22.0"
     id("io.github.androa.gradle.plugin.avro") version "0.0.12"
     id("project-report")
     id("jacoco")
-    id("org.sonarqube") version "7.2.3.7755"
+    id("org.sonarqube") version "7.3.0.8198"
     id("org.springframework.boot") version "4.0.6"
-    id("io.freefair.lombok") version "9.4.0"
+    id("io.freefair.lombok") version "9.5.0"
 }
 
 java {
