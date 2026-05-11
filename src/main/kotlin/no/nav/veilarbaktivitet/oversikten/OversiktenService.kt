@@ -157,4 +157,22 @@ open class OversiktenService(
             lagreStoppMeldingOmUdeltSamtalereferatIUtboks(aktorId, aktivitetId)
         }
     }
+
+    open fun republiserSisteMelding(meldingKey: UUID): Long {
+        val sisteMelding = oversiktenMeldingMedMetadataRepository.hentSisteMeldingForMeldingKey(meldingKey)
+            ?: throw IllegalArgumentException("Fant ingen melding med melding_key $meldingKey")
+
+        val nyMelding = OversiktenMeldingMedMetadata(
+            meldingKey = sisteMelding.meldingKey,
+            fnr = sisteMelding.fnr,
+            utsendingStatus = UtsendingStatus.SKAL_SENDES,
+            meldingSomJson = sisteMelding.meldingSomJson,
+            kategori = sisteMelding.kategori,
+            operasjon = sisteMelding.operasjon,
+        )
+
+        val id = oversiktenMeldingMedMetadataRepository.lagre(nyMelding)
+        log.info("Republiserer melding med melding_key $meldingKey, ny id: $id")
+        return id
+    }
 }
