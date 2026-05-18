@@ -44,7 +44,7 @@ jobs:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_MESSAGE: 'Commit-message til feilende deploy: ${{ github.event.head_commit.message }}'
       - name: Push docker image to GAR
-        uses: nais/docker-build-push@be85229e81c0293c265c646c084f05317fb6e0d2
+        uses: nais/docker-build-push@751a312f0803eb96a05a41fadf51be19b7be362c
         id: docker-build-push
         with:
           team: dab
