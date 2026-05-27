@@ -1,4 +1,7 @@
 val spring_boot_version = "4.0.6"
+val tomcat_version = "11.0.22"
+
+extra["tomcat.version"] = tomcat_version
 val common_version = "4.2026.05.05_06.25-f72fab488a93"
 val dab_common_version = "2026.05.08-13.34.cc03ad5613af"
 val poao_tilgang_version = "4.2026.05.11_07.01-54ab6eae4dde"
@@ -36,7 +39,14 @@ kotlin {
 }
 
 configurations.all {
-    resolutionStrategy.failOnNonReproducibleResolution()
+    resolutionStrategy {
+        failOnNonReproducibleResolution()
+        force(
+            "org.apache.tomcat.embed:tomcat-embed-core:$tomcat_version",
+            "org.apache.tomcat.embed:tomcat-embed-websocket:$tomcat_version",
+            "org.apache.tomcat.embed:tomcat-embed-el:$tomcat_version"
+        )
+    }
 }
 
 tasks.test {
