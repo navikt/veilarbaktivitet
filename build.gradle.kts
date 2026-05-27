@@ -188,10 +188,10 @@ dependencies {
     implementation("tools.jackson.dataformat:jackson-dataformat-yaml")
 
     // BigQuery
-    implementation(platform("com.google.cloud:libraries-bom:26.80.0"))
+    implementation(platform("com.google.cloud:libraries-bom:26.83.0"))
     implementation("com.google.cloud:google-cloud-bigquery")
 
-    implementation("io.getunleash:unleash-client-java:12.2.1")
+    implementation("io.getunleash:unleash-client-java:12.2.2")
 
     runtimeOnly("org.springframework.boot:spring-boot-devtools")
 
