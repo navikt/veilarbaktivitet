@@ -12,7 +12,7 @@ val okhttpVersion = "5.3.2"
 val _version: String by project
 
 plugins {
-    val kotlinVersion = "2.3.21"
+    val kotlinVersion = "2.4.0"
     id("java")
     kotlin("jvm") version kotlinVersion
     id("org.jetbrains.kotlin.plugin.spring") version kotlinVersion
@@ -23,7 +23,7 @@ plugins {
     id("io.github.androa.gradle.plugin.avro") version "0.0.12"
     id("project-report")
     id("jacoco")
-    id("org.sonarqube") version "7.3.0.8198"
+    id("org.sonarqube") version "7.3.1.8318"
     id("org.springframework.boot") version "4.0.6"
     id("io.freefair.lombok") version "9.5.0"
 }
