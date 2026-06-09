@@ -1,0 +1,22 @@
+name: Deploy nye alerts til dev
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: deploy_alerts_nye_dev
+  cancel-in-progress: true
+
+jobs:
+  apply-alerts:
+    name: Apply alerts to cluster
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+      - name: deploy to dev-gcp
+        uses: nais/deploy/actions/deploy@a7f8690f9b367fcbf5348a0a1e21d44f1aae50eb
+        env:
+          CLUSTER: dev-gcp
+          RESOURCE: nais/alerts-feilrate.yaml
