@@ -7,13 +7,13 @@ metadata:
     team: dab
 spec:
   groups:
-    - name: SLOs-nginx_ingress_controller_requests
+    - name: SLOs-haproxy_backend_http_responses_total
       rules:
         - alert: veialrbaktivitetIngerssMetrikkenFinnesIkke
           annotations:
-            message: 'veilarbaktivitet metrikken eksisterer ikke i nginx_ingress_controller_requests'
+            message: 'veilarbaktivitet metrikken eksisterer ikke i haproxy_backend_http_responses_total'
           expr: |
-            absent(nginx_ingress_controller_requests{service="veilarbaktivitet"})
+            absent(haproxy_backend_http_responses_total{proxy="dab_svc_veilarbaktivitet_http"})
           for: 15m
           labels:
             namespace: dab
@@ -23,9 +23,9 @@ spec:
           annotations:
             message: 'High error budget burn for service=veilarbaktivitet (current value: {{ $value }})'
           expr: |
-            sum(nginx_ingress_controller_requests:burnrate5m{service="veilarbaktivitet"}) > (14.40 * (1-0.99900))
+            sum(haproxy_backend_http_responses_total:burnrate5m{proxy="dab_svc_veilarbaktivitet_http"}) > (14.40 * (1-0.99900))
             and
-            sum(nginx_ingress_controller_requests:burnrate1h{service="veilarbaktivitet"}) > (14.40 * (1-0.99900))
+            sum(haproxy_backend_http_responses_total:burnrate1h{proxy="dab_svc_veilarbaktivitet_http"}) > (14.40 * (1-0.99900))
             and
             mellom_kl_06_og_23
           for: 2m
@@ -37,9 +37,9 @@ spec:
           annotations:
             message: 'High error budget burn for service=veilarbaktivitet (current value: {{ $value }})'
           expr: |
-            sum(nginx_ingress_controller_requests:burnrate30m{service="veilarbaktivitet"}) > (6.00 * (1-0.99900))
+            sum(haproxy_backend_http_responses_total:burnrate30m{proxy="dab_svc_veilarbaktivitet_http"}) > (6.00 * (1-0.99900))
             and
-            sum(nginx_ingress_controller_requests:burnrate6h{service="veilarbaktivitet"}) > (6.00 * (1-0.99900))
+            sum(haproxy_backend_http_responses_total:burnrate6h{proxy="dab_svc_veilarbaktivitet_http"}) > (6.00 * (1-0.99900))
             and
             mellom_kl_06_og_23
           for: 15m
@@ -51,9 +51,9 @@ spec:
           annotations:
             message: 'High error budget burn for service=veilarbaktivitet (current value: {{ $value }})'
           expr: |
-            sum(nginx_ingress_controller_requests:burnrate2h{service="veilarbaktivitet"}) > (3.00 * (1-0.99900))
+            sum(haproxy_backend_http_responses_total:burnrate2h{proxy="dab_svc_veilarbaktivitet_http"}) > (3.00 * (1-0.99900))
             and
-            sum(nginx_ingress_controller_requests:burnrate1d{service="veilarbaktivitet"}) > (3.00 * (1-0.99900))
+            sum(haproxy_backend_http_responses_total:burnrate1d{proxy="dab_svc_veilarbaktivitet_http"}) > (3.00 * (1-0.99900))
           for: 1h
           labels:
             namespace: dab
@@ -63,9 +63,9 @@ spec:
           annotations:
             message: 'High error budget burn for service=veilarbaktivitet (current value: {{ $value }})'
           expr: |
-            sum(nginx_ingress_controller_requests:burnrate6h{service="veilarbaktivitet"}) > (1.00 * (1-0.99900))
+            sum(haproxy_backend_http_responses_total:burnrate6h{proxy="dab_svc_veilarbaktivitet_http"}) > (1.00 * (1-0.99900))
             and
-            sum(nginx_ingress_controller_requests:burnrate3d{service="veilarbaktivitet"}) > (1.00 * (1-0.99900))
+            sum(haproxy_backend_http_responses_total:burnrate3d{proxy="dab_svc_veilarbaktivitet_http"}) > (1.00 * (1-0.99900))
           for: 3h
           labels:
             service: veilarbaktivitet
@@ -75,51 +75,51 @@ spec:
             (hour() >= 6 and hour() <= 23)
 
         - expr: |
-            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet",status=~"5.."}[1d]))
+            sum(rate(haproxy_backend_http_responses_total{proxy="dab_svc_veilarbaktivitet_http",code="5xx"}[1d]))
             /
-            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet"}[1d]))
+            sum(rate(haproxy_backend_http_responses_total{proxy="dab_svc_veilarbaktivitet_http"}[1d]))
           labels:
             service: veilarbaktivitet
-          record: nginx_ingress_controller_requests:burnrate1d
+          record: haproxy_backend_http_responses_total:burnrate1d
         - expr: |
-            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet",status=~"5.."}[1h]))
+            sum(rate(haproxy_backend_http_responses_total{proxy="dab_svc_veilarbaktivitet_http",code="5xx"}[1h]))
             /
-            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet"}[1h]))
+            sum(rate(haproxy_backend_http_responses_total{proxy="dab_svc_veilarbaktivitet_http"}[1h]))
           labels:
             service: veilarbaktivitet
-          record: nginx_ingress_controller_requests:burnrate1h
+          record: haproxy_backend_http_responses_total:burnrate1h
         - expr: |
-            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet",status=~"5.."}[2h]))
+            sum(rate(haproxy_backend_http_responses_total{proxy="dab_svc_veilarbaktivitet_http",code="5xx"}[2h]))
             /
-            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet"}[2h]))
+            sum(rate(haproxy_backend_http_responses_total{proxy="dab_svc_veilarbaktivitet_http"}[2h]))
           labels:
             service: veilarbaktivitet
-          record: nginx_ingress_controller_requests:burnrate2h
+          record: haproxy_backend_http_responses_total:burnrate2h
         - expr: |
-            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet",status=~"5.."}[30m]))
+            sum(rate(haproxy_backend_http_responses_total{proxy="dab_svc_veilarbaktivitet_http",code="5xx"}[30m]))
             /
-            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet"}[30m]))
+            sum(rate(haproxy_backend_http_responses_total{proxy="dab_svc_veilarbaktivitet_http"}[30m]))
           labels:
             service: veilarbaktivitet
-          record: nginx_ingress_controller_requests:burnrate30m
+          record: haproxy_backend_http_responses_total:burnrate30m
         - expr: |
-            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet",status=~"5.."}[3d]))
+            sum(rate(haproxy_backend_http_responses_total{proxy="dab_svc_veilarbaktivitet_http",code="5xx"}[3d]))
             /
-            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet"}[3d]))
+            sum(rate(haproxy_backend_http_responses_total{proxy="dab_svc_veilarbaktivitet_http"}[3d]))
           labels:
             service: veilarbaktivitet
-          record: nginx_ingress_controller_requests:burnrate3d
+          record: haproxy_backend_http_responses_total:burnrate3d
         - expr: |
-            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet",status=~"5.."}[5m]))
+            sum(rate(haproxy_backend_http_responses_total{proxy="dab_svc_veilarbaktivitet_http",code="5xx"}[5m]))
             /
-            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet"}[5m]))
+            sum(rate(haproxy_backend_http_responses_total{proxy="dab_svc_veilarbaktivitet_http"}[5m]))
           labels:
             service: veilarbaktivitet
-          record: nginx_ingress_controller_requests:burnrate5m
+          record: haproxy_backend_http_responses_total:burnrate5m
         - expr: |
-            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet",status=~"5.."}[6h]))
+            sum(rate(haproxy_backend_http_responses_total{proxy="dab_svc_veilarbaktivitet_http",code="5xx"}[6h]))
             /
-            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet"}[6h]))
+            sum(rate(haproxy_backend_http_responses_total{proxy="dab_svc_veilarbaktivitet_http"}[6h]))
           labels:
             service: veilarbaktivitet
-          record: nginx_ingress_controller_requests:burnrate6h
+          record: haproxy_backend_http_responses_total:burnrate6h
