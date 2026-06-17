@@ -44,6 +44,7 @@ public enum AktivitetTypeDTO {
         aktivitetskortTypeTilArenaTiltakskode.put(AktivitetskortType.FIREARIG_LONNSTILSKUDD, AktivitetskortType.FIREARIG_LONNSTILSKUDD.name());
         aktivitetskortTypeTilArenaTiltakskode.put(AktivitetskortType.SOMMERJOBB, AktivitetskortType.SOMMERJOBB.name());
         aktivitetskortTypeTilArenaTiltakskode.put(AktivitetskortType.VARIG_TILRETTELAGT_ARBEID_ORDINAER, AktivitetskortType.VARIG_TILRETTELAGT_ARBEID_ORDINAER.name());
+        aktivitetskortTypeTilArenaTiltakskode.put(AktivitetskortType.TILPASSET_JOBBSTOTTE, AktivitetskortType.TILPASSET_JOBBSTOTTE.name());
     }
 
     public static String aktivitetsKortTypeToArenaTiltakskode(AktivitetskortType aktivitetskortType) {
