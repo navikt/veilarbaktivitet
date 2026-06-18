@@ -527,6 +527,54 @@ class AktivitetskortConsumerIntegrationTest(
     }
 
     @Test
+    fun `oppdatering av aktivitetskorttype er tillatt`() {
+        val funksjonellId = UUID.randomUUID()
+        val opprinneligAktivitet = KafkaAktivitetskortWrapperDTO(
+            aktivitetskort(funksjonellId, AktivitetskortStatus.PLANLAGT),
+            AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD,
+            MessageSource.TEAM_TILTAK
+        )
+        val oppdatertAktivitet = KafkaAktivitetskortWrapperDTO(
+            aktivitetskort(funksjonellId, AktivitetskortStatus.PLANLAGT),
+            AktivitetskortType.VARIG_LONNSTILSKUDD,
+            MessageSource.TEAM_TILTAK
+        )
+
+        aktivitetTestService.opprettEksterntAktivitetsKort(
+            listOf(opprinneligAktivitet, oppdatertAktivitet)
+        )
+
+        val aktivitet = hentAktivitet(funksjonellId)
+        assertThat(aktivitet.eksternAktivitet.type).isEqualTo(AktivitetskortType.VARIG_LONNSTILSKUDD)
+        assertThat(aktivitet.transaksjonsType).isEqualTo(AktivitetTransaksjonsType.DETALJER_ENDRET)
+    }
+
+    @Test
+    fun `oppdatering av source team er tillatt`() {
+        val funksjonellId = UUID.randomUUID()
+        val opprinneligAktivitet = KafkaAktivitetskortWrapperDTO(
+            aktivitetskort(funksjonellId, AktivitetskortStatus.PLANLAGT),
+            AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD,
+            MessageSource.TEAM_TILTAK
+        )
+        val oppdatertAktivitet = KafkaAktivitetskortWrapperDTO(
+            aktivitetskort(funksjonellId, AktivitetskortStatus.PLANLAGT),
+            AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD,
+            MessageSource.TEAM_KOMET
+        )
+
+        aktivitetTestService.opprettEksterntAktivitetsKort(
+            listOf(opprinneligAktivitet, oppdatertAktivitet)
+        )
+
+        val aktivitet = hentAktivitet(funksjonellId)
+        assertThat(aktivitet.transaksjonsType).isEqualTo(AktivitetTransaksjonsType.DETALJER_ENDRET)
+
+        val aktivitetData = aktivitetskortService.hentAktivitetskortByFunksjonellId(funksjonellId).get()
+        assertThat(aktivitetData.eksternAktivitetData!!.source).isEqualTo(MessageSource.TEAM_KOMET.name)
+    }
+
+    @Test
     fun skal_handtere_ukjent_source() {
         val funksjonellId = UUID.randomUUID()
         val tiltaksaktivitet = KafkaAktivitetskortWrapperDTO(
@@ -1325,3 +1373,4 @@ fun arenaMeldingHeaders(
 ): ArenaMeldingHeaders {
     return ArenaMeldingHeaders(eksternRefanseId, arenaTiltakskode, mockBruker.oppfolgingsperiodeId, null)
 }
+
