@@ -62,6 +62,7 @@ fun AktivitetData.toArkivTypeTekst(): String {
                 AktivitetskortType.ARBEIDSTRENING -> "Arbeidstrening"
                 AktivitetskortType.VARIG_TILRETTELAGT_ARBEID_I_ORDINAER_VIRKSOMHET -> "Varig tilrettelagt arbeid i ordinær virksomhet"
                 AktivitetskortType.VARIG_TILRETTELAGT_ARBEID_ORDINAER -> "Varig tilrettelagt arbeid i ordinær virksomhet"
+                AktivitetskortType.TILRETTELAGT_ARBEID_ORDINAER -> "Tilrettelagt arbeid i ordinær virksomhet"
                 AktivitetskortType.TILPASSET_JOBBSTOTTE -> "Tilpasset jobbstøtte"
                 AktivitetskortType.INDOPPFAG -> "Oppfølging"
                 AktivitetskortType.ARBFORB -> "Arbeidsforberedende trening"
