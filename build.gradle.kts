@@ -1,30 +1,32 @@
-val spring_boot_version = "4.0.6"
+val spring_boot_version = "4.1.0"
 val tomcat_version = "11.0.22"
 
 extra["tomcat.version"] = tomcat_version
-val common_version = "4.2026.05.29_05.35-a81a45859c9c"
+val common_version = "4.2026.06.22_05.06-8cd381cd084b"
 val dab_common_version = "2026.05.11-16.10.4d6c1e3c3451"
-val poao_tilgang_version = "4.2026.06.03_06.17-9fbee8d2bb00"
+val poao_tilgang_version = "4.2026.06.22_05.28-bc567ee327c9"
 val shedlock_version = "7.7.0"
 val avroVersion = "1.12.1"
 val confluentKafkaAvroVersion = "8.2.0"
-val okhttpVersion = "5.3.2"
+val okhttpVersion = "5.4.0"
+val logback_version = "1.5.34"
+val log4j_version = "2.25.4"
 val _version: String by project
 
 plugins {
-    val kotlinVersion = "2.3.21"
+    val kotlinVersion = "2.4.0"
     id("java")
     kotlin("jvm") version kotlinVersion
     id("org.jetbrains.kotlin.plugin.spring") version kotlinVersion
     kotlin("plugin.lombok") version kotlinVersion
     id("application")
     id("maven-publish")
-    id("org.openapi.generator") version "7.22.0"
+    id("org.openapi.generator") version "7.23.0"
     id("io.github.androa.gradle.plugin.avro") version "0.0.12"
     id("project-report")
     id("jacoco")
-    id("org.sonarqube") version "7.3.0.8198"
-    id("org.springframework.boot") version "4.0.6"
+    id("org.sonarqube") version "7.3.1.8318"
+    id("org.springframework.boot") version "4.1.0"
     id("io.freefair.lombok") version "9.5.0"
 }
 
@@ -44,7 +46,10 @@ configurations.all {
         force(
             "org.apache.tomcat.embed:tomcat-embed-core:$tomcat_version",
             "org.apache.tomcat.embed:tomcat-embed-websocket:$tomcat_version",
-            "org.apache.tomcat.embed:tomcat-embed-el:$tomcat_version"
+            "org.apache.tomcat.embed:tomcat-embed-el:$tomcat_version",
+            "ch.qos.logback:logback-core:$logback_version",
+            "ch.qos.logback:logback-classic:$logback_version",
+            "org.apache.logging.log4j:log4j-core:$log4j_version"
         )
     }
 }
@@ -107,6 +112,7 @@ openApiGenerate {
     configOptions.put("annotationLibrary", "none")
     configOptions.put("documentationProvider", "none")
     configOptions.put("enumPropertyNaming", "UPPERCASE")
+    additionalProperties.put("additionalModelTypeAnnotations", "@com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)")
     outputDir.set("$buildDir/generated")
 }
 
@@ -188,7 +194,7 @@ dependencies {
     implementation("tools.jackson.dataformat:jackson-dataformat-yaml")
 
     // BigQuery
-    implementation(platform("com.google.cloud:libraries-bom:26.83.0"))
+    implementation(platform("com.google.cloud:libraries-bom:26.84.0"))
     implementation("com.google.cloud:google-cloud-bigquery")
 
     implementation("io.getunleash:unleash-client-java:12.2.2")
@@ -198,7 +204,7 @@ dependencies {
 //test dependencies
     testImplementation("no.nav.poao-tilgang:poao-tilgang-test-wiremock:$poao_tilgang_version")
     testImplementation("org.awaitility:awaitility:4.3.0")
-    testImplementation("com.networknt:json-schema-validator:3.0.3")
+    testImplementation("com.networknt:json-schema-validator:3.0.4")
     testImplementation("org.mockito.kotlin:mockito-kotlin:6.3.0")
     testImplementation("io.rest-assured:rest-assured:6.0.0")
 
