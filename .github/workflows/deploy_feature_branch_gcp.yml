@@ -20,7 +20,7 @@ jobs:
       contents: write
       id-token: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
@@ -30,7 +30,7 @@ jobs:
       - name: Execute Gradle build
         run: ./gradlew assemble --scan
       - name: Push docker image to GAR
-        uses: nais/docker-build-push@751a312f0803eb96a05a41fadf51be19b7be362c
+        uses: nais/docker-build-push@05dbb6091b30bd84279c6d64a45ef8782fd410a5
         id: docker-build-push
         with:
           team: dab
@@ -44,9 +44,9 @@ jobs:
         id-token: write
       steps:
         - name: Checkout
-          uses: actions/checkout@v6
+          uses: actions/checkout@v7
         - name: Deploy
-          uses: nais/deploy/actions/deploy@a7f8690f9b367fcbf5348a0a1e21d44f1aae50eb
+          uses: nais/deploy/actions/deploy@5fdd91aaf69bb0d6dd5e5118cdacb639f487b93b
           env:
             CLUSTER: dev-gcp
             RESOURCE: nais/nais-dev-gcp.yaml
