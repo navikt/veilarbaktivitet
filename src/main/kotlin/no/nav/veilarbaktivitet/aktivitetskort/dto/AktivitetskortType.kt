@@ -66,9 +66,7 @@ enum class AktivitetskortType {
     HOYERE_YRKESFAGLIG_UTDANNING,
     FIREARIG_LONNSTILSKUDD,
     SOMMERJOBB,
-    TILPASSET_JOBBSTOTTE, // Kun i dev, erstattes av VARIG_TILRETTELAGT_ARBEID_ORDINAER før lansering
-    VARIG_TILRETTELAGT_ARBEID_ORDINAER, //Kun i dev, Tidligere TILPASSET_JOBBSTOTTE
-    TILRETTELAGT_ARBEID_ORDINAER; //Erstatter TILPASSET_JOBBSTOTTE OG VARIG_TILRETTELAGT_ARBEID_ORDINAER
+    TILRETTELAGT_ARBEID_ORDINAER;
 
     companion object {
         private val logger = LoggerFactory.getLogger(this::class.java)
