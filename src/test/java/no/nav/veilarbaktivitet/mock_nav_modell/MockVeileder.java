@@ -52,10 +52,14 @@ public class MockVeileder extends RestassuredUser {
     }
 
     public void setNasjonalTilgang(boolean nationalTilgang) {
-        if(nationalTilgang) {
-            navAnsatt.getAdGrupper().add(DomainKt.getTilgjengligeAdGrupper().getGosysNasjonal());
-        }else {
-            navAnsatt.getAdGrupper().remove(DomainKt.getTilgjengligeAdGrupper().getGosysNasjonal());
+        // etter at nasjonal-rollen forsvant fra poao-tilgang har det blitt lagt til at tilgang til enheten "NAV Viken"
+        // vil tilsvare nasjonal tilgang. Antar det er en midlertidig løsning frem til noen lager noe mer presist.
+        // https://github.com/navikt/poao-tilgang/blob/main/poao-tilgang-test-core/src/main/kotlin/no/nav/poao_tilgang/poao_tilgang_test_core/Providers.kt#L90
+        NavEnhetTilgang enhetSomGirTilgang = new NavEnhetTilgang("9999", "NAV Viken", List.of());
+        if (nationalTilgang) {
+            navAnsatt.getEnheter().add(enhetSomGirTilgang);
+        } else {
+            navAnsatt.getEnheter().remove(enhetSomGirTilgang);
         }
     }
 }

@@ -61,6 +61,7 @@ fun AktivitetData.toArkivTypeTekst(): String {
                 AktivitetskortType.MENTOR -> "Mentor"
                 AktivitetskortType.ARBEIDSTRENING -> "Arbeidstrening"
                 AktivitetskortType.VARIG_TILRETTELAGT_ARBEID_I_ORDINAER_VIRKSOMHET -> "Varig tilrettelagt arbeid i ordinær virksomhet"
+                AktivitetskortType.TILRETTELAGT_ARBEID_ORDINAER -> "Tilrettelagt arbeid i ordinær virksomhet"
                 AktivitetskortType.INDOPPFAG -> "Oppfølging"
                 AktivitetskortType.ARBFORB -> "Arbeidsforberedende trening"
                 AktivitetskortType.AVKLARAG -> "Avklaring"
@@ -81,7 +82,6 @@ fun AktivitetData.toArkivTypeTekst(): String {
                 AktivitetskortType.HOYERE_YRKESFAGLIG_UTDANNING -> "Høyere yrkesfaglig utdanning"
                 AktivitetskortType.FIREARIG_LONNSTILSKUDD -> "Fireårig lønnstilskudd"
                 AktivitetskortType.SOMMERJOBB -> "Sommerjobb"
-                AktivitetskortType.TILPASSET_JOBBSTOTTE -> "Tilpasset jobbstøtte"
             }
         }
     }

@@ -12,13 +12,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - uses: actions/setup-node@v6.4.0
         with:
           node-version: 19
 
       - name: install generator
-        run: npm install -g @asyncapi/cli --ignore-scripts
+        run: npm install -g @asyncapi/cli@v4.1.1 --ignore-scripts
 
       - name: generate documentaion (denne tar litt tid)
         working-directory: src/main/resources/schemas/akaas
