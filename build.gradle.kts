@@ -2,7 +2,7 @@ val spring_boot_version = "4.1.0"
 val tomcat_version = "11.0.22"
 
 extra["tomcat.version"] = tomcat_version
-val common_version = "4.2026.06.22_05.06-8cd381cd084b"
+val common_version = "4.2026.06.24_08.27-d324901a85d7"
 val dab_common_version = "2026.05.11-16.10.4d6c1e3c3451"
 val poao_tilgang_version = "4.2026.06.22_05.28-bc567ee327c9"
 val shedlock_version = "7.7.0"
@@ -10,7 +10,7 @@ val avroVersion = "1.12.1"
 val confluentKafkaAvroVersion = "8.2.0"
 val okhttpVersion = "5.4.0"
 val logback_version = "1.5.34"
-val log4j_version = "2.25.4"
+val log4j_version = "2.26.0"
 val _version: String by project
 
 plugins {
