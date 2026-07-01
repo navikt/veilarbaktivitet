@@ -39,6 +39,7 @@ public class AktivitetAppService {
     private final PersonService personService;
     private final BigQueryClient bigQueryClient;
     private final OversiktenService oversiktenService;
+    private final AktivitetOppdateringService aktivitetOppdateringService;
 
     private static final Set<AktivitetTypeData> TYPER_SOM_KAN_ENDRES_EKSTERNT = new HashSet<>(Arrays.asList(
             AktivitetTypeData.EGENAKTIVITET,
@@ -154,7 +155,7 @@ public class AktivitetAppService {
         }
 
         if (authService.erInternBruker()) {
-            oppdaterSomNav(aktivitet, original);
+            aktivitetOppdateringService.oppdaterSomNav(aktivitet, original);
             return aktivitetService.hentAktivitetMedForhaandsorientering(aktivitet.getId());
         } else if (authService.erEksternBruker()) {
             oppdaterSomEksternBruker(aktivitet, original);

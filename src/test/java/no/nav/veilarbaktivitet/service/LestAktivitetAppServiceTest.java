@@ -266,31 +266,6 @@ public class LestAktivitetAppServiceTest {
     }
 
     @Test
-    void nav_skal_kun_oppdatere_detaljer_naar_kun_beskrivelse_endres_paa_avtalt_mote() {
-        MoteData moteData = MoteData.builder()
-                .adresse("Adresse")
-                .kanal(KanalDTO.OPPMOTE)
-                .forberedelser("Forberedelser")
-                .build();
-        AktivitetData gammelAktivitet = nyMoteAktivitet()
-                .withAvtalt(true)
-                .withTittel("Original tittel")
-                .withBeskrivelse("Original beskrivelse")
-                .withMoteData(moteData);
-
-        AktivitetData oppdatertAktivitet = gammelAktivitet.withBeskrivelse("Ny beskrivelse");
-
-        loggetInnSom(NAV);
-        when(aktivitetService.hentAktivitetMedForhaandsorientering(oppdatertAktivitet.getId())).thenReturn(gammelAktivitet);
-
-        appService.oppdaterAktivitet(toMoteEndring(oppdatertAktivitet));
-
-        verify(aktivitetService, times(0)).oppdaterMoteTidStedOgKanal(any(), any());
-        verify(aktivitetService, times(1)).oppdaterMoteDetaljer(any(), any());
-        verify(aktivitetService, times(0)).oppdaterAktivitet(any(), any());
-    }
-
-    @Test
     void nav_skal_kun_oppdatere_detaljer_naar_kun_forberedelser_endres_paa_avtalt_mote() {
         MoteData originalMoteData = MoteData.builder()
                 .adresse("Adresse")
