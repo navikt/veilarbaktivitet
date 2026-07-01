@@ -31,9 +31,9 @@ open class AktiviteterTilKafkaService(
         JobRunner.run("aktiviteter_til_portefolje_paa_kafka") {
             val batchResults =
                 batchTrackingDAO.withOffset(BatchJob.Aktiviteter_til_portefolje) { sisteProsesserteVersjon ->
-                    val meldinger =
+                    val aktiviteter =
                         dao.hentAktiviteterSomIkkeErSendtTilPortefoljePaAiven(sisteProsesserteVersjon, maksAntall)
-                    meldinger.map {
+                    aktiviteter.map {
                         try {
                             producerService.sendAktivitetMelding(it)
                             return@map BatchResult.Success(it.version)
@@ -49,6 +49,41 @@ open class AktiviteterTilKafkaService(
                 batchResults.filter { it is BatchResult.Success }.size,
                 batchResults.filter { it is BatchResult.Failure }.size)
                 }
+            if (!batchResults.filter { it is BatchResult.Failure }.isEmpty()) {
+                log.warn("Errors in aktiviteter_til_portefolje_paa_kafka batch. Investigate")
+            }
+        }
+    }
+
+    @Scheduled(
+        initialDelayString = "\${app.env.scheduled.portefolje.initialDelay}",
+        fixedDelayString = "10000"
+    )
+    @SchedulerLock(name = "aktiviteter_arena_kafka_scheduledTask", lockAtMostFor = "PT2M")
+    @Timed
+    open fun sendOppTil5000ArenaAktiviterTilPortefolje() {
+        val maksAntall = 5000L
+        JobRunner.run("aktiviteter_til_portefolje_paa_kafka") {
+            val batchResults =
+                batchTrackingDAO.withOffset(BatchJob.ArenaAktiviteter_til_portefolje) { sisteProsesserteVersjon ->
+                    val arenaAktiviteter =
+                        dao.hentArenaAktiviteterSomIkkeErSendtTilPortefoljePaAiven(sisteProsesserteVersjon, maksAntall)
+                    arenaAktiviteter.map {
+                        try {
+                            producerService.sendAktivitetMelding(it)
+                            return@map BatchResult.Success(it.version)
+                        } catch (e: Exception) {
+                            log.warn("Error during message publishing to veilarbportefolje", e)
+                            return@map BatchResult.Failure(it.version)
+                        }
+                    }
+                }
+            if (batchResults.size > 0) {
+                log.info("Processed {} messages in aktiviteter_til_portefolje_paa_kafka batch. successful: {} failed :{}",
+                    batchResults.size,
+                    batchResults.filter { it is BatchResult.Success }.size,
+                    batchResults.filter { it is BatchResult.Failure }.size)
+            }
             if (!batchResults.filter { it is BatchResult.Failure }.isEmpty()) {
                 log.warn("Errors in aktiviteter_til_portefolje_paa_kafka batch. Investigate")
             }
