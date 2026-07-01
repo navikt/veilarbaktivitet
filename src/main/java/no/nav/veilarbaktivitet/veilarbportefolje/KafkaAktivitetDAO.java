@@ -39,7 +39,12 @@ public class KafkaAktivitetDAO {
                 LEFT JOIN EKSTERNAKTIVITET EA on A.AKTIVITET_ID = EA.AKTIVITET_ID and A.VERSJON = EA.VERSJON 
                 WHERE A.PORTEFOLJE_KAFKA_OFFSET_AIVEN IS NULL
                 AND (EA.OPPRETTET_SOM_HISTORISK != 1 OR EA.OPPRETTET_SOM_HISTORISK IS NULL)
-                AND (EA.AKTIVITETKORT_TYPE IS NULL OR EA.AKTIVITETKORT_TYPE != 'ARENA_TILTAK')
+                AND (EA.AKTIVITETKORT_TYPE IS NULL 
+                         -- Team OBO ønsket at vi bare skal publisere disse fire tiltakstypene på aktiviteter-til-portefølje-topicen
+                         -- Resten av tiltakene er "ikke lenger aktive i Arena". 
+                         -- https://nav-it.slack.com/archives/CC9GYTA2C/p1781784781394409
+                         OR (EA.AKTIVITETKORT_TYPE in ('FORSFAGENK', 'FORSHOYUTD', 'FUNKSJASS', 'VV') OR EA.AKTIVITETKORT_TYPE != 'ARENA_TILTAK')
+                    )
                 AND A.VERSJON > :sistBehandletVersjon
                 ORDER BY A.VERSJON
                 LIMIT :maksAntall
