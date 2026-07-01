@@ -48,10 +48,6 @@ public class Database {
         return jdbcTemplate.queryForObject(sql, cls);
     }
 
-    public long nesteFraSekvens(String sekvensNavn) {
-        return jdbcTemplate.queryForObject("select " + sekvensNavn + ".nextval from dual", Long.class);
-    }
-
     public static Date hentDato(ResultSet rs, String kolonneNavn) throws SQLException {
         return ofNullable(rs.getTimestamp(kolonneNavn))
                 .map(Timestamp::getTime)

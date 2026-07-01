@@ -89,6 +89,7 @@ public class KvitteringDAO {
                          WHERE FERDIG_BEHANDLET IS NULL
                          AND VARSEL_KVITTERING_STATUS = 'OK'
                          AND TYPE = :type
+                         ORDER BY id
                          FETCH FIRST :limit ROWS ONLY
                         """, parameterSource, rowmapper);
     }
@@ -104,6 +105,7 @@ public class KvitteringDAO {
                  WHERE FERDIG_BEHANDLET IS NULL
                  AND VARSEL_KVITTERING_STATUS = 'FEILET'
                  AND TYPE = :type
+                 ORDER BY id
                  FETCH FIRST :limit ROWS ONLY
                 """, parameterSource, rowmapper);
     }

@@ -5,8 +5,13 @@
     "character_maximum_length": null
   },
   {
-    "column_name": "versjon",
-    "data_type": "numeric",
+    "column_name": "ansettelsesforhold",
+    "data_type": "character varying",
+    "character_maximum_length": null
+  },
+  {
+    "column_name": "arbeidstid",
+    "data_type": "character varying",
     "character_maximum_length": null
   },
   {
@@ -15,13 +20,8 @@
     "character_maximum_length": null
   },
   {
-    "column_name": "ansettelsesforhold",
-    "data_type": "character varying",
-    "character_maximum_length": null
-  },
-  {
-    "column_name": "arbeidstid",
-    "data_type": "character varying",
+    "column_name": "versjon",
+    "data_type": "numeric",
     "character_maximum_length": null
   }
 ]

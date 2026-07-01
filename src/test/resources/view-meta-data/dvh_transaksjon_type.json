@@ -1,7 +1,7 @@
 [
   {
-    "column_name": "opprettet_dato",
-    "data_type": "timestamp without time zone",
+    "column_name": "endret_av",
+    "data_type": "character varying",
     "character_maximum_length": null
   },
   {
@@ -10,17 +10,17 @@
     "character_maximum_length": null
   },
   {
-    "column_name": "transaksjons_type_kode",
-    "data_type": "character varying",
-    "character_maximum_length": null
-  },
-  {
     "column_name": "opprettet_av",
     "data_type": "character varying",
     "character_maximum_length": null
   },
   {
-    "column_name": "endret_av",
+    "column_name": "opprettet_dato",
+    "data_type": "timestamp without time zone",
+    "character_maximum_length": null
+  },
+  {
+    "column_name": "transaksjons_type_kode",
     "data_type": "character varying",
     "character_maximum_length": null
   }

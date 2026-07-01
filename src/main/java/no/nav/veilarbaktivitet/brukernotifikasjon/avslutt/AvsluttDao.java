@@ -27,6 +27,7 @@ public class AvsluttDao {
                         " SELECT BRUKERNOTIFIKASJON_ID, FOEDSELSNUMMER, OPPFOLGINGSPERIODE" +
                         " from BRUKERNOTIFIKASJON B" +
                         " where STATUS = :status" +
+                        " order by B.ID" +
                         " fetch first :limit rows only",
                 param,
                 skalAvsluttesMapper);

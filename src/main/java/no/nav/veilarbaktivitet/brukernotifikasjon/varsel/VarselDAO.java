@@ -82,6 +82,7 @@ public class VarselDAO {
                                  WHERE
                                      B.STATUS = 'PENDING' AND
                                      A.AKTIVITET_ID IS NULL
+                                 ORDER BY B.ID
                                  LIMIT :limit;
                                 """,
                         parameterSource, rowMapper);
