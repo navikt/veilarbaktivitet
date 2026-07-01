@@ -1,15 +1,15 @@
 val spring_boot_version = "4.1.0"
-val tomcat_version = "11.0.22"
+val tomcat_version = "11.0.23"
 
 extra["tomcat.version"] = tomcat_version
-val common_version = "4.2026.06.24_08.27-d324901a85d7"
+val common_version = "4.2026.06.25_10.50-baa9d54e3cd8"
 val dab_common_version = "2026.05.11-16.10.4d6c1e3c3451"
 val poao_tilgang_version = "4.2026.06.22_05.28-bc567ee327c9"
 val shedlock_version = "7.7.0"
 val avroVersion = "1.12.1"
 val confluentKafkaAvroVersion = "8.2.0"
 val okhttpVersion = "5.4.0"
-val logback_version = "1.5.34"
+val logback_version = "1.5.36"
 val log4j_version = "2.26.0"
 val _version: String by project
 
@@ -204,7 +204,7 @@ dependencies {
 //test dependencies
     testImplementation("no.nav.poao-tilgang:poao-tilgang-test-wiremock:$poao_tilgang_version")
     testImplementation("org.awaitility:awaitility:4.3.0")
-    testImplementation("com.networknt:json-schema-validator:3.0.4")
+    testImplementation("com.networknt:json-schema-validator:3.0.5")
     testImplementation("org.mockito.kotlin:mockito-kotlin:6.3.0")
     testImplementation("io.rest-assured:rest-assured:6.0.0")
 
@@ -215,5 +215,6 @@ dependencies {
     testImplementation("org.springframework.kafka:spring-kafka-test")
     testImplementation("org.mockito:mockito-core")
     testImplementation("io.zonky.test:embedded-database-spring-test:2.8.0")
+    testImplementation(platform("io.zonky.test.postgres:embedded-postgres-binaries-bom:18.4.0"))
     testImplementation("io.zonky.test:embedded-postgres:2.2.2")
 }

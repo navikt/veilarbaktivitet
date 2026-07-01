@@ -5,13 +5,13 @@
     "character_maximum_length": null
   },
   {
-    "column_name": "versjon",
+    "column_name": "antall_stillinger_sokes",
     "data_type": "numeric",
     "character_maximum_length": null
   },
   {
-    "column_name": "antall_stillinger_sokes",
-    "data_type": "numeric",
+    "column_name": "avtale_oppfolging",
+    "data_type": "text",
     "character_maximum_length": null
   },
   {
@@ -20,8 +20,8 @@
     "character_maximum_length": null
   },
   {
-    "column_name": "avtale_oppfolging",
-    "data_type": "text",
+    "column_name": "versjon",
+    "data_type": "numeric",
     "character_maximum_length": null
   }
 ]

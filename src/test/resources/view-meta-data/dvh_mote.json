@@ -1,7 +1,7 @@
 [
   {
-    "column_name": "versjon",
-    "data_type": "numeric",
+    "column_name": "adresse",
+    "data_type": "character varying",
     "character_maximum_length": null
   },
   {
@@ -10,8 +10,13 @@
     "character_maximum_length": null
   },
   {
-    "column_name": "referat_publisert",
-    "data_type": "numeric",
+    "column_name": "forberedelser",
+    "data_type": "text",
+    "character_maximum_length": null
+  },
+  {
+    "column_name": "kanal",
+    "data_type": "character varying",
     "character_maximum_length": null
   },
   {
@@ -20,18 +25,13 @@
     "character_maximum_length": null
   },
   {
-    "column_name": "forberedelser",
-    "data_type": "text",
+    "column_name": "referat_publisert",
+    "data_type": "numeric",
     "character_maximum_length": null
   },
   {
-    "column_name": "adresse",
-    "data_type": "character varying",
-    "character_maximum_length": null
-  },
-  {
-    "column_name": "kanal",
-    "data_type": "character varying",
+    "column_name": "versjon",
+    "data_type": "numeric",
     "character_maximum_length": null
   }
 ]

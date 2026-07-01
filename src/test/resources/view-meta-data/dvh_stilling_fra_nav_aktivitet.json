@@ -1,36 +1,11 @@
 [
   {
-    "column_name": "cv_kan_deles",
-    "data_type": "numeric",
-    "character_maximum_length": null
-  },
-  {
-    "column_name": "cv_kan_deles_tidspunkt",
-    "data_type": "timestamp without time zone",
-    "character_maximum_length": null
-  },
-  {
-    "column_name": "svarfrist",
-    "data_type": "timestamp without time zone",
-    "character_maximum_length": null
-  },
-  {
-    "column_name": "versjon",
-    "data_type": "numeric",
-    "character_maximum_length": null
-  },
-  {
-    "column_name": "cv_kan_deles_avtalt_dato",
-    "data_type": "timestamp without time zone",
-    "character_maximum_length": null
-  },
-  {
     "column_name": "aktivitet_id",
     "data_type": "numeric",
     "character_maximum_length": null
   },
   {
-    "column_name": "stillingsid",
+    "column_name": "arbeidsgiver",
     "data_type": "character varying",
     "character_maximum_length": 255
   },
@@ -40,7 +15,37 @@
     "character_maximum_length": 255
   },
   {
-    "column_name": "varselid",
+    "column_name": "bestillingsid",
+    "data_type": "character varying",
+    "character_maximum_length": 255
+  },
+  {
+    "column_name": "cv_kan_deles",
+    "data_type": "numeric",
+    "character_maximum_length": null
+  },
+  {
+    "column_name": "cv_kan_deles_av",
+    "data_type": "character varying",
+    "character_maximum_length": null
+  },
+  {
+    "column_name": "cv_kan_deles_av_type",
+    "data_type": "character varying",
+    "character_maximum_length": null
+  },
+  {
+    "column_name": "cv_kan_deles_avtalt_dato",
+    "data_type": "timestamp without time zone",
+    "character_maximum_length": null
+  },
+  {
+    "column_name": "cv_kan_deles_tidspunkt",
+    "data_type": "timestamp without time zone",
+    "character_maximum_length": null
+  },
+  {
+    "column_name": "kontaktperson_mobil",
     "data_type": "character varying",
     "character_maximum_length": 255
   },
@@ -55,7 +60,12 @@
     "character_maximum_length": 255
   },
   {
-    "column_name": "kontaktperson_mobil",
+    "column_name": "livslopsstatus",
+    "data_type": "character varying",
+    "character_maximum_length": 255
+  },
+  {
+    "column_name": "soknadsfrist",
     "data_type": "character varying",
     "character_maximum_length": 255
   },
@@ -65,33 +75,23 @@
     "character_maximum_length": 255
   },
   {
-    "column_name": "livslopsstatus",
+    "column_name": "stillingsid",
     "data_type": "character varying",
     "character_maximum_length": 255
   },
   {
-    "column_name": "cv_kan_deles_av",
-    "data_type": "character varying",
+    "column_name": "svarfrist",
+    "data_type": "timestamp without time zone",
     "character_maximum_length": null
   },
   {
-    "column_name": "cv_kan_deles_av_type",
+    "column_name": "varselid",
     "data_type": "character varying",
+    "character_maximum_length": 255
+  },
+  {
+    "column_name": "versjon",
+    "data_type": "numeric",
     "character_maximum_length": null
-  },
-  {
-    "column_name": "soknadsfrist",
-    "data_type": "character varying",
-    "character_maximum_length": 255
-  },
-  {
-    "column_name": "arbeidsgiver",
-    "data_type": "character varying",
-    "character_maximum_length": 255
-  },
-  {
-    "column_name": "bestillingsid",
-    "data_type": "character varying",
-    "character_maximum_length": 255
   }
 ]

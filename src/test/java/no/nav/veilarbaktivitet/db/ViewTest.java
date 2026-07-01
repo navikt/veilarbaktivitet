@@ -81,7 +81,8 @@ class ViewTest {
                 "DATA_TYPE, " +
                 "CHARACTER_MAXIMUM_LENGTH " +
                 "FROM INFORMATION_SCHEMA.COLUMNS " +
-                "WHERE TABLE_NAME = '" + view.toLowerCase() + "';"
+                "WHERE TABLE_NAME = '" + view.toLowerCase() + "' " +
+                "ORDER BY COLUMN_NAME;"
         );
     }
 

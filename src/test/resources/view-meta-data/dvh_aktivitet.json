@@ -5,67 +5,7 @@
     "character_maximum_length": null
   },
   {
-    "column_name": "versjon",
-    "data_type": "numeric",
-    "character_maximum_length": null
-  },
-  {
-    "column_name": "fra_dato",
-    "data_type": "timestamp without time zone",
-    "character_maximum_length": null
-  },
-  {
-    "column_name": "til_dato",
-    "data_type": "timestamp without time zone",
-    "character_maximum_length": null
-  },
-  {
-    "column_name": "opprettet_dato",
-    "data_type": "timestamp without time zone",
-    "character_maximum_length": null
-  },
-  {
-    "column_name": "endret_dato",
-    "data_type": "timestamp without time zone",
-    "character_maximum_length": null
-  },
-  {
-    "column_name": "avtalt_flagg",
-    "data_type": "numeric",
-    "character_maximum_length": null
-  },
-  {
-    "column_name": "historisk_dato",
-    "data_type": "timestamp without time zone",
-    "character_maximum_length": null
-  },
-  {
-    "column_name": "gjeldende_flagg",
-    "data_type": "numeric",
-    "character_maximum_length": null
-  },
-  {
-    "column_name": "automatisk_opprettet",
-    "data_type": "numeric",
-    "character_maximum_length": null
-  },
-  {
-    "column_name": "lenke",
-    "data_type": "text",
-    "character_maximum_length": null
-  },
-  {
-    "column_name": "beskrivelse",
-    "data_type": "text",
-    "character_maximum_length": null
-  },
-  {
-    "column_name": "oppfolgingsperiode_uuid",
-    "data_type": "character varying",
-    "character_maximum_length": 40
-  },
-  {
-    "column_name": "transaksjons_type",
+    "column_name": "aktivitet_type_kode",
     "data_type": "character varying",
     "character_maximum_length": null
   },
@@ -75,13 +15,8 @@
     "character_maximum_length": null
   },
   {
-    "column_name": "tittel",
-    "data_type": "character varying",
-    "character_maximum_length": null
-  },
-  {
-    "column_name": "aktivitet_type_kode",
-    "data_type": "character varying",
+    "column_name": "automatisk_opprettet",
+    "data_type": "numeric",
     "character_maximum_length": null
   },
   {
@@ -90,8 +25,13 @@
     "character_maximum_length": null
   },
   {
-    "column_name": "lagt_inn_av",
-    "data_type": "character varying",
+    "column_name": "avtalt_flagg",
+    "data_type": "numeric",
+    "character_maximum_length": null
+  },
+  {
+    "column_name": "beskrivelse",
+    "data_type": "text",
     "character_maximum_length": null
   },
   {
@@ -100,8 +40,68 @@
     "character_maximum_length": null
   },
   {
+    "column_name": "endret_dato",
+    "data_type": "timestamp without time zone",
+    "character_maximum_length": null
+  },
+  {
+    "column_name": "fra_dato",
+    "data_type": "timestamp without time zone",
+    "character_maximum_length": null
+  },
+  {
+    "column_name": "gjeldende_flagg",
+    "data_type": "numeric",
+    "character_maximum_length": null
+  },
+  {
+    "column_name": "historisk_dato",
+    "data_type": "timestamp without time zone",
+    "character_maximum_length": null
+  },
+  {
+    "column_name": "lagt_inn_av",
+    "data_type": "character varying",
+    "character_maximum_length": null
+  },
+  {
+    "column_name": "lenke",
+    "data_type": "text",
+    "character_maximum_length": null
+  },
+  {
     "column_name": "livslopstatus_kode",
     "data_type": "character varying",
+    "character_maximum_length": null
+  },
+  {
+    "column_name": "oppfolgingsperiode_uuid",
+    "data_type": "character varying",
+    "character_maximum_length": 40
+  },
+  {
+    "column_name": "opprettet_dato",
+    "data_type": "timestamp without time zone",
+    "character_maximum_length": null
+  },
+  {
+    "column_name": "til_dato",
+    "data_type": "timestamp without time zone",
+    "character_maximum_length": null
+  },
+  {
+    "column_name": "tittel",
+    "data_type": "character varying",
+    "character_maximum_length": null
+  },
+  {
+    "column_name": "transaksjons_type",
+    "data_type": "character varying",
+    "character_maximum_length": null
+  },
+  {
+    "column_name": "versjon",
+    "data_type": "numeric",
     "character_maximum_length": null
   }
 ]
