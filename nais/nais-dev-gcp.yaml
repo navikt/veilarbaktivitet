@@ -34,6 +34,8 @@ spec:
     requests:
       cpu: 200m
       memory: 768Mi
+  strategy:
+    type: Recreate
   envFrom:
     - secret: veilarbaktivitet-unleash-api-token
     - secret: veilarbaktivitet-kassering-identer
@@ -112,8 +114,8 @@ spec:
   gcp:
     sqlInstances:
       - name: veilarbaktivitet
-        type: POSTGRES_14
-        tier: db-custom-1-3840
+        type: POSTGRES_15
+        tier: db-custom-4-15360
         diskType: SSD
         diskAutoresize: true
         flags: # Nødvendig for datastreams
