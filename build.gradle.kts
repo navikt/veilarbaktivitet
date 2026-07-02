@@ -9,7 +9,7 @@ val shedlock_version = "7.7.0"
 val avroVersion = "1.12.1"
 val confluentKafkaAvroVersion = "8.2.0"
 val okhttpVersion = "5.4.0"
-val logback_version = "1.5.36"
+val logback_version = "1.5.37"
 val log4j_version = "2.26.0"
 val _version: String by project
 
