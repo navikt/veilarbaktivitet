@@ -114,7 +114,7 @@ spec:
   gcp:
     sqlInstances:
       - name: veilarbaktivitet
-        type: POSTGRES_16
+        type: POSTGRES_17
         tier: db-custom-4-15360
         diskType: SSD
         diskAutoresize: true
