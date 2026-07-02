@@ -56,12 +56,8 @@ public class KafkaAktivitetDAO {
                 SELECT EA.AKTIVITET_ID AS EA_KEY, EA.TILTAK_KODE, EA.ARENA_ID, EA.AKTIVITETKORT_TYPE, A.* 
                 FROM EKSTERNAKTIVITET EA 
                     JOIN AKTIVITET A on A.AKTIVITET_ID = EA.AKTIVITET_ID and A.VERSJON = EA.VERSJON 
-                    LEFT JOIN veilarbaktivitet.veilarbaktivitet.id_mappinger on A.aktivitet_id = id_mappinger.aktivitet_id AND A.funksjonell_id = id_mappinger.funksjonell_id
                 WHERE A.PORTEFOLJE_KAFKA_OFFSET_AIVEN IS NULL
                 AND EA.OPPRETTET_SOM_HISTORISK != 1
-                -- Sikrer at vi ikke sender ut aktiviteter som er tatt over av andre team for de dukker opp
-                -- i spørringen over siden de har fått egen aktivitetkort_type
-                AND id_mappinger.ekstern_referanse_id IS NULL
                 -- Dette er bare kort som er migrert av team dab
                 AND EA.aktivitetkort_type = 'ARENA_TILTAK'
                 -- Team OBO ønsket at vi bare skal publisere disse fire tiltakstypene på aktiviteter-til-portefølje-topicen

@@ -46,10 +46,10 @@ open class AktiviteterTilKafkaService(
             if (batchResults.size > 0) {
             log.info("Processed {} messages in aktiviteter_til_portefolje_paa_kafka batch. successful: {} failed :{}",
                 batchResults.size,
-                batchResults.filter { it is BatchResult.Success }.size,
-                batchResults.filter { it is BatchResult.Failure }.size)
+                batchResults.filterIsInstance<BatchResult.Success>().size,
+                batchResults.filterIsInstance<BatchResult.Failure>().size)
                 }
-            if (!batchResults.filter { it is BatchResult.Failure }.isEmpty()) {
+            if (!batchResults.filterIsInstance<BatchResult.Failure>().isEmpty()) {
                 log.warn("Errors in aktiviteter_til_portefolje_paa_kafka batch. Investigate")
             }
         }
@@ -79,13 +79,13 @@ open class AktiviteterTilKafkaService(
                     }
                 }
             if (batchResults.size > 0) {
-                log.info("Processed {} messages in aktiviteter_til_portefolje_paa_kafka batch. successful: {} failed :{}",
-                    batchResults.size,
-                    batchResults.filter { it is BatchResult.Success }.size,
-                    batchResults.filter { it is BatchResult.Failure }.size)
+                log.info("Processed {} messages in arena_aktiviteter_til_portefolje_paa_kafka batch. successful: {} failed :{}",
+                batchResults.size,
+                batchResults.filterIsInstance<BatchResult.Success>().size,
+                batchResults.filterIsInstance<BatchResult.Failure>().size)
             }
-            if (!batchResults.filter { it is BatchResult.Failure }.isEmpty()) {
-                log.warn("Errors in aktiviteter_til_portefolje_paa_kafka batch. Investigate")
+            if (!batchResults.filterIsInstance<BatchResult.Failure>().isEmpty()) {
+                log.warn("Errors in arena_aktiviteter_til_portefolje_paa_kafka batch. Investigate")
             }
         }
     }
