@@ -9,7 +9,7 @@ fun Historikk.tilAktivitetHistorikk(): AktivitetHistorikk {
     return AktivitetHistorikk(
         endringer = this.endringer.map { AktivitetEndring(
             formattertTidspunkt = norskDatoOgKlokkeslett(it.tidspunkt),
-            beskrivelse = it.beskrivelseForArkiv
+            beskrivelse = it.beskrivelseForArkiv.joinToString { "\n" } // TODO: Fiks dette ordentlig
         ) }
     )
 }
