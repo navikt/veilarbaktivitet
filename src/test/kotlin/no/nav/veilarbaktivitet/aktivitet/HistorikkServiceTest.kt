@@ -9,6 +9,7 @@ import no.nav.veilarbaktivitet.util.DateUtils
 import no.nav.veilarbaktivitet.util.DateUtils.zonedDateTimeToDate
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.*
@@ -23,6 +24,23 @@ class HistorikkServiceTest {
 
         assertThat(historikk.size).isEqualTo(1)
         assertThat(historikk[aktivitet.id]!!.endringer).hasSize(1)
+    }
+
+    @Test
+    fun `Skal lage historikk på endret møtetid`() {
+        val aktivitet = nyAktivitet(AktivitetTypeData.MOTE)
+        aktivitet.withFraDato(Date.from(Instant.parse("2022-09-02T11:00:00Z")))
+        val oppdatertAktivitet = endreAktivitet(aktivitet, moteData = aktivitet.moteData, tilDato = Date.from(Instant.parse("2022-09-02T11:00:00Z")), transaksjonsType = AktivitetTransaksjonsType.MOTE_TID_OG_STED_ENDRET)
+        // TODO: Må ikke bare se på fra og til? Fikse dette..
+
+        val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
+
+        assert(
+            historikk[aktivitet.id]!!,
+            oppdatertAktivitet,
+            "NAV endret til dato på aktiviteten fra 28. september 1947 til 2. september 2022",
+            "${oppdatertAktivitet.endretAv} endret tid eller sted for møtet"
+        )
     }
 
     @Test
@@ -350,7 +368,8 @@ class HistorikkServiceTest {
         avtaltMedNav: Boolean = false,
         tilDato: Date? = aktivitet.tilDato,
         oppdatertSoknadsstatus: Soknadsstatus? = null,
-        oppdatertStillingsoekAktivitetData: StillingsoekAktivitetData? = null
+        oppdatertStillingsoekAktivitetData: StillingsoekAktivitetData? = null,
+        moteData: MoteData? = null,
     ): AktivitetData {
         return AktivitetData.builder()
             .id(aktivitet.id) // Hvis denne persisteres, vil den få en ny id fra sekvens
@@ -374,6 +393,7 @@ class HistorikkServiceTest {
             .avtalt(avtaltMedNav)
             .stillingFraNavData(aktivitet.stillingFraNavData?.also { it.soknadsstatus = oppdatertSoknadsstatus })
             .stillingsSoekAktivitetData(oppdatertStillingsoekAktivitetData)
+            .moteData(moteData)
             .malid("2").build()
     }
 }

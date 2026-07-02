@@ -98,11 +98,10 @@ private fun hentEndringstekster(
             BLITT_AVTALT -> "$endretAvTekst merket aktiviteten som \"Avtalt med NAV\""
             KASSERT -> "$endretAvTekst kasserte aktiviteten"
             STATUS_ENDRET -> "$endretAvTekst flyttet aktiviteten fra ${forrigeVersjon?.status?.text} til ${oppdatertVersjon.status?.text}"
-            AVTALT_DATO_ENDRET -> """
-                ${'$'}endretAvTekst endret til dato på aktiviteten fra ${
-                    if (forrigeVersjon?.tilDato !== null) norskDato(forrigeVersjon.tilDato) else "ingen dato"
-                } til ${'$'}{norskDato(oppdatertVersjon.tilDato)}
-            """.trimIndent()
+            AVTALT_DATO_ENDRET -> {
+                val tilDatoString = if (forrigeVersjon?.tilDato !== null) norskDato(forrigeVersjon.tilDato) else "ingen dato"
+                "$endretAvTekst endret til dato på aktiviteten fra $tilDatoString til ${norskDato(oppdatertVersjon.tilDato)}"
+            }
             STILLINGSOK_ETIKETT_ENDRET -> {
                 val nyEtikett = oppdatertVersjon.stillingsSoekAktivitetData.stillingsoekEtikett?.text ?: "Ingen"
                 "$endretAvTekst endret tilstand til $nyEtikett"
