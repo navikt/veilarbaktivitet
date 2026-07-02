@@ -1,7 +1,8 @@
 package no.nav.veilarbaktivitet.aktivitet
 
-import no.nav.poao.dab.spring_auth.IAuthService
+import no.nav.veilarbaktivitet.SpringBootTestBase
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType
 import no.nav.veilarbaktivitet.aktivitet.domain.MoteData
 import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.*
 import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.spesialEndringer.EtikettEndring
@@ -9,7 +10,9 @@ import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.spesialEndringer.Ref
 import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.spesialEndringer.StatusEndring
 import no.nav.veilarbaktivitet.aktivitet.dto.KanalDTO
 import no.nav.veilarbaktivitet.person.Innsender
+import no.nav.veilarbaktivitet.service.LestAktivitetAppServiceTest
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.ArgumentMatchers
@@ -17,46 +20,68 @@ import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.Mockito.`when`
-import org.mockito.junit.jupiter.MockitoExtension
+import org.springframework.beans.factory.annotation.Autowired
 import java.time.ZonedDateTime
 
-@ExtendWith(MockitoExtension::class)
-class AktivitetOppdateringServiceTest {
 
-    @Mock
-    private lateinit var aktivitetService: AktivitetService
+class AktivitetOppdateringServiceTest: SpringBootTestBase() {
 
-    @InjectMocks
+    @Autowired
     private lateinit var aktivitetOppdateringService: AktivitetOppdateringService
 
+    @Autowired
+    private lateinit var aktivitetService: AktivitetService
+
+    private val TESTNAVIDENT = "S314159"
+
     @Test
-    fun nav_skal_kun_oppdatere_detaljer_naar_kun_beskrivelse_endres_paa_avtalt_mote() {
+    fun `Nav skal kun oppdatere detaljer når kun beskrivelse endres på avtalt møte`() {
         val moteData = MoteData.builder()
             .adresse("Adresse")
             .kanal(KanalDTO.OPPMOTE)
             .forberedelser("Forberedelser")
             .build()
-        val gammelAktivitet: AktivitetData = AktivitetDataTestBuilder.nyMoteAktivitet()
+        val aktivitet = aktivitetDAO.opprettNyAktivitet(AktivitetDataTestBuilder.nyMoteAktivitet()
             .withAvtalt(true)
             .withTittel("Original tittel")
             .withBeskrivelse("Original beskrivelse")
-            .withMoteData(moteData)
-        val oppdatertAktivitet = gammelAktivitet.withBeskrivelse("Ny beskrivelse")
+            .withMoteData(moteData))
+        val oppdatertAktivitet = aktivitet.withBeskrivelse("Ny beskrivelse")
         val oppdatertAktivitetEndring = toMoteEndring(oppdatertAktivitet)
 
-        `when`<AktivitetData?>(aktivitetService.hentAktivitetMedForhaandsorientering(oppdatertAktivitet.getId()))
-            .thenReturn(gammelAktivitet)
+        aktivitetOppdateringService.oppdaterSomNav(oppdatertAktivitetEndring, aktivitet)
 
-        aktivitetOppdateringService.oppdaterSomNav(oppdatertAktivitetEndring, gammelAktivitet)
+        val oppdatertEtterEndring = aktivitetDAO.hentAktivitet(aktivitet.id)
+        assertThat(oppdatertEtterEndring.transaksjonsType).isEqualTo(AktivitetTransaksjonsType.AVTALT_DATO_ENDRET)
+    }
 
-        Mockito.verify(aktivitetService, Mockito.times(0))
-            .oppdaterMoteTidStedOgKanal(ArgumentMatchers.any(), ArgumentMatchers.any())
-        Mockito.verify(aktivitetService, Mockito.times(1))
-            .oppdaterMoteDetaljer(ArgumentMatchers.any(), ArgumentMatchers.any())
+    @Test
+    fun `Nav skal kunne endre sluttdato selv om det er avtalt medisinsk behandling`() {
+        val gammelAktivitet = AktivitetDataTestBuilder.nyBehandlingAktivitet().withAvtalt(true)
+            .withTilDato(LestAktivitetAppServiceTest.toJavaUtilDate("2022-12-10"))
+        val oppdatertAktivitet: AktivitetsEndring = toBehandlingEndring(
+            gammelAktivitet
+                .withEndretAv(TESTNAVIDENT)
+                .withEndretAvType(Innsender.NAV)
+                .withTilDato(LestAktivitetAppServiceTest.toJavaUtilDate("2022-12-12"))
+        )
+        `when`<AktivitetData?>(aktivitetService.hentAktivitetMedForhaandsorientering(oppdatertAktivitet.id)).thenReturn(
+            gammelAktivitet
+        )
+
+        val endretAktivitet = aktivitetOppdateringService.oppdaterSomNav(oppdatertAktivitet, gammelAktivitet)
+
         Mockito.verify(aktivitetService, Mockito.times(0))
             .oppdaterAktivitet(ArgumentMatchers.any(), ArgumentMatchers.any())
+        Mockito.verify(aktivitetService, Mockito.times(1))
+            .oppdaterAktivitetFrist(ArgumentMatchers.any(), ArgumentMatchers.any())
+        assertThat(endretAktivitet.tilDato).isNotEqualTo(gammelAktivitet.tilDato)
+        assertThat(endretAktivitet.tilDato)
+            .isEqualTo(LestAktivitetAppServiceTest.toJavaUtilDate("2022-12-12"))
+        assertThat(endretAktivitet.endretAv).isEqualTo(TESTNAVIDENT)
+        assertThat(endretAktivitet.endretAvType).isSameAs(Innsender.NAV)
     }
-    
+
     private fun sporingsData(aktivitet: AktivitetData): SporingsData {
         return SporingsData(
             if (aktivitet.endretAv != null) aktivitet.endretAv else "unknown",

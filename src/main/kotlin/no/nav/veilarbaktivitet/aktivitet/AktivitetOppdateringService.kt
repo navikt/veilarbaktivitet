@@ -11,8 +11,8 @@ class AktivitetOppdateringService(
     private val aktivitetService: AktivitetService
 ) {
 
-    fun oppdaterSomNav(aktivitetsEndring: AktivitetsEndring, originalAktivitet: AktivitetData) {
-        originalAktivitet
+    fun oppdaterSomNav(aktivitetsEndring: AktivitetsEndring, originalAktivitet: AktivitetData): AktivitetData {
+        return originalAktivitet
             .oppdaterMøtestedTidOgKanal(aktivitetsEndring)
             .oppdaterAktivitet(aktivitetsEndring)
     }
@@ -30,7 +30,7 @@ class AktivitetOppdateringService(
     private fun AktivitetData.oppdaterAktivitet(aktivitetsEndring: AktivitetsEndring): AktivitetData {
         if (this.aktivitetType == AktivitetTypeData.MOTE && erMøtedetaljerEndret(this, aktivitetsEndring as Mote.Endre)) {
             aktivitetService.oppdaterMoteDetaljer(this, aktivitetsEndring as Mote.Endre)
-        } else if (this.aktivitetType == AktivitetTypeData.MOTE && this.isAvtalt) {
+        } else if (this.aktivitetType != AktivitetTypeData.MOTE && this.isAvtalt) {
             aktivitetService.oppdaterAktivitetFrist(this, aktivitetsEndring)
         } else {
             aktivitetService.oppdaterAktivitet(this, aktivitetsEndring)
