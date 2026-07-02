@@ -4,9 +4,11 @@ import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.AVTALT
 import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.AVTALT_DATO_ENDRET
 import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.BLE_HISTORISK
 import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.DEL_CV_SVART
+import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.DETALJER_ENDRET
 import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.FATT_JOBBEN
 import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.FORHAANDSORIENTERING_LEST
 import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.IKKE_FATT_JOBBEN
+import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.KASSERT
 import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.MOTE_KANAL_ENDRET
 import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.MOTE_STED_ENDRET
 import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.MOTE_TIDSPUNKT_ENDRET
@@ -186,6 +188,8 @@ fun utledAktivitetendringsType(forrigeVersjon: AktivitetData?, oppdatertVersjon:
     // Endringer som bare oppstår alene
     if (forrigeVersjon == null) return listOf(OPPRETTET)
     if (forrigeVersjon.historiskDato == null && oppdatertVersjon.historiskDato != null) return listOf(BLE_HISTORISK)
+    if (oppdatertVersjon.transaksjonsType == AktivitetTransaksjonsType.KASSERT) return listOf(KASSERT)
+    // TODO: Kassert
 
     val endringer = mutableListOf<AktivitetendringsType>()
     if (forrigeVersjon.status != oppdatertVersjon.status) endringer.add(STATUS_ENDRET)
@@ -195,16 +199,19 @@ fun utledAktivitetendringsType(forrigeVersjon: AktivitetData?, oppdatertVersjon:
     if (erMøtetidspunktEndret(forrigeVersjon, oppdatertVersjon)) endringer.add(MOTE_TIDSPUNKT_ENDRET)
     if (erMøtestedEndret(forrigeVersjon, oppdatertVersjon)) endringer.add(MOTE_STED_ENDRET)
     if (erMøtekanalEndret(forrigeVersjon, oppdatertVersjon)) endringer.add(MOTE_KANAL_ENDRET)
+    if (erMøteForberedelserEndret(forrigeVersjon, oppdatertVersjon)) endringer.add(AktivitetendringsType.MOTE_FORBEREDELSER_ENDRET)
     if (erReferatOpprettet(forrigeVersjon, oppdatertVersjon)) endringer.add(REFERAT_OPPRETTET)
     if (erReferatEndret(forrigeVersjon, oppdatertVersjon)) endringer.add(REFERAT_ENDRET)
     if (erReferatPublisert(forrigeVersjon, oppdatertVersjon)) endringer.add(REFERAT_PUBLISERT)
     if (erStillingsokEtikettEndret(forrigeVersjon, oppdatertVersjon)) endringer.add(STILLINGSOK_ETIKETT_ENDRET)
+    if (erForhaandsorienteringOpprettet(forrigeVersjon, oppdatertVersjon)) endringer.add(AktivitetendringsType.FORHAANDSORIENTERING_OPPRETTET)
     if (erForhaandsorienteringBlittLest(forrigeVersjon, oppdatertVersjon)) endringer.add(FORHAANDSORIENTERING_LEST)
     if (harCvDeltBlittBesvart(forrigeVersjon, oppdatertVersjon)) endringer.add(DEL_CV_SVART)
     if (erSøknadsstatusEndret(forrigeVersjon, oppdatertVersjon)) endringer.add(SOKNADSSTATUS_ENDRET)
     if (erEndretTilIkkeFåttJobben(forrigeVersjon, oppdatertVersjon)) endringer.add(IKKE_FATT_JOBBEN)
     if (erEndretTilFåttJobben(forrigeVersjon, oppdatertVersjon)) endringer.add(FATT_JOBBEN)
-    // TODO: Detaljer endret
+    if (erDetaljerEndret(forrigeVersjon, oppdatertVersjon)) endringer.add(DETALJER_ENDRET)
+    return endringer
 }
 
 private fun erMøtetidspunktEndret(forrigeVersjon: AktivitetData, oppdatertVersjon: AktivitetData): Boolean {
@@ -222,6 +229,11 @@ private fun erMøtestedEndret(forrigeVersjon: AktivitetData, oppdatertVersjon: A
 private fun erMøtekanalEndret(forrigeVersjon: AktivitetData, oppdatertVersjon: AktivitetData): Boolean {
     if (forrigeVersjon.aktivitetType != AktivitetTypeData.MOTE) return false
     return forrigeVersjon.moteData.kanal != oppdatertVersjon.moteData.kanal
+}
+
+private fun erMøteForberedelserEndret(forrigeVersjon: AktivitetData, oppdatertVersjon: AktivitetData): Boolean {
+    if (forrigeVersjon.aktivitetType != AktivitetTypeData.MOTE) return false
+    return forrigeVersjon.moteData.forberedelser != oppdatertVersjon.moteData.forberedelser
 }
 
 private fun erReferatOpprettet(forrigeVersjon: AktivitetData, oppdatertVersjon: AktivitetData): Boolean {
@@ -243,6 +255,11 @@ private fun erReferatPublisert(forrigeVersjon: AktivitetData, oppdatertVersjon: 
 private fun erStillingsokEtikettEndret(forrigeVersjon: AktivitetData, oppdatertVersjon: AktivitetData): Boolean {
     // TODO: Hvilken type er dette aktuelt for?
     return forrigeVersjon.stillingsSoekAktivitetData?.stillingsoekEtikett != oppdatertVersjon.stillingsSoekAktivitetData?.stillingsoekEtikett
+}
+
+private fun erForhaandsorienteringOpprettet(forrigeVersjon: AktivitetData, oppdatertVersjon: AktivitetData): Boolean {
+    if (forrigeVersjon.forhaandsorientering != null) return false
+    return oppdatertVersjon.forhaandsorientering != null
 }
 
 private fun erForhaandsorienteringBlittLest(forrigeVersjon: AktivitetData, oppdatertVersjon: AktivitetData): Boolean {
@@ -270,28 +287,45 @@ private fun erEndretTilFåttJobben(forrigeVersjon: AktivitetData, oppdatertVersj
     return forrigeVersjon.stillingFraNavData?.soknadsstatus != Soknadsstatus.FATT_JOBBEN && oppdatertVersjon.stillingFraNavData?.soknadsstatus == Soknadsstatus.FATT_JOBBEN
 }
 
+private fun erDetaljerEndret(forrigeVersjon: AktivitetData, oppdatertVersjon: AktivitetData): Boolean {
+    val datoerEndret = oppdatertVersjon.aktivitetType != AktivitetTypeData.MOTE &&
+            (forrigeVersjon.fraDato != oppdatertVersjon.fraDato || forrigeVersjon.tilDato != oppdatertVersjon.tilDato)
+    val beskrivelseEndret = forrigeVersjon.beskrivelse != oppdatertVersjon.beskrivelse
+    val tittelEndret = forrigeVersjon.tittel != oppdatertVersjon.tittel
+    val stillingssøkAktivitetDataEndret = forrigeVersjon.stillingsSoekAktivitetData != oppdatertVersjon.stillingsSoekAktivitetData
+    val egenAktivitetDataEndret = forrigeVersjon.egenAktivitetData != oppdatertVersjon.egenAktivitetData
+    val stillingsoekAktivitetDataEndret = forrigeVersjon.stillingsSoekAktivitetData != oppdatertVersjon.stillingsSoekAktivitetData
+    val iJobbAktivitetDataEndret = forrigeVersjon.iJobbAktivitetData != oppdatertVersjon.iJobbAktivitetData
+    val behandlingAktivitetDataEndret = forrigeVersjon.behandlingAktivitetData != oppdatertVersjon.behandlingAktivitetData
+    val eksternAktivitetDataEndret = forrigeVersjon.eksternAktivitetData != oppdatertVersjon.eksternAktivitetData
+    return datoerEndret || beskrivelseEndret || tittelEndret || stillingssøkAktivitetDataEndret || egenAktivitetDataEndret
+            || stillingssøkAktivitetDataEndret || stillingsoekAktivitetDataEndret || iJobbAktivitetDataEndret
+            || behandlingAktivitetDataEndret || eksternAktivitetDataEndret
+}
+
 
 enum class AktivitetendringsType {
     // Endringer som opptrer alene
-    BLE_HISTORISK, // OK
-    OPPRETTET, // OK
+    BLE_HISTORISK,
+    OPPRETTET,
     KASSERT,
-
     // Endringer som kan opptre sammen med andre endringer
-    STATUS_ENDRET, // OK
-    AVTALT, // OK
-    AVTALT_DATO_ENDRET, // OK
-    STILLINGSOK_ETIKETT_ENDRET, // OK
-    MOTE_TIDSPUNKT_ENDRET, // OK
-    MOTE_STED_ENDRET, // OK
-    MOTE_KANAL_ENDRET, // OK
-    REFERAT_OPPRETTET, // OK
-    REFERAT_ENDRET, // OK
-    REFERAT_PUBLISERT, // OK
-    FORHAANDSORIENTERING_LEST, // OK
-    DEL_CV_SVART, // OK
-    SOKNADSSTATUS_ENDRET, // OK
-    IKKE_FATT_JOBBEN, // OK
-    FATT_JOBBEN, // OK
+    STATUS_ENDRET,
+    AVTALT,
+    AVTALT_DATO_ENDRET,
+    STILLINGSOK_ETIKETT_ENDRET,
+    MOTE_TIDSPUNKT_ENDRET,
+    MOTE_STED_ENDRET,
+    MOTE_KANAL_ENDRET,
+    MOTE_FORBEREDELSER_ENDRET,
+    REFERAT_OPPRETTET,
+    REFERAT_ENDRET,
+    REFERAT_PUBLISERT,
+    FORHAANDSORIENTERING_OPPRETTET,
+    FORHAANDSORIENTERING_LEST,
+    DEL_CV_SVART,
+    SOKNADSSTATUS_ENDRET,
+    IKKE_FATT_JOBBEN,
+    FATT_JOBBEN,
     DETALJER_ENDRET,
 }
