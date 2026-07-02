@@ -51,6 +51,30 @@ public class KafkaAktivitetDAO {
     }
 
     @Timed
+    public List<KafkaAktivitetMeldingV4> hentArenaAktiviteterSomIkkeErSendtTilPortefoljePaAiven(long sistBehandletVersjon, long maksAntall) {
+        String sql = """ 
+                SELECT EA.AKTIVITET_ID AS EA_KEY, EA.TILTAK_KODE, EA.ARENA_ID, EA.AKTIVITETKORT_TYPE, A.* 
+                FROM EKSTERNAKTIVITET EA 
+                    JOIN AKTIVITET A on A.AKTIVITET_ID = EA.AKTIVITET_ID and A.VERSJON = EA.VERSJON 
+                WHERE A.PORTEFOLJE_KAFKA_OFFSET_AIVEN IS NULL
+                AND EA.OPPRETTET_SOM_HISTORISK != 1
+                -- Dette er bare kort som er migrert av team dab
+                AND EA.aktivitetkort_type = 'ARENA_TILTAK'
+                -- Team OBO ønsket at vi bare skal publisere disse fire tiltakstypene på aktiviteter-til-portefølje-topicen
+                -- Resten av tiltakene er "ikke lenger aktive i Arena". 
+                -- https://nav-it.slack.com/archives/CC9GYTA2C/p1781784781394409     
+                AND EA.TILTAK_KODE in ('FORSFAGENK', 'FORSHOYUTD', 'FUNKSJASS', 'VV')
+                AND A.VERSJON > :sistBehandletVersjon
+                ORDER BY A.VERSJON
+                LIMIT :maksAntall
+                """;
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("sistBehandletVersjon", sistBehandletVersjon)
+                .addValue("maksAntall", maksAntall);
+        return template.query(sql, params, KafkaAktivitetDAO::mapArenaAktivitetTilMeldingV4);
+    }
+
+    @Timed
     public void updateSendtPaKafkaAven(Long versjon, Long kafkaOffset) {
         // language=sql
         String sql = """
@@ -62,6 +86,32 @@ public class KafkaAktivitetDAO {
                 .addValue("kafkaOffset", kafkaOffset)
                 .addValue("versjon", versjon);
         template.update(sql, params);
+    }
+
+    public static KafkaAktivitetMeldingV4 mapArenaAktivitetTilMeldingV4(ResultSet resultSet, int i) throws SQLException {
+        var rs = new VeilarbAktivitetResultSet(resultSet);
+        var aktivitetTypeDto = no.nav.veilarbaktivitet.veilarbportefolje.dto.AktivitetTypeDTO.TILTAK;
+        var aktivitetsId = String.valueOf(rs.getLong("aktivitet_id"));
+        var tiltakskode = rs.getString("tiltakskode");
+        AktivitetStatus status = EnumUtils.valueOf(AktivitetStatus.class, rs.getString("livslopstatus_kode"));
+        Innsender lagtInnAv = EnumUtils.valueOf(Innsender.class, rs.getString("lagt_inn_av"));
+        EndringsType transaksjonsType = EndringsType.get(EnumUtils.valueOf(AktivitetTransaksjonsType.class, rs.getString("transaksjons_type")));
+
+        return KafkaAktivitetMeldingV4.builder()
+                .aktivitetId(aktivitetsId)
+                .version(rs.getLong("versjon"))
+                .aktorId(rs.getString("aktor_id"))
+                .fraDato(Database.hentDato(rs, "fra_dato"))
+                .tilDato(Database.hentDato(rs, "til_dato"))
+                .endretDato(Database.hentDato(rs, "endret_dato"))
+                .aktivitetType(aktivitetTypeDto)
+                .aktivitetStatus(status)
+                .lagtInnAv(lagtInnAv)
+                .endringsType(transaksjonsType)
+                .avtalt(rs.getBoolean("avtalt"))
+                .historisk(rs.getTimestamp("historisk_dato") != null)
+                .tiltakskode(tiltakskode)
+                .build();
     }
 
     public static KafkaAktivitetMeldingV4 mapKafkaAktivitetMeldingV4(ResultSet resultSet, int i) throws SQLException {
