@@ -1,8 +1,14 @@
 package no.nav.veilarbaktivitet.aktivitet
 
 import no.nav.veilarbaktivitet.aktivitet.domain.*
+import no.nav.veilarbaktivitet.aktivitet.domain.StillingsoekEtikettData.INNKALT_TIL_INTERVJU
+import no.nav.veilarbaktivitet.aktivitet.domain.StillingsoekEtikettData.SOKNAD_SENDT
+import no.nav.veilarbaktivitet.avtalt_med_nav.Forhaandsorientering
+import no.nav.veilarbaktivitet.avtalt_med_nav.Type
 import no.nav.veilarbaktivitet.person.Innsender
+import no.nav.veilarbaktivitet.stilling_fra_nav.CvKanDelesData
 import no.nav.veilarbaktivitet.stilling_fra_nav.Soknadsstatus
+import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.*
 import no.nav.veilarbaktivitet.testutils.AktivitetTypeDataTestBuilder
 import no.nav.veilarbaktivitet.util.DateUtils
@@ -16,21 +22,15 @@ import java.util.*
 
 class HistorikkServiceTest {
 
-    @Test
-    fun `Skal lage historikk av kun én aktivitet-versjon`() {
-        val aktivitet = nyAktivitet(AktivitetTypeData.MOTE)
-
-        val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet)))
-
-        assertThat(historikk.size).isEqualTo(1)
-        assertThat(historikk[aktivitet.id]!!.endringer).hasSize(1)
-    }
+    // TODO: Legg til assert på beskrivelse av kontor
+    // TODO: Test flere endringer på en gang
 
     @Test
     fun `Skal lage historikk på endret møtetid`() {
         val aktivitet = nyAktivitet(AktivitetTypeData.MOTE)
         aktivitet.withFraDato(Date.from(Instant.parse("2022-09-02T11:00:00Z")))
-        val oppdatertAktivitet = endreAktivitet(aktivitet, moteData = aktivitet.moteData, tilDato = Date.from(Instant.parse("2022-09-02T11:00:00Z")), transaksjonsType = AktivitetTransaksjonsType.MOTE_TID_OG_STED_ENDRET)
+        aktivitet.withTilDato(Date.from(Instant.parse("2022-09-02T12:00:00Z")))
+        val oppdatertAktivitet = endreAktivitet(aktivitet, oppdatertMoteData = aktivitet.moteData, fraDato = Date.from(Instant.parse("2022-09-02T12:00:00Z")), tilDato = Date.from(Instant.parse("2022-09-02T13:00:00Z")), transaksjonsType = AktivitetTransaksjonsType.MOTE_TID_OG_STED_ENDRET)
         // TODO: Må ikke bare se på fra og til? Fikse dette..
 
         val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
@@ -38,144 +38,148 @@ class HistorikkServiceTest {
         assert(
             historikk[aktivitet.id]!!,
             oppdatertAktivitet,
-            "NAV endret til dato på aktiviteten fra 28. september 1947 til 2. september 2022",
-            "${oppdatertAktivitet.endretAv} endret tid eller sted for møtet"
+            listOf("NAV endret tid for møtet"),
+            listOf("${oppdatertAktivitet.endretAv} endret tid for møtet")
         )
     }
 
     @Test
-    fun `Skal lage historikk på endret møtetid og sted`() {
+    fun `Skal lage historikk på endret møtested`() {
         val aktivitet = nyAktivitet(AktivitetTypeData.MOTE)
-        val oppdatertAktivitet = endreAktivitet(aktivitet, AktivitetTransaksjonsType.MOTE_TID_OG_STED_ENDRET)
+        val oppdatertMoteData = aktivitet.moteData.withAdresse("Ny Adresse 1")
+        val oppdatertAktivitet = endreAktivitet(aktivitet, oppdatertMoteData = oppdatertMoteData)
 
         val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
 
         assert(
             historikk[aktivitet.id]!!,
             oppdatertAktivitet,
-            "NAV endret tid eller sted for møtet",
-            "${oppdatertAktivitet.endretAv} endret tid eller sted for møtet"
+            listOf("NAV endret sted for møtet"),
+            listOf("${oppdatertAktivitet.endretAv} endret sted for møtet")
         )
     }
 
     @Test
     fun `Skal lage historikk på status endret`() {
-        val aktivitet = nyAktivitet(AktivitetTypeData.MOTE).toBuilder().build()
-        val oppdatertAktivitet = endreAktivitet(aktivitet, AktivitetTransaksjonsType.STATUS_ENDRET)
+        val aktivitet = nyAktivitet(AktivitetTypeData.EGENAKTIVITET).toBuilder().build().withStatus(AktivitetStatus.GJENNOMFORES)
+        val oppdatertAktivitet = endreAktivitet(aktivitet, oppdatertStatus = AktivitetStatus.FULLFORT)
 
         val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
 
         assert(
             historikk[aktivitet.id]!!,
             oppdatertAktivitet,
-            "NAV flyttet aktiviteten fra Planlagt til Planlagt",
-            "${oppdatertAktivitet.endretAv} flyttet aktiviteten fra Planlagt til Planlagt"
+            listOf("NAV flyttet aktiviteten fra Gjennomføres til Fullført"),
+            listOf("${oppdatertAktivitet.endretAv} flyttet aktiviteten fra Gjennomføres til Fullført")
         )
     }
 
     @Test
     fun `Skal lage historikk på opprettet referat på møte`() {
-        val aktivitet = nyAktivitet(AktivitetTypeData.MOTE).toBuilder().build()
-        val oppdatertAktivitet = endreAktivitet(aktivitet, AktivitetTransaksjonsType.REFERAT_OPPRETTET)
+        val moteDataUtenReferat = nyMoteAktivitet().moteData.withReferat("")
+        val aktivitet = nyMoteAktivitet().withMoteData(moteDataUtenReferat)
+        val oppdatertMoteDataMedReferat = aktivitet.moteData.withReferat("Nå er det et referat her")
+        val oppdatertAktivitet = endreAktivitet(aktivitet, oppdatertMoteData = oppdatertMoteDataMedReferat)
 
         val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
 
         assert(
             historikk[aktivitet.id]!!,
             oppdatertAktivitet,
-            "NAV opprettet referat",
-            "${oppdatertAktivitet.endretAv} opprettet referat"
+            listOf("NAV opprettet referat"),
+            listOf("${oppdatertAktivitet.endretAv} opprettet referat")
         )
     }
 
     @Test
     fun `Skal lage historikk på referat endret`() {
         val aktivitet = nyAktivitet(AktivitetTypeData.MOTE).toBuilder().build()
-        val oppdatertAktivitet = endreAktivitet(aktivitet, AktivitetTransaksjonsType.REFERAT_ENDRET)
+        val møteDataMedEndretReferat = aktivitet.moteData.withReferat("Endret referat")
+        val oppdatertAktivitet = endreAktivitet(aktivitet, oppdatertMoteData = møteDataMedEndretReferat)
 
         val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
 
         assert(
             historikk[aktivitet.id]!!,
             oppdatertAktivitet,
-            "NAV endret referatet",
-            "${oppdatertAktivitet.endretAv} endret referatet"
+            listOf("NAV endret referatet"),
+            listOf("${oppdatertAktivitet.endretAv} endret referatet")
         )
     }
 
     @Test
     fun `Skal lage historikk på referat publisert`() {
-        val aktivitet = nyAktivitet(AktivitetTypeData.MOTE).toBuilder().build()
-        val oppdatertAktivitet = endreAktivitet(aktivitet, AktivitetTransaksjonsType.REFERAT_PUBLISERT)
+        val møteDataUtenPublisertReferat = nyMoteAktivitet().moteData.withReferatPublisert(false)
+        val aktivitet = nyAktivitet(AktivitetTypeData.MOTE).withMoteData(møteDataUtenPublisertReferat)
+        val møteDataMedReferatPublisert = aktivitet.moteData.withReferatPublisert(true)
+        val oppdatertAktivitet = endreAktivitet(aktivitet, oppdatertMoteData = møteDataMedReferatPublisert)
 
         val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
 
         assert(
             historikk[aktivitet.id]!!,
             oppdatertAktivitet,
-            "NAV delte referatet",
-            "${oppdatertAktivitet.endretAv} delte referatet"
+            listOf("NAV delte referatet"),
+            listOf("${oppdatertAktivitet.endretAv} delte referatet")
         )
     }
 
     @Test
     fun `Skal lage historikk på at aktivitet ble historisk`() {
         val aktivitet = nyAktivitet(AktivitetTypeData.MOTE).toBuilder().build()
-        val oppdatertAktivitet = endreAktivitet(aktivitet, AktivitetTransaksjonsType.BLE_HISTORISK)
+        val oppdatertAktivitet = endreAktivitet(aktivitet, oppdatertHistoriskDato = Date())
 
         val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
 
         assert(
             historikk[aktivitet.id]!!,
             oppdatertAktivitet,
-            "Aktiviteten ble automatisk arkivert",
-            "Aktiviteten ble automatisk arkivert"
+            listOf("Aktiviteten ble automatisk arkivert"),
+            listOf("Aktiviteten ble automatisk arkivert")
         )
     }
 
     @Test
     fun `Skal lage historikk på at detaljer ble endret`() {
-        val aktivitet = nyAktivitet(AktivitetTypeData.MOTE).toBuilder().build()
-        val oppdatertAktivitet = endreAktivitet(aktivitet, AktivitetTransaksjonsType.DETALJER_ENDRET)
+        val aktivitet = nyAktivitet(AktivitetTypeData.EGENAKTIVITET).toBuilder().build()
+        val oppdatertAktivitet = endreAktivitet(aktivitet, fraDato = Date())
 
         val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
 
         assert(
             historikk[aktivitet.id]!!,
             oppdatertAktivitet,
-            "NAV endret detaljer på aktiviteten",
-            "${oppdatertAktivitet.endretAv} endret detaljer på aktiviteten"
+            listOf("NAV endret detaljer på aktiviteten"),
+            listOf("${oppdatertAktivitet.endretAv} endret detaljer på aktiviteten")
         )
     }
 
     @Test
     fun `Skal lage historikk på at aktivitet NAV ble opprettet`() {
         val aktivitet = nyAktivitet(AktivitetTypeData.MOTE).toBuilder().build()
-        val oppdatertAktivitet = endreAktivitet(aktivitet, AktivitetTransaksjonsType.OPPRETTET)
 
-        val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
+        val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet)))
 
-        assert(
-            historikk[aktivitet.id]!!,
-            oppdatertAktivitet,
-            "NAV opprettet aktiviteten",
-            "${oppdatertAktivitet.endretAv} opprettet aktiviteten"
-        )
+        assertThat(historikk.size).isEqualTo(1)
+        assertThat(historikk[aktivitet.id]!!.endringer).hasSize(1)
+        assertThat(historikk.values.first().endringer.size).isEqualTo(1)
+        val endring = historikk.values.first().endringer.first()
+        assertThat(endring.beskrivelseForBruker).isEqualTo(listOf("NAV opprettet aktiviteten"))
+        assertThat(endring.beskrivelseForVeileder).isEqualTo(listOf("${aktivitet.endretAv} opprettet aktiviteten"))
     }
 
     @Test
     fun `Skal lage historikk på at aktivitet avtalt med NAV ble opprettet`() {
-        val aktivitet = nyAktivitet(AktivitetTypeData.MOTE).toBuilder().build()
-        val oppdatertAktivitet = endreAktivitet(aktivitet, AktivitetTransaksjonsType.OPPRETTET, avtaltMedNav = true)
+        val aktivitet = nyAktivitet(AktivitetTypeData.MOTE).toBuilder().build().withAvtalt(true)
 
-        val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
+        val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet)))
 
-        assert(
-            historikk[aktivitet.id]!!,
-            oppdatertAktivitet,
-            "NAV opprettet aktiviteten. Den er automatisk merket som \"Avtalt med NAV\"",
-            "${oppdatertAktivitet.endretAv} opprettet aktiviteten. Den er automatisk merket som \"Avtalt med NAV\""
-        )
+        assertThat(historikk.size).isEqualTo(1)
+        assertThat(historikk[aktivitet.id]!!.endringer).hasSize(1)
+        assertThat(historikk.values.first().endringer.size).isEqualTo(1)
+        val endring = historikk.values.first().endringer.first()
+        assertThat(endring.beskrivelseForBruker).isEqualTo(listOf("NAV opprettet aktiviteten. Den er automatisk merket som \"Avtalt med NAV\""))
+        assertThat(endring.beskrivelseForVeileder).isEqualTo(listOf("${aktivitet.endretAv} opprettet aktiviteten. Den er automatisk merket som \"Avtalt med NAV\""))
     }
 
     @Test
@@ -188,53 +192,79 @@ class HistorikkServiceTest {
         assert(
             historikk[aktivitet.id]!!,
             oppdatertAktivitet,
-            "NAV merket aktiviteten som \"Avtalt med NAV\"",
-            "${oppdatertAktivitet.endretAv} merket aktiviteten som \"Avtalt med NAV\""
+            listOf("NAV merket aktiviteten som \"Avtalt med NAV\""),
+            listOf("${oppdatertAktivitet.endretAv} merket aktiviteten som \"Avtalt med NAV\"")
         )
     }
 
     @Test
-    fun `Skal lage historikk på at aktivitet ble avtalt med NAV når forrige aktivitet også var avtalt`() {
-        val aktivitet = nyAktivitet(AktivitetTypeData.MOTE).toBuilder().avtalt(true).build()
-        val oppdatertAktivitet = endreAktivitet(aktivitet, AktivitetTransaksjonsType.AVTALT, avtaltMedNav = true)
+    fun `Skal lage historikk på at forhåndsorientering ble sendt når aktivitet ble avtalt med NAV`() {
+        val aktivitet = nyMoteAktivitet().withAvtalt(false).withForhaandsorientering(null)
+        val oppdatertAktivitet = endreAktivitet(
+            aktivitet,
+            avtaltMedNav = true,
+            oppdatertForhaandsorientering = Forhaandsorientering.builder()
+                .type(Type.SEND_FORHAANDSORIENTERING)
+                .opprettetDato(Date())
+                .id("nyeste")
+                .build()
+        )
 
         val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
 
         assert(
             historikk[aktivitet.id]!!,
             oppdatertAktivitet,
-            "NAV sendte forhåndsorientering",
-            "${oppdatertAktivitet.endretAv} sendte forhåndsorientering"
+            listOf(
+                "NAV merket aktiviteten som \"Avtalt med NAV\"",
+                "NAV sendte forhåndsorientering"
+            ),
+            listOf(
+                "${oppdatertAktivitet.endretAv} merket aktiviteten som \"Avtalt med NAV\"",
+                "${oppdatertAktivitet.endretAv} sendte forhåndsorientering"
+            )
         )
     }
 
     @Test
     fun `Skal lage historikk på forhåndsorientering lest`() {
-        val aktivitet = nyAktivitet(AktivitetTypeData.MOTE).toBuilder().avtalt(true).build()
-        val oppdatertAktivitet = endreAktivitet(aktivitet, AktivitetTransaksjonsType.FORHAANDSORIENTERING_LEST, endretAvType = Innsender.BRUKER, endretAv = "Per Persen")
+        val ulestForhåndsorientering = Forhaandsorientering.builder()
+            .type(Type.SEND_FORHAANDSORIENTERING)
+            .opprettetDato(Date())
+            .lestDato(null)
+            .id("nyeste")
+            .build()
+        val aktivitet = nyAktivitet(AktivitetTypeData.MOTE).toBuilder().avtalt(true).forhaandsorientering(ulestForhåndsorientering).build()
+        val lestForhåndsorientering = ulestForhåndsorientering.toBuilder().lestDato(Date()).build()
+        val oppdatertAktivitet = endreAktivitet(aktivitet, oppdatertForhaandsorientering = lestForhåndsorientering, endretAvType = Innsender.BRUKER)
 
         val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
 
         assert(
             historikk[aktivitet.id]!!,
             oppdatertAktivitet,
-            "Du bekreftet å ha lest informasjon om ansvaret ditt",
-            "Bruker bekreftet å ha lest informasjon om ansvaret sitt"
+            listOf("Du bekreftet å ha lest informasjon om ansvaret ditt"),
+            listOf("Bruker bekreftet å ha lest informasjon om ansvaret sitt")
         )
     }
 
     @Test
     fun `Skal lage historikk på svar på spørsmål om deling av CV`() {
-        val aktivitet = nyAktivitet(AktivitetTypeData.MOTE).toBuilder().avtalt(true).build()
-        val oppdatertAktivitet = endreAktivitet(aktivitet, AktivitetTransaksjonsType.DEL_CV_SVART, endretAvType = Innsender.BRUKER)
+        val aktivitet = nyStillingFraNav()
+        val cvKanDelesData = CvKanDelesData.builder()
+            .endretAv("Bruker")
+            .kanDeles(false)
+            .build()
+        val besvartStillingFraNavData = aktivitet.stillingFraNavData.withCvKanDelesData(cvKanDelesData)
+        val oppdatertAktivitet = endreAktivitet(aktivitet, endretAvType = Innsender.BRUKER, oppdatertStillingFraNavData = besvartStillingFraNavData)
 
         val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
 
         assert(
             historikk[aktivitet.id]!!,
             oppdatertAktivitet,
-            "Du svarte 'Nei' på spørsmålet \"Er du interessert i denne stillingen?\"",
-            "Bruker svarte 'Nei' på spørsmålet \"Er du interessert i denne stillingen?\""
+            listOf("Du svarte 'Nei' på spørsmålet \"Er du interessert i denne stillingen?\""),
+            listOf("Bruker svarte 'Nei' på spørsmålet \"Er du interessert i denne stillingen?\"")
         )
     }
 
@@ -304,16 +334,20 @@ class HistorikkServiceTest {
 
     @Test
     fun `Skal lage historikk på etikett endret`() {
-        val aktivitet = nyttStillingssok()
-        val oppdatertAktivitet = endreAktivitet(aktivitet, AktivitetTransaksjonsType.ETIKETT_ENDRET, endretAvType = Innsender.NAV, oppdatertStillingsoekAktivitetData = AktivitetTypeDataTestBuilder.nyttStillingssok().withStillingsoekEtikett(StillingsoekEtikettData.SOKNAD_SENDT))
-
+        val stillingsoekAktivitetData = AktivitetTypeDataTestBuilder.nyttStillingssok().withStillingsoekEtikett(SOKNAD_SENDT)
+        val aktivitet = nyttStillingssok().withStillingsSoekAktivitetData(stillingsoekAktivitetData)
+        val oppdatertAktivitet = endreAktivitet(
+            aktivitet,
+            endretAvType = Innsender.NAV,
+            oppdatertStillingsoekAktivitetData = stillingsoekAktivitetData.withStillingsoekEtikett(INNKALT_TIL_INTERVJU)
+        )
         val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
 
         assert(
             historikk[aktivitet.id]!!,
             oppdatertAktivitet,
-            "NAV endret tilstand til Søknaden er sendt",
-            "${oppdatertAktivitet.endretAv} endret tilstand til Søknaden er sendt"
+            listOf("NAV endret tilstand til Skal på intervju"),
+            listOf("${oppdatertAktivitet.endretAv} endret tilstand til Skal på intervju")
         )
     }
 
@@ -359,41 +393,66 @@ class HistorikkServiceTest {
         assertThat(endring.beskrivelseForVeileder).isEqualTo(beskrivelseForVeileder)
     }
 
+    private fun assert(
+        historikk: Historikk,
+        oppdatertAktivitet: AktivitetData,
+        beskrivelseForBruker: List<String>,
+        beskrivelseForVeileder: List<String>
+    ) {
+        assertThat(historikk.endringer).hasSize(2)
+        val endring = historikk.endringer.first()
+        assertThat(endring.tidspunkt).isEqualTo(DateUtils.dateToZonedDateTime(oppdatertAktivitet.endretDato))
+        assertThat(endring.endretAv).isEqualTo(oppdatertAktivitet.endretAv)
+        assertThat(endring.endretAvType).isEqualTo(oppdatertAktivitet.endretAvType)
+        assertThat(endring.beskrivelseForBruker).isEqualTo(beskrivelseForBruker)
+        assertThat(endring.beskrivelseForVeileder).isEqualTo(beskrivelseForVeileder)
+    }
+
+
     private fun endreAktivitet(
         aktivitet: AktivitetData,
-        transaksjonsType: AktivitetTransaksjonsType,
+        transaksjonsType: AktivitetTransaksjonsType = AktivitetTransaksjonsType.DETALJER_ENDRET,
         endretAvType: Innsender = Innsender.NAV,
         endretDato: Date = Date(),
         endretAv: String = "Z12345",
         avtaltMedNav: Boolean = false,
+        fraDato: Date? = aktivitet.fraDato,
         tilDato: Date? = aktivitet.tilDato,
-        oppdatertSoknadsstatus: Soknadsstatus? = null,
-        oppdatertStillingsoekAktivitetData: StillingsoekAktivitetData? = null,
-        moteData: MoteData? = null,
+        oppdatertSoknadsstatus: Soknadsstatus? = aktivitet.stillingFraNavData?.soknadsstatus,
+        oppdatertStillingsoekAktivitetData: StillingsoekAktivitetData? = aktivitet.stillingsSoekAktivitetData,
+        oppdatertMoteData: MoteData? = aktivitet.moteData,
+        oppdatertStatus: AktivitetStatus = aktivitet.status,
+        oppdatertEgenAktivitetData: EgenAktivitetData? = aktivitet.egenAktivitetData,
+        oppdatertHistoriskDato: Date? = aktivitet.historiskDato,
+        oppdatertForhaandsorientering: Forhaandsorientering? = aktivitet.forhaandsorientering,
+        oppdatertStillingFraNavData: StillingFraNavData? = aktivitet.stillingFraNavData,
     ): AktivitetData {
         return AktivitetData.builder()
             .id(aktivitet.id) // Hvis denne persisteres, vil den få en ny id fra sekvens
+            .aktivitetType(aktivitet.aktivitetType)
             .aktorId(aktivitet.aktorId)
             .versjon(aktivitet.versjon + 1) // Hvis denne persisteres vil den få en ny versjon fra sekvens
-            .fraDato(aktivitet.fraDato)
+            .fraDato(fraDato)
             .tilDato(tilDato)
             .tittel(aktivitet.tittel)
             .beskrivelse(aktivitet.beskrivelse)
             .versjon(aktivitet.versjon + 1)
-            .status(aktivitet.status)
+            .status(oppdatertStatus)
             .avsluttetKommentar(aktivitet.avsluttetKommentar)
             .endretAvType(endretAvType)
             .opprettetDato(aktivitet.opprettetDato)
             .lenke(aktivitet.lenke)
             .transaksjonsType(transaksjonsType)
             .lestAvBrukerForsteGang(aktivitet.lestAvBrukerForsteGang)
-            .historiskDato(aktivitet.historiskDato)
+            .historiskDato(oppdatertHistoriskDato)
             .endretDato(endretDato)
             .endretAv(endretAv)
             .avtalt(avtaltMedNav)
-            .stillingFraNavData(aktivitet.stillingFraNavData?.also { it.soknadsstatus = oppdatertSoknadsstatus })
+            .stillingFraNavData(oppdatertStillingFraNavData?.also { it.soknadsstatus = oppdatertSoknadsstatus })
             .stillingsSoekAktivitetData(oppdatertStillingsoekAktivitetData)
-            .moteData(moteData)
+            .moteData(oppdatertMoteData)
+            .egenAktivitetData(oppdatertEgenAktivitetData)
+            .forhaandsorientering(oppdatertForhaandsorientering)
             .malid("2").build()
     }
 }
