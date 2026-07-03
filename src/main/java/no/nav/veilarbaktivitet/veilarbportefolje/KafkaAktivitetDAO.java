@@ -92,7 +92,7 @@ public class KafkaAktivitetDAO {
         var rs = new VeilarbAktivitetResultSet(resultSet);
         var aktivitetTypeDto = no.nav.veilarbaktivitet.veilarbportefolje.dto.AktivitetTypeDTO.TILTAK;
         var aktivitetsId = String.valueOf(rs.getLong("aktivitet_id"));
-        var tiltakskode = rs.getString("tiltakskode");
+        var tiltakskode = rs.getString("TILTAK_KODE");
         AktivitetStatus status = EnumUtils.valueOf(AktivitetStatus.class, rs.getString("livslopstatus_kode"));
         Innsender lagtInnAv = EnumUtils.valueOf(Innsender.class, rs.getString("lagt_inn_av"));
         EndringsType transaksjonsType = EndringsType.get(EnumUtils.valueOf(AktivitetTransaksjonsType.class, rs.getString("transaksjons_type")));
