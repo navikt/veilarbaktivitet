@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository
 enum class BatchJob {
     Deling_av_cv_avbrutt_eller_fuulfort_uten_svar,
     Aktiviteter_til_portefolje,
+    ArenaAktiviteter_til_portefolje,
     StoppMoteSms
 }
 
