@@ -35,8 +35,6 @@ spec:
     requests:
       cpu: 200m
       memory: 1536Mi
-  strategy:
-    type: Recreate
   envFrom:
     - secret: veilarbaktivitet-unleash-api-token
     - secret: veilarbaktivitet-kassering-identer
@@ -113,7 +111,7 @@ spec:
     sqlInstances:
       - name: veilarbaktivitet-gcp
         type: POSTGRES_18
-        tier: db-custom-10-53248 #TODO reduser etter migrering?
+        tier: db-custom-8-53248 #TODO reduser etter migrering?
         diskType: SSD
         diskAutoresize: true
         highAvailability: true
