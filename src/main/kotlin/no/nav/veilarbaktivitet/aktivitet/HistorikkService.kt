@@ -7,7 +7,6 @@ import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.DEL_CV_SVART
 import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.DETALJER_ENDRET
 import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.FATT_JOBBEN
 import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.FORHAANDSORIENTERING_LEST
-import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.FORHAANDSORIENTERING_OPPRETTET
 import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.IKKE_FATT_JOBBEN
 import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.KASSERT
 import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.MOTE_FORBEREDELSER_ENDRET
@@ -82,7 +81,7 @@ private fun hentEndringstekster(
     forrigeVersjon: AktivitetData?,
     oppdatertVersjon: AktivitetData,
     målgruppe: Målgruppe
-): List<String> {
+): String {
     val endretAvTekst = when (målgruppe) {
         VEILEDER -> endretAvTekstTilVeileder(oppdatertVersjon.endretAvType, oppdatertVersjon.endretAv)
         BRUKER -> endretAvTekstTilBruker(oppdatertVersjon.endretAvType)
@@ -114,7 +113,6 @@ private fun hentEndringstekster(
             REFERAT_OPPRETTET -> "$endretAvTekst opprettet referat"
             REFERAT_ENDRET -> "$endretAvTekst endret referatet"
             REFERAT_PUBLISERT -> "$endretAvTekst delte referatet"
-            FORHAANDSORIENTERING_OPPRETTET -> "$endretAvTekst sendte forhåndsorientering"
             FORHAANDSORIENTERING_LEST -> {
                 val sittEllerDitt = if (målgruppe == BRUKER) "ditt" else "sitt"
                 "$endretAvTekst bekreftet å ha lest informasjon om ansvaret $sittEllerDitt"
@@ -131,7 +129,7 @@ private fun hentEndringstekster(
             IKKE_FATT_JOBBEN, FATT_JOBBEN ->  "$endretAvTekst avsluttet aktiviteten fordi kandidaten har ${oppdatertVersjon.stillingFraNavData.soknadsstatus.text}"
             DETALJER_ENDRET -> "$endretAvTekst endret detaljer på aktiviteten"
         }
-    }
+    }.joinToString("\n")
 }
 
 fun endretAvTekstTilArkiv(innsender: Innsender, endretAv: String?) = when (innsender) {
@@ -167,9 +165,9 @@ data class Endring(
     val endretAvType: Innsender,
     val endretAv: String?,
     val tidspunkt: ZonedDateTime,
-    val beskrivelseForVeileder: List<String>,
-    val beskrivelseForBruker: List<String>,
-    val beskrivelseForArkiv: List<String>,
+    val beskrivelseForVeileder: String,
+    val beskrivelseForBruker: String,
+    val beskrivelseForArkiv: String,
 )
 
 private enum class Målgruppe {
@@ -200,11 +198,8 @@ fun utledAktivitetendringsType(forrigeVersjon: AktivitetData?, oppdatertVersjon:
     if (erReferatOpprettet(forrigeVersjon, oppdatertVersjon)) endringer.add(REFERAT_OPPRETTET)
     if (erReferatEndret(forrigeVersjon, oppdatertVersjon)) endringer.add(REFERAT_ENDRET)
     if (erReferatPublisert(forrigeVersjon, oppdatertVersjon)) endringer.add(REFERAT_PUBLISERT)
-    if (erStillingsokEtikettEndret(forrigeVersjon, oppdatertVersjon)) {
-        endringer.add(STILLINGSOK_ETIKETT_ENDRET)
-    }
-    if (erForhaandsorienteringBlittOpprettet(forrigeVersjon, oppdatertVersjon)) endringer.add(FORHAANDSORIENTERING_OPPRETTET)
-    if (erForhaandsorienteringBlittLest(forrigeVersjon, oppdatertVersjon)) endringer.add(FORHAANDSORIENTERING_LEST)
+    if (erStillingsokEtikettEndret(forrigeVersjon, oppdatertVersjon)) { endringer.add(STILLINGSOK_ETIKETT_ENDRET) }
+    if (erForhaandsorienteringBlittLest(oppdatertVersjon)) endringer.add(FORHAANDSORIENTERING_LEST)
     if (harCvDeltBlittBesvart(forrigeVersjon, oppdatertVersjon)) endringer.add(DEL_CV_SVART)
     if (erSøknadsstatusEndret(forrigeVersjon, oppdatertVersjon)) endringer.add(SOKNADSSTATUS_ENDRET)
     if (erEndretTilIkkeFåttJobben(forrigeVersjon, oppdatertVersjon)) endringer.add(IKKE_FATT_JOBBEN)
@@ -216,7 +211,7 @@ fun utledAktivitetendringsType(forrigeVersjon: AktivitetData?, oppdatertVersjon:
 private fun erMøtetidspunktEndret(forrigeVersjon: AktivitetData, oppdatertVersjon: AktivitetData): Boolean {
     if (forrigeVersjon.aktivitetType != AktivitetTypeData.MOTE) return false
     val startTidspunktEndret = forrigeVersjon.fraDato != oppdatertVersjon.fraDato
-    val sluttTidspunktEndret = forrigeVersjon.tilDato != forrigeVersjon.tilDato
+    val sluttTidspunktEndret = forrigeVersjon.tilDato != oppdatertVersjon.tilDato
     return startTidspunktEndret || sluttTidspunktEndret
 }
 
@@ -256,13 +251,8 @@ private fun erStillingsokEtikettEndret(forrigeVersjon: AktivitetData, oppdatertV
     return forrigeVersjon.stillingsSoekAktivitetData?.stillingsoekEtikett != oppdatertVersjon.stillingsSoekAktivitetData?.stillingsoekEtikett
 }
 
-private fun erForhaandsorienteringBlittOpprettet(forrigeVersjon: AktivitetData, oppdatertVersjon: AktivitetData): Boolean {
-    return forrigeVersjon.forhaandsorientering == null && oppdatertVersjon.forhaandsorientering != null
-}
-
-private fun erForhaandsorienteringBlittLest(forrigeVersjon: AktivitetData, oppdatertVersjon: AktivitetData): Boolean {
-    if (forrigeVersjon.forhaandsorientering == null) return false
-    return forrigeVersjon.forhaandsorientering.lestDato == null && oppdatertVersjon.forhaandsorientering.lestDato != null
+private fun erForhaandsorienteringBlittLest(oppdatertVersjon: AktivitetData): Boolean {
+    return oppdatertVersjon.transaksjonsType == AktivitetTransaksjonsType.FORHAANDSORIENTERING_LEST
 }
 
 private fun harCvDeltBlittBesvart(forrigeVersjon: AktivitetData, oppdatertVersjon: AktivitetData): Boolean {
@@ -319,7 +309,6 @@ enum class AktivitetendringsType {
     REFERAT_OPPRETTET,
     REFERAT_ENDRET,
     REFERAT_PUBLISERT,
-    FORHAANDSORIENTERING_OPPRETTET,
     FORHAANDSORIENTERING_LEST,
     DEL_CV_SVART,
     SOKNADSSTATUS_ENDRET,

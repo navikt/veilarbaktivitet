@@ -195,35 +195,6 @@ class HistorikkServiceTest {
     }
 
     @Test
-    fun `Skal lage historikk på at forhåndsorientering ble sendt når aktivitet ble avtalt med NAV`() {
-        val aktivitet = nyMoteAktivitet().withAvtalt(false).withForhaandsorientering(null)
-        val oppdatertAktivitet = endreAktivitet(
-            aktivitet,
-            avtaltMedNav = true,
-            oppdatertForhaandsorientering = Forhaandsorientering.builder()
-                .type(Type.SEND_FORHAANDSORIENTERING)
-                .opprettetDato(Date())
-                .id("nyeste")
-                .build()
-        )
-
-        val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
-
-        assert(
-            historikk[aktivitet.id]!!,
-            oppdatertAktivitet,
-            listOf(
-                "NAV merket aktiviteten som \"Avtalt med NAV\"",
-                "NAV sendte forhåndsorientering"
-            ),
-            listOf(
-                "${oppdatertAktivitet.endretAv} merket aktiviteten som \"Avtalt med NAV\"",
-                "${oppdatertAktivitet.endretAv} sendte forhåndsorientering"
-            )
-        )
-    }
-
-    @Test
     fun `Skal lage historikk på forhåndsorientering lest`() {
         val ulestForhåndsorientering = Forhaandsorientering.builder()
             .type(Type.SEND_FORHAANDSORIENTERING)
@@ -233,7 +204,7 @@ class HistorikkServiceTest {
             .build()
         val aktivitet = nyAktivitet(AktivitetTypeData.MOTE).toBuilder().avtalt(true).forhaandsorientering(ulestForhåndsorientering).build()
         val lestForhåndsorientering = ulestForhåndsorientering.toBuilder().lestDato(Date()).build()
-        val oppdatertAktivitet = endreAktivitet(aktivitet, oppdatertForhaandsorientering = lestForhåndsorientering, endretAvType = Innsender.BRUKER)
+        val oppdatertAktivitet = endreAktivitet(aktivitet, oppdatertForhaandsorientering = lestForhåndsorientering, endretAvType = Innsender.BRUKER, transaksjonsType = AktivitetTransaksjonsType.FORHAANDSORIENTERING_LEST)
 
         val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
 
@@ -390,8 +361,8 @@ class HistorikkServiceTest {
         assertThat(endring.tidspunkt).isEqualTo(DateUtils.dateToZonedDateTime(oppdatertAktivitet.endretDato))
         assertThat(endring.endretAv).isEqualTo(oppdatertAktivitet.endretAv)
         assertThat(endring.endretAvType).isEqualTo(oppdatertAktivitet.endretAvType)
-        assertThat(endring.beskrivelseForBruker).isEqualTo(beskrivelseForBruker)
-        assertThat(endring.beskrivelseForVeileder).isEqualTo(beskrivelseForVeileder)
+        assertThat(endring.beskrivelseForBruker).isEqualTo(beskrivelseForBruker.joinToString("\n"))
+        assertThat(endring.beskrivelseForVeileder).isEqualTo(beskrivelseForVeileder.joinToString("\n"))
     }
 
 
@@ -410,6 +381,7 @@ class HistorikkServiceTest {
         oppdatertHistoriskDato: Date? = aktivitet.historiskDato,
         oppdatertForhaandsorientering: Forhaandsorientering? = aktivitet.forhaandsorientering,
         oppdatertStillingFraNavData: StillingFraNavData? = aktivitet.stillingFraNavData,
+        transaksjonsType: AktivitetTransaksjonsType = AktivitetTransaksjonsType.DETALJER_ENDRET
     ): AktivitetData {
         return AktivitetData.builder()
             .id(aktivitet.id) // Hvis denne persisteres, vil den få en ny id fra sekvens
@@ -426,7 +398,7 @@ class HistorikkServiceTest {
             .endretAvType(endretAvType)
             .opprettetDato(aktivitet.opprettetDato)
             .lenke(aktivitet.lenke)
-            .transaksjonsType(AktivitetTransaksjonsType.DETALJER_ENDRET)
+            .transaksjonsType(transaksjonsType)
             .lestAvBrukerForsteGang(aktivitet.lestAvBrukerForsteGang)
             .historiskDato(oppdatertHistoriskDato)
             .endretDato(endretDato)
