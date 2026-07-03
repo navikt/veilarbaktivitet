@@ -252,7 +252,7 @@ private fun erReferatPublisert(forrigeVersjon: AktivitetData, oppdatertVersjon: 
 }
 
 private fun erStillingsokEtikettEndret(forrigeVersjon: AktivitetData, oppdatertVersjon: AktivitetData): Boolean {
-    // TODO: Hvilken type er dette aktuelt for?
+    if (forrigeVersjon.stillingsSoekAktivitetData == null) return false
     return forrigeVersjon.stillingsSoekAktivitetData?.stillingsoekEtikett != oppdatertVersjon.stillingsSoekAktivitetData?.stillingsoekEtikett
 }
 
@@ -287,7 +287,7 @@ private fun erEndretTilFåttJobben(forrigeVersjon: AktivitetData, oppdatertVersj
 
 // TODO: Kanskje teste denne grundig?
 private fun erDetaljerEndret(forrigeVersjon: AktivitetData, oppdatertVersjon: AktivitetData): Boolean {
-    val datoerEndret = oppdatertVersjon.aktivitetType != AktivitetTypeData.MOTE &&
+    val datoerEndret = oppdatertVersjon.aktivitetType != AktivitetTypeData.MOTE && !oppdatertVersjon.isAvtalt &&
             (forrigeVersjon.fraDato != oppdatertVersjon.fraDato || forrigeVersjon.tilDato != oppdatertVersjon.tilDato)
     val beskrivelseEndret = forrigeVersjon.beskrivelse != oppdatertVersjon.beskrivelse
     val tittelEndret = forrigeVersjon.tittel != oppdatertVersjon.tittel

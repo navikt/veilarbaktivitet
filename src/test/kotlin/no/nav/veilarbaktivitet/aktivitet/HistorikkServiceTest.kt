@@ -22,15 +22,12 @@ import java.util.*
 
 class HistorikkServiceTest {
 
-    // TODO: Legg til assert på beskrivelse av kontor
-    // TODO: Test flere endringer på en gang
-
     @Test
     fun `Skal lage historikk på endret møtetid`() {
         val aktivitet = nyAktivitet(AktivitetTypeData.MOTE)
         aktivitet.withFraDato(Date.from(Instant.parse("2022-09-02T11:00:00Z")))
         aktivitet.withTilDato(Date.from(Instant.parse("2022-09-02T12:00:00Z")))
-        val oppdatertAktivitet = endreAktivitet(aktivitet, oppdatertMoteData = aktivitet.moteData, fraDato = Date.from(Instant.parse("2022-09-02T12:00:00Z")), tilDato = Date.from(Instant.parse("2022-09-02T13:00:00Z")), transaksjonsType = AktivitetTransaksjonsType.MOTE_TID_OG_STED_ENDRET)
+        val oppdatertAktivitet = endreAktivitet(aktivitet, oppdatertMoteData = aktivitet.moteData, fraDato = Date.from(Instant.parse("2022-09-02T12:00:00Z")), tilDato = Date.from(Instant.parse("2022-09-02T13:00:00Z")))
         // TODO: Må ikke bare se på fra og til? Fikse dette..
 
         val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
@@ -185,7 +182,7 @@ class HistorikkServiceTest {
     @Test
     fun `Skal lage historikk på at aktivitet ble avtalt med NAV`() {
         val aktivitet = nyAktivitet(AktivitetTypeData.MOTE).toBuilder().build()
-        val oppdatertAktivitet = endreAktivitet(aktivitet, AktivitetTransaksjonsType.AVTALT, avtaltMedNav = true)
+        val oppdatertAktivitet = endreAktivitet(aktivitet, avtaltMedNav = true)
 
         val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
 
@@ -271,18 +268,18 @@ class HistorikkServiceTest {
     @Test
     fun `Skal lage historikk på at avtalt dato ble endret`() {
         val aktivitetTilDato = ZonedDateTime.of(2022, 8, 30, 10, 0,0, 0, ZoneId.of("Europe/Oslo"))
-        val aktivitet = nyAktivitet(AktivitetTypeData.MOTE).toBuilder().avtalt(true).tilDato(
+        val aktivitet = nyAktivitet(AktivitetTypeData.JOBBSOEKING).toBuilder().avtalt(true).tilDato(
             zonedDateTimeToDate(aktivitetTilDato)).build()
         val oppdatertAktivitetTilDato = ZonedDateTime.of(2022, 9, 2, 11, 0,0, 0, ZoneId.of("Europe/Oslo"))
-        val oppdatertAktivitet = endreAktivitet(aktivitet, AktivitetTransaksjonsType.AVTALT_DATO_ENDRET, endretAvType = Innsender.NAV, tilDato = zonedDateTimeToDate(oppdatertAktivitetTilDato))
+        val oppdatertAktivitet = endreAktivitet(aktivitet, endretAvType = Innsender.NAV, tilDato = zonedDateTimeToDate(oppdatertAktivitetTilDato))
 
         val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
 
         assert(
             historikk[aktivitet.id]!!,
             oppdatertAktivitet,
-            "NAV endret til dato på aktiviteten fra 30. august 2022 til 2. september 2022",
-            "${oppdatertAktivitet.endretAv} endret til dato på aktiviteten fra 30. august 2022 til 2. september 2022"
+            listOf("NAV endret til dato på aktiviteten fra 30. august 2022 til 2. september 2022"),
+            listOf("${oppdatertAktivitet.endretAv} endret til dato på aktiviteten fra 30. august 2022 til 2. september 2022")
         )
         println("NAV endret til dato på aktiviteten fra ${aktivitet.tilDato} til ${oppdatertAktivitet.tilDato}")
     }
@@ -290,45 +287,49 @@ class HistorikkServiceTest {
     @Test
     fun `Skal lage historikk på søknadsstatus endret`() {
         val aktivitet = nyAktivitet(AktivitetTypeData.STILLING_FRA_NAV).toBuilder().avtalt(true).build()
-        val oppdatertAktivitet = endreAktivitet(aktivitet, AktivitetTransaksjonsType.STATUS_ENDRET, endretAvType = Innsender.NAV)
+        val oppdatertAktivitet = endreAktivitet(aktivitet,  endretAvType = Innsender.NAV, oppdatertStatus = AktivitetStatus.GJENNOMFORES)
 
         val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
 
         assert(
             historikk[aktivitet.id]!!,
             oppdatertAktivitet,
-            "NAV flyttet aktiviteten fra Planlagt til Planlagt",
-            "${oppdatertAktivitet.endretAv} flyttet aktiviteten fra Planlagt til Planlagt"
+            listOf("NAV flyttet aktiviteten fra Planlagt til Gjennomføres"),
+            listOf("${oppdatertAktivitet.endretAv} flyttet aktiviteten fra Planlagt til Gjennomføres")
         )
     }
 
     @Test
     fun `Skal lage historikk på ikke fått jobben`() {
-        val aktivitet = nyStillingFraNav()
-        val oppdatertAktivitet = endreAktivitet(aktivitet, AktivitetTransaksjonsType.IKKE_FATT_JOBBEN, endretAvType = Innsender.NAV, oppdatertSoknadsstatus = Soknadsstatus.IKKE_FATT_JOBBEN)
+        val stillingFraNavDataVenterStatus = StillingFraNavData.builder().soknadsstatus(Soknadsstatus.VENTER).build()
+        val aktivitet = nyAktivitet().stillingFraNavData(stillingFraNavDataVenterStatus).build()
+        val stillingFraNavDataIkkeFåttJobben = StillingFraNavData.builder().soknadsstatus(Soknadsstatus.IKKE_FATT_JOBBEN).build()
+        val oppdatertAktivitet = endreAktivitet(aktivitet,  endretAvType = Innsender.NAV, oppdatertStillingFraNavData = stillingFraNavDataIkkeFåttJobben)
 
         val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
 
         assert(
             historikk[aktivitet.id]!!,
             oppdatertAktivitet,
-            "NAV avsluttet aktiviteten fordi kandidaten har Ikke fått jobben",
-            "${oppdatertAktivitet.endretAv} avsluttet aktiviteten fordi kandidaten har Ikke fått jobben"
+            listOf("NAV endret tilstand til Ikke fått jobben", "NAV avsluttet aktiviteten fordi kandidaten har Ikke fått jobben"),
+            listOf("${oppdatertAktivitet.endretAv} endret tilstand til Ikke fått jobben", "${oppdatertAktivitet.endretAv} avsluttet aktiviteten fordi kandidaten har Ikke fått jobben")
         )
     }
 
     @Test
     fun `Skal lage historikk på fått jobben`() {
-        val aktivitet = nyStillingFraNav()
-        val oppdatertAktivitet = endreAktivitet(aktivitet, AktivitetTransaksjonsType.FATT_JOBBEN, endretAvType = Innsender.NAV, oppdatertSoknadsstatus = Soknadsstatus.FATT_JOBBEN)
+        val stillingFraNavDataVenterStatus = StillingFraNavData.builder().soknadsstatus(Soknadsstatus.VENTER).build()
+        val aktivitet = nyAktivitet().stillingFraNavData(stillingFraNavDataVenterStatus).build()
+        val stillingFraNavDataIkkeFåttJobben = StillingFraNavData.builder().soknadsstatus(Soknadsstatus.FATT_JOBBEN).build()
+        val oppdatertAktivitet = endreAktivitet(aktivitet,  endretAvType = Innsender.NAV, oppdatertStillingFraNavData = stillingFraNavDataIkkeFåttJobben)
 
         val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
 
         assert(
             historikk[aktivitet.id]!!,
             oppdatertAktivitet,
-            "NAV avsluttet aktiviteten fordi kandidaten har Fått jobben \uD83C\uDF89",
-            "${oppdatertAktivitet.endretAv} avsluttet aktiviteten fordi kandidaten har Fått jobben \uD83C\uDF89"
+            listOf("NAV endret tilstand til Fått jobben \uD83C\uDF89", "NAV avsluttet aktiviteten fordi kandidaten har Fått jobben 🎉"),
+            listOf("${oppdatertAktivitet.endretAv} endret tilstand til Fått jobben \uD83C\uDF89", "${oppdatertAktivitet.endretAv} avsluttet aktiviteten fordi kandidaten har Fått jobben \uD83C\uDF89")
         )
     }
 
@@ -381,21 +382,6 @@ class HistorikkServiceTest {
     private fun assert(
         historikk: Historikk,
         oppdatertAktivitet: AktivitetData,
-        beskrivelseForBruker: String,
-        beskrivelseForVeileder: String
-    ) {
-        assertThat(historikk.endringer).hasSize(2)
-        val endring = historikk.endringer.first()
-        assertThat(endring.tidspunkt).isEqualTo(DateUtils.dateToZonedDateTime(oppdatertAktivitet.endretDato))
-        assertThat(endring.endretAv).isEqualTo(oppdatertAktivitet.endretAv)
-        assertThat(endring.endretAvType).isEqualTo(oppdatertAktivitet.endretAvType)
-        assertThat(endring.beskrivelseForBruker).isEqualTo(beskrivelseForBruker)
-        assertThat(endring.beskrivelseForVeileder).isEqualTo(beskrivelseForVeileder)
-    }
-
-    private fun assert(
-        historikk: Historikk,
-        oppdatertAktivitet: AktivitetData,
         beskrivelseForBruker: List<String>,
         beskrivelseForVeileder: List<String>
     ) {
@@ -411,14 +397,12 @@ class HistorikkServiceTest {
 
     private fun endreAktivitet(
         aktivitet: AktivitetData,
-        transaksjonsType: AktivitetTransaksjonsType = AktivitetTransaksjonsType.DETALJER_ENDRET,
         endretAvType: Innsender = Innsender.NAV,
         endretDato: Date = Date(),
         endretAv: String = "Z12345",
-        avtaltMedNav: Boolean = false,
+        avtaltMedNav: Boolean = aktivitet.isAvtalt,
         fraDato: Date? = aktivitet.fraDato,
         tilDato: Date? = aktivitet.tilDato,
-        oppdatertSoknadsstatus: Soknadsstatus? = aktivitet.stillingFraNavData?.soknadsstatus,
         oppdatertStillingsoekAktivitetData: StillingsoekAktivitetData? = aktivitet.stillingsSoekAktivitetData,
         oppdatertMoteData: MoteData? = aktivitet.moteData,
         oppdatertStatus: AktivitetStatus = aktivitet.status,
@@ -442,13 +426,13 @@ class HistorikkServiceTest {
             .endretAvType(endretAvType)
             .opprettetDato(aktivitet.opprettetDato)
             .lenke(aktivitet.lenke)
-            .transaksjonsType(transaksjonsType)
+            .transaksjonsType(AktivitetTransaksjonsType.DETALJER_ENDRET)
             .lestAvBrukerForsteGang(aktivitet.lestAvBrukerForsteGang)
             .historiskDato(oppdatertHistoriskDato)
             .endretDato(endretDato)
             .endretAv(endretAv)
             .avtalt(avtaltMedNav)
-            .stillingFraNavData(oppdatertStillingFraNavData?.also { it.soknadsstatus = oppdatertSoknadsstatus })
+            .stillingFraNavData(oppdatertStillingFraNavData)
             .stillingsSoekAktivitetData(oppdatertStillingsoekAktivitetData)
             .moteData(oppdatertMoteData)
             .egenAktivitetData(oppdatertEgenAktivitetData)
