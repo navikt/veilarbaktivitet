@@ -112,7 +112,7 @@ spec:
   gcp:
     sqlInstances:
       - name: veilarbaktivitet-gcp
-        type: POSTGRES_16
+        type: POSTGRES_17
         tier: db-custom-8-53248 #TODO reduser etter migrering?
         diskType: SSD
         diskAutoresize: true
