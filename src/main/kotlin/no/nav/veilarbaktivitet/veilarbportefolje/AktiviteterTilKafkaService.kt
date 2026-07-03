@@ -43,7 +43,7 @@ open class AktiviteterTilKafkaService(
                         }
                     }
                 }
-            if (batchResults.size > 0) {
+            if (batchResults.isNotEmpty()) {
             log.info("Processed {} messages in aktiviteter_til_portefolje_paa_kafka batch. successful: {} failed :{}",
                 batchResults.size,
                 batchResults.filterIsInstance<BatchResult.Success>().size,
@@ -57,7 +57,7 @@ open class AktiviteterTilKafkaService(
 
     @Scheduled(
         initialDelayString = "\${app.env.scheduled.portefolje.initialDelay}",
-        fixedDelayString = "10000"
+        fixedDelayString = "60000"
     )
     @SchedulerLock(name = "aktiviteter_arena_kafka_scheduledTask", lockAtMostFor = "PT2M")
     @Timed
@@ -78,7 +78,7 @@ open class AktiviteterTilKafkaService(
                         }
                     }
                 }
-            if (batchResults.size > 0) {
+            if (batchResults.isNotEmpty()) {
                 log.info("Processed {} messages in arena_aktiviteter_til_portefolje_paa_kafka batch. successful: {} failed :{}",
                 batchResults.size,
                 batchResults.filterIsInstance<BatchResult.Success>().size,
