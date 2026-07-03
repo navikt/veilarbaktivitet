@@ -56,7 +56,7 @@ open class AktiviteterTilKafkaService(
     }
 
     @Scheduled(
-        initialDelayString = "\${app.env.scheduled.portefolje.initialDelay}",
+        initialDelayString = "45000",
         fixedDelayString = "60000"
     )
     @SchedulerLock(name = "aktiviteter_arena_kafka_scheduledTask", lockAtMostFor = "PT2M")
