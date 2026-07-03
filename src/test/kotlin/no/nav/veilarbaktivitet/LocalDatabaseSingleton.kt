@@ -4,7 +4,11 @@ import io.zonky.test.db.postgres.embedded.EmbeddedPostgres
 import no.nav.veilarbaktivitet.db.DbTestUtils
 
 object LocalDatabaseSingleton {
-    val postgres = EmbeddedPostgres.start().postgresDatabase.also {
-        DbTestUtils.initDb(it)
-    }
+    val postgres = EmbeddedPostgres.builder()
+        .setServerConfig("wal_level", "logical")
+        .start()
+        .postgresDatabase
+        .also {
+            DbTestUtils.initDb(it)
+        }
 }
