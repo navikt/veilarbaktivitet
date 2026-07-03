@@ -161,8 +161,8 @@ class HistorikkServiceTest {
         assertThat(historikk[aktivitet.id]!!.endringer).hasSize(1)
         assertThat(historikk.values.first().endringer.size).isEqualTo(1)
         val endring = historikk.values.first().endringer.first()
-        assertThat(endring.beskrivelseForBruker).isEqualTo(listOf("NAV opprettet aktiviteten"))
-        assertThat(endring.beskrivelseForVeileder).isEqualTo(listOf("${aktivitet.endretAv} opprettet aktiviteten"))
+        assertThat(endring.beskrivelseForBruker).isEqualTo("NAV opprettet aktiviteten")
+        assertThat(endring.beskrivelseForVeileder).isEqualTo("${aktivitet.endretAv} opprettet aktiviteten")
     }
 
     @Test
@@ -175,8 +175,8 @@ class HistorikkServiceTest {
         assertThat(historikk[aktivitet.id]!!.endringer).hasSize(1)
         assertThat(historikk.values.first().endringer.size).isEqualTo(1)
         val endring = historikk.values.first().endringer.first()
-        assertThat(endring.beskrivelseForBruker).isEqualTo(listOf("NAV opprettet aktiviteten. Den er automatisk merket som \"Avtalt med NAV\""))
-        assertThat(endring.beskrivelseForVeileder).isEqualTo(listOf("${aktivitet.endretAv} opprettet aktiviteten. Den er automatisk merket som \"Avtalt med NAV\""))
+        assertThat(endring.beskrivelseForBruker).isEqualTo("NAV opprettet aktiviteten. Den er automatisk merket som \"Avtalt med NAV\"")
+        assertThat(endring.beskrivelseForVeileder).isEqualTo("${aktivitet.endretAv} opprettet aktiviteten. Den er automatisk merket som \"Avtalt med NAV\"")
     }
 
     @Test
