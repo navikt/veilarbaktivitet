@@ -35,8 +35,8 @@ class HistorikkServiceTest {
         assert(
             historikk[aktivitet.id]!!,
             oppdatertAktivitet,
-            listOf("NAV endret tid for møtet"),
-            listOf("${oppdatertAktivitet.endretAv} endret tid for møtet")
+            "NAV endret tid for møtet",
+            "${oppdatertAktivitet.endretAv} endret tid for møtet"
         )
     }
 
@@ -51,8 +51,8 @@ class HistorikkServiceTest {
         assert(
             historikk[aktivitet.id]!!,
             oppdatertAktivitet,
-            listOf("NAV endret sted for møtet"),
-            listOf("${oppdatertAktivitet.endretAv} endret sted for møtet")
+            "NAV endret sted for møtet",
+            "${oppdatertAktivitet.endretAv} endret sted for møtet"
         )
     }
 
@@ -66,8 +66,8 @@ class HistorikkServiceTest {
         assert(
             historikk[aktivitet.id]!!,
             oppdatertAktivitet,
-            listOf("NAV flyttet aktiviteten fra Gjennomføres til Fullført"),
-            listOf("${oppdatertAktivitet.endretAv} flyttet aktiviteten fra Gjennomføres til Fullført")
+            "NAV flyttet aktiviteten fra Gjennomføres til Fullført",
+            "${oppdatertAktivitet.endretAv} flyttet aktiviteten fra Gjennomføres til Fullført"
         )
     }
 
@@ -83,8 +83,8 @@ class HistorikkServiceTest {
         assert(
             historikk[aktivitet.id]!!,
             oppdatertAktivitet,
-            listOf("NAV opprettet referat"),
-            listOf("${oppdatertAktivitet.endretAv} opprettet referat")
+            "NAV opprettet referat",
+            "${oppdatertAktivitet.endretAv} opprettet referat"
         )
     }
 
@@ -99,8 +99,8 @@ class HistorikkServiceTest {
         assert(
             historikk[aktivitet.id]!!,
             oppdatertAktivitet,
-            listOf("NAV endret referatet"),
-            listOf("${oppdatertAktivitet.endretAv} endret referatet")
+            "NAV endret referatet",
+            "${oppdatertAktivitet.endretAv} endret referatet"
         )
     }
 
@@ -116,8 +116,8 @@ class HistorikkServiceTest {
         assert(
             historikk[aktivitet.id]!!,
             oppdatertAktivitet,
-            listOf("NAV delte referatet"),
-            listOf("${oppdatertAktivitet.endretAv} delte referatet")
+            "NAV delte referatet",
+            "${oppdatertAktivitet.endretAv} delte referatet"
         )
     }
 
@@ -131,8 +131,8 @@ class HistorikkServiceTest {
         assert(
             historikk[aktivitet.id]!!,
             oppdatertAktivitet,
-            listOf("Aktiviteten ble automatisk arkivert"),
-            listOf("Aktiviteten ble automatisk arkivert")
+            "Aktiviteten ble automatisk arkivert",
+            "Aktiviteten ble automatisk arkivert"
         )
     }
 
@@ -146,8 +146,8 @@ class HistorikkServiceTest {
         assert(
             historikk[aktivitet.id]!!,
             oppdatertAktivitet,
-            listOf("NAV endret detaljer på aktiviteten"),
-            listOf("${oppdatertAktivitet.endretAv} endret detaljer på aktiviteten")
+            "NAV endret detaljer på aktiviteten",
+            "${oppdatertAktivitet.endretAv} endret detaljer på aktiviteten"
         )
     }
 
@@ -189,8 +189,8 @@ class HistorikkServiceTest {
         assert(
             historikk[aktivitet.id]!!,
             oppdatertAktivitet,
-            listOf("NAV merket aktiviteten som \"Avtalt med NAV\""),
-            listOf("${oppdatertAktivitet.endretAv} merket aktiviteten som \"Avtalt med NAV\"")
+            "NAV merket aktiviteten som \"Avtalt med NAV\"",
+            "${oppdatertAktivitet.endretAv} merket aktiviteten som \"Avtalt med NAV\""
         )
     }
 
@@ -211,8 +211,8 @@ class HistorikkServiceTest {
         assert(
             historikk[aktivitet.id]!!,
             oppdatertAktivitet,
-            listOf("Du bekreftet å ha lest informasjon om ansvaret ditt"),
-            listOf("Bruker bekreftet å ha lest informasjon om ansvaret sitt")
+            "Du bekreftet å ha lest informasjon om ansvaret ditt",
+            "Bruker bekreftet å ha lest informasjon om ansvaret sitt"
         )
     }
 
@@ -231,8 +231,8 @@ class HistorikkServiceTest {
         assert(
             historikk[aktivitet.id]!!,
             oppdatertAktivitet,
-            listOf("Du svarte 'Nei' på spørsmålet \"Er du interessert i denne stillingen?\""),
-            listOf("Bruker svarte 'Nei' på spørsmålet \"Er du interessert i denne stillingen?\"")
+            "Du svarte 'Nei' på spørsmålet \"Er du interessert i denne stillingen?\"",
+            "Bruker svarte 'Nei' på spørsmålet \"Er du interessert i denne stillingen?\""
         )
     }
 
@@ -249,8 +249,8 @@ class HistorikkServiceTest {
         assert(
             historikk[aktivitet.id]!!,
             oppdatertAktivitet,
-            listOf("NAV endret til dato på aktiviteten fra 30. august 2022 til 2. september 2022"),
-            listOf("${oppdatertAktivitet.endretAv} endret til dato på aktiviteten fra 30. august 2022 til 2. september 2022")
+            "NAV endret til dato på aktiviteten fra 30. august 2022 til 2. september 2022",
+            "${oppdatertAktivitet.endretAv} endret til dato på aktiviteten fra 30. august 2022 til 2. september 2022"
         )
         println("NAV endret til dato på aktiviteten fra ${aktivitet.tilDato} til ${oppdatertAktivitet.tilDato}")
     }
@@ -265,8 +265,8 @@ class HistorikkServiceTest {
         assert(
             historikk[aktivitet.id]!!,
             oppdatertAktivitet,
-            listOf("NAV flyttet aktiviteten fra Planlagt til Gjennomføres"),
-            listOf("${oppdatertAktivitet.endretAv} flyttet aktiviteten fra Planlagt til Gjennomføres")
+            "NAV flyttet aktiviteten fra Planlagt til Gjennomføres",
+            "${oppdatertAktivitet.endretAv} flyttet aktiviteten fra Planlagt til Gjennomføres"
         )
     }
 
@@ -282,8 +282,8 @@ class HistorikkServiceTest {
         assert(
             historikk[aktivitet.id]!!,
             oppdatertAktivitet,
-            listOf("NAV endret tilstand til Ikke fått jobben", "NAV avsluttet aktiviteten fordi kandidaten har Ikke fått jobben"),
-            listOf("${oppdatertAktivitet.endretAv} endret tilstand til Ikke fått jobben", "${oppdatertAktivitet.endretAv} avsluttet aktiviteten fordi kandidaten har Ikke fått jobben")
+            "NAV endret tilstand til Ikke fått jobben og avsluttet aktiviteten fordi kandidaten har Ikke fått jobben",
+            "${oppdatertAktivitet.endretAv} endret tilstand til Ikke fått jobben og avsluttet aktiviteten fordi kandidaten har Ikke fått jobben"
         )
     }
 
@@ -299,8 +299,8 @@ class HistorikkServiceTest {
         assert(
             historikk[aktivitet.id]!!,
             oppdatertAktivitet,
-            listOf("NAV endret tilstand til Fått jobben \uD83C\uDF89", "NAV avsluttet aktiviteten fordi kandidaten har Fått jobben 🎉"),
-            listOf("${oppdatertAktivitet.endretAv} endret tilstand til Fått jobben \uD83C\uDF89", "${oppdatertAktivitet.endretAv} avsluttet aktiviteten fordi kandidaten har Fått jobben \uD83C\uDF89")
+            "NAV endret tilstand til Fått jobben \uD83C\uDF89 og avsluttet aktiviteten fordi kandidaten har Fått jobben 🎉",
+            "${oppdatertAktivitet.endretAv} endret tilstand til Fått jobben \uD83C\uDF89 og avsluttet aktiviteten fordi kandidaten har Fått jobben \uD83C\uDF89"
         )
     }
 
@@ -318,8 +318,8 @@ class HistorikkServiceTest {
         assert(
             historikk[aktivitet.id]!!,
             oppdatertAktivitet,
-            listOf("NAV endret tilstand til Skal på intervju"),
-            listOf("${oppdatertAktivitet.endretAv} endret tilstand til Skal på intervju")
+            "NAV endret tilstand til Skal på intervju",
+            "${oppdatertAktivitet.endretAv} endret tilstand til Skal på intervju"
         )
     }
 
@@ -350,19 +350,49 @@ class HistorikkServiceTest {
         assertThat(endretAvTekstTilArkiv(Innsender.SYSTEM, "")).isEqualTo("NAV")
     }
 
+    @Test
+    fun `Sammenslåing av tekst skal håndtere en streng`() {
+        assertThat(slåSammenEndringstekster(listOf("NAV har endret status på aktiviteten til Gjennomføres"), "NAV")).isEqualTo("NAV har endret status på aktiviteten til Gjennomføres")
+    }
+
+    @Test
+    fun `Sammenslåing av tekst skal håndtere to strenger`() {
+        assertThat(
+            slåSammenEndringstekster(
+                listOf(
+                    "NAV har endret status på aktiviteten til Gjennomføres",
+                    "NAV har endret tidspunkt for møtet"
+                ), "NAV"
+            )
+        ).isEqualTo("NAV har endret status på aktiviteten til Gjennomføres og har endret tidspunkt for møtet")
+    }
+
+    @Test
+    fun `Sammenslåing av tekst skal håndtere flere enn to strenger`() {
+        assertThat(
+            slåSammenEndringstekster(
+                listOf(
+                    "NAV har endret status på aktiviteten til Gjennomføres",
+                    "NAV har endret tidspunkt for møtet",
+                    "NAV har markert aktiviteten som avtalt"
+                ), "NAV"
+            )
+        ).isEqualTo("NAV har endret status på aktiviteten til Gjennomføres, har endret tidspunkt for møtet og har markert aktiviteten som avtalt")
+    }
+
     private fun assert(
         historikk: Historikk,
         oppdatertAktivitet: AktivitetData,
-        beskrivelseForBruker: List<String>,
-        beskrivelseForVeileder: List<String>
+        beskrivelseForBruker: String,
+        beskrivelseForVeileder: String,
     ) {
         assertThat(historikk.endringer).hasSize(2)
         val endring = historikk.endringer.first()
         assertThat(endring.tidspunkt).isEqualTo(DateUtils.dateToZonedDateTime(oppdatertAktivitet.endretDato))
         assertThat(endring.endretAv).isEqualTo(oppdatertAktivitet.endretAv)
         assertThat(endring.endretAvType).isEqualTo(oppdatertAktivitet.endretAvType)
-        assertThat(endring.beskrivelseForBruker).isEqualTo(beskrivelseForBruker.joinToString("\n"))
-        assertThat(endring.beskrivelseForVeileder).isEqualTo(beskrivelseForVeileder.joinToString("\n"))
+        assertThat(endring.beskrivelseForBruker).isEqualTo(beskrivelseForBruker)
+        assertThat(endring.beskrivelseForVeileder).isEqualTo(beskrivelseForVeileder)
     }
 
 

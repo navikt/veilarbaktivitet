@@ -90,7 +90,7 @@ private fun hentEndringstekster(
 
     val endringstyper = utledAktivitetendringsType(forrigeVersjon, oppdatertVersjon)
 
-    return endringstyper.map { endringstype ->
+    val endringstekster = endringstyper.map { endringstype ->
         when (endringstype) {
             BLE_HISTORISK -> "Aktiviteten ble automatisk arkivert"
             OPPRETTET -> "$endretAvTekst opprettet aktiviteten"
@@ -129,7 +129,17 @@ private fun hentEndringstekster(
             IKKE_FATT_JOBBEN, FATT_JOBBEN ->  "$endretAvTekst avsluttet aktiviteten fordi kandidaten har ${oppdatertVersjon.stillingFraNavData.soknadsstatus.text}"
             DETALJER_ENDRET -> "$endretAvTekst endret detaljer på aktiviteten"
         }
-    }.joinToString("\n")
+    }
+    return slåSammenEndringstekster(endringstekster, endretAvTekst)
+}
+
+fun slåSammenEndringstekster(tekster: List<String>, endretAv: String): String {
+    if (tekster.isEmpty() || tekster.size == 1) return tekster.firstOrNull() ?: ""
+    return tekster.mapIndexed { index, endringstekst ->
+        if (index == 0) endringstekst
+        else if (index == tekster.size -1) endringstekst.replace(endretAv, " og")
+        else endringstekst.replace(endretAv, ",")
+    }.joinToString(separator = "")
 }
 
 fun endretAvTekstTilArkiv(innsender: Innsender, endretAv: String?) = when (innsender) {
