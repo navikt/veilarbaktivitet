@@ -63,7 +63,7 @@ open class AktiviteterTilKafkaService(
     @Timed
     open fun sendOppTil5000ArenaAktiviterTilPortefolje() {
         val maksAntall = 5000L
-        JobRunner.run("aktiviteter_til_portefolje_paa_kafka") {
+        JobRunner.run("arena_aktiviteter_til_portefolje_paa_kafka") {
             val batchResults =
                 batchTrackingDAO.withOffset(BatchJob.ArenaAktiviteter_til_portefolje) { sisteProsesserteVersjon ->
                     val arenaAktiviteter =
