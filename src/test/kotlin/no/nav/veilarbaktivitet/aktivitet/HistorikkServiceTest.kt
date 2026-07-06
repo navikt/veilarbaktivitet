@@ -305,6 +305,21 @@ class HistorikkServiceTest {
     }
 
     @Test
+    fun `Skal lage historikk på at tittel ble endret`() {
+        val aktivitet = nyAktivitet(AktivitetTypeData.EGENAKTIVITET).toBuilder().build()
+        val oppdatertAktivitet = endreAktivitet(aktivitet, tittel = "Ny tittel")
+
+        val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
+
+        assert(
+            historikk[aktivitet.id]!!,
+            oppdatertAktivitet,
+            "NAV endret tittelen på aktiviteten fra ${aktivitet.tittel} til ${oppdatertAktivitet.tittel}",
+            "${oppdatertAktivitet.endretAv} endret tittelen på aktiviteten fra ${aktivitet.tittel} til ${oppdatertAktivitet.tittel}"
+        )
+    }
+
+    @Test
     fun `Skal lage historikk på fått jobben`() {
         val stillingFraNavDataVenterStatus = StillingFraNavData.builder().soknadsstatus(Soknadsstatus.VENTER).build()
         val aktivitet = nyAktivitet().stillingFraNavData(stillingFraNavDataVenterStatus).build()
@@ -421,6 +436,7 @@ class HistorikkServiceTest {
         avtaltMedNav: Boolean = aktivitet.isAvtalt,
         fraDato: Date? = aktivitet.fraDato,
         tilDato: Date? = aktivitet.tilDato,
+        tittel: String = aktivitet.tittel,
         oppdatertStillingsoekAktivitetData: StillingsoekAktivitetData? = aktivitet.stillingsSoekAktivitetData,
         oppdatertMoteData: MoteData? = aktivitet.moteData,
         oppdatertStatus: AktivitetStatus = aktivitet.status,
@@ -437,7 +453,7 @@ class HistorikkServiceTest {
             .versjon(aktivitet.versjon + 1) // Hvis denne persisteres vil den få en ny versjon fra sekvens
             .fraDato(fraDato)
             .tilDato(tilDato)
-            .tittel(aktivitet.tittel)
+            .tittel(tittel)
             .beskrivelse(aktivitet.beskrivelse)
             .versjon(aktivitet.versjon + 1)
             .status(oppdatertStatus)

@@ -116,6 +116,7 @@ private fun hentEndringstekster(
                 "$endretAvTekst endret tilstand til $status"
             }
             IKKE_FATT_JOBBEN, FATT_JOBBEN ->  "$endretAvTekst avsluttet aktiviteten fordi kandidaten har ${oppdatertVersjon.stillingFraNavData.soknadsstatus.text}"
+            TITTEL_ENDRET -> "$endretAvTekst endret tittelen på aktiviteten fra ${forrigeVersjon?.tittel} til ${oppdatertVersjon.tittel}"
             DETALJER_ENDRET -> "$endretAvTekst endret detaljer på aktiviteten"
         }
     }
@@ -183,7 +184,6 @@ fun utledAktivitetendringsType(forrigeVersjon: AktivitetData?, oppdatertVersjon:
     }
     if (forrigeVersjon.historiskDato == null && oppdatertVersjon.historiskDato != null) return listOf(BLE_HISTORISK)
     if (oppdatertVersjon.transaksjonsType == AktivitetTransaksjonsType.KASSERT) return listOf(KASSERT)
-    // TODO: Kassert
 
     val endringer = mutableListOf<AktivitetendringsType>()
     if (forrigeVersjon.status != oppdatertVersjon.status) endringer.add(STATUS_ENDRET)
@@ -203,6 +203,7 @@ fun utledAktivitetendringsType(forrigeVersjon: AktivitetData?, oppdatertVersjon:
     if (erSøknadsstatusEndret(forrigeVersjon, oppdatertVersjon)) endringer.add(SOKNADSSTATUS_ENDRET)
     if (erEndretTilIkkeFåttJobben(forrigeVersjon, oppdatertVersjon)) endringer.add(IKKE_FATT_JOBBEN)
     if (erEndretTilFåttJobben(forrigeVersjon, oppdatertVersjon)) endringer.add(FATT_JOBBEN)
+    if (forrigeVersjon.tittel !== oppdatertVersjon.tittel) endringer.add(TITTEL_ENDRET)
     if (erDetaljerEndret(forrigeVersjon, oppdatertVersjon)) endringer.add(DETALJER_ENDRET)
     return endringer
 }
@@ -279,12 +280,11 @@ private fun erDetaljerEndret(forrigeVersjon: AktivitetData, oppdatertVersjon: Ak
     val datoerEndret = oppdatertVersjon.aktivitetType != AktivitetTypeData.MOTE && !oppdatertVersjon.isAvtalt &&
             (forrigeVersjon.fraDato != oppdatertVersjon.fraDato || forrigeVersjon.tilDato != oppdatertVersjon.tilDato)
     val beskrivelseEndret = forrigeVersjon.beskrivelse != oppdatertVersjon.beskrivelse
-    val tittelEndret = forrigeVersjon.tittel != oppdatertVersjon.tittel
     val egenAktivitetDataEndret = forrigeVersjon.egenAktivitetData != oppdatertVersjon.egenAktivitetData
     val iJobbAktivitetDataEndret = forrigeVersjon.iJobbAktivitetData != oppdatertVersjon.iJobbAktivitetData
     val behandlingAktivitetDataEndret = forrigeVersjon.behandlingAktivitetData != oppdatertVersjon.behandlingAktivitetData
     val eksternAktivitetDataEndret = forrigeVersjon.eksternAktivitetData != oppdatertVersjon.eksternAktivitetData
-    return datoerEndret || beskrivelseEndret || tittelEndret || egenAktivitetDataEndret
+    return datoerEndret || beskrivelseEndret || egenAktivitetDataEndret
             || iJobbAktivitetDataEndret
             || behandlingAktivitetDataEndret || eksternAktivitetDataEndret
 }
@@ -313,5 +313,6 @@ enum class AktivitetendringsType {
     SOKNADSSTATUS_ENDRET,
     IKKE_FATT_JOBBEN,
     FATT_JOBBEN,
+    TITTEL_ENDRET,
     DETALJER_ENDRET,
 }
