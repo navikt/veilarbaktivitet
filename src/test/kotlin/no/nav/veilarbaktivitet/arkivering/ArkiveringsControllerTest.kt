@@ -373,11 +373,11 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                                     "endringer": [
                                       {
                                         "formattertTidspunkt": "${norskDatoOgKlokkeslett(lestFHO.lestDato)}",
-                                        "beskrivelse": "Bruker bekreftet å ha lest informasjon om ansvaret sitt"
+                                        "beskrivelse": "Bruker bekreftet å ha lest informasjon om ansvaret sitt og endret tittelen på aktiviteten fra tittel til tittel"
                                       },
                                       {
                                         "formattertTidspunkt": "${norskDatoOgKlokkeslett(opprettetJobbAktivitetMedFHO.endretDato)}",
-                                        "beskrivelse": "NAV merket aktiviteten som \"Avtalt med NAV\""
+                                        "beskrivelse": "NAV merket aktiviteten som \"Avtalt med NAV\" og endret tittelen på aktiviteten fra tittel til tittel"
                                       },
                                       {
                                         "formattertTidspunkt": "${norskDato(opprettetJobbAktivitet.endretDato)} kl. ${klokkeslett(opprettetJobbAktivitet.endretDato)}",
