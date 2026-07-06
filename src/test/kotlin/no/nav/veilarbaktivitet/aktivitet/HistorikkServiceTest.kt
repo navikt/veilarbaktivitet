@@ -408,20 +408,8 @@ class HistorikkServiceTest {
         assertThat(endring.tidspunkt).isEqualTo(DateUtils.dateToZonedDateTime(oppdatertAktivitet.endretDato))
         assertThat(endring.endretAv).isEqualTo(oppdatertAktivitet.endretAv)
         assertThat(endring.endretAvType).isEqualTo(oppdatertAktivitet.endretAvType)
-        assertThat(endring.beskrivelseForBruker)
-            .describedAs(
-                "beskrivelseForBruker matchet ikke.%nForventet: %s%nFaktisk:   %s",
-                beskrivelseForBruker,
-                endring.beskrivelseForBruker
-            )
-            .isEqualTo(beskrivelseForBruker)
-        assertThat(endring.beskrivelseForVeileder)
-            .describedAs(
-                "beskrivelseForVeileder matchet ikke.%nForventet: %s%nFaktisk:   %s",
-                beskrivelseForVeileder,
-                endring.beskrivelseForVeileder
-            )
-            .isEqualTo(beskrivelseForVeileder)
+        assertThat(endring.beskrivelseForBruker).isEqualTo(beskrivelseForBruker)
+        assertThat(endring.beskrivelseForVeileder).isEqualTo(beskrivelseForVeileder)
     }
 
 
