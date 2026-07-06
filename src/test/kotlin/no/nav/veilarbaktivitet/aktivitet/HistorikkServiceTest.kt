@@ -3,6 +3,7 @@ package no.nav.veilarbaktivitet.aktivitet
 import no.nav.veilarbaktivitet.aktivitet.domain.*
 import no.nav.veilarbaktivitet.aktivitet.domain.StillingsoekEtikettData.INNKALT_TIL_INTERVJU
 import no.nav.veilarbaktivitet.aktivitet.domain.StillingsoekEtikettData.SOKNAD_SENDT
+import no.nav.veilarbaktivitet.aktivitet.dto.KanalDTO
 import no.nav.veilarbaktivitet.avtalt_med_nav.Forhaandsorientering
 import no.nav.veilarbaktivitet.avtalt_med_nav.Type
 import no.nav.veilarbaktivitet.person.Innsender
@@ -24,25 +25,24 @@ class HistorikkServiceTest {
 
     @Test
     fun `Skal lage historikk på endret møtetid`() {
-        val aktivitet = nyAktivitet(AktivitetTypeData.MOTE)
-        aktivitet.withFraDato(Date.from(Instant.parse("2022-09-02T11:00:00Z")))
-        aktivitet.withTilDato(Date.from(Instant.parse("2022-09-02T12:00:00Z")))
+        val aktivitet = nyAktivitet(AktivitetTypeData.MOTE).toBuilder()
+            .fraDato(Date.from(Instant.parse("2022-09-02T11:00:00Z")))
+            .tilDato(Date.from(Instant.parse("2022-09-02T12:00:00Z"))).build()
         val oppdatertAktivitet = endreAktivitet(aktivitet, oppdatertMoteData = aktivitet.moteData, fraDato = Date.from(Instant.parse("2022-09-02T12:00:00Z")), tilDato = Date.from(Instant.parse("2022-09-02T13:00:00Z")))
-        // TODO: Må ikke bare se på fra og til? Fikse dette..
 
         val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
 
         assert(
             historikk[aktivitet.id]!!,
             oppdatertAktivitet,
-            "NAV endret tid for møtet",
-            "${oppdatertAktivitet.endretAv} endret tid for møtet"
+            "NAV endret tid for møtet fra 2. september 2022 kl. 14.00 til 2. september 2022 kl. 15.00",
+            "${oppdatertAktivitet.endretAv} endret tid for møtet fra 2. september 2022 kl. 14.00 til 2. september 2022 kl. 15.00"
         )
     }
 
     @Test
     fun `Skal lage historikk på endret møtested`() {
-        val aktivitet = nyAktivitet(AktivitetTypeData.MOTE)
+        val aktivitet = nyAktivitet(AktivitetTypeData.MOTE).toBuilder().moteData(nyMoteAktivitet().moteData.withAdresse("Gammel Adresse 1")).build()
         val oppdatertMoteData = aktivitet.moteData.withAdresse("Ny Adresse 1")
         val oppdatertAktivitet = endreAktivitet(aktivitet, oppdatertMoteData = oppdatertMoteData)
 
@@ -51,8 +51,25 @@ class HistorikkServiceTest {
         assert(
             historikk[aktivitet.id]!!,
             oppdatertAktivitet,
-            "NAV endret sted for møtet",
-            "${oppdatertAktivitet.endretAv} endret sted for møtet"
+            "NAV endret sted for møtet fra Gammel Adresse 1 til Ny Adresse 1",
+            "${oppdatertAktivitet.endretAv} endret sted for møtet fra Gammel Adresse 1 til Ny Adresse 1"
+        )
+    }
+
+
+    @Test
+    fun `Skal lage historikk på endret kanal for møte`() {
+        val aktivitet = nyAktivitet(AktivitetTypeData.MOTE).toBuilder().moteData(nyMoteAktivitet().moteData.withKanal(KanalDTO.OPPMOTE)).build()
+        val oppdatertMoteData = aktivitet.moteData.withKanal(KanalDTO.TELEFON)
+        val oppdatertAktivitet = endreAktivitet(aktivitet, oppdatertMoteData = oppdatertMoteData)
+
+        val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
+
+        assert(
+            historikk[aktivitet.id]!!,
+            oppdatertAktivitet,
+            "NAV endret kanal for møtet fra møte til telefonmøte",
+            "${oppdatertAktivitet.endretAv} endret kanal for møtet fra møte til telefonmøte"
         )
     }
 
