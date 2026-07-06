@@ -29,7 +29,6 @@ import no.nav.veilarbaktivitet.person.Innsender
 import no.nav.veilarbaktivitet.stilling_fra_nav.Soknadsstatus
 import no.nav.veilarbaktivitet.util.DateUtils
 import no.nav.veilarbaktivitet.util.DateUtils.norskDato
-import no.nav.veilarbaktivitet.util.DateUtils.norskDatoOgKlokkeslett
 import org.springframework.stereotype.Service
 import java.time.ZonedDateTime
 
@@ -107,13 +106,9 @@ private fun hentEndringstekster(
                 val nyEtikett = oppdatertVersjon.stillingsSoekAktivitetData.stillingsoekEtikett?.text ?: "Ingen"
                 "$endretAvTekst endret tilstand til $nyEtikett"
             }
-            MOTE_TIDSPUNKT_ENDRET -> {
-                val fra = forrigeVersjon?.tilDato?.let { norskDatoOgKlokkeslett(it) } ?: "ingen dato"
-                val til = oppdatertVersjon?.tilDato?.let {norskDatoOgKlokkeslett(it)} ?: "ingen dato"
-                "$endretAvTekst endret tid for møtet fra $fra til $til"
-            }
-            MOTE_STED_ENDRET -> "$endretAvTekst endret sted for møtet fra ${forrigeVersjon?.moteData?.adresse ?: "ingen adresse"} til ${oppdatertVersjon.moteData.adresse ?: "ingen adresse"}"
-            MOTE_KANAL_ENDRET -> "$endretAvTekst endret kanal for møtet fra ${forrigeVersjon?.moteData?.kanal?.tekst ?: "ingen kanal"} til ${oppdatertVersjon.moteData?.kanal?.tekst ?: "ingen kanal"}"
+            MOTE_TIDSPUNKT_ENDRET -> "$endretAvTekst endret tid for møtet"
+            MOTE_STED_ENDRET -> "$endretAvTekst endret sted for møtet"
+            MOTE_KANAL_ENDRET -> "$endretAvTekst endret kanal for møtet"
             MOTE_FORBEREDELSER_ENDRET -> "$endretAvTekst endret møteforberedelser"
             REFERAT_OPPRETTET -> "$endretAvTekst opprettet referat"
             REFERAT_ENDRET -> "$endretAvTekst endret referatet"
