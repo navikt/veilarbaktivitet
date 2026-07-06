@@ -108,8 +108,8 @@ private fun hentEndringstekster(
                 "$endretAvTekst endret tilstand til $nyEtikett"
             }
             MOTE_TIDSPUNKT_ENDRET -> {
-                val fra = forrigeVersjon?.fraDato?.let { norskDatoOgKlokkeslett(it) } ?: "ingen dato"
-                val til = oppdatertVersjon?.fraDato?.let {norskDatoOgKlokkeslett(it)} ?: "ingen dato"
+                val fra = forrigeVersjon?.tilDato?.let { norskDatoOgKlokkeslett(it) } ?: "ingen dato"
+                val til = oppdatertVersjon?.tilDato?.let {norskDatoOgKlokkeslett(it)} ?: "ingen dato"
                 "$endretAvTekst endret tid for møtet fra $fra til $til"
             }
             MOTE_STED_ENDRET -> "$endretAvTekst endret sted for møtet fra ${forrigeVersjon?.moteData?.adresse ?: "ingen adresse"} til ${oppdatertVersjon.moteData.adresse ?: "ingen adresse"}"
