@@ -1,26 +1,6 @@
 package no.nav.veilarbaktivitet.aktivitet
 
-import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.AVTALT_DATO_ENDRET
-import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.BLE_HISTORISK
-import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.BLITT_AVTALT
-import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.DEL_CV_SVART
-import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.DETALJER_ENDRET
-import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.FATT_JOBBEN
-import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.FORHAANDSORIENTERING_LEST
-import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.IKKE_FATT_JOBBEN
-import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.KASSERT
-import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.MOTE_FORBEREDELSER_ENDRET
-import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.MOTE_KANAL_ENDRET
-import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.MOTE_STED_ENDRET
-import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.MOTE_TIDSPUNKT_ENDRET
-import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.OPPRETTET
-import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.OPPRETTET_SOM_AVTALT
-import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.REFERAT_ENDRET
-import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.REFERAT_OPPRETTET
-import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.REFERAT_PUBLISERT
-import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.SOKNADSSTATUS_ENDRET
-import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.STATUS_ENDRET
-import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.STILLINGSOK_ETIKETT_ENDRET
+import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.*
 import no.nav.veilarbaktivitet.aktivitet.Målgruppe.*
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType
@@ -29,6 +9,7 @@ import no.nav.veilarbaktivitet.person.Innsender
 import no.nav.veilarbaktivitet.stilling_fra_nav.Soknadsstatus
 import no.nav.veilarbaktivitet.util.DateUtils
 import no.nav.veilarbaktivitet.util.DateUtils.norskDato
+import no.nav.veilarbaktivitet.util.DateUtils.norskDatoOgKlokkeslett
 import org.springframework.stereotype.Service
 import java.time.ZonedDateTime
 
@@ -51,24 +32,29 @@ fun lagHistorikkForAktiviteter(aktivitetVersjoner: Map<AktivitetId, List<Aktivit
     return aktivitetVersjoner.map { (aktivitetId, aktivitetVersjoner) ->
         val sorterteAktivitetVersjoner = aktivitetVersjoner.sortedBy { it.versjon }
         val endringer = sorterteAktivitetVersjoner.mapIndexed { index, aktivitetData ->
+            val forrigeVersjon = sorterteAktivitetVersjoner.getOrNull(index - 1)
+            val endringstyper = utledAktivitetendringsType(forrigeVersjon, aktivitetData)
             Endring(
                 endretAvType = aktivitetData.endretAvType,
                 endretAv = if (aktivitetData.endretAvType == Innsender.ARBEIDSGIVER) "Arbeidsgiver" else aktivitetData.endretAv,
                 tidspunkt = DateUtils.dateToZonedDateTime(aktivitetData.endretDato),
                 beskrivelseForVeileder = hentEndringstekster(
-                    sorterteAktivitetVersjoner.getOrNull(index - 1),
+                    forrigeVersjon,
                     aktivitetData,
-                    VEILEDER
+                    VEILEDER,
+                    endringstyper
                 ),
                 beskrivelseForBruker = hentEndringstekster(
-                    sorterteAktivitetVersjoner.getOrNull(index - 1),
+                    forrigeVersjon,
                     aktivitetData,
-                    BRUKER
+                    BRUKER,
+                    endringstyper
                 ),
                 beskrivelseForArkiv = hentEndringstekster(
-                    sorterteAktivitetVersjoner.getOrNull(index - 1),
+                    forrigeVersjon,
                     aktivitetData,
-                    ARKIV
+                    ARKIV,
+                    endringstyper
                 ),
             )
         }
@@ -80,15 +66,14 @@ fun lagHistorikkForAktiviteter(aktivitetVersjoner: Map<AktivitetId, List<Aktivit
 private fun hentEndringstekster(
     forrigeVersjon: AktivitetData?,
     oppdatertVersjon: AktivitetData,
-    målgruppe: Målgruppe
+    målgruppe: Målgruppe,
+    endringstyper: List<AktivitetendringsType>,
 ): String {
     val endretAvTekst = when (målgruppe) {
         VEILEDER -> endretAvTekstTilVeileder(oppdatertVersjon.endretAvType, oppdatertVersjon.endretAv)
         BRUKER -> endretAvTekstTilBruker(oppdatertVersjon.endretAvType)
         ARKIV -> endretAvTekstTilArkiv(oppdatertVersjon.endretAvType, oppdatertVersjon.endretAv)
     }
-
-    val endringstyper = utledAktivitetendringsType(forrigeVersjon, oppdatertVersjon)
 
     val endringstekster = endringstyper.map { endringstype ->
         when (endringstype) {
@@ -106,9 +91,13 @@ private fun hentEndringstekster(
                 val nyEtikett = oppdatertVersjon.stillingsSoekAktivitetData.stillingsoekEtikett?.text ?: "Ingen"
                 "$endretAvTekst endret tilstand til $nyEtikett"
             }
-            MOTE_TIDSPUNKT_ENDRET -> "$endretAvTekst endret tid for møtet"
-            MOTE_STED_ENDRET -> "$endretAvTekst endret sted for møtet"
-            MOTE_KANAL_ENDRET -> "$endretAvTekst endret kanal for møtet"
+            MOTE_TIDSPUNKT_ENDRET -> {
+                val fra = forrigeVersjon?.tilDato?.let { norskDatoOgKlokkeslett(it) } ?: "ingen dato"
+                val til = oppdatertVersjon?.tilDato?.let {norskDatoOgKlokkeslett(it)} ?: "ingen dato"
+                "$endretAvTekst endret tid for møtet fra $fra til $til"
+            }
+            MOTE_STED_ENDRET -> "$endretAvTekst endret sted for møtet fra ${forrigeVersjon?.moteData?.adresse ?: "ingen adresse"} til ${oppdatertVersjon.moteData.adresse ?: "ingen adresse"}"
+            MOTE_KANAL_ENDRET -> "$endretAvTekst endret kanal for møtet fra ${forrigeVersjon?.moteData?.kanal?.tekst ?: "ingen kanal"} til ${oppdatertVersjon.moteData?.kanal?.tekst ?: "ingen kanal"}"
             MOTE_FORBEREDELSER_ENDRET -> "$endretAvTekst endret møteforberedelser"
             REFERAT_OPPRETTET -> "$endretAvTekst opprettet referat"
             REFERAT_ENDRET -> "$endretAvTekst endret referatet"
