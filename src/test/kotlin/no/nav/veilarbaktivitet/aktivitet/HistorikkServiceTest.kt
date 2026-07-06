@@ -320,6 +320,21 @@ class HistorikkServiceTest {
     }
 
     @Test
+    fun `Skal lage historikk på at beskrivelse ble endret`() {
+        val aktivitet = nyAktivitet(AktivitetTypeData.EGENAKTIVITET).toBuilder().build()
+        val oppdatertAktivitet = endreAktivitet(aktivitet, beskrivelse = "Ny beskrivelse")
+
+        val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
+
+        assert(
+            historikk[aktivitet.id]!!,
+            oppdatertAktivitet,
+            "NAV endret beskrivelsen på aktiviteten fra ${aktivitet.beskrivelse} til ${oppdatertAktivitet.beskrivelse}",
+            "${oppdatertAktivitet.endretAv} endret beskrivelsen på aktiviteten fra ${aktivitet.beskrivelse} til ${oppdatertAktivitet.beskrivelse}"
+        )
+    }
+
+    @Test
     fun `Skal lage historikk på fått jobben`() {
         val stillingFraNavDataVenterStatus = StillingFraNavData.builder().soknadsstatus(Soknadsstatus.VENTER).build()
         val aktivitet = nyAktivitet().stillingFraNavData(stillingFraNavDataVenterStatus).build()
@@ -437,6 +452,7 @@ class HistorikkServiceTest {
         fraDato: Date? = aktivitet.fraDato,
         tilDato: Date? = aktivitet.tilDato,
         tittel: String = aktivitet.tittel,
+        beskrivelse: String = aktivitet.beskrivelse,
         oppdatertStillingsoekAktivitetData: StillingsoekAktivitetData? = aktivitet.stillingsSoekAktivitetData,
         oppdatertMoteData: MoteData? = aktivitet.moteData,
         oppdatertStatus: AktivitetStatus = aktivitet.status,
@@ -454,7 +470,7 @@ class HistorikkServiceTest {
             .fraDato(fraDato)
             .tilDato(tilDato)
             .tittel(tittel)
-            .beskrivelse(aktivitet.beskrivelse)
+            .beskrivelse(beskrivelse)
             .versjon(aktivitet.versjon + 1)
             .status(oppdatertStatus)
             .avsluttetKommentar(aktivitet.avsluttetKommentar)

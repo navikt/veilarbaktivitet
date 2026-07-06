@@ -117,6 +117,7 @@ private fun hentEndringstekster(
             }
             IKKE_FATT_JOBBEN, FATT_JOBBEN ->  "$endretAvTekst avsluttet aktiviteten fordi kandidaten har ${oppdatertVersjon.stillingFraNavData.soknadsstatus.text}"
             TITTEL_ENDRET -> "$endretAvTekst endret tittelen på aktiviteten fra ${forrigeVersjon?.tittel} til ${oppdatertVersjon.tittel}"
+            BESKRIVELSE_ENDRET -> "$endretAvTekst endret beskrivelsen på aktiviteten fra ${forrigeVersjon?.beskrivelse} til ${oppdatertVersjon.beskrivelse}"
             DETALJER_ENDRET -> "$endretAvTekst endret detaljer på aktiviteten"
         }
     }
@@ -203,7 +204,8 @@ fun utledAktivitetendringsType(forrigeVersjon: AktivitetData?, oppdatertVersjon:
     if (erSøknadsstatusEndret(forrigeVersjon, oppdatertVersjon)) endringer.add(SOKNADSSTATUS_ENDRET)
     if (erEndretTilIkkeFåttJobben(forrigeVersjon, oppdatertVersjon)) endringer.add(IKKE_FATT_JOBBEN)
     if (erEndretTilFåttJobben(forrigeVersjon, oppdatertVersjon)) endringer.add(FATT_JOBBEN)
-    if (forrigeVersjon.tittel !== oppdatertVersjon.tittel) endringer.add(TITTEL_ENDRET)
+    if (forrigeVersjon.tittel != oppdatertVersjon.tittel) endringer.add(TITTEL_ENDRET)
+    if (forrigeVersjon.beskrivelse != oppdatertVersjon.beskrivelse) endringer.add(BESKRIVELSE_ENDRET)
     if (erDetaljerEndret(forrigeVersjon, oppdatertVersjon)) endringer.add(DETALJER_ENDRET)
     return endringer
 }
@@ -279,12 +281,11 @@ private fun erEndretTilFåttJobben(forrigeVersjon: AktivitetData, oppdatertVersj
 private fun erDetaljerEndret(forrigeVersjon: AktivitetData, oppdatertVersjon: AktivitetData): Boolean {
     val datoerEndret = oppdatertVersjon.aktivitetType != AktivitetTypeData.MOTE && !oppdatertVersjon.isAvtalt &&
             (forrigeVersjon.fraDato != oppdatertVersjon.fraDato || forrigeVersjon.tilDato != oppdatertVersjon.tilDato)
-    val beskrivelseEndret = forrigeVersjon.beskrivelse != oppdatertVersjon.beskrivelse
     val egenAktivitetDataEndret = forrigeVersjon.egenAktivitetData != oppdatertVersjon.egenAktivitetData
     val iJobbAktivitetDataEndret = forrigeVersjon.iJobbAktivitetData != oppdatertVersjon.iJobbAktivitetData
     val behandlingAktivitetDataEndret = forrigeVersjon.behandlingAktivitetData != oppdatertVersjon.behandlingAktivitetData
     val eksternAktivitetDataEndret = forrigeVersjon.eksternAktivitetData != oppdatertVersjon.eksternAktivitetData
-    return datoerEndret || beskrivelseEndret || egenAktivitetDataEndret
+    return datoerEndret || egenAktivitetDataEndret
             || iJobbAktivitetDataEndret
             || behandlingAktivitetDataEndret || eksternAktivitetDataEndret
 }
@@ -314,5 +315,6 @@ enum class AktivitetendringsType {
     IKKE_FATT_JOBBEN,
     FATT_JOBBEN,
     TITTEL_ENDRET,
+    BESKRIVELSE_ENDRET,
     DETALJER_ENDRET,
 }
