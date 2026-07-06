@@ -10,6 +10,6 @@ fun Historikk.tilAktivitetHistorikk(): AktivitetHistorikk {
         endringer = this.endringer.map { AktivitetEndring(
             formattertTidspunkt = norskDatoOgKlokkeslett(it.tidspunkt),
             beskrivelse = it.beskrivelseForArkiv
-        ) }
+        )}
     )
 }
