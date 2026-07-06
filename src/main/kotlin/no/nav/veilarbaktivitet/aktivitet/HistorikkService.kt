@@ -1,26 +1,6 @@
 package no.nav.veilarbaktivitet.aktivitet
 
-import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.AVTALT_DATO_ENDRET
-import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.BLE_HISTORISK
-import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.BLITT_AVTALT
-import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.DEL_CV_SVART
-import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.DETALJER_ENDRET
-import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.FATT_JOBBEN
-import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.FORHAANDSORIENTERING_LEST
-import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.IKKE_FATT_JOBBEN
-import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.KASSERT
-import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.MOTE_FORBEREDELSER_ENDRET
-import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.MOTE_KANAL_ENDRET
-import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.MOTE_STED_ENDRET
-import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.MOTE_TIDSPUNKT_ENDRET
-import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.OPPRETTET
-import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.OPPRETTET_SOM_AVTALT
-import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.REFERAT_ENDRET
-import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.REFERAT_OPPRETTET
-import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.REFERAT_PUBLISERT
-import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.SOKNADSSTATUS_ENDRET
-import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.STATUS_ENDRET
-import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.STILLINGSOK_ETIKETT_ENDRET
+import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.*
 import no.nav.veilarbaktivitet.aktivitet.Målgruppe.*
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType
@@ -52,24 +32,29 @@ fun lagHistorikkForAktiviteter(aktivitetVersjoner: Map<AktivitetId, List<Aktivit
     return aktivitetVersjoner.map { (aktivitetId, aktivitetVersjoner) ->
         val sorterteAktivitetVersjoner = aktivitetVersjoner.sortedBy { it.versjon }
         val endringer = sorterteAktivitetVersjoner.mapIndexed { index, aktivitetData ->
+            val forrigeVersjon = sorterteAktivitetVersjoner.getOrNull(index - 1)
+            val endringstyper = utledAktivitetendringsType(forrigeVersjon, aktivitetData)
             Endring(
                 endretAvType = aktivitetData.endretAvType,
                 endretAv = if (aktivitetData.endretAvType == Innsender.ARBEIDSGIVER) "Arbeidsgiver" else aktivitetData.endretAv,
                 tidspunkt = DateUtils.dateToZonedDateTime(aktivitetData.endretDato),
                 beskrivelseForVeileder = hentEndringstekster(
-                    sorterteAktivitetVersjoner.getOrNull(index - 1),
+                    forrigeVersjon,
                     aktivitetData,
-                    VEILEDER
+                    VEILEDER,
+                    endringstyper
                 ),
                 beskrivelseForBruker = hentEndringstekster(
-                    sorterteAktivitetVersjoner.getOrNull(index - 1),
+                    forrigeVersjon,
                     aktivitetData,
-                    BRUKER
+                    BRUKER,
+                    endringstyper
                 ),
                 beskrivelseForArkiv = hentEndringstekster(
-                    sorterteAktivitetVersjoner.getOrNull(index - 1),
+                    forrigeVersjon,
                     aktivitetData,
-                    ARKIV
+                    ARKIV,
+                    endringstyper
                 ),
             )
         }
@@ -81,15 +66,14 @@ fun lagHistorikkForAktiviteter(aktivitetVersjoner: Map<AktivitetId, List<Aktivit
 private fun hentEndringstekster(
     forrigeVersjon: AktivitetData?,
     oppdatertVersjon: AktivitetData,
-    målgruppe: Målgruppe
+    målgruppe: Målgruppe,
+    endringstyper: List<AktivitetendringsType>,
 ): String {
     val endretAvTekst = when (målgruppe) {
         VEILEDER -> endretAvTekstTilVeileder(oppdatertVersjon.endretAvType, oppdatertVersjon.endretAv)
         BRUKER -> endretAvTekstTilBruker(oppdatertVersjon.endretAvType)
         ARKIV -> endretAvTekstTilArkiv(oppdatertVersjon.endretAvType, oppdatertVersjon.endretAv)
     }
-
-    val endringstyper = utledAktivitetendringsType(forrigeVersjon, oppdatertVersjon)
 
     val endringstekster = endringstyper.map { endringstype ->
         when (endringstype) {
