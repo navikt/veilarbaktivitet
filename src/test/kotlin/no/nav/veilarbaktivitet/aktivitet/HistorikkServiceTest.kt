@@ -156,7 +156,7 @@ class HistorikkServiceTest {
     @Test
     fun `Skal lage historikk på at detaljer ble endret`() {
         val aktivitet = nyAktivitet(AktivitetTypeData.EGENAKTIVITET).toBuilder().build()
-        val oppdatertAktivitet = endreAktivitet(aktivitet, fraDato = Date())
+        val oppdatertAktivitet = endreAktivitet(aktivitet, oppdatertEgenAktivitetData = aktivitet.egenAktivitetData.withHensikt("Ny hensikt"))
 
         val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
 
@@ -266,10 +266,27 @@ class HistorikkServiceTest {
         assert(
             historikk[aktivitet.id]!!,
             oppdatertAktivitet,
-            "NAV endret til dato på aktiviteten fra 30. august 2022 til 2. september 2022",
-            "${oppdatertAktivitet.endretAv} endret til dato på aktiviteten fra 30. august 2022 til 2. september 2022"
+            "NAV endret \"Til dato\" på aktiviteten fra 30. august 2022 til 2. september 2022",
+            "${oppdatertAktivitet.endretAv} endret \"Til dato\" på aktiviteten fra 30. august 2022 til 2. september 2022"
         )
-        println("NAV endret til dato på aktiviteten fra ${aktivitet.tilDato} til ${oppdatertAktivitet.tilDato}")
+    }
+
+    @Test
+    fun `Skal lage historikk på at ikke avtalt dato ble endret`() {
+        val aktivitetFraDato = ZonedDateTime.of(2022, 8, 30, 10, 0,0, 0, ZoneId.of("Europe/Oslo"))
+        val aktivitet = nyAktivitet(AktivitetTypeData.SAMTALEREFERAT).toBuilder().avtalt(false).fraDato(
+            zonedDateTimeToDate(aktivitetFraDato)).build()
+        val oppdatertAktivitetFraDato = ZonedDateTime.of(2022, 9, 2, 11, 0,0, 0, ZoneId.of("Europe/Oslo"))
+        val oppdatertAktivitet = endreAktivitet(aktivitet, endretAvType = Innsender.NAV, fraDato = zonedDateTimeToDate(oppdatertAktivitetFraDato))
+
+        val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
+
+        assert(
+            historikk[aktivitet.id]!!,
+            oppdatertAktivitet,
+            "NAV endret \"Fra dato\" på aktiviteten fra 30. august 2022 til 2. september 2022",
+            "${oppdatertAktivitet.endretAv} endret \"Fra dato\" på aktiviteten fra 30. august 2022 til 2. september 2022"
+        )
     }
 
     @Test

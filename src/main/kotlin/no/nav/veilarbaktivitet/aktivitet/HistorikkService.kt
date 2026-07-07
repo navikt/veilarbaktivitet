@@ -83,9 +83,13 @@ private fun hentEndringstekster(
             BLITT_AVTALT -> "$endretAvTekst merket aktiviteten som \"Avtalt med NAV\""
             KASSERT -> "$endretAvTekst kasserte aktiviteten"
             STATUS_ENDRET -> "$endretAvTekst flyttet aktiviteten fra ${forrigeVersjon?.status?.text} til ${oppdatertVersjon.status?.text}"
-            AVTALT_DATO_ENDRET -> {
+            TIL_DATO_ENDRET -> {
                 val tilDatoString = if (forrigeVersjon?.tilDato !== null) norskDato(forrigeVersjon.tilDato) else "ingen dato"
-                "$endretAvTekst endret til dato på aktiviteten fra $tilDatoString til ${norskDato(oppdatertVersjon.tilDato)}"
+                "$endretAvTekst endret \"Til dato\" på aktiviteten fra $tilDatoString til ${norskDato(oppdatertVersjon.tilDato)}"
+            }
+            FRA_DATO_ENDRET -> {
+                val fraDatoString = if (forrigeVersjon?.fraDato !== null) norskDato(forrigeVersjon.fraDato) else "ingen dato"
+                "$endretAvTekst endret \"Fra dato\" på aktiviteten fra $fraDatoString til ${norskDato(oppdatertVersjon.fraDato)}"
             }
             STILLINGSOK_ETIKETT_ENDRET -> {
                 val nyEtikett = oppdatertVersjon.stillingsSoekAktivitetData.stillingsoekEtikett?.text ?: "Ingen"
@@ -190,7 +194,9 @@ fun utledAktivitetendringsType(forrigeVersjon: AktivitetData?, oppdatertVersjon:
     if (forrigeVersjon.status != oppdatertVersjon.status) endringer.add(STATUS_ENDRET)
     if (!forrigeVersjon.isAvtalt && oppdatertVersjon.isAvtalt) endringer.add(BLITT_AVTALT)
     if (oppdatertVersjon.aktivitetType != AktivitetTypeData.MOTE && forrigeVersjon.tilDato != oppdatertVersjon.tilDato)
-        endringer.add(AVTALT_DATO_ENDRET)
+        endringer.add(TIL_DATO_ENDRET)
+    if (oppdatertVersjon.aktivitetType != AktivitetTypeData.MOTE && forrigeVersjon.fraDato != oppdatertVersjon.fraDato)
+        endringer.add(FRA_DATO_ENDRET)
     if (erMøtetidspunktEndret(forrigeVersjon, oppdatertVersjon)) endringer.add(MOTE_TIDSPUNKT_ENDRET)
     if (erMøtestedEndret(forrigeVersjon, oppdatertVersjon)) endringer.add(MOTE_STED_ENDRET)
     if (erMøtekanalEndret(forrigeVersjon, oppdatertVersjon)) endringer.add(MOTE_KANAL_ENDRET)
@@ -279,15 +285,11 @@ private fun erEndretTilFåttJobben(forrigeVersjon: AktivitetData, oppdatertVersj
 
 // TODO: Kanskje teste denne grundig?
 private fun erDetaljerEndret(forrigeVersjon: AktivitetData, oppdatertVersjon: AktivitetData): Boolean {
-    val datoerEndret = oppdatertVersjon.aktivitetType != AktivitetTypeData.MOTE && !oppdatertVersjon.isAvtalt &&
-            (forrigeVersjon.fraDato != oppdatertVersjon.fraDato || forrigeVersjon.tilDato != oppdatertVersjon.tilDato)
     val egenAktivitetDataEndret = forrigeVersjon.egenAktivitetData != oppdatertVersjon.egenAktivitetData
     val iJobbAktivitetDataEndret = forrigeVersjon.iJobbAktivitetData != oppdatertVersjon.iJobbAktivitetData
     val behandlingAktivitetDataEndret = forrigeVersjon.behandlingAktivitetData != oppdatertVersjon.behandlingAktivitetData
     val eksternAktivitetDataEndret = forrigeVersjon.eksternAktivitetData != oppdatertVersjon.eksternAktivitetData
-    return datoerEndret || egenAktivitetDataEndret
-            || iJobbAktivitetDataEndret
-            || behandlingAktivitetDataEndret || eksternAktivitetDataEndret
+    return egenAktivitetDataEndret || iJobbAktivitetDataEndret || behandlingAktivitetDataEndret || eksternAktivitetDataEndret
 }
 
 
@@ -300,7 +302,8 @@ enum class AktivitetendringsType {
     // Endringer som kan opptre sammen med andre endringer
     STATUS_ENDRET,
     BLITT_AVTALT,
-    AVTALT_DATO_ENDRET,
+    TIL_DATO_ENDRET,
+    FRA_DATO_ENDRET,
     STILLINGSOK_ETIKETT_ENDRET,
     MOTE_TIDSPUNKT_ENDRET,
     MOTE_STED_ENDRET,
