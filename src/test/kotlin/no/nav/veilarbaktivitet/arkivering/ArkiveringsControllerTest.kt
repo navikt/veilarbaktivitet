@@ -611,8 +611,6 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                 .tilDato(toDate(datoPeriode.fra.plusDays(21)))
                 .build()
         )
-
-        println("Fra-dato: ${datoPeriode.fra}, til-dato: ${datoPeriode.til}")
         val aktivitetUtaforPeriode = aktivitetTestService.opprettAktivitetViaHttp(
             bruker,
             veileder,
