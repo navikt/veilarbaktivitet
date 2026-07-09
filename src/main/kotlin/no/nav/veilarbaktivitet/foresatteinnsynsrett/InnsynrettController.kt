@@ -3,17 +3,21 @@ package no.nav.veilarbaktivitet.foresatteinnsynsrett
 import no.nav.common.types.identer.Fnr
 import no.nav.poao.dab.spring_auth.IAuthService
 import no.nav.poao.dab.spring_auth.TilgangsType
-import no.nav.veilarbaktivitet.person.tilOrdinærtFødselsnummerFormat
+import no.nav.veilarbaktivitet.person.fodselsdato.PdlFodselsdatoClient
 import org.springframework.http.HttpStatus
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.server.ResponseStatusException
-import java.time.LocalDate
-import java.time.Period
 
 
 @RestController
 @RequestMapping("/api/innsynsrett")
-class InnsynrettController(private val authService: IAuthService) {
+class InnsynrettController(
+    private val authService: IAuthService,
+    private val pdlFodselsdatoClient: PdlFodselsdatoClient,
+) {
     
     @PostMapping()
     fun foresatteHarInnsynsrett(@RequestBody input: InnsynsrettInboundDTO): InnsynsrettOutboundDTO {
@@ -25,7 +29,7 @@ class InnsynrettController(private val authService: IAuthService) {
             fnr
         }
 
-        return InnsynsrettOutboundDTO(foresatteHarInnsynsrett = isUnder18(fnr))
+        return InnsynsrettOutboundDTO(foresatteHarInnsynsrett = pdlFodselsdatoClient.erUnder18(Fnr.ofValidFnr(fnr)))
     }
 
     data class InnsynsrettOutboundDTO(
@@ -35,24 +39,4 @@ class InnsynrettController(private val authService: IAuthService) {
     data class InnsynsrettInboundDTO(
         val fnr: String?
     )
-
-    private fun isUnder18(fødselsnummer: String): Boolean {
-        val fnr = tilOrdinærtFødselsnummerFormat(fødselsnummer)
-
-        val dag = fnr.substring(0, 2).toInt()
-        val måned = fnr.substring(2, 4).toInt()
-        val år = fnr.substring(4, 6).toInt()
-
-        // Dette vil fungere så lenge vi ikke har brukere på over 100 år
-        val inneværendeÅr = LocalDate.now().year.minus(2000)
-        val århundre = if (år > inneværendeÅr) 1900 else 2000
-
-        val fødselsår = århundre + år
-
-        val fødselsdato = LocalDate.of(fødselsår, måned, dag)
-        val dagensdato = LocalDate.now()
-        val alder = Period.between(fødselsdato, dagensdato).years
-
-        return alder < 18
-    }
 }
