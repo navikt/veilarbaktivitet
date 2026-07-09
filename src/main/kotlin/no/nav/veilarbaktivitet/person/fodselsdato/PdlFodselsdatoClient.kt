@@ -6,7 +6,6 @@ import no.nav.common.client.utils.graphql.GraphqlRequestBuilder
 import no.nav.common.client.utils.graphql.GraphqlResponse
 import no.nav.common.client.utils.graphql.GraphqlUtils
 import no.nav.common.types.identer.Fnr
-import no.nav.veilarbaktivitet.person.QueryVariables
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 
@@ -26,6 +25,10 @@ data class HentFodselsdatoQuery(
     val hentPerson: HentFodselsdato,
 )
 
+private data class QueryVariables(
+    val ident: String,
+)
+
 class HentFodselsdatoGraphqlWrapper: GraphqlResponse<HentFodselsdatoQuery>()
 
 @Service
@@ -39,7 +42,7 @@ class PdlFodselsdatoClient(val pdlClient: PdlClient) {
 
     private fun hentFodselsdato(fnr: Fnr): LocalDate? {
         val graphqlRequest = GraphqlRequestBuilder<QueryVariables>("graphql/pdl/fodselsdatoQuery.graphql")
-            .buildRequest(QueryVariables(ident = fnr.get(), historikk = false))
+            .buildRequest(QueryVariables(ident = fnr.get()))
         val result = pdlClient.request(graphqlRequest, HentFodselsdatoGraphqlWrapper::class.java)
             .also { GraphqlUtils.logWarningIfError(it) }
 

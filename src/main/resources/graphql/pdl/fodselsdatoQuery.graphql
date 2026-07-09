@@ -1,4 +1,4 @@
-query hentFolkeregisterStatus($ident: ID! $historikk: Boolean!) {
+query hentFolkeregisterStatus($ident: ID!) {
     hentPerson(ident: $ident) {
         foedselsdato {
             foedselsdato
