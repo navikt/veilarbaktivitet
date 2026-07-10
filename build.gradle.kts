@@ -2,9 +2,9 @@ val spring_boot_version = "4.1.0"
 val tomcat_version = "11.0.23"
 
 extra["tomcat.version"] = tomcat_version
-val common_version = "4.2026.06.25_10.50-baa9d54e3cd8"
-val dab_common_version = "2026.05.11-16.10.4d6c1e3c3451"
-val poao_tilgang_version = "4.2026.06.22_05.28-bc567ee327c9"
+val common_version = "4.2026.07.10_05.48-e9835152ffc0"
+val dab_common_version = "2026.07.10-08.33.e44ba88b2998"
+val poao_tilgang_version = "4.2026.07.10_06.14-bbb390de2a96"
 val shedlock_version = "7.7.0"
 val avroVersion = "1.12.1"
 val confluentKafkaAvroVersion = "8.2.0"
