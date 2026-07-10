@@ -56,6 +56,7 @@ configurations.all {
 
 tasks.test {
     useJUnitPlatform()
+    systemProperty("user.timezone", "Europe/Oslo")
 }
 
 application {

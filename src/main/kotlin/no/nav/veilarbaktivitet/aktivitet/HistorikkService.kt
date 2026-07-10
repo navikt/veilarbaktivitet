@@ -1,11 +1,15 @@
 package no.nav.veilarbaktivitet.aktivitet
 
+import no.nav.veilarbaktivitet.aktivitet.AktivitetendringsType.*
 import no.nav.veilarbaktivitet.aktivitet.Målgruppe.*
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData
 import no.nav.veilarbaktivitet.person.Innsender
+import no.nav.veilarbaktivitet.stilling_fra_nav.Soknadsstatus
 import no.nav.veilarbaktivitet.util.DateUtils
 import no.nav.veilarbaktivitet.util.DateUtils.norskDato
+import no.nav.veilarbaktivitet.util.DateUtils.norskDatoOgKlokkeslett
 import org.springframework.stereotype.Service
 import java.time.ZonedDateTime
 
@@ -28,24 +32,29 @@ fun lagHistorikkForAktiviteter(aktivitetVersjoner: Map<AktivitetId, List<Aktivit
     return aktivitetVersjoner.map { (aktivitetId, aktivitetVersjoner) ->
         val sorterteAktivitetVersjoner = aktivitetVersjoner.sortedBy { it.versjon }
         val endringer = sorterteAktivitetVersjoner.mapIndexed { index, aktivitetData ->
+            val forrigeVersjon = sorterteAktivitetVersjoner.getOrNull(index - 1)
+            val endringstyper = utledAktivitetendringsType(forrigeVersjon, aktivitetData)
             Endring(
                 endretAvType = aktivitetData.endretAvType,
                 endretAv = if (aktivitetData.endretAvType == Innsender.ARBEIDSGIVER) "Arbeidsgiver" else aktivitetData.endretAv,
                 tidspunkt = DateUtils.dateToZonedDateTime(aktivitetData.endretDato),
-                beskrivelseForVeileder = hentEndringstekst(
-                    sorterteAktivitetVersjoner.getOrNull(index - 1),
+                beskrivelseForVeileder = hentEndringstekster(
+                    forrigeVersjon,
                     aktivitetData,
-                    VEILEDER
+                    VEILEDER,
+                    endringstyper
                 ),
-                beskrivelseForBruker = hentEndringstekst(
-                    sorterteAktivitetVersjoner.getOrNull(index - 1),
+                beskrivelseForBruker = hentEndringstekster(
+                    forrigeVersjon,
                     aktivitetData,
-                    BRUKER
+                    BRUKER,
+                    endringstyper
                 ),
-                beskrivelseForArkiv = hentEndringstekst(
-                    sorterteAktivitetVersjoner.getOrNull(index - 1),
+                beskrivelseForArkiv = hentEndringstekster(
+                    forrigeVersjon,
                     aktivitetData,
-                    ARKIV
+                    ARKIV,
+                    endringstyper
                 ),
             )
         }
@@ -54,10 +63,11 @@ fun lagHistorikkForAktiviteter(aktivitetVersjoner: Map<AktivitetId, List<Aktivit
     }.toMap()
 }
 
-private fun hentEndringstekst(
+private fun hentEndringstekster(
     forrigeVersjon: AktivitetData?,
     oppdatertVersjon: AktivitetData,
-    målgruppe: Målgruppe
+    målgruppe: Målgruppe,
+    endringstyper: List<AktivitetendringsType>,
 ): String {
     val endretAvTekst = when (målgruppe) {
         VEILEDER -> endretAvTekstTilVeileder(oppdatertVersjon.endretAvType, oppdatertVersjon.endretAv)
@@ -65,58 +75,66 @@ private fun hentEndringstekst(
         ARKIV -> endretAvTekstTilArkiv(oppdatertVersjon.endretAvType, oppdatertVersjon.endretAv)
     }
 
-    return when (oppdatertVersjon.transaksjonsType) {
-        AktivitetTransaksjonsType.OPPRETTET -> {
-            if (oppdatertVersjon.isAvtalt)
-                "$endretAvTekst opprettet aktiviteten. Den er automatisk merket som \"Avtalt med NAV\""
-            else
-                "$endretAvTekst opprettet aktiviteten"
+    val endringstekster = endringstyper.map { endringstype ->
+        when (endringstype) {
+            BLE_HISTORISK -> "Aktiviteten ble automatisk arkivert"
+            OPPRETTET -> "$endretAvTekst opprettet aktiviteten"
+            OPPRETTET_SOM_AVTALT -> "$endretAvTekst opprettet aktiviteten. Den er automatisk merket som \"Avtalt med NAV\""
+            BLITT_AVTALT -> "$endretAvTekst merket aktiviteten som \"Avtalt med NAV\""
+            KASSERT -> "$endretAvTekst kasserte aktiviteten"
+            STATUS_ENDRET -> "$endretAvTekst flyttet aktiviteten fra ${forrigeVersjon?.status?.text} til ${oppdatertVersjon.status?.text}"
+            TIL_DATO_ENDRET -> {
+                val tilDatoString = if (forrigeVersjon?.tilDato !== null) norskDato(forrigeVersjon.tilDato) else "ingen dato"
+                "$endretAvTekst endret \"Til dato\" på aktiviteten fra $tilDatoString til ${norskDato(oppdatertVersjon.tilDato)}"
+            }
+            FRA_DATO_ENDRET -> {
+                val fraDatoString = if (forrigeVersjon?.fraDato !== null) norskDato(forrigeVersjon.fraDato) else "ingen dato"
+                "$endretAvTekst endret \"Fra dato\" på aktiviteten fra $fraDatoString til ${norskDato(oppdatertVersjon.fraDato)}"
+            }
+            STILLINGSOK_ETIKETT_ENDRET -> {
+                val nyEtikett = oppdatertVersjon.stillingsSoekAktivitetData.stillingsoekEtikett?.text ?: "Ingen"
+                "$endretAvTekst endret tilstand til $nyEtikett"
+            }
+            MOTE_TIDSPUNKT_ENDRET -> {
+                val fra = forrigeVersjon?.tilDato?.let { norskDatoOgKlokkeslett(it) } ?: "ingen dato"
+                val til = oppdatertVersjon?.tilDato?.let {norskDatoOgKlokkeslett(it)} ?: "ingen dato"
+                "$endretAvTekst endret tid for møtet fra $fra til $til"
+            }
+            MOTE_STED_ENDRET -> "$endretAvTekst endret sted for møtet fra ${forrigeVersjon?.moteData?.adresse ?: "ingen adresse"} til ${oppdatertVersjon.moteData.adresse ?: "ingen adresse"}"
+            MOTE_KANAL_ENDRET -> "$endretAvTekst endret kanal for møtet fra ${forrigeVersjon?.moteData?.kanal?.tekst ?: "ingen kanal"} til ${oppdatertVersjon.moteData?.kanal?.tekst ?: "ingen kanal"}"
+            MOTE_FORBEREDELSER_ENDRET -> "$endretAvTekst endret møteforberedelser"
+            REFERAT_OPPRETTET -> "$endretAvTekst opprettet referat"
+            REFERAT_ENDRET -> "$endretAvTekst endret referatet"
+            REFERAT_PUBLISERT -> "$endretAvTekst delte referatet"
+            FORHAANDSORIENTERING_LEST -> {
+                val sittEllerDitt = if (målgruppe == BRUKER) "ditt" else "sitt"
+                "$endretAvTekst bekreftet å ha lest informasjon om ansvaret $sittEllerDitt"
+            }
+            DEL_CV_SVART -> {
+                val svar = if (oppdatertVersjon.stillingFraNavData?.cvKanDelesData?.kanDeles ?: false) "Ja" else "Nei"
+                "$endretAvTekst svarte '$svar' på spørsmålet \"Er du interessert i denne stillingen?\""
+            }
+            SOKNADSSTATUS_ENDRET -> {
+                val status =
+                    if (oppdatertVersjon.stillingFraNavData?.soknadsstatus !== null) oppdatertVersjon.stillingFraNavData.soknadsstatus.text else "Ingen"
+                "$endretAvTekst endret tilstand til $status"
+            }
+            IKKE_FATT_JOBBEN, FATT_JOBBEN ->  "$endretAvTekst avsluttet aktiviteten fordi kandidaten har ${oppdatertVersjon.stillingFraNavData.soknadsstatus.text}"
+            TITTEL_ENDRET -> "$endretAvTekst endret tittelen på aktiviteten fra ${forrigeVersjon?.tittel} til ${oppdatertVersjon.tittel}"
+            BESKRIVELSE_ENDRET -> "$endretAvTekst endret beskrivelsen på aktiviteten fra ${forrigeVersjon?.beskrivelse} til ${oppdatertVersjon.beskrivelse}"
+            DETALJER_ENDRET -> "$endretAvTekst endret detaljer på aktiviteten"
         }
-
-        AktivitetTransaksjonsType.STATUS_ENDRET -> "$endretAvTekst flyttet aktiviteten fra ${forrigeVersjon?.status?.text} til ${oppdatertVersjon.status?.text}"
-        AktivitetTransaksjonsType.DETALJER_ENDRET -> "$endretAvTekst endret detaljer på aktiviteten"
-        AktivitetTransaksjonsType.AVTALT -> {
-            if (forrigeVersjon?.isAvtalt ?: false)
-                "$endretAvTekst sendte forhåndsorientering"
-            else
-                "$endretAvTekst merket aktiviteten som \"Avtalt med NAV\""
-        }
-
-        AktivitetTransaksjonsType.AVTALT_DATO_ENDRET -> "$endretAvTekst endret til dato på aktiviteten fra ${
-            if (forrigeVersjon?.tilDato !== null) norskDato(
-                forrigeVersjon.tilDato
-            ) else "ingen dato"
-        } til ${norskDato(oppdatertVersjon.tilDato)}"
-
-        AktivitetTransaksjonsType.ETIKETT_ENDRET -> {
-            val nyEtikett = oppdatertVersjon.stillingsSoekAktivitetData.stillingsoekEtikett?.text ?: "Ingen"
-            "$endretAvTekst endret tilstand til $nyEtikett"
-        }
-
-        AktivitetTransaksjonsType.MOTE_TID_OG_STED_ENDRET -> "$endretAvTekst endret tid eller sted for møtet"
-        AktivitetTransaksjonsType.REFERAT_OPPRETTET -> "$endretAvTekst opprettet referat"
-        AktivitetTransaksjonsType.REFERAT_ENDRET -> "$endretAvTekst endret referatet"
-        AktivitetTransaksjonsType.REFERAT_PUBLISERT -> "$endretAvTekst delte referatet"
-        AktivitetTransaksjonsType.BLE_HISTORISK -> "Aktiviteten ble automatisk arkivert"
-        AktivitetTransaksjonsType.FORHAANDSORIENTERING_LEST -> {
-            val sittEllerDitt = if (målgruppe == BRUKER) "ditt" else "sitt"
-            "$endretAvTekst bekreftet å ha lest informasjon om ansvaret $sittEllerDitt"
-        }
-
-        AktivitetTransaksjonsType.DEL_CV_SVART -> {
-            val svar = if (oppdatertVersjon.stillingFraNavData?.cvKanDelesData?.kanDeles ?: false) "Ja" else "Nei"
-            "$endretAvTekst svarte '$svar' på spørsmålet \"Er du interessert i denne stillingen?\""
-        }
-
-        AktivitetTransaksjonsType.SOKNADSSTATUS_ENDRET -> {
-            val status =
-                if (oppdatertVersjon.stillingFraNavData?.soknadsstatus !== null) oppdatertVersjon.stillingFraNavData.soknadsstatus.text else "Ingen"
-            "$endretAvTekst endret tilstand til $status"
-        }
-
-        AktivitetTransaksjonsType.IKKE_FATT_JOBBEN, AktivitetTransaksjonsType.FATT_JOBBEN -> "$endretAvTekst avsluttet aktiviteten fordi kandidaten har ${oppdatertVersjon.stillingFraNavData.soknadsstatus.text}"
-        AktivitetTransaksjonsType.KASSERT -> "$endretAvTekst kasserte aktiviteten"
     }
+    return slåSammenEndringstekster(endringstekster, endretAvTekst)
+}
+
+fun slåSammenEndringstekster(tekster: List<String>, endretAv: String): String {
+    if (tekster.isEmpty() || tekster.size == 1) return tekster.firstOrNull() ?: ""
+    return tekster.mapIndexed { index, endringstekst ->
+        if (index == 0) endringstekst
+        else if (index == tekster.size -1) endringstekst.replace(endretAv, " og")
+        else endringstekst.replace(endretAv, ",")
+    }.joinToString(separator = "")
 }
 
 fun endretAvTekstTilArkiv(innsender: Innsender, endretAv: String?) = when (innsender) {
@@ -161,4 +179,145 @@ private enum class Målgruppe {
     VEILEDER,
     BRUKER,
     ARKIV
+}
+
+fun utledAktivitetendringsType(forrigeVersjon: AktivitetData?, oppdatertVersjon: AktivitetData): List<AktivitetendringsType> {
+    // Endringer som bare oppstår alene
+    if (forrigeVersjon == null) {
+        return if (oppdatertVersjon.isAvtalt) listOf(OPPRETTET_SOM_AVTALT)
+        else listOf(OPPRETTET)
+    }
+    if (forrigeVersjon.historiskDato == null && oppdatertVersjon.historiskDato != null) return listOf(BLE_HISTORISK)
+    if (oppdatertVersjon.transaksjonsType == AktivitetTransaksjonsType.KASSERT) return listOf(KASSERT)
+
+    val endringer = mutableListOf<AktivitetendringsType>()
+    if (forrigeVersjon.status != oppdatertVersjon.status) endringer.add(STATUS_ENDRET)
+    if (!forrigeVersjon.isAvtalt && oppdatertVersjon.isAvtalt) endringer.add(BLITT_AVTALT)
+    if (oppdatertVersjon.aktivitetType != AktivitetTypeData.MOTE && forrigeVersjon.tilDato != oppdatertVersjon.tilDato)
+        endringer.add(TIL_DATO_ENDRET)
+    if (oppdatertVersjon.aktivitetType != AktivitetTypeData.MOTE && forrigeVersjon.fraDato != oppdatertVersjon.fraDato)
+        endringer.add(FRA_DATO_ENDRET)
+    if (erMøtetidspunktEndret(forrigeVersjon, oppdatertVersjon)) endringer.add(MOTE_TIDSPUNKT_ENDRET)
+    if (erMøtestedEndret(forrigeVersjon, oppdatertVersjon)) endringer.add(MOTE_STED_ENDRET)
+    if (erMøtekanalEndret(forrigeVersjon, oppdatertVersjon)) endringer.add(MOTE_KANAL_ENDRET)
+    if (erMøteForberedelserEndret(forrigeVersjon, oppdatertVersjon)) endringer.add(MOTE_FORBEREDELSER_ENDRET)
+    if (erReferatOpprettet(forrigeVersjon, oppdatertVersjon)) endringer.add(REFERAT_OPPRETTET)
+    if (erReferatEndret(forrigeVersjon, oppdatertVersjon)) endringer.add(REFERAT_ENDRET)
+    if (erReferatPublisert(forrigeVersjon, oppdatertVersjon)) endringer.add(REFERAT_PUBLISERT)
+    if (erStillingsokEtikettEndret(forrigeVersjon, oppdatertVersjon)) { endringer.add(STILLINGSOK_ETIKETT_ENDRET) }
+    if (erForhaandsorienteringBlittLest(oppdatertVersjon)) endringer.add(FORHAANDSORIENTERING_LEST)
+    if (harCvDeltBlittBesvart(forrigeVersjon, oppdatertVersjon)) endringer.add(DEL_CV_SVART)
+    if (erSøknadsstatusEndret(forrigeVersjon, oppdatertVersjon)) endringer.add(SOKNADSSTATUS_ENDRET)
+    if (erEndretTilIkkeFåttJobben(forrigeVersjon, oppdatertVersjon)) endringer.add(IKKE_FATT_JOBBEN)
+    if (erEndretTilFåttJobben(forrigeVersjon, oppdatertVersjon)) endringer.add(FATT_JOBBEN)
+    if (forrigeVersjon.tittel != oppdatertVersjon.tittel) endringer.add(TITTEL_ENDRET)
+    if (forrigeVersjon.beskrivelse != oppdatertVersjon.beskrivelse) endringer.add(BESKRIVELSE_ENDRET)
+    if (erDetaljerEndret(forrigeVersjon, oppdatertVersjon)) endringer.add(DETALJER_ENDRET)
+    return endringer
+}
+
+private fun erMøtetidspunktEndret(forrigeVersjon: AktivitetData, oppdatertVersjon: AktivitetData): Boolean {
+    if (forrigeVersjon.aktivitetType != AktivitetTypeData.MOTE) return false
+    val startTidspunktEndret = forrigeVersjon.fraDato != oppdatertVersjon.fraDato
+    val sluttTidspunktEndret = forrigeVersjon.tilDato != oppdatertVersjon.tilDato
+    return startTidspunktEndret || sluttTidspunktEndret
+}
+
+private fun erMøtestedEndret(forrigeVersjon: AktivitetData, oppdatertVersjon: AktivitetData): Boolean {
+    if (forrigeVersjon.aktivitetType != AktivitetTypeData.MOTE) return false
+    return forrigeVersjon.moteData.adresse != oppdatertVersjon.moteData.adresse
+}
+
+private fun erMøtekanalEndret(forrigeVersjon: AktivitetData, oppdatertVersjon: AktivitetData): Boolean {
+    if (forrigeVersjon.aktivitetType != AktivitetTypeData.MOTE) return false
+    return forrigeVersjon.moteData.kanal != oppdatertVersjon.moteData.kanal
+}
+
+private fun erMøteForberedelserEndret(forrigeVersjon: AktivitetData, oppdatertVersjon: AktivitetData): Boolean {
+    if (forrigeVersjon.aktivitetType != AktivitetTypeData.MOTE) return false
+    return forrigeVersjon.moteData.forberedelser != oppdatertVersjon.moteData.forberedelser
+}
+
+private fun erReferatOpprettet(forrigeVersjon: AktivitetData, oppdatertVersjon: AktivitetData): Boolean {
+    if (forrigeVersjon.aktivitetType != AktivitetTypeData.MOTE && forrigeVersjon.aktivitetType != AktivitetTypeData.SAMTALEREFERAT) return false
+    return forrigeVersjon.moteData.referat.isNullOrEmpty() && !oppdatertVersjon.moteData.referat.isNullOrEmpty()
+}
+
+private fun erReferatEndret(forrigeVersjon: AktivitetData, oppdatertVersjon: AktivitetData): Boolean {
+    if (forrigeVersjon.aktivitetType != AktivitetTypeData.MOTE && forrigeVersjon.aktivitetType != AktivitetTypeData.SAMTALEREFERAT) return false
+    return !forrigeVersjon.moteData.referat.isNullOrEmpty() &&
+            (forrigeVersjon.moteData.referat != oppdatertVersjon.moteData.referat)
+}
+
+private fun erReferatPublisert(forrigeVersjon: AktivitetData, oppdatertVersjon: AktivitetData): Boolean {
+    if (forrigeVersjon.aktivitetType != AktivitetTypeData.MOTE && forrigeVersjon.aktivitetType != AktivitetTypeData.SAMTALEREFERAT) return false
+    return !forrigeVersjon.moteData.isReferatPublisert && oppdatertVersjon.moteData.isReferatPublisert
+}
+
+private fun erStillingsokEtikettEndret(forrigeVersjon: AktivitetData, oppdatertVersjon: AktivitetData): Boolean {
+    if (forrigeVersjon.stillingsSoekAktivitetData == null) return false
+    return forrigeVersjon.stillingsSoekAktivitetData?.stillingsoekEtikett != oppdatertVersjon.stillingsSoekAktivitetData?.stillingsoekEtikett
+}
+
+private fun erForhaandsorienteringBlittLest(oppdatertVersjon: AktivitetData): Boolean {
+    return oppdatertVersjon.transaksjonsType == AktivitetTransaksjonsType.FORHAANDSORIENTERING_LEST
+}
+
+private fun harCvDeltBlittBesvart(forrigeVersjon: AktivitetData, oppdatertVersjon: AktivitetData): Boolean {
+    if (oppdatertVersjon.stillingFraNavData?.cvKanDelesData == null) return false
+    return forrigeVersjon.stillingFraNavData?.cvKanDelesData?.kanDeles == null && oppdatertVersjon.stillingFraNavData.cvKanDelesData.kanDeles != null
+}
+
+private fun erSøknadsstatusEndret(forrigeVersjon: AktivitetData, oppdatertVersjon: AktivitetData): Boolean {
+    if (forrigeVersjon.stillingFraNavData?.soknadsstatus == null) return false
+    return forrigeVersjon.stillingFraNavData.soknadsstatus != oppdatertVersjon.stillingFraNavData?.soknadsstatus
+}
+
+private fun erEndretTilIkkeFåttJobben(forrigeVersjon: AktivitetData, oppdatertVersjon: AktivitetData): Boolean {
+    if (forrigeVersjon.stillingFraNavData == null) return false
+    return forrigeVersjon.stillingFraNavData?.soknadsstatus != Soknadsstatus.IKKE_FATT_JOBBEN && oppdatertVersjon.stillingFraNavData?.soknadsstatus == Soknadsstatus.IKKE_FATT_JOBBEN
+}
+
+private fun erEndretTilFåttJobben(forrigeVersjon: AktivitetData, oppdatertVersjon: AktivitetData): Boolean {
+    if (forrigeVersjon.stillingFraNavData == null) return false
+    return forrigeVersjon.stillingFraNavData?.soknadsstatus != Soknadsstatus.FATT_JOBBEN && oppdatertVersjon.stillingFraNavData?.soknadsstatus == Soknadsstatus.FATT_JOBBEN
+}
+
+// TODO: Kanskje teste denne grundig?
+private fun erDetaljerEndret(forrigeVersjon: AktivitetData, oppdatertVersjon: AktivitetData): Boolean {
+    val egenAktivitetDataEndret = forrigeVersjon.egenAktivitetData != oppdatertVersjon.egenAktivitetData
+    val iJobbAktivitetDataEndret = forrigeVersjon.iJobbAktivitetData != oppdatertVersjon.iJobbAktivitetData
+    val behandlingAktivitetDataEndret = forrigeVersjon.behandlingAktivitetData != oppdatertVersjon.behandlingAktivitetData
+    val eksternAktivitetDataEndret = forrigeVersjon.eksternAktivitetData != oppdatertVersjon.eksternAktivitetData
+    return egenAktivitetDataEndret || iJobbAktivitetDataEndret || behandlingAktivitetDataEndret || eksternAktivitetDataEndret
+}
+
+
+enum class AktivitetendringsType {
+    // Endringer som opptrer alene
+    BLE_HISTORISK,
+    OPPRETTET,
+    OPPRETTET_SOM_AVTALT,
+    KASSERT,
+    // Endringer som kan opptre sammen med andre endringer
+    STATUS_ENDRET,
+    BLITT_AVTALT,
+    TIL_DATO_ENDRET,
+    FRA_DATO_ENDRET,
+    STILLINGSOK_ETIKETT_ENDRET,
+    MOTE_TIDSPUNKT_ENDRET,
+    MOTE_STED_ENDRET,
+    MOTE_KANAL_ENDRET,
+    MOTE_FORBEREDELSER_ENDRET,
+    REFERAT_OPPRETTET,
+    REFERAT_ENDRET,
+    REFERAT_PUBLISERT,
+    FORHAANDSORIENTERING_LEST,
+    DEL_CV_SVART,
+    SOKNADSSTATUS_ENDRET,
+    IKKE_FATT_JOBBEN,
+    FATT_JOBBEN,
+    TITTEL_ENDRET,
+    BESKRIVELSE_ENDRET,
+    DETALJER_ENDRET,
 }
