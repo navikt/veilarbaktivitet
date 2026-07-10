@@ -24,19 +24,19 @@ public class DelingAvCvDAO {
     public List<AktivitetData> hentStillingFraNavUtenSvarDerFristErUtlopt(long maxAntall) {
         SqlParameterSource parameter = new MapSqlParameterSource("maxAntall", maxAntall);
         return jdbcTemplate.query("""
-                            SELECT SFN.ARBEIDSGIVER as "STILLING_FRA_NAV.ARBEIDSGIVER", SFN.ARBEIDSSTED as "STILLING_FRA_NAV.ARBEIDSSTED",
-                            SFN.DETALJER AS "STILLING_FRA_NAV.DETALJER",
-                            A.*, SFN.*
-                            FROM AKTIVITET A
-                            JOIN STILLING_FRA_NAV SFN ON A.AKTIVITET_ID = SFN.AKTIVITET_ID AND A.VERSJON = SFN.VERSJON
-                            WHERE AKTIVITET_TYPE_KODE  = 'STILLING_FRA_NAV' 
-                            AND LIVSLOPSTATUS_KODE != 'AVBRUTT' 
-                            AND GJELDENDE = 1 
-                            AND HISTORISK_DATO is null
-                            AND SVARFRIST < current_timestamp 
-                            AND SFN.CV_KAN_DELES IS NULL
-                            order by A.AKTIVITET_ID
-                            fetch first :maxAntall rows only 
+                            SELECT SFN.ARBEIDSGIVER as "STILLING_FRA_NAV.ARBEIDSGIVER",
+                                   SFN.ARBEIDSSTED  as "STILLING_FRA_NAV.ARBEIDSSTED",
+                                   SFN.DETALJER     as "STILLING_FRA_NAV.DETALJER",
+                                   A.*, SFN.*
+                            FROM STILLING_FRA_NAV SFN
+                                     JOIN AKTIVITET A ON A.AKTIVITET_ID = SFN.AKTIVITET_ID AND A.VERSJON = SFN.VERSJON
+                            WHERE SFN.CV_KAN_DELES IS NULL
+                              AND A.LIVSLOPSTATUS_KODE != 'AVBRUTT'
+                              AND A.GJELDENDE = 1
+                              AND A.HISTORISK_DATO IS NULL
+                              AND SFN.SVARFRIST < current_timestamp
+                            ORDER BY A.AKTIVITET_ID
+                            fetch first :maxAntall rows only
                         """,
                 parameter,
                 new AktivitetDataRowMapper());

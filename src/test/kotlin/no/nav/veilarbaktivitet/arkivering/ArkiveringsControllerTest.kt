@@ -1,6 +1,21 @@
 package no.nav.veilarbaktivitet.arkivering
 
-import com.github.tomakehurst.wiremock.client.WireMock.*
+import com.github.tomakehurst.wiremock.client.WireMock.aResponse
+import com.github.tomakehurst.wiremock.client.WireMock.equalTo
+import com.github.tomakehurst.wiremock.client.WireMock.equalToJson
+import com.github.tomakehurst.wiremock.client.WireMock.exactly
+import com.github.tomakehurst.wiremock.client.WireMock.get
+import com.github.tomakehurst.wiremock.client.WireMock.post
+import com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
+import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
+import java.net.URI
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.ZonedDateTime
+import java.time.temporal.ChronoUnit
+import java.util.Date
+import java.util.UUID
 import no.nav.common.json.JsonUtils
 import no.nav.veilarbaktivitet.SpringBootTestBase
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
@@ -27,18 +42,16 @@ import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder
 import no.nav.veilarbaktivitet.person.Navn
 import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder
-import no.nav.veilarbaktivitet.util.DateUtils.*
+import no.nav.veilarbaktivitet.util.DateUtils.iso8601DateFromZonedDateTime
+import no.nav.veilarbaktivitet.util.DateUtils.klokkeslett
+import no.nav.veilarbaktivitet.util.DateUtils.norskDato
+import no.nav.veilarbaktivitet.util.DateUtils.norskDatoOgKlokkeslett
+import no.nav.veilarbaktivitet.util.DateUtils.toDate
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.http.HttpStatus
-import java.net.URI
-import java.time.Instant
-import java.time.ZoneId
-import java.time.ZonedDateTime
-import java.time.temporal.ChronoUnit
-import java.util.*
 
 internal class ArkiveringsControllerTest : SpringBootTestBase() {
 
@@ -583,15 +596,20 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
     fun `Skal kunne definere datoperiode i filteret`() {
         val (bruker, veileder) = hentBrukerOgVeileder("Sølvi", "Normalbakke")
         val oppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
+        val datoPeriode = ArkiveringsController.DatoPeriode(
+            fra = LocalDate.of(2026, 3, 12),
+            til = LocalDate.of(2026, 7, 12)
+        )
         val aktivitetIPeriode = aktivitetTestService.opprettAktivitetViaHttp(
             bruker,
             veileder,
             AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
-                .toBuilder().tittel("iPeriode").oppfolgingsperiodeId(oppfølgingsperiode).build()
-        )
-        val datoPeriode = ArkiveringsController.DatoPeriode(
-            fra = dateToLocalDate(aktivitetIPeriode.fraDato).minusDays(1),
-            til = dateToLocalDate(aktivitetIPeriode.fraDato).plusDays(1)
+                .toBuilder()
+                .tittel("iPeriode")
+                .oppfolgingsperiodeId(oppfølgingsperiode)
+                .fraDato(toDate(datoPeriode.fra.plusDays(1)))
+                .tilDato(toDate(datoPeriode.fra.plusDays(21)))
+                .build()
         )
         val aktivitetUtaforPeriode = aktivitetTestService.opprettAktivitetViaHttp(
             bruker,
@@ -600,6 +618,8 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                 .toBuilder()
                 .oppfolgingsperiodeId(oppfølgingsperiode)
                 .opprettetDato(toDate(datoPeriode.til.plusDays(2)))
+                .fraDato(toDate(datoPeriode.til.plusDays(1)))
+                .tilDato(toDate(datoPeriode.til.plusDays(21)))
                 .build()
         )
         stubIngenDialogTråder()

@@ -156,7 +156,7 @@ class HistorikkServiceTest {
     @Test
     fun `Skal lage historikk på at detaljer ble endret`() {
         val aktivitet = nyAktivitet(AktivitetTypeData.EGENAKTIVITET).toBuilder().build()
-        val oppdatertAktivitet = endreAktivitet(aktivitet, fraDato = Date())
+        val oppdatertAktivitet = endreAktivitet(aktivitet, oppdatertEgenAktivitetData = aktivitet.egenAktivitetData.withHensikt("Ny hensikt"))
 
         val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
 
@@ -266,10 +266,27 @@ class HistorikkServiceTest {
         assert(
             historikk[aktivitet.id]!!,
             oppdatertAktivitet,
-            "NAV endret til dato på aktiviteten fra 30. august 2022 til 2. september 2022",
-            "${oppdatertAktivitet.endretAv} endret til dato på aktiviteten fra 30. august 2022 til 2. september 2022"
+            "NAV endret \"Til dato\" på aktiviteten fra 30. august 2022 til 2. september 2022",
+            "${oppdatertAktivitet.endretAv} endret \"Til dato\" på aktiviteten fra 30. august 2022 til 2. september 2022"
         )
-        println("NAV endret til dato på aktiviteten fra ${aktivitet.tilDato} til ${oppdatertAktivitet.tilDato}")
+    }
+
+    @Test
+    fun `Skal lage historikk på at ikke avtalt dato ble endret`() {
+        val aktivitetFraDato = ZonedDateTime.of(2022, 8, 30, 10, 0,0, 0, ZoneId.of("Europe/Oslo"))
+        val aktivitet = nyAktivitet(AktivitetTypeData.SAMTALEREFERAT).toBuilder().avtalt(false).fraDato(
+            zonedDateTimeToDate(aktivitetFraDato)).build()
+        val oppdatertAktivitetFraDato = ZonedDateTime.of(2022, 9, 2, 11, 0,0, 0, ZoneId.of("Europe/Oslo"))
+        val oppdatertAktivitet = endreAktivitet(aktivitet, endretAvType = Innsender.NAV, fraDato = zonedDateTimeToDate(oppdatertAktivitetFraDato))
+
+        val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
+
+        assert(
+            historikk[aktivitet.id]!!,
+            oppdatertAktivitet,
+            "NAV endret \"Fra dato\" på aktiviteten fra 30. august 2022 til 2. september 2022",
+            "${oppdatertAktivitet.endretAv} endret \"Fra dato\" på aktiviteten fra 30. august 2022 til 2. september 2022"
+        )
     }
 
     @Test
@@ -301,6 +318,36 @@ class HistorikkServiceTest {
             oppdatertAktivitet,
             "NAV endret tilstand til Ikke fått jobben og avsluttet aktiviteten fordi kandidaten har Ikke fått jobben",
             "${oppdatertAktivitet.endretAv} endret tilstand til Ikke fått jobben og avsluttet aktiviteten fordi kandidaten har Ikke fått jobben"
+        )
+    }
+
+    @Test
+    fun `Skal lage historikk på at tittel ble endret`() {
+        val aktivitet = nyAktivitet(AktivitetTypeData.EGENAKTIVITET).toBuilder().build()
+        val oppdatertAktivitet = endreAktivitet(aktivitet, tittel = "Ny tittel")
+
+        val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
+
+        assert(
+            historikk[aktivitet.id]!!,
+            oppdatertAktivitet,
+            "NAV endret tittelen på aktiviteten fra ${aktivitet.tittel} til ${oppdatertAktivitet.tittel}",
+            "${oppdatertAktivitet.endretAv} endret tittelen på aktiviteten fra ${aktivitet.tittel} til ${oppdatertAktivitet.tittel}"
+        )
+    }
+
+    @Test
+    fun `Skal lage historikk på at beskrivelse ble endret`() {
+        val aktivitet = nyAktivitet(AktivitetTypeData.EGENAKTIVITET).toBuilder().build()
+        val oppdatertAktivitet = endreAktivitet(aktivitet, beskrivelse = "Ny beskrivelse")
+
+        val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
+
+        assert(
+            historikk[aktivitet.id]!!,
+            oppdatertAktivitet,
+            "NAV endret beskrivelsen på aktiviteten fra ${aktivitet.beskrivelse} til ${oppdatertAktivitet.beskrivelse}",
+            "${oppdatertAktivitet.endretAv} endret beskrivelsen på aktiviteten fra ${aktivitet.beskrivelse} til ${oppdatertAktivitet.beskrivelse}"
         )
     }
 
@@ -421,6 +468,8 @@ class HistorikkServiceTest {
         avtaltMedNav: Boolean = aktivitet.isAvtalt,
         fraDato: Date? = aktivitet.fraDato,
         tilDato: Date? = aktivitet.tilDato,
+        tittel: String = aktivitet.tittel,
+        beskrivelse: String = aktivitet.beskrivelse,
         oppdatertStillingsoekAktivitetData: StillingsoekAktivitetData? = aktivitet.stillingsSoekAktivitetData,
         oppdatertMoteData: MoteData? = aktivitet.moteData,
         oppdatertStatus: AktivitetStatus = aktivitet.status,
@@ -437,8 +486,8 @@ class HistorikkServiceTest {
             .versjon(aktivitet.versjon + 1) // Hvis denne persisteres vil den få en ny versjon fra sekvens
             .fraDato(fraDato)
             .tilDato(tilDato)
-            .tittel(aktivitet.tittel)
-            .beskrivelse(aktivitet.beskrivelse)
+            .tittel(tittel)
+            .beskrivelse(beskrivelse)
             .versjon(aktivitet.versjon + 1)
             .status(oppdatertStatus)
             .avsluttetKommentar(aktivitet.avsluttetKommentar)

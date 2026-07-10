@@ -15,6 +15,7 @@ import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaJsonTemplate;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.NavMockService;
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeService;
+import no.nav.veilarbaktivitet.person.fodselsdato.PdlFodselsdatoClient;
 import no.nav.veilarbaktivitet.stilling_fra_nav.RekrutteringsbistandStatusoppdatering;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavTestService;
 import no.nav.veilarbaktivitet.util.AktivitetTestService;
@@ -29,6 +30,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -80,6 +82,9 @@ public abstract class SpringBootTestBase {
 
     @Autowired
     protected OppfolgingsperiodeService oppfolgingsperiodeService;
+
+    @MockitoBean
+    protected PdlFodselsdatoClient pdlFodselsdatoClient;
 
     @Value("${topic.inn.aktivitetskort}")
     private String aktivitetskortTopic;

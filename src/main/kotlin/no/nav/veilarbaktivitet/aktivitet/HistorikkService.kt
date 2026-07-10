@@ -83,9 +83,13 @@ private fun hentEndringstekster(
             BLITT_AVTALT -> "$endretAvTekst merket aktiviteten som \"Avtalt med NAV\""
             KASSERT -> "$endretAvTekst kasserte aktiviteten"
             STATUS_ENDRET -> "$endretAvTekst flyttet aktiviteten fra ${forrigeVersjon?.status?.text} til ${oppdatertVersjon.status?.text}"
-            AVTALT_DATO_ENDRET -> {
+            TIL_DATO_ENDRET -> {
                 val tilDatoString = if (forrigeVersjon?.tilDato !== null) norskDato(forrigeVersjon.tilDato) else "ingen dato"
-                "$endretAvTekst endret til dato på aktiviteten fra $tilDatoString til ${norskDato(oppdatertVersjon.tilDato)}"
+                "$endretAvTekst endret \"Til dato\" på aktiviteten fra $tilDatoString til ${norskDato(oppdatertVersjon.tilDato)}"
+            }
+            FRA_DATO_ENDRET -> {
+                val fraDatoString = if (forrigeVersjon?.fraDato !== null) norskDato(forrigeVersjon.fraDato) else "ingen dato"
+                "$endretAvTekst endret \"Fra dato\" på aktiviteten fra $fraDatoString til ${norskDato(oppdatertVersjon.fraDato)}"
             }
             STILLINGSOK_ETIKETT_ENDRET -> {
                 val nyEtikett = oppdatertVersjon.stillingsSoekAktivitetData.stillingsoekEtikett?.text ?: "Ingen"
@@ -116,6 +120,8 @@ private fun hentEndringstekster(
                 "$endretAvTekst endret tilstand til $status"
             }
             IKKE_FATT_JOBBEN, FATT_JOBBEN ->  "$endretAvTekst avsluttet aktiviteten fordi kandidaten har ${oppdatertVersjon.stillingFraNavData.soknadsstatus.text}"
+            TITTEL_ENDRET -> "$endretAvTekst endret tittelen på aktiviteten fra ${forrigeVersjon?.tittel} til ${oppdatertVersjon.tittel}"
+            BESKRIVELSE_ENDRET -> "$endretAvTekst endret beskrivelsen på aktiviteten fra ${forrigeVersjon?.beskrivelse} til ${oppdatertVersjon.beskrivelse}"
             DETALJER_ENDRET -> "$endretAvTekst endret detaljer på aktiviteten"
         }
     }
@@ -183,13 +189,14 @@ fun utledAktivitetendringsType(forrigeVersjon: AktivitetData?, oppdatertVersjon:
     }
     if (forrigeVersjon.historiskDato == null && oppdatertVersjon.historiskDato != null) return listOf(BLE_HISTORISK)
     if (oppdatertVersjon.transaksjonsType == AktivitetTransaksjonsType.KASSERT) return listOf(KASSERT)
-    // TODO: Kassert
 
     val endringer = mutableListOf<AktivitetendringsType>()
     if (forrigeVersjon.status != oppdatertVersjon.status) endringer.add(STATUS_ENDRET)
     if (!forrigeVersjon.isAvtalt && oppdatertVersjon.isAvtalt) endringer.add(BLITT_AVTALT)
     if (oppdatertVersjon.aktivitetType != AktivitetTypeData.MOTE && forrigeVersjon.tilDato != oppdatertVersjon.tilDato)
-        endringer.add(AVTALT_DATO_ENDRET)
+        endringer.add(TIL_DATO_ENDRET)
+    if (oppdatertVersjon.aktivitetType != AktivitetTypeData.MOTE && forrigeVersjon.fraDato != oppdatertVersjon.fraDato)
+        endringer.add(FRA_DATO_ENDRET)
     if (erMøtetidspunktEndret(forrigeVersjon, oppdatertVersjon)) endringer.add(MOTE_TIDSPUNKT_ENDRET)
     if (erMøtestedEndret(forrigeVersjon, oppdatertVersjon)) endringer.add(MOTE_STED_ENDRET)
     if (erMøtekanalEndret(forrigeVersjon, oppdatertVersjon)) endringer.add(MOTE_KANAL_ENDRET)
@@ -203,6 +210,8 @@ fun utledAktivitetendringsType(forrigeVersjon: AktivitetData?, oppdatertVersjon:
     if (erSøknadsstatusEndret(forrigeVersjon, oppdatertVersjon)) endringer.add(SOKNADSSTATUS_ENDRET)
     if (erEndretTilIkkeFåttJobben(forrigeVersjon, oppdatertVersjon)) endringer.add(IKKE_FATT_JOBBEN)
     if (erEndretTilFåttJobben(forrigeVersjon, oppdatertVersjon)) endringer.add(FATT_JOBBEN)
+    if (forrigeVersjon.tittel != oppdatertVersjon.tittel) endringer.add(TITTEL_ENDRET)
+    if (forrigeVersjon.beskrivelse != oppdatertVersjon.beskrivelse) endringer.add(BESKRIVELSE_ENDRET)
     if (erDetaljerEndret(forrigeVersjon, oppdatertVersjon)) endringer.add(DETALJER_ENDRET)
     return endringer
 }
@@ -276,17 +285,11 @@ private fun erEndretTilFåttJobben(forrigeVersjon: AktivitetData, oppdatertVersj
 
 // TODO: Kanskje teste denne grundig?
 private fun erDetaljerEndret(forrigeVersjon: AktivitetData, oppdatertVersjon: AktivitetData): Boolean {
-    val datoerEndret = oppdatertVersjon.aktivitetType != AktivitetTypeData.MOTE && !oppdatertVersjon.isAvtalt &&
-            (forrigeVersjon.fraDato != oppdatertVersjon.fraDato || forrigeVersjon.tilDato != oppdatertVersjon.tilDato)
-    val beskrivelseEndret = forrigeVersjon.beskrivelse != oppdatertVersjon.beskrivelse
-    val tittelEndret = forrigeVersjon.tittel != oppdatertVersjon.tittel
     val egenAktivitetDataEndret = forrigeVersjon.egenAktivitetData != oppdatertVersjon.egenAktivitetData
     val iJobbAktivitetDataEndret = forrigeVersjon.iJobbAktivitetData != oppdatertVersjon.iJobbAktivitetData
     val behandlingAktivitetDataEndret = forrigeVersjon.behandlingAktivitetData != oppdatertVersjon.behandlingAktivitetData
     val eksternAktivitetDataEndret = forrigeVersjon.eksternAktivitetData != oppdatertVersjon.eksternAktivitetData
-    return datoerEndret || beskrivelseEndret || tittelEndret || egenAktivitetDataEndret
-            || iJobbAktivitetDataEndret
-            || behandlingAktivitetDataEndret || eksternAktivitetDataEndret
+    return egenAktivitetDataEndret || iJobbAktivitetDataEndret || behandlingAktivitetDataEndret || eksternAktivitetDataEndret
 }
 
 
@@ -299,7 +302,8 @@ enum class AktivitetendringsType {
     // Endringer som kan opptre sammen med andre endringer
     STATUS_ENDRET,
     BLITT_AVTALT,
-    AVTALT_DATO_ENDRET,
+    TIL_DATO_ENDRET,
+    FRA_DATO_ENDRET,
     STILLINGSOK_ETIKETT_ENDRET,
     MOTE_TIDSPUNKT_ENDRET,
     MOTE_STED_ENDRET,
@@ -313,5 +317,7 @@ enum class AktivitetendringsType {
     SOKNADSSTATUS_ENDRET,
     IKKE_FATT_JOBBEN,
     FATT_JOBBEN,
+    TITTEL_ENDRET,
+    BESKRIVELSE_ENDRET,
     DETALJER_ENDRET,
 }
