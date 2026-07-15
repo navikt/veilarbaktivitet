@@ -212,6 +212,21 @@ class HistorikkServiceTest {
     }
 
     @Test
+    fun `Skal lage historikk på at sokeavtale antall soknader ble endret`() {
+        val aktivitet = nyAktivitet(AktivitetTypeData.SOKEAVTALE).toBuilder().build()
+        val oppdatertAktivitet = endreAktivitet(aktivitet, oppdatertSokeAvtaleAktivitetData = aktivitet.sokeAvtaleAktivitetData.withAntallStillingerIUken(3))
+
+        val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
+
+        assert(
+            historikk[aktivitet.id]!!,
+            oppdatertAktivitet,
+            "NAV endret antall søknader fra 2 til 3",
+            "${oppdatertAktivitet.endretAv} endret antall søknader fra 2 til 3"
+        )
+    }
+
+    @Test
     fun `Skal lage historikk på forhåndsorientering lest`() {
         val ulestForhåndsorientering = Forhaandsorientering.builder()
             .type(Type.SEND_FORHAANDSORIENTERING)
@@ -477,6 +492,7 @@ class HistorikkServiceTest {
         oppdatertHistoriskDato: Date? = aktivitet.historiskDato,
         oppdatertForhaandsorientering: Forhaandsorientering? = aktivitet.forhaandsorientering,
         oppdatertStillingFraNavData: StillingFraNavData? = aktivitet.stillingFraNavData,
+        oppdatertSokeAvtaleAktivitetData: SokeAvtaleAktivitetData? = aktivitet.sokeAvtaleAktivitetData,
         transaksjonsType: AktivitetTransaksjonsType = AktivitetTransaksjonsType.DETALJER_ENDRET
     ): AktivitetData {
         return AktivitetData.builder()
@@ -500,6 +516,7 @@ class HistorikkServiceTest {
             .endretDato(endretDato)
             .endretAv(endretAv)
             .avtalt(avtaltMedNav)
+            .sokeAvtaleAktivitetData(oppdatertSokeAvtaleAktivitetData)
             .stillingFraNavData(oppdatertStillingFraNavData)
             .stillingsSoekAktivitetData(oppdatertStillingsoekAktivitetData)
             .moteData(oppdatertMoteData)

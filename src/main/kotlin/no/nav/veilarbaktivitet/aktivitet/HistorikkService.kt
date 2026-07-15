@@ -82,6 +82,7 @@ private fun hentEndringstekster(
             OPPRETTET_SOM_AVTALT -> "$endretAvTekst opprettet aktiviteten. Den er automatisk merket som \"Avtalt med NAV\""
             BLITT_AVTALT -> "$endretAvTekst merket aktiviteten som \"Avtalt med NAV\""
             KASSERT -> "$endretAvTekst kasserte aktiviteten"
+            ANTALL_SOKNADER_I_AVTALE_ENDRET -> "$endretAvTekst endret antall søknader fra ${forrigeVersjon?.sokeAvtaleAktivitetData?.antallStillingerIUken} til ${oppdatertVersjon.sokeAvtaleAktivitetData?.antallStillingerIUken}"
             STATUS_ENDRET -> "$endretAvTekst flyttet aktiviteten fra ${forrigeVersjon?.status?.text} til ${oppdatertVersjon.status?.text}"
             TIL_DATO_ENDRET -> {
                 val tilDatoString = if (forrigeVersjon?.tilDato !== null) norskDato(forrigeVersjon.tilDato) else "ingen dato"
@@ -213,6 +214,7 @@ fun utledAktivitetendringsType(forrigeVersjon: AktivitetData?, oppdatertVersjon:
     if (forrigeVersjon.tittel != oppdatertVersjon.tittel) endringer.add(TITTEL_ENDRET)
     if (forrigeVersjon.beskrivelse != oppdatertVersjon.beskrivelse) endringer.add(BESKRIVELSE_ENDRET)
     if (erDetaljerEndret(forrigeVersjon, oppdatertVersjon)) endringer.add(DETALJER_ENDRET)
+    if (erAntallSoknaderIAvtaleEndret(forrigeVersjon, oppdatertVersjon)) endringer.add(ANTALL_SOKNADER_I_AVTALE_ENDRET)
     return endringer
 }
 
@@ -283,6 +285,11 @@ private fun erEndretTilFåttJobben(forrigeVersjon: AktivitetData, oppdatertVersj
     return forrigeVersjon.stillingFraNavData?.soknadsstatus != Soknadsstatus.FATT_JOBBEN && oppdatertVersjon.stillingFraNavData?.soknadsstatus == Soknadsstatus.FATT_JOBBEN
 }
 
+private fun erAntallSoknaderIAvtaleEndret(forrigeVersjon: AktivitetData, oppdatertVersjon: AktivitetData): Boolean {
+    if (forrigeVersjon.sokeAvtaleAktivitetData == null) return false
+    return forrigeVersjon.sokeAvtaleAktivitetData.antallStillingerIUken != oppdatertVersjon.sokeAvtaleAktivitetData?.antallStillingerIUken
+}
+
 // TODO: Kanskje teste denne grundig?
 private fun erDetaljerEndret(forrigeVersjon: AktivitetData, oppdatertVersjon: AktivitetData): Boolean {
     val egenAktivitetDataEndret = forrigeVersjon.egenAktivitetData != oppdatertVersjon.egenAktivitetData
@@ -320,4 +327,5 @@ enum class AktivitetendringsType {
     TITTEL_ENDRET,
     BESKRIVELSE_ENDRET,
     DETALJER_ENDRET,
+    ANTALL_SOKNADER_I_AVTALE_ENDRET,
 }
