@@ -1,5 +1,5 @@
 val spring_boot_version = "4.1.0"
-val tomcat_version = "11.0.23"
+val tomcat_version = "11.0.24"
 
 extra["tomcat.version"] = tomcat_version
 val common_version = "4.2026.07.10_05.48-e9835152ffc0"
@@ -9,12 +9,12 @@ val shedlock_version = "7.7.0"
 val avroVersion = "1.12.1"
 val confluentKafkaAvroVersion = "8.2.0"
 val okhttpVersion = "5.4.0"
-val logback_version = "1.5.37"
+val logback_version = "1.5.38"
 val log4j_version = "2.26.1"
 val _version: String by project
 
 plugins {
-    val kotlinVersion = "2.4.0"
+    val kotlinVersion = "2.4.10"
     id("java")
     kotlin("jvm") version kotlinVersion
     id("org.jetbrains.kotlin.plugin.spring") version kotlinVersion
@@ -195,19 +195,19 @@ dependencies {
     implementation("tools.jackson.dataformat:jackson-dataformat-yaml")
 
     // BigQuery
-    implementation(platform("com.google.cloud:libraries-bom:26.84.0"))
+    implementation(platform("com.google.cloud:libraries-bom:26.85.1"))
     implementation("com.google.cloud:google-cloud-bigquery")
 
-    implementation("io.getunleash:unleash-client-java:12.2.2")
+    implementation("io.getunleash:unleash-client-java:12.2.3")
 
     runtimeOnly("org.springframework.boot:spring-boot-devtools")
 
 //test dependencies
     testImplementation("no.nav.poao-tilgang:poao-tilgang-test-wiremock:$poao_tilgang_version")
     testImplementation("org.awaitility:awaitility:4.3.0")
-    testImplementation("com.networknt:json-schema-validator:3.0.5")
+    testImplementation("com.networknt:json-schema-validator:3.0.6")
     testImplementation("org.mockito.kotlin:mockito-kotlin:6.3.0")
-    testImplementation("io.rest-assured:rest-assured:6.0.0")
+    testImplementation("io.rest-assured:rest-assured:6.0.1")
 
 //spring managed test dependencies
     testImplementation("org.springframework.boot:spring-boot-starter-test") {
