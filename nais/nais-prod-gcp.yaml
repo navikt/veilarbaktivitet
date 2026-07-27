@@ -75,6 +75,12 @@ spec:
         - application: aktivitetsplan
           namespace: pto
           cluster: prod-gcp
+        - application: aktivitetsplan
+          namespace: dab
+          cluster: prod-gcp
+        - application: arbeidsrettet-dialog
+          namespace: dab
+          cluster: prod-gcp
         - application: arbeidsrettet-dialog
           namespace: pto
           cluster: prod-gcp

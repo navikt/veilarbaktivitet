@@ -74,8 +74,14 @@ spec:
         - application: aktivitetsplan
           namespace: pto
           cluster: dev-gcp
+        - application: aktivitetsplan
+          namespace: dab
+          cluster: dev-gcp
         - application: arbeidsrettet-dialog
           namespace: pto
+          cluster: dev-gcp
+        - application: arbeidsrettet-dialog
+          namespace: dab
           cluster: dev-gcp
         - application: ida
           namespace: traktor
