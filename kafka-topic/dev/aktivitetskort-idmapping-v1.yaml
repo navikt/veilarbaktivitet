@@ -28,6 +28,6 @@ spec:
     - team: dab
       application: veilarbaktivitet
       access: readwrite
-    - team: pto
-      application: pto-kafka-manager
+    - team: dab
+      application: dab-kafka-manager
       access: read
