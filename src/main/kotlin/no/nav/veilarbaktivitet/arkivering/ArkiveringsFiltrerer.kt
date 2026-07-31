@@ -6,6 +6,8 @@ import no.nav.veilarbaktivitet.aktivitet.mappers.Helpers
 import no.nav.veilarbaktivitet.arkivering.ArkiveringsController.DatoPeriode
 import no.nav.veilarbaktivitet.util.DateUtils
 import java.time.LocalDate
+import java.time.LocalTime
+import java.time.ZoneId
 import java.time.ZonedDateTime
 
 fun filtrerArkiveringsData(
@@ -114,14 +116,14 @@ private fun ArkiveringsData.filtrerPåDatoPeriode(filter: ArkiveringsController.
     val filtrerteAktiviteter = aktiviteter.filter {
         val tilDato = if (it.aktivitetType == AktivitetTypeData.SAMTALEREFERAT) it.fraDato else it.tilDato
         filter.datoPeriode.overlapper(
-            start = DateUtils.dateToZonedDateTime(it.fraDato),
-            slutt = DateUtils.dateToZonedDateTime(tilDato)
+            start = DateUtils.dateToZonedDateTime(it.fraDato) ?: ZonedDateTime.of(LocalDate.MIN, LocalTime.MIN, ZoneId.systemDefault()),
+            slutt = DateUtils.dateToZonedDateTime(tilDato) ?: ZonedDateTime.of(LocalDate.MAX, LocalTime.MAX, ZoneId.systemDefault())
         )
     }
     val filtrerteArenaAktiviteter = this.arenaAktiviteter.filter {
         filter.datoPeriode.overlapper(
-            start = DateUtils.dateToZonedDateTime(it.fraDato),
-            slutt = DateUtils.dateToZonedDateTime(it.tilDato)
+            start = DateUtils.dateToZonedDateTime(it.fraDato) ?: ZonedDateTime.of(LocalDate.MIN, LocalTime.MIN, ZoneId.systemDefault()),
+            slutt = DateUtils.dateToZonedDateTime(it.tilDato) ?: ZonedDateTime.of(LocalDate.MAX, LocalTime.MAX, ZoneId.systemDefault())
         )
     }
     val filtrerteDialoger = this.dialoger.filter {
