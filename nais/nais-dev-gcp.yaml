@@ -62,7 +62,7 @@ spec:
       rules:
         - application: veilarbapi
           namespace: pto
-          cluster: dev-gcp
+        - application: veilarbapi
         - application: veilarbpersonflate
           namespace: poao
           cluster: dev-gcp
