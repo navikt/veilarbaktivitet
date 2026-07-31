@@ -1,6 +1,5 @@
 package no.nav.veilarbaktivitet.person.fodselsdato
 
-import java.time.LocalDate
 import no.nav.common.client.pdl.PdlClient
 import no.nav.common.client.utils.graphql.GraphqlRequestBuilder
 import no.nav.common.client.utils.graphql.GraphqlResponse
@@ -8,12 +7,22 @@ import no.nav.common.client.utils.graphql.GraphqlUtils
 import no.nav.common.types.identer.Fnr
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import java.time.LocalDate
 
 data class Foedselsdato(
-    val foedselsdato: String,
+    val foedselsdato: String?,
+    val foedselsaar: String?,
 ) {
-    fun toLocalDate(): LocalDate {
-        return LocalDate.parse(foedselsdato)
+    fun toLocalDateWithFallback(): LocalDate? {
+        return when {
+            !foedselsdato.isNullOrBlank() -> {
+                LocalDate.parse(foedselsdato)
+            }
+            !foedselsaar.isNullOrBlank() && foedselsaar.toIntOrNull() != null -> {
+                LocalDate.ofYearDay(foedselsaar.toInt(), 365)
+            }
+            else -> null
+        }
     }
 }
 
@@ -37,7 +46,7 @@ class PdlFodselsdatoClient(val pdlClient: PdlClient) {
 
     fun erUnder18(fnr: Fnr): Boolean {
         val fodselsdato = hentFodselsdato(fnr)
-        return fodselsdato?.let { erUnder18Aar(it) } ?: throw IllegalArgumentException("Kunne ikke hente fødselsdato fra PDL")
+        return fodselsdato?.let { erUnder18Aar(it) } ?: throw IllegalArgumentException("Fant ingen fødselsdatoer på person i PDL")
     }
 
     private fun hentFodselsdato(fnr: Fnr): LocalDate? {
@@ -50,7 +59,7 @@ class PdlFodselsdatoClient(val pdlClient: PdlClient) {
             throw kotlin.RuntimeException("Feil ved henting av fødselsdato fra pdl ${result?.errors.toString()}")
         }
 
-        return result.data.hentPerson.foedselsdato.firstOrNull()?.toLocalDate()
+        return result.data.hentPerson.foedselsdato.firstNotNullOfOrNull { it.toLocalDateWithFallback() }
     }
 
     private fun erUnder18Aar(fodselsdato: LocalDate): Boolean {

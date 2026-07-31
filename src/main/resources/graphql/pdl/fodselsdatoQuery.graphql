@@ -2,6 +2,7 @@ query hentFolkeregisterStatus($ident: ID!) {
     hentPerson(ident: $ident) {
         foedselsdato {
             foedselsdato
+            foedselsaar
         }
     }
 }
