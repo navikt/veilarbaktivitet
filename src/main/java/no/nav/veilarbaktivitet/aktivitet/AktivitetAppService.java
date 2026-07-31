@@ -279,7 +279,7 @@ public class AktivitetAppService {
     @Transactional
     public AktivitetData oppdaterReferat(ReferatEndring aktivitet) {
         final var originalAktivitet = hentAktivitet(aktivitet.getId());
-        kanEndreAktivitetGuard(originalAktivitet, aktivitet.getVersjon());
+        aktivitet.kanEndreAktivitetGuard(originalAktivitet, aktivitet.getVersjon());
 
         var oppdatertAktivitet = aktivitetService.oppdaterReferat(originalAktivitet, aktivitet);
 
