@@ -30,7 +30,7 @@ jobs:
       - name: Execute Gradle build
         run: ./gradlew assemble --scan
       - name: Push docker image to GAR
-        uses: nais/docker-build-push@31c3a7321909bcb20799fdf46153fec721fd9512
+        uses: nais/docker-build-push@2d2b0a7193e65422b7f0355d4afb445e0a8b2cc3
         id: docker-build-push
         with:
           team: dab
