@@ -244,10 +244,11 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
     @Test
     fun `skal kunne lese historisk referat`() {
         val førsteReferat = "første referat"
+        val andreReferat = "andre referat"
         val referatAktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.SAMTALEREFERAT)
             .toBuilder().oppfolgingsperiodeId(mockBruker.oppfolgingsperiodeId).referat(førsteReferat).build()
         val førsteAktivitet = aktivitetTestService.opprettAktivitetViaHttp(mockBruker, mockVeileder, referatAktivitet)
-        aktivitetTestService.oppdaterAktivitetViaHttp (mockBruker, mockVeileder, førsteAktivitet.setReferat("andre referat"))
+        aktivitetTestService.oppdaterReferat(førsteAktivitet.setReferat(andreReferat), mockVeileder)
 
         val aktivitetIdParam = "\$aktivitetId"
         val versjonParam = "\$versjon"
@@ -258,12 +259,18 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
                 }
             }
         """.trimIndent().replace("\n", "")
-        val result = aktivitetTestService.queryHistorikkRaw(mockBruker, mockBruker, query, førsteAktivitet.id)
-        val resultJson = JsonMapper.defaultObjectMapper().readTree(result)
+        val resultFørste = aktivitetTestService.queryHistorikkRaw(mockBruker, mockBruker, query, førsteAktivitet.id, førsteAktivitet.versjon)
+        val resultAndre = aktivitetTestService.queryHistorikkRaw(mockBruker, mockBruker, query, førsteAktivitet.id)
 
-        assertThat(resultJson["errors"]).isNull()
-        val fraDatoString = resultJson["data"]["aktivitet"]["referat"].asString()
-        assertThat(fraDatoString).isEqualTo(førsteReferat)
+        val resultJsonFørste = JsonMapper.defaultObjectMapper().readTree(resultFørste)
+        assertThat(resultJsonFørste["errors"]).isNull()
+        val førsteReferatActual = resultJsonFørste["data"]["aktivitet"]["referat"].asString()
+        assertThat(førsteReferatActual).isEqualTo(førsteReferat)
+
+        val resultJsonAndre = JsonMapper.defaultObjectMapper().readTree(resultAndre)
+        assertThat(resultJsonAndre["errors"]).isNull()
+        val andreReferatActual = resultJsonAndre["data"]["aktivitet"]["referat"].asString()
+        assertThat(andreReferatActual).isEqualTo(andreReferat)
     }
 
     @Test
