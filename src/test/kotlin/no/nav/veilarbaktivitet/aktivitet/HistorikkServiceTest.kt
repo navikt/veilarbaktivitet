@@ -346,8 +346,8 @@ class HistorikkServiceTest {
         assert(
             historikk[aktivitet.id]!!,
             oppdatertAktivitet,
-            "NAV endret tittelen på aktiviteten fra ${aktivitet.tittel} til ${oppdatertAktivitet.tittel}",
-            "${oppdatertAktivitet.endretAv} endret tittelen på aktiviteten fra ${aktivitet.tittel} til ${oppdatertAktivitet.tittel}"
+            "NAV endret tittelen på aktiviteten fra \"${aktivitet.tittel}\" til \"${oppdatertAktivitet.tittel}\"",
+            "${oppdatertAktivitet.endretAv} endret tittelen på aktiviteten fra \"${aktivitet.tittel}\" til \"${oppdatertAktivitet.tittel}\""
         )
     }
 
