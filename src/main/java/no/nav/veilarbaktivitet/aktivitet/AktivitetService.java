@@ -62,8 +62,7 @@ public class AktivitetService {
     }
 
     public AktivitetData hentAktivitetVersjon(long aktivitetId, long versjon) {
-        var aktivitet = aktivitetDAO.hentAktivitetVersion(aktivitetId, versjon);
-        return aktivitet;
+        return aktivitetDAO.hentAktivitetVersion(aktivitetId, versjon);
     }
 
     public List<AktivitetData> hentAktivitetVersjoner(long id) {
