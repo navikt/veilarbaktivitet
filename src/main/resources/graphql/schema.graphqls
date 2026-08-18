@@ -1,6 +1,6 @@
 type Query {
     perioder(fnr: String!): [OppfolgingsPeriode]
-    aktivitet(aktivitetId: String): AktivitetDTO
+    aktivitet(aktivitetId: String!, versjon: String): AktivitetDTO
     eier(aktivitetId: String): Eier
     tiltaksaktiviteter(fnr: String!): [TiltaksAktivitet]
 }

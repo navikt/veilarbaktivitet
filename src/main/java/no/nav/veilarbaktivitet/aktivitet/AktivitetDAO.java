@@ -118,12 +118,13 @@ public class AktivitetDAO {
         return Optional.ofNullable(aktivitetData);
     }
 
-    public AktivitetData hentAktivitetVersion(long version) {
+    public AktivitetData hentAktivitetVersion(long aktivitetId, long version) {
         MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("aktivitetId", aktivitetId)
                 .addValue("versjon", version);
         // language=sql
         String sql = SELECT_AKTIVITET +
-                " WHERE A.VERSJON = :versjon";
+                " WHERE A.VERSJON = :versjon AND A.aktivitet_id = :aktivitetId";
 
         return namedParameterJdbcTemplate.queryForObject(sql, params, aktivitetsDataRowMapper);
     }

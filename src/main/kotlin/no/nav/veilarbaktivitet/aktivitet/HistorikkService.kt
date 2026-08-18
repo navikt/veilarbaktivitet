@@ -56,6 +56,7 @@ fun lagHistorikkForAktiviteter(aktivitetVersjoner: Map<AktivitetId, List<Aktivit
                     ARKIV,
                     endringstyper
                 ),
+                forrigeVersjonsId = forrigeVersjon?.id
             )
         }
         val endringerSortertMedNyesteEndringFørst = endringer.sortedByDescending { it.tidspunkt }
@@ -174,6 +175,7 @@ data class Endring(
     val beskrivelseForVeileder: String,
     val beskrivelseForBruker: String,
     val beskrivelseForArkiv: String,
+    val forrigeVersjonsId: Long?,
 )
 
 private enum class Målgruppe {

@@ -77,6 +77,10 @@ public class AktivitetAppService {
         return aktivitetData;
     }
 
+    public AktivitetData hentAktivitetVersion(long aktivitetId, long versjon) {
+        return aktivitetService.hentAktivitetVersjon(aktivitetId, versjon);
+    }
+
     public List<AktivitetData> hentAktivitetVersjoner(long id) {
         return aktivitetService.hentAktivitetVersjoner(id)
                 .stream()
