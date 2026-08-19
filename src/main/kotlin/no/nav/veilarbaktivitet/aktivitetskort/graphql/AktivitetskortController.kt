@@ -72,12 +72,14 @@ class AktivitetskortController(
     }
 
     @QueryMapping
-    fun aktivitet(@Argument aktivitetId: Long): AktivitetDTO {
+    fun aktivitet(@Argument aktivitetId: Long, @Argument versjon: Long?): AktivitetDTO {
         val erEksternBruker = authService.erEksternBruker()
         val eksternBrukerId = ownerProvider.getOwner(aktivitetId.toString())
             ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "No owner found for aktivitetId")
         authService.sjekkTilgangTilPerson(eksternBrukerId, TilgangsType.LESE)
-        return aktivitetAppService.hentAktivitet(aktivitetId)
+
+        return (versjon?.let { aktivitetAppService.hentAktivitetVersion(aktivitetId, it) }
+                ?: aktivitetAppService.hentAktivitet(aktivitetId))
             .let { AktivitetDTOMapper.mapTilAktivitetDTO(it, erEksternBruker) }
     }
 

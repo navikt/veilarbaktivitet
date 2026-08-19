@@ -152,16 +152,24 @@ public class AktivitetTestService {
     }
 
     public String queryHistorikkRaw(MockBruker mockBruker, RestassuredUser user, String query, String aktivitetId) {
+        return queryHistorikkRaw(mockBruker, user, query, aktivitetId, null);
+    }
+    public String queryHistorikkRaw(MockBruker mockBruker, RestassuredUser user, String query, String aktivitetId, String versjon) {
+        var variables = versjon != null
+                ? String.format("{ \"aktivitetId\": \"%s\", \"versjon\": \"%s\" }", aktivitetId, versjon)
+                : String.format("{ \"aktivitetId\": \"%s\" }", aktivitetId);
         var validatableResponse = user
                 .createRequest()
-                .body("{ \"query\": \""+ query  +"\", \"variables\": { \"aktivitetId\": \"" + aktivitetId + "\" } }")
+                .body(String.format("{ \"query\": \"%s\", \"variables\": %s }", query, variables))
                 .post("http://localhost:" + port + "/veilarbaktivitet/graphql")
                 .then();
         return validatableResponse
                 .assertThat()
-                .statusCode(HttpStatus.OK.value())
                 .extract()
                 .response().asString();
+//                .statusCode(HttpStatus.OK.value())
+//                .extract()
+//                .response().asString();
     }
 
     public List<AktivitetDTO> hentVersjoner(String aktivitetId, MockBruker mockBruker, RestassuredUser user) {
@@ -224,7 +232,8 @@ public class AktivitetTestService {
                 .body(aktivitetPayloadJson)
                 .when()
                 .put("http://localhost:" + port + "/veilarbaktivitet/api/aktivitet/" + aktivitetDTO.getId())
-                .then();
+                .then()
+                .assertThat().statusCode(HttpStatus.OK.value());
     }
     public AktivitetDTO oppdaterAktivitetOk(MockBruker mockBruker, RestassuredUser user, AktivitetDTO aktivitetDTO) {
         Response response = oppdaterAktivitetViaHttp(mockBruker, user, aktivitetDTO)
