@@ -228,15 +228,49 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
         aktivitetTestService.oppdaterAktivitetStatus(mockBruker, mockVeileder, aktivitet, AktivitetStatus.GJENNOMFORES)
         val aktivitetIdParam = "\$aktivitetId"
         val query = """
-            query($aktivitetIdParam: String) {
+            query($aktivitetIdParam: String!) {
                 aktivitet(aktivitetId: $aktivitetIdParam) {
                     fraDato
                 }
             }
         """.trimIndent().replace("\n", "")
         val result = aktivitetTestService.queryHistorikkRaw(mockBruker, mockBruker, query, aktivitet.id)
-        val fraDatoString = JsonMapper.defaultObjectMapper().readTree(result)["data"]["aktivitet"]["fraDato"].asString()
+        val resultJson = JsonMapper.defaultObjectMapper().readTree(result)
+        assertThat(resultJson["errors"]).isNull()
+        val fraDatoString = resultJson["data"]["aktivitet"]["fraDato"].asString()
         assertThat(fraDatoString).isEqualTo(fraDatoIso)
+    }
+
+    @Test
+    fun `skal kunne lese historisk referat`() {
+        val førsteReferat = "første referat"
+        val andreReferat = "andre referat"
+        val referatAktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.SAMTALEREFERAT)
+            .toBuilder().oppfolgingsperiodeId(mockBruker.oppfolgingsperiodeId).referat(førsteReferat).build()
+        val førsteAktivitet = aktivitetTestService.opprettAktivitetViaHttp(mockBruker, mockVeileder, referatAktivitet)
+        aktivitetTestService.oppdaterReferat(førsteAktivitet.setReferat(andreReferat), mockVeileder)
+
+        val aktivitetIdParam = "\$aktivitetId"
+        val versjonParam = "\$versjon"
+        val query = """
+            query($aktivitetIdParam: String!, $versjonParam: String) {
+                aktivitet(aktivitetId: $aktivitetIdParam, versjon: $versjonParam) {
+                    referat
+                }
+            }
+        """.trimIndent().replace("\n", "")
+        val resultFørste = aktivitetTestService.queryHistorikkRaw(mockBruker, mockBruker, query, førsteAktivitet.id, førsteAktivitet.versjon)
+        val resultAndre = aktivitetTestService.queryHistorikkRaw(mockBruker, mockBruker, query, førsteAktivitet.id)
+
+        val resultJsonFørste = JsonMapper.defaultObjectMapper().readTree(resultFørste)
+        assertThat(resultJsonFørste["errors"]).isNull()
+        val førsteReferatActual = resultJsonFørste["data"]["aktivitet"]["referat"].asString()
+        assertThat(førsteReferatActual).isEqualTo(førsteReferat)
+
+        val resultJsonAndre = JsonMapper.defaultObjectMapper().readTree(resultAndre)
+        assertThat(resultJsonAndre["errors"]).isNull()
+        val andreReferatActual = resultJsonAndre["data"]["aktivitet"]["referat"].asString()
+        assertThat(andreReferatActual).isEqualTo(andreReferat)
     }
 
     @Test
