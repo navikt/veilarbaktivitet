@@ -122,7 +122,7 @@ private fun hentEndringstekster(
                 "$endretAvTekst endret tilstand til $status"
             }
             IKKE_FATT_JOBBEN, FATT_JOBBEN ->  "$endretAvTekst avsluttet aktiviteten fordi kandidaten har ${oppdatertVersjon.stillingFraNavData.soknadsstatus.text}"
-            TITTEL_ENDRET -> "$endretAvTekst endret tittelen på aktiviteten fra ${forrigeVersjon?.tittel} til ${oppdatertVersjon.tittel}"
+            TITTEL_ENDRET -> "$endretAvTekst endret tittelen på aktiviteten fra \"${forrigeVersjon?.tittel}\" til \"${oppdatertVersjon.tittel}\""
             BESKRIVELSE_ENDRET -> "$endretAvTekst endret beskrivelsen på aktiviteten fra ${forrigeVersjon?.beskrivelse} til ${oppdatertVersjon.beskrivelse}"
             DETALJER_ENDRET -> "$endretAvTekst endret detaljer på aktiviteten"
         }
