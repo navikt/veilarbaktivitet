@@ -64,7 +64,8 @@ public class KafkaAktivitetDAO {
                 -- Resten av tiltakene er "ikke lenger aktive i Arena". 
                 -- https://nav-it.slack.com/archives/CC9GYTA2C/p1781784781394409     
                 AND EA.TILTAK_KODE in ('FORSFAGENK', 'FORSHOYUTD', 'FUNKSJASS', 'VV', 'EKSPEBIST', 'ETAB', 'FORSAMOENK', 'FORSOPPLEV', 'INDJOBSTOT', 'INKLUTILS', 'IPSUNG', 'UTVAOONAV', 'UTVOPPFOPL')
-                AND A.VERSJON > :sistBehandletVersjon
+                AND A.VERSJON > :sistBehandletVersjon 
+                AND A.gjeldende = 1
                 ORDER BY A.VERSJON
                 LIMIT :maksAntall
                 """;
