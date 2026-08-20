@@ -56,6 +56,7 @@ fun lagHistorikkForAktiviteter(aktivitetVersjoner: Map<AktivitetId, List<Aktivit
                     ARKIV,
                     endringstyper
                 ),
+                versjonsId = aktivitetData.versjon,
                 forrigeVersjonsId = forrigeVersjon?.id
             )
         }
@@ -175,6 +176,7 @@ data class Endring(
     val beskrivelseForVeileder: String,
     val beskrivelseForBruker: String,
     val beskrivelseForArkiv: String,
+    val versjonsId: Long,
     val forrigeVersjonsId: Long?,
 )
 
