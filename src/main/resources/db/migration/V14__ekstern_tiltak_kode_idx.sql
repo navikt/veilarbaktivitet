@@ -1,0 +1,1 @@
+CREATE INDEX CONCURRENTLY idx_eksternaktivitet_tiltak_kode ON eksternaktivitet(tiltak_kode);
