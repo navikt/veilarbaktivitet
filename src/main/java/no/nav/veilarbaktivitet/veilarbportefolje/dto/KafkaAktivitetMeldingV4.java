@@ -26,5 +26,4 @@ public class KafkaAktivitetMeldingV4 {
     boolean avtalt;
     boolean historisk;
     String tiltakskode;
-    String oppfolgingsperiodeId;
 }
