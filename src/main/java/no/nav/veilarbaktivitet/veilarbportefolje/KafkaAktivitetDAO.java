@@ -112,6 +112,7 @@ public class KafkaAktivitetDAO {
                 .avtalt(rs.getBoolean("avtalt"))
                 .historisk(rs.getTimestamp("historisk_dato") != null)
                 .tiltakskode(tiltakskode)
+                .oppfolgingsperiodeId(rs.getString("oppfolgingsperiode_uuid"))
                 .build();
     }
 
@@ -160,6 +161,7 @@ public class KafkaAktivitetDAO {
                 .avtalt(rs.getBoolean("avtalt"))
                 .historisk(rs.getTimestamp("historisk_dato") != null)
                 .tiltakskode(tiltakskode)
+                .oppfolgingsperiodeId(rs.getString("oppfolgingsperiode_uuid"))
                 .build();
     }
 }
