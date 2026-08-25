@@ -111,6 +111,38 @@ class AktiviteterTilKafkaAivenServiceTest extends SpringBootTestBase {
     }
 
     @Test
+    void skal_sende_arena_tiltak_med_riktig_type_til_portefolje() {
+        MockBruker mockBruker = navMockService.createHappyBruker();
+        var id = UUID.randomUUID();
+        Aktivitetskort første = AktivitetskortUtil.ny(id, AktivitetskortStatus.FORSLAG, ZonedDateTime.now(), mockBruker);
+        Aktivitetskort actual = AktivitetskortUtil.ny(id, AktivitetskortStatus.GJENNOMFORES, ZonedDateTime.now(), mockBruker);
+        KafkaAktivitetskortWrapperDTO førsteWrapperDTO = new KafkaAktivitetskortWrapperDTO(
+                AktivitetskortType.ARENA_TILTAK,
+                første,
+                MessageSource.ARENA_TILTAK_AKTIVITET_ACL.name(),
+                UUID.randomUUID()
+        );
+        KafkaAktivitetskortWrapperDTO sisteWrapperDTO = new KafkaAktivitetskortWrapperDTO(
+                AktivitetskortType.ARENA_TILTAK,
+                actual,
+                MessageSource.ARENA_TILTAK_AKTIVITET_ACL.name(),
+                UUID.randomUUID()
+        );
+        aktivitetTestService.opprettEksterntArenaKort(List.of(
+                new ArenaKort(førsteWrapperDTO, new ArenaMeldingHeaders(new ArenaId("TA123123"), "INDJOBSTOT", mockBruker.oppfolgingsperiodeId, null)),
+                new ArenaKort(sisteWrapperDTO, new ArenaMeldingHeaders(new ArenaId("TA123123"), "INDJOBSTOT", mockBruker.oppfolgingsperiodeId, null))
+        ));
+
+        cronService.sendOppTil5000ArenaAktiviterTilPortefolje();
+
+        ConsumerRecord<String, String> portefojeRecord1 = getSingleRecord(portefoljeConsumer, portefoljeTopic, DEFAULT_WAIT_TIMEOUT_DURATION);
+        KafkaAktivitetMeldingV4 melding = JsonUtils.fromJson(portefojeRecord1.value(), KafkaAktivitetMeldingV4.class);
+        assertEquals(AktivitetskortStatus.GJENNOMFORES.toAktivitetStatus(), melding.getAktivitetStatus());
+        assertEquals(mockBruker.oppfolgingsperiodeId.toString(), melding.getOppfolgingsperiodeId());
+        assertTrue(kafkaTestService.harKonsumertAlleMeldinger(portefoljeTopic, portefoljeConsumer));
+    }
+
+    @Test
     void skal_sende_nye_lonnstilskudd_til_portefolje() {
         MockBruker mockBruker = navMockService.createHappyBruker();
         Aktivitetskort aktivitetskort = AktivitetskortUtil.ny(UUID.randomUUID(), AktivitetskortStatus.PLANLAGT, ZonedDateTime.now(), mockBruker);

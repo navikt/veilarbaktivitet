@@ -63,8 +63,9 @@ public class KafkaAktivitetDAO {
                 -- Team OBO ønsket at vi bare skal publisere disse fire tiltakstypene på aktiviteter-til-portefølje-topicen
                 -- Resten av tiltakene er "ikke lenger aktive i Arena". 
                 -- https://nav-it.slack.com/archives/CC9GYTA2C/p1781784781394409     
-                AND EA.TILTAK_KODE in ('FORSFAGENK', 'FORSHOYUTD', 'FUNKSJASS', 'VV')
-                AND A.VERSJON > :sistBehandletVersjon
+                AND EA.TILTAK_KODE in ('FORSFAGENK', 'FORSHOYUTD', 'FUNKSJASS', 'VV', 'EKSPEBIST', 'ETAB', 'FORSAMOENK', 'FORSOPPLEV', 'INDJOBSTOT', 'INKLUTILS', 'IPSUNG', 'UTVAOONAV', 'UTVOPPFOPL')
+                AND A.VERSJON > :sistBehandletVersjon 
+                AND A.gjeldende = 1
                 ORDER BY A.VERSJON
                 LIMIT :maksAntall
                 """;
@@ -111,6 +112,7 @@ public class KafkaAktivitetDAO {
                 .avtalt(rs.getBoolean("avtalt"))
                 .historisk(rs.getTimestamp("historisk_dato") != null)
                 .tiltakskode(tiltakskode)
+                .oppfolgingsperiodeId(rs.getString("oppfolgingsperiode_uuid"))
                 .build();
     }
 
@@ -159,6 +161,7 @@ public class KafkaAktivitetDAO {
                 .avtalt(rs.getBoolean("avtalt"))
                 .historisk(rs.getTimestamp("historisk_dato") != null)
                 .tiltakskode(tiltakskode)
+                .oppfolgingsperiodeId(rs.getString("oppfolgingsperiode_uuid"))
                 .build();
     }
 }
