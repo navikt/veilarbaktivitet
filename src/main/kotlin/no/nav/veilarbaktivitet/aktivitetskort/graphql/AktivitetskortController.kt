@@ -78,7 +78,7 @@ class AktivitetskortController(
             ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "No owner found for aktivitetId")
         authService.sjekkTilgangTilPerson(eksternBrukerId, TilgangsType.LESE)
 
-        return (versjon?.let { aktivitetAppService.hentAktivitetVersion(aktivitetId, it) }
+        return (versjon?.let { aktivitetAppService.hentAktivitetVersion(aktivitetId, it, erEksternBruker) }
                 ?: aktivitetAppService.hentAktivitet(aktivitetId))
             .let { AktivitetDTOMapper.mapTilAktivitetDTO(it, erEksternBruker) }
     }

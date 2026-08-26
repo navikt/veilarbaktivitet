@@ -77,8 +77,15 @@ public class AktivitetAppService {
         return aktivitetData;
     }
 
-    public AktivitetData hentAktivitetVersion(long aktivitetId, long versjon) {
-        return aktivitetService.hentAktivitetVersjon(aktivitetId, versjon);
+    List<AktivitetTypeData> typerMedTidligereVersjonTilgjengelig = List.of(AktivitetTypeData.MOTE, AktivitetTypeData.SAMTALEREFERAT);
+    public AktivitetData hentAktivitetVersion(long aktivitetId, long versjon, boolean erEksternBruker) {
+        var aktivitet = aktivitetService.hentAktivitetVersjon(aktivitetId, versjon);
+        if (!typerMedTidligereVersjonTilgjengelig.contains(aktivitet.getAktivitetType())) return null;
+
+        var moteData = aktivitet.getMoteData();
+        /* Brukere skal ikke kunne se referat som ikke er publisert */
+        if (moteData != null && !moteData.isReferatPublisert() && erEksternBruker) return null;
+        return aktivitet;
     }
 
     public List<AktivitetData> hentAktivitetVersjoner(long id) {
