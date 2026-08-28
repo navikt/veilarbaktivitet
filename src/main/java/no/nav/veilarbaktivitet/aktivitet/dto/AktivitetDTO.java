@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
-import no.nav.veilarbaktivitet.aktivitet.Historikk;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO;
@@ -81,6 +80,4 @@ public class AktivitetDTO {
     private StillingFraNavData stillingFraNavData;
 
     private EksternAktivitetDTO eksternAktivitet;
-
-    private Historikk historikk;
 }
