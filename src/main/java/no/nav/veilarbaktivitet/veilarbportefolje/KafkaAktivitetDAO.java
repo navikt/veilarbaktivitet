@@ -62,8 +62,8 @@ public class KafkaAktivitetDAO {
                 AND EA.aktivitetkort_type = 'ARENA_TILTAK'
                 -- Team OBO ønsket at vi bare skal publisere disse fire tiltakstypene på aktiviteter-til-portefølje-topicen
                 -- Resten av tiltakene er "ikke lenger aktive i Arena". 
-                -- https://nav-it.slack.com/archives/CC9GYTA2C/p1781784781394409     
-                AND EA.TILTAK_KODE in ('FORSFAGENK', 'FORSHOYUTD', 'FUNKSJASS', 'VV', 'EKSPEBIST', 'ETAB', 'FORSAMOENK', 'FORSOPPLEV', 'INDJOBSTOT', 'INKLUTILS', 'IPSUNG', 'UTVAOONAV', 'UTVOPPFOPL')
+                -- https://nav-it.slack.com/archives/CC9GYTA2C/p1781784781394409
+                -- Oppdatering 02.08.26 - vi sender alle arena-tiltak til porteføljen
                 AND A.VERSJON > :sistBehandletVersjon 
                 AND A.gjeldende = 1
                 ORDER BY A.VERSJON
