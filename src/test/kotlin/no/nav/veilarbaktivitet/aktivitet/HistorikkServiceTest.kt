@@ -35,8 +35,8 @@ class HistorikkServiceTest {
         assert(
             historikk[aktivitet.id]!!,
             oppdatertAktivitet,
-            "NAV endret tid for møtet fra 2. september 2022 kl. 14.00 til 2. september 2022 kl. 15.00",
-            "${oppdatertAktivitet.endretAv} endret tid for møtet fra 2. september 2022 kl. 14.00 til 2. september 2022 kl. 15.00"
+            "NAV endret tid for møtet fra 2. september 2022 kl. 13.00 til 2. september 2022 kl. 14.00",
+            "${oppdatertAktivitet.endretAv} endret tid for møtet fra 2. september 2022 kl. 13.00 til 2. september 2022 kl. 14.00"
         )
     }
 
