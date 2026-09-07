@@ -1,15 +1,15 @@
-val spring_boot_version = "4.1.0"
-val tomcat_version = "11.0.24"
+val spring_boot_version = "4.1.1"
+val tomcat_version = "11.0.25"
 
 extra["tomcat.version"] = tomcat_version
-val common_version = "4.2026.07.10_05.48-e9835152ffc0"
+val common_version = "4.2026.09.01_09.49-e681e09ca089"
 val dab_common_version = "2026.07.10-08.33.e44ba88b2998"
 val poao_tilgang_version = "4.2026.07.10_06.14-bbb390de2a96"
-val shedlock_version = "7.7.0"
-val avroVersion = "1.12.1"
+val shedlock_version = "7.9.0"
+val avroVersion = "1.12.2"
 val confluentKafkaAvroVersion = "8.2.0"
-val okhttpVersion = "5.4.0"
-val logback_version = "1.6.1"
+val okhttpVersion = "5.5.0"
+val logback_version = "1.6.3"
 val log4j_version = "2.26.1"
 val _version: String by project
 
@@ -21,12 +21,12 @@ plugins {
     kotlin("plugin.lombok") version kotlinVersion
     id("application")
     id("maven-publish")
-    id("org.openapi.generator") version "7.24.0"
+    id("org.openapi.generator") version "7.25.0"
     id("io.github.androa.gradle.plugin.avro") version "0.0.12"
     id("project-report")
     id("jacoco")
-    id("org.sonarqube") version "7.3.1.8318"
-    id("org.springframework.boot") version "4.1.0"
+    id("org.sonarqube") version "7.5.0.8588"
+    id("org.springframework.boot") version "4.1.1"
     id("io.freefair.lombok") version "9.5.0"
 }
 
@@ -143,8 +143,8 @@ if (hasProperty("buildScan")) {
 }
 
 dependencies {
-    annotationProcessor("org.projectlombok:lombok:1.18.46")
-    testAnnotationProcessor("org.projectlombok:lombok:1.18.46")
+    annotationProcessor("org.projectlombok:lombok:1.18.48")
+    testAnnotationProcessor("org.projectlombok:lombok:1.18.48")
 
     implementation(enforcedPlatform("org.springframework.boot:spring-boot-dependencies:$spring_boot_version"))
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:$spring_boot_version")
@@ -168,7 +168,7 @@ dependencies {
     implementation("no.nav.common:client:$common_version")
     implementation("no.nav.common:util:$common_version")
     implementation("no.nav.common:types:$common_version")
-    implementation("org.apache.commons:commons-collections4:4.5.0")
+    implementation("org.apache.commons:commons-collections4:4.6.0")
     implementation("no.nav.tms.varsel:kotlin-builder:2.2.0")
     implementation("no.nav.poao.dab:spring-auth:$dab_common_version")
     implementation("no.nav.poao.dab:spring-a2-annotations:$dab_common_version")
@@ -195,17 +195,17 @@ dependencies {
     implementation("tools.jackson.dataformat:jackson-dataformat-yaml")
 
     // BigQuery
-    implementation(platform("com.google.cloud:libraries-bom:26.86.0"))
+    implementation(platform("com.google.cloud:libraries-bom:26.87.0"))
     implementation("com.google.cloud:google-cloud-bigquery")
 
-    implementation("io.getunleash:unleash-client-java:12.2.3")
+    implementation("io.getunleash:unleash-client-java:12.3.0")
 
     runtimeOnly("org.springframework.boot:spring-boot-devtools")
 
 //test dependencies
     testImplementation("no.nav.poao-tilgang:poao-tilgang-test-wiremock:$poao_tilgang_version")
     testImplementation("org.awaitility:awaitility:4.3.0")
-    testImplementation("com.networknt:json-schema-validator:3.0.6")
+    testImplementation("com.networknt:json-schema-validator:3.0.7")
     testImplementation("org.mockito.kotlin:mockito-kotlin:6.3.0")
     testImplementation("io.rest-assured:rest-assured:6.0.1")
 
@@ -216,6 +216,6 @@ dependencies {
     testImplementation("org.springframework.kafka:spring-kafka-test")
     testImplementation("org.mockito:mockito-core")
     testImplementation("io.zonky.test:embedded-database-spring-test:2.8.0")
-    testImplementation(platform("io.zonky.test.postgres:embedded-postgres-binaries-bom:18.4.0"))
+    testImplementation(platform("io.zonky.test.postgres:embedded-postgres-binaries-bom:18.6.0"))
     testImplementation("io.zonky.test:embedded-postgres:2.2.2")
 }
