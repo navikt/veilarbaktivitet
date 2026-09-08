@@ -38,6 +38,7 @@ definitions:
       - FIREARIG_LONNSTILSKUDD
       - SOMMERJOBB
       - TILRETTELAGT_ARBEID_ORDINAER
+      - WORKOP
     description: |
       Aktivitetskort typer som er tillatt å opprette via tjenesten. Denne enumereringen vil utvides etterhvert.
       MIDLERTIDIG_LONNSTILSKUDD - Midlertidig lønnstilskudd (Team Tiltak)
@@ -66,6 +67,7 @@ definitions:
       FIREARIG_LONNSTILSKUDD - Fireårig lønnstilskudd
       SOMMERJOBB - Sommerjobb
       TILRETTELAGT_ARBEID_ORDINAER - Ny tiltakskode som erstatter VTA-O etter ny forskrift (Team Komet)
+      WORKOP - Møteplass for arbeidsgivere og unge arbeidssøkere (Team Toi)
   errorType:
     description: Alle mulige funksjonelle-feil som kan oppstå under prosessering av aktivitetskort-meldinger og kasserings-meldinger
     type: string
