@@ -215,6 +215,22 @@ class AktivitetskortConsumerIntegrationTest(
     }
 
     @Test
+    fun workop_fra_rekrutteringsbistand_skal_behandles() {
+        val funksjonellId = UUID.randomUUID()
+        val actual = aktivitetskort(funksjonellId, AktivitetskortStatus.PLANLAGT)
+        val wrapperDTO = KafkaAktivitetskortWrapperDTO(
+            aktivitetskortType = AktivitetskortType.WORKOP,
+            aktivitetskort = actual,
+            source = MessageSource.REKRUTTERINGSBISTAND.name,
+            messageId = UUID.randomUUID()
+        )
+        aktivitetTestService.opprettEksterntAktivitetsKort(listOf(wrapperDTO))
+        val aktivitet = hentAktivitet(funksjonellId)
+        assertEquals(AktivitetTypeDTO.EKSTERNAKTIVITET, aktivitet.type)
+        assertEquals(AktivitetskortType.WORKOP, aktivitet.eksternAktivitet.type)
+    }
+
+    @Test
     fun `aktivitetskort med type ENKELAMO skal behandles`() {
         val funksjonellId = UUID.randomUUID()
         val actual = aktivitetskort(funksjonellId, AktivitetskortStatus.PLANLAGT)

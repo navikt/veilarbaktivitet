@@ -282,6 +282,7 @@ class ArkiveringsController(
         REKRUTTERINGSTREFF("Rekrutteringstreff"),
         ENKELAMO("Arbeidsmarkedsopplæring (enkeltplass)"),
         ENKFAGYRKE("Fag- og yrkesopplæring (enkeltplass)"),
-        HOYEREUTD("Høyere utdanning")
+        HOYEREUTD("Høyere utdanning"),
+        WORKOP("Møteplass for arbeidsgivere og unge arbeidssøkere")
     }
 }

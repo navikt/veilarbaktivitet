@@ -187,6 +187,11 @@ class ArkiveringsFiltrererTest {
                         AktivitetskortType.ARENA_TILTAK
                     )
                 ),
+                AktivitetDataTestBuilder.nyEksternAktivitet().withEksternAktivitetData(
+                    eksternAktivitetData(
+                        AktivitetskortType.WORKOP
+                    )
+                ),
             ),
             arenaAktiviteter = listOf(ArenaAktivitetDTO.builder().etikett(ArenaStatusEtikettDTO.AVSLAG).build())
         )
