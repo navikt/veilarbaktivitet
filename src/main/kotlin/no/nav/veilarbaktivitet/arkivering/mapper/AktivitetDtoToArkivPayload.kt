@@ -83,6 +83,7 @@ fun AktivitetData.toArkivTypeTekst(): String {
                 AktivitetskortType.FIREARIG_LONNSTILSKUDD -> "Fireårig lønnstilskudd"
                 AktivitetskortType.SOMMERJOBB -> "Sommerjobb"
                 AktivitetskortType.WORKOP -> "Møteplass for arbeidsgivere og unge arbeidssøkere"
+                AktivitetskortType.DELE_CV_MED_ARBEIDSGIVER -> "Stilling fra Nav"
             }
         }
     }

@@ -39,6 +39,7 @@ definitions:
       - SOMMERJOBB
       - TILRETTELAGT_ARBEID_ORDINAER
       - WORKOP
+      - DELE_CV_MED_ARBEIDSGIVER
     description: |
       Aktivitetskort typer som er tillatt å opprette via tjenesten. Denne enumereringen vil utvides etterhvert.
       MIDLERTIDIG_LONNSTILSKUDD - Midlertidig lønnstilskudd (Team Tiltak)
@@ -68,6 +69,7 @@ definitions:
       SOMMERJOBB - Sommerjobb
       TILRETTELAGT_ARBEID_ORDINAER - Ny tiltakskode som erstatter VTA-O etter ny forskrift (Team Komet)
       WORKOP - Møteplass for arbeidsgivere og unge arbeidssøkere (Team Toi)
+      DELE_CV_MED_ARBEIDSGIVER - Stilling fra Nav (Team Toi)
   errorType:
     description: Alle mulige funksjonelle-feil som kan oppstå under prosessering av aktivitetskort-meldinger og kasserings-meldinger
     type: string

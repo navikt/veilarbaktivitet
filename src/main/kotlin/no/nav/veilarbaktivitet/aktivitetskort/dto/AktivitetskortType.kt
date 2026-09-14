@@ -67,7 +67,8 @@ enum class AktivitetskortType {
     FIREARIG_LONNSTILSKUDD,
     SOMMERJOBB,
     TILRETTELAGT_ARBEID_ORDINAER,
-    WORKOP;
+    WORKOP,
+    DELE_CV_MED_ARBEIDSGIVER;
 
     companion object {
         private val logger = LoggerFactory.getLogger(this::class.java)

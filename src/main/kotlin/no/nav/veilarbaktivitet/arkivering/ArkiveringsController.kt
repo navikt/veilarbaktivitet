@@ -283,6 +283,7 @@ class ArkiveringsController(
         ENKELAMO("Arbeidsmarkedsopplæring (enkeltplass)"),
         ENKFAGYRKE("Fag- og yrkesopplæring (enkeltplass)"),
         HOYEREUTD("Høyere utdanning"),
-        WORKOP("Møteplass for arbeidsgivere og unge arbeidssøkere")
+        WORKOP("Møteplass for arbeidsgivere og unge arbeidssøkere"),
+        DELE_CV_MED_ARBEIDSGIVER("Stilling fra Nav"),
     }
 }
