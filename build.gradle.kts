@@ -1,4 +1,4 @@
-val spring_boot_version = "4.1.0"
+val spring_boot_version = "4.1.1"
 val tomcat_version = "11.0.24"
 
 extra["tomcat.version"] = tomcat_version
