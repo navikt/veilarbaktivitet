@@ -24,7 +24,7 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Deploy 🚀
-        uses: JamesIves/github-pages-deploy-action@d92aa235d04922e8f08b40ce78cc5442fcfbfa2f
+        uses: JamesIves/github-pages-deploy-action@fa24774553152dd7873cd16ebd8d959b010c5445
         with:
           folder: src/main/resources/schemas
           target-folder: schemas
