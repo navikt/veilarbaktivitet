@@ -532,12 +532,12 @@ public class AktivitetDAO {
                 """, params);
     }
 
-    public void skiftPeriodePåAktivitet(long aktivitetId, UUID nyPeriode) {
+    public int skiftPeriodePåAktivitet(long aktivitetId, UUID nyPeriode) {
         var params = new MapSqlParameterSource()
                 .addValue("aktivitetId", aktivitetId)
-                .addValue("nyPeriode", nyPeriode);
+                .addValue("nyPeriode", nyPeriode.toString());
         // language=sql
-        namedParameterJdbcTemplate.update("""
+        return namedParameterJdbcTemplate.update("""
                 UPDATE AKTIVITET SET OPPFOLGINGSPERIODE_UUID = :nyPeriode
                 WHERE aktivitet_id = :aktivitetId
                 """, params);

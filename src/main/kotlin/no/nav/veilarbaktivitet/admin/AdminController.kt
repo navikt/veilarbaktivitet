@@ -1,7 +1,9 @@
 package no.nav.veilarbaktivitet.admin
 
+import lombok.extern.slf4j.Slf4j
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeService
 import no.nav.veilarbaktivitet.person.Person
 import org.springframework.web.bind.annotation.PostMapping
@@ -10,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import java.util.*
 
+@Slf4j
 @RestController
 @RequestMapping("/admin")
 class AdminController(
@@ -32,14 +35,16 @@ class AdminController(
         }
         val aktiviteterINestSistePeriode = aktivitetService.hentAktiviteterForAktorId(aktorId)
             .filter { it.oppfolgingsperiodeId == nestSistePeriode.oppfolgingsperiodeId }
+            .filter { it.status != AktivitetStatus.AVBRUTT && it.status != AktivitetStatus.FULLFORT }
             .map {
                 try {
-                    aktivitetDAO.skiftPeriodePåAktivitet(it.id, sisteÅpenPeriode.oppfolgingsperiodeId)
+                    // aktivitetDAO.skiftPeriodePåAktivitet(it.id, sisteÅpenPeriode.oppfolgingsperiodeId)
                 } catch (e: Exception) {
 
                 }
             }
-    }
+
+        }
 
 }
 
