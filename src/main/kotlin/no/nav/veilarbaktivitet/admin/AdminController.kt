@@ -20,7 +20,7 @@ class AdminController(
     val periodeService: OppfolgingsperiodeService,
     val aktivitetDAO: AktivitetDAO
 ) {
-    private val logger = LoggerFactory.getLogger(AdminController::class.java)
+    private val logger = LoggerFactory.getLogger(this::class.java)
 
     @PostMapping("/flytt-aktiviteter-til-siste-periode")
     fun flyttAktiviteter(@RequestBody personDto: PersonDto): Map<String, Int> {
