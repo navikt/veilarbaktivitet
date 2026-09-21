@@ -538,7 +538,8 @@ public class AktivitetDAO {
                 .addValue("nyPeriode", nyPeriode.toString());
         // language=sql
         return namedParameterJdbcTemplate.update("""
-                UPDATE AKTIVITET SET OPPFOLGINGSPERIODE_UUID = :nyPeriode
+                UPDATE AKTIVITET 
+                SET OPPFOLGINGSPERIODE_UUID = :nyPeriode, portefolje_kafka_offset_aiven = null
                 WHERE aktivitet_id = :aktivitetId
                 """, params);
     }

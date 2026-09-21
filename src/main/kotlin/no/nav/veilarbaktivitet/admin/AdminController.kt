@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import java.util.*
 
 @Slf4j
 @RestController
@@ -24,8 +23,14 @@ class AdminController(
     private val logger = LoggerFactory.getLogger(AdminController::class.java)
 
     @PostMapping("/flytt-aktiviteter-til-siste-periode")
-    fun flyttAktiviteter(@RequestBody personDto: PersonDto) {
-        val aktorId = Person.AktorId(personDto.aktorId)
+    fun flyttAktiviteter(@RequestBody personDto: PersonDto): Map<String, Int> {
+        return personDto.aktorIds.associateWith {
+            flyttAktiviteter(it)
+        }
+    }
+
+    private fun flyttAktiviteter(aktorIdString: String): Int {
+        val aktorId = Person.AktorId(aktorIdString)
         val perioder = periodeService.hentOppfolgingsPerioder(aktorId)
         val sisteÅpenPeriode = perioder.singleOrNull { it.sluttTid == null }
         val nestSistePeriode = perioder.getOrNull(perioder.size - 2)
@@ -40,7 +45,8 @@ class AdminController(
             .filter { it.status != AktivitetStatus.AVBRUTT && it.status != AktivitetStatus.FULLFORT }
             .map {
                 try {
-                    aktivitetDAO.skiftPeriodePåAktivitet(it.id, sisteÅpenPeriode.oppfolgingsperiodeId)
+                    // TODO: Slå på denne når vi går i prod
+//                    aktivitetDAO.skiftPeriodePåAktivitet(it.id, sisteÅpenPeriode.oppfolgingsperiodeId)
                 } catch (e: Exception) {
                     logger.error(
                         "Feilet ved flytting av aktivitet ${it.id} fra periode ${nestSistePeriode.oppfolgingsperiodeId} til periode ${sisteÅpenPeriode.oppfolgingsperiodeId}",
@@ -49,12 +55,11 @@ class AdminController(
                 }
             }
         logger.info("Flyttet ${aktiviteterINestSistePeriode.size} aktiviteter fra periode ${nestSistePeriode.oppfolgingsperiodeId} til periode ${sisteÅpenPeriode.oppfolgingsperiodeId}")
+        return aktiviteterINestSistePeriode.size
     }
 }
 
 data class PersonDto(
-    val aktorId: String,
-    val tilPeriodeId: UUID,
-    val fraPeriode: UUID,
+    val aktorIds: List<String>,
 )
 
