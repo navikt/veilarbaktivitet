@@ -531,4 +531,15 @@ public class AktivitetDAO {
                 WHERE aktivitet_id = :aktivitetId
                 """, params);
     }
+
+    public void skiftPeriodePåAktivitet(long aktivitetId, UUID nyPeriode) {
+        var params = new MapSqlParameterSource()
+                .addValue("aktivitetId", aktivitetId)
+                .addValue("nyPeriode", nyPeriode);
+        // language=sql
+        namedParameterJdbcTemplate.update("""
+                UPDATE AKTIVITET SET OPPFOLGINGSPERIODE_UUID = :nyPeriode
+                WHERE aktivitet_id = :aktivitetId
+                """, params);
+    }
 }
