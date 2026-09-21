@@ -31,15 +31,14 @@ class AdminController(
 
     private fun flyttAktiviteter(aktorIdString: String): Int {
         val aktorId = Person.AktorId(aktorIdString)
-        val perioder = periodeService.hentOppfolgingsPerioder(aktorId)
-        val sisteÅpenPeriode = perioder.singleOrNull { it.sluttTid == null }
-        val nestSistePeriode = perioder.getOrNull(perioder.size - 2)
-        if (sisteÅpenPeriode == null) {
-            throw RuntimeException("Fant ikke noe åpen periode på person, kan ikke flytte aktiviteter.")
-        }
-        if (nestSistePeriode == null) {
-            throw RuntimeException("Fant ikke noe nest siste periode på person, kan ikke flytte aktiviteter.")
-        }
+        val sortertePerioder = periodeService.hentOppfolgingsPerioder(aktorId)
+            .sortedBy { it.startTid }
+
+        val sisteÅpenPeriodeIndex = sortertePerioder.indexOfLast { it.sluttTid == null }
+        val sisteÅpenPeriode = sortertePerioder.getOrNull(sisteÅpenPeriodeIndex)
+            ?: throw RuntimeException("Fant ikke noe åpen periode på person, kan ikke flytte aktiviteter.")
+        val nestSistePeriode = sortertePerioder.getOrNull(sisteÅpenPeriodeIndex - 1)
+            ?: throw RuntimeException("Fant ikke noe nest siste periode på person, kan ikke flytte aktiviteter.")
         val aktiviteterINestSistePeriode = aktivitetService.hentAktiviteterForAktorId(aktorId)
             .filter { it.oppfolgingsperiodeId == nestSistePeriode.oppfolgingsperiodeId }
             .filter { it.status != AktivitetStatus.AVBRUTT && it.status != AktivitetStatus.FULLFORT }
