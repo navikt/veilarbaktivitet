@@ -6,6 +6,7 @@ import no.nav.veilarbaktivitet.aktivitet.AktivitetService
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeService
 import no.nav.veilarbaktivitet.person.Person
+import org.slf4j.LoggerFactory
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -20,6 +21,7 @@ class AdminController(
     val periodeService: OppfolgingsperiodeService,
     val aktivitetDAO: AktivitetDAO
 ) {
+    private val logger = LoggerFactory.getLogger(AdminController::class.java)
 
     @PostMapping("/flytt-aktiviteter-til-siste-periode")
     fun flyttAktiviteter(@RequestBody personDto: PersonDto) {
@@ -38,14 +40,16 @@ class AdminController(
             .filter { it.status != AktivitetStatus.AVBRUTT && it.status != AktivitetStatus.FULLFORT }
             .map {
                 try {
-                    // aktivitetDAO.skiftPeriodePåAktivitet(it.id, sisteÅpenPeriode.oppfolgingsperiodeId)
+                    aktivitetDAO.skiftPeriodePåAktivitet(it.id, sisteÅpenPeriode.oppfolgingsperiodeId)
                 } catch (e: Exception) {
-
+                    logger.error(
+                        "Feilet ved flytting av aktivitet ${it.id} fra periode ${nestSistePeriode.oppfolgingsperiodeId} til periode ${sisteÅpenPeriode.oppfolgingsperiodeId}",
+                        e
+                    )
                 }
             }
-
-        }
-
+        logger.info("Flyttet ${aktiviteterINestSistePeriode.size} aktiviteter fra periode ${nestSistePeriode.oppfolgingsperiodeId} til periode ${sisteÅpenPeriode.oppfolgingsperiodeId}")
+    }
 }
 
 data class PersonDto(
