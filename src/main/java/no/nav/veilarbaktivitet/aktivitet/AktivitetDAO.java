@@ -539,7 +539,9 @@ public class AktivitetDAO {
         // language=sql
         return namedParameterJdbcTemplate.update("""
                 UPDATE AKTIVITET 
-                SET OPPFOLGINGSPERIODE_UUID = :nyPeriode, portefolje_kafka_offset_aiven = null
+                SET OPPFOLGINGSPERIODE_UUID = :nyPeriode, 
+                    portefolje_kafka_offset_aiven = null,
+                    historisk_dato = null
                 WHERE aktivitet_id = :aktivitetId
                 """, params);
     }
