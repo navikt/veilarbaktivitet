@@ -531,4 +531,16 @@ public class AktivitetDAO {
                 WHERE aktivitet_id = :aktivitetId
                 """, params);
     }
+
+    public int skiftPeriodePåAktivitet(long aktivitetId, UUID nyPeriode) {
+        var params = new MapSqlParameterSource()
+                .addValue("aktivitetId", aktivitetId)
+                .addValue("nyPeriode", nyPeriode.toString());
+        // language=sql
+        return namedParameterJdbcTemplate.update("""
+                UPDATE AKTIVITET 
+                SET OPPFOLGINGSPERIODE_UUID = :nyPeriode, portefolje_kafka_offset_aiven = null
+                WHERE aktivitet_id = :aktivitetId
+                """, params);
+    }
 }
