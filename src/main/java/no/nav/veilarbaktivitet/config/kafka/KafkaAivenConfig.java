@@ -1,5 +1,7 @@
 package no.nav.veilarbaktivitet.config.kafka;
 
+import java.time.Duration;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaAvroAvroTemplate;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaJsonTemplate;
@@ -9,7 +11,6 @@ import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.kafka.autoconfigure.KafkaProperties;
-import org.springframework.boot.ssl.DefaultSslBundleRegistry;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.EnableKafka;
@@ -22,9 +23,6 @@ import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.util.backoff.FixedBackOff;
 
-import java.time.Duration;
-import java.util.Map;
-
 import static org.springframework.util.backoff.FixedBackOff.DEFAULT_INTERVAL;
 import static org.springframework.util.backoff.FixedBackOff.UNLIMITED_ATTEMPTS;
 
@@ -32,6 +30,13 @@ import static org.springframework.util.backoff.FixedBackOff.UNLIMITED_ATTEMPTS;
 @EnableKafka
 @Configuration
 public class KafkaAivenConfig {
+
+    static  {
+        System.setProperty(
+                "org.apache.avro.SERIALIZABLE_PACKAGES",
+                "no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv,no.nav.veilarbaktivitet.avro"
+        );
+    }
 
     @Bean
     <V extends SpecificRecordBase> ProducerFactory<String, V> stringAvroProducerFactory(KafkaProperties kafkaProperties) {

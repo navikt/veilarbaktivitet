@@ -25,7 +25,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
       - name: Set up JDK 21
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
           java-version: 21
           distribution: 'temurin'
@@ -44,7 +44,7 @@ jobs:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_MESSAGE: 'Commit-message til feilende deploy: ${{ github.event.head_commit.message }}'
       - name: Push docker image to GAR
-        uses: nais/docker-build-push@8e41f1f58749b9248e376c25d33bfbdd2b1163c0
+        uses: nais/docker-build-push@0e73849f69ff260ee27597553c0a7848ca4e9795
         id: docker-build-push
         with:
           team: dab
@@ -60,7 +60,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
       - name: Deploy application to dev
-        uses: nais/deploy/actions/deploy@849e900e3cfa7faf7ad1532bb3a3e6499c932199
+        uses: nais/deploy/actions/deploy@1de80da70ad26556ecdc5964a8b7ec3bbed98120
         env:
           CLUSTER: dev-gcp
           RESOURCE: nais/nais-dev-gcp.yaml
@@ -76,7 +76,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
       - name: Deploy application to prod
-        uses: nais/deploy/actions/deploy@849e900e3cfa7faf7ad1532bb3a3e6499c932199
+        uses: nais/deploy/actions/deploy@1de80da70ad26556ecdc5964a8b7ec3bbed98120
         env:
           CLUSTER: prod-gcp
           RESOURCE: nais/nais-prod-gcp.yaml
