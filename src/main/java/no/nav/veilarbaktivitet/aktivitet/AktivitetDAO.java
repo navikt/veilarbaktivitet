@@ -92,6 +92,17 @@ public class AktivitetDAO {
         return namedParameterJdbcTemplate.queryForObject(sql, params, aktivitetsDataRowMapper);
     }
 
+    public Long hentPortefoljeKafkaOffsetAiven(long aktivitetId, long versjon) {
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("aktivitetId", aktivitetId)
+                .addValue("versjon", versjon);
+        return namedParameterJdbcTemplate.queryForObject(
+                "SELECT portefolje_kafka_offset_aiven FROM aktivitet WHERE aktivitet_id = :aktivitetId AND versjon = :versjon",
+                params,
+                Long.class
+        );
+    }
+
     public Optional<AktivitetData> hentMaybeAktivitet(long id) {
         try {
             return Optional.of(hentAktivitet(id));

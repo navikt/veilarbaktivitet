@@ -107,6 +107,12 @@ class AktivitetskortController(
         return historikkService.hentHistorikk(listOf(aktivitetId))[aktivitetId]!!
     }
 
+    @SchemaMapping(typeName="AktivitetDTO", field="portefoljeKafkaOffsetAiven")
+    fun getPortefoljeKafkaOffsetAiven(aktivitet: AktivitetDTO): Long? {
+        if (!harAdminScope()) return null
+        return aktivitetService.hentPortefoljeKafkaOffsetAiven(aktivitet.id.toLong(), aktivitet.versjon.toLong())
+    }
+
     private fun getContextUserIdent(fnr: String): Person.Fnr {
         return when {
             authService.erEksternBruker() -> Person.fnr(authService.getLoggedInnUser().get())
@@ -129,5 +135,9 @@ class AktivitetskortController(
                 }
             }
         }
+    }
+
+    private fun harAdminScope(): Boolean {
+        return authService.harScope("admin")
     }
 }

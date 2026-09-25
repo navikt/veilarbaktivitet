@@ -93,8 +93,10 @@ spec:
           cluster: dev-fss
           namespace: pto
         - application: poao-admin
-          cluster: dev-gcp
           namespace: poao
+          permissions:
+            scopes:
+              - "admin"
         - application: inngar
           namespace: dab
     outbound:

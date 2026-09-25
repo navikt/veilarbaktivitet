@@ -1,7 +1,7 @@
 type Query {
     perioder(fnr: String!): [OppfolgingsPeriode]
     aktivitet(aktivitetId: String!, versjon: String): AktivitetDTO
-    eier(aktivitetId: String): Eier
+    eier(aktivitetId: String!): Eier
     tiltaksaktiviteter(fnr: String!): [TiltaksAktivitet]
 }
 
@@ -96,6 +96,8 @@ type AktivitetDTO {
     eksternAktivitet: EksternAktivitetDTO
 
     historikk: Historikk
+
+    portefoljeKafkaOffsetAiven: Int
 }
 
 type EksternAktivitetDTO {

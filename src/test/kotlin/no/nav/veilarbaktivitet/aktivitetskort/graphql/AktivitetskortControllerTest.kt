@@ -218,6 +218,24 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
     }
 
     @Test
+    fun `skal ikke eksponere portefolje offset uten admin scope`() {
+        val aktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
+            .toBuilder().oppfolgingsperiodeId(mockBruker.oppfolgingsperiodeId).build()
+        val opprettetAktivitet = aktivitetTestService.opprettAktivitetViaHttp(mockBruker, mockBruker, aktivitet)
+        val aktivitetIdParam = "\$aktivitetId"
+        val query = """
+            query($aktivitetIdParam: String!) {
+                aktivitet(aktivitetId: $aktivitetIdParam) {
+                    portefoljeKafkaOffsetAiven
+                }
+            }
+        """.trimIndent().replace("\n", "")
+        val result = aktivitetTestService.queryHistorikk(mockBruker, mockVeileder, query, opprettetAktivitet.id)
+        assertThat(result.errors).isNull()
+        assertThat(result.data?.aktivitet?.portefoljeKafkaOffsetAiven).isNull()
+    }
+
+    @Test
     fun `skal serialisere datoer riktig (aktivitet)`() {
         // riktig:  "2024-04-30T22:00:00.000+00:00"
         // feil:    "2024-05-01T00:00+02:00"

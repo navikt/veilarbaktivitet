@@ -61,6 +61,10 @@ public class AktivitetService {
                 .withFhoId(fho == null ? null : fho.getId());
     }
 
+    public Long hentPortefoljeKafkaOffsetAiven(long aktivitetId, long versjon) {
+        return aktivitetDAO.hentPortefoljeKafkaOffsetAiven(aktivitetId, versjon);
+    }
+
     public AktivitetData hentAktivitetVersjon(long aktivitetId, long versjon) {
         return aktivitetDAO.hentAktivitetVersion(aktivitetId, versjon);
     }

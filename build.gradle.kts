@@ -3,7 +3,7 @@ val tomcat_version = "11.0.26"
 
 extra["tomcat.version"] = tomcat_version
 val common_version = "4.2026.09.23_07.02-f1a6cba53f1d"
-val dab_common_version = "2026.07.10-08.33.e44ba88b2998"
+val dab_common_version = "2026.09.25-13.28.46942f27c0f0"
 val poao_tilgang_version = "4.2026.09.14_09.01-2100e3faec2d"
 val shedlock_version = "7.10.1"
 val avroVersion = "1.12.2"

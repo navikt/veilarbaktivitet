@@ -42,6 +42,7 @@ public class AktivitetDTO {
     private AktivitetTransaksjonsType transaksjonsType;
     private String malid;
     private UUID oppfolgingsperiodeId;
+    private Long portefoljeKafkaOffsetAiven;
 
     // stillingaktivitet
     private EtikettTypeDTO etikett;
