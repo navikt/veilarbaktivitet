@@ -5,6 +5,7 @@ import no.nav.common.client.pdl.PdlClientImpl
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient
 import no.nav.common.token_client.client.TokenXOnBehalfOfTokenClient
 import no.nav.poao.dab.spring_auth.IAuthService
+import no.nav.veilarbaktivitet.config.OboTokenTidtaker
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -22,13 +23,19 @@ open class PdlClientConfig(val authService: IAuthService) {
     private val pdlTokenscopeTokenX: String? = null
 
     @Bean
-    open fun pdlClient(azureTokenClient: AzureAdOnBehalfOfTokenClient, tokenXTokenClient: TokenXOnBehalfOfTokenClient): PdlClient {
+    open fun pdlClient(
+        azureTokenClient: AzureAdOnBehalfOfTokenClient,
+        tokenXTokenClient: TokenXOnBehalfOfTokenClient,
+        oboTokenTidtaker: OboTokenTidtaker,
+    ): PdlClient {
         val tokenClientSupplier = {
-            val (tokenClient, tokenScope) = when (authService.erInternBruker()) {
-                true -> Pair(azureTokenClient, pdlTokenscope)
-                false -> Pair(tokenXTokenClient, pdlTokenscopeTokenX)
+            val (tokenClient, tokenScope, leverandor) = when (authService.erInternBruker()) {
+                true -> Triple(azureTokenClient, pdlTokenscope, "azure")
+                false -> Triple(tokenXTokenClient, pdlTokenscopeTokenX, "tokenx")
             }
-            tokenClient.exchangeOnBehalfOfToken(tokenScope, authService.getInnloggetBrukerToken())
+            oboTokenTidtaker.taTidPaaHentingAvToken(tilTjeneste = "pdl", leverandor = leverandor) {
+                tokenClient.exchangeOnBehalfOfToken(tokenScope, authService.getInnloggetBrukerToken())
+            }
         }
         return PdlClientImpl(pdlUrl, tokenClientSupplier, "B579")
     }
