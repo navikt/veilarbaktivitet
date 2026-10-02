@@ -188,6 +188,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-kafka")
     implementation("org.springframework.kafka:spring-kafka")
     implementation("io.micrometer:micrometer-registry-prometheus")
+    implementation("io.opentelemetry:opentelemetry-api")
     implementation("org.flywaydb:flyway-database-postgresql")
     implementation("org.postgresql:postgresql")
     implementation("tools.jackson.core:jackson-core")
