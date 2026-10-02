@@ -137,9 +137,6 @@ spec:
         name: aktivitet_metrikker
         permission: READWRITE
   env:
-    # Egne spenn i Tempo for token-utveksling (OBO), som ikke fanges opp av auto-instrumenteringen
-    - name: OTEL_INSTRUMENTATION_METHODS_INCLUDE
-      value: "no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient[exchangeOnBehalfOfToken];no.nav.common.token_client.client.TokenXOnBehalfOfTokenClient[exchangeOnBehalfOfToken]"
     - name: POAO_TILGANG_SCOPE
       value: api://dev-gcp.poao.poao-tilgang/.default
     - name: POAO_TILGANG_URL
