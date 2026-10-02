@@ -7,7 +7,7 @@ import io.opentelemetry.api.trace.StatusCode
 import org.springframework.stereotype.Component
 
 /**
- * Midlertidig: tar tiden på henting av OBO-token (on-behalf-of) fra Azure AD / TokenX
+ * Tar tiden på henting av OBO-token (on-behalf-of) fra Azure AD / TokenX
  * før vi kaller en annen tjeneste, for å påvise hvor mye tid dette tar.
  *
  * Gir eget spenn i Tempo («hent OBO-token til <tjeneste>») og Prometheus-histogrammet
