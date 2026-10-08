@@ -1,8 +1,11 @@
 package no.nav.veilarbaktivitet.aktivitet
 
+import java.time.ZonedDateTime
+import java.time.temporal.ChronoUnit
 import no.nav.common.json.JsonUtils
 import no.nav.veilarbaktivitet.SpringBootTestBase
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO
+import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions
 import no.nav.veilarbaktivitet.oversikten.OversiktenMelding
 import no.nav.veilarbaktivitet.oversikten.OversiktenMeldingMedMetadataDAO
 import no.nav.veilarbaktivitet.oversikten.UtsendingStatus
@@ -13,8 +16,6 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
-import java.time.ZonedDateTime
-import java.time.temporal.ChronoUnit
 
 internal class AktivitetsplanControllerTest: SpringBootTestBase() {
 
@@ -65,6 +66,25 @@ internal class AktivitetsplanControllerTest: SpringBootTestBase() {
     fun veileder_uten_tilgang_skal_ikke_kunne_opprette_aktiviteter_på_bruker() {
         val happyBruker = navMockService.createBruker()
         val veileder = navMockService.createVeileder()
+        val aktivitetPayloadJson = JsonUtils.toJson(AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.EGEN))
+        veileder
+            .createRequest(happyBruker)
+            .and()
+            .body(aktivitetPayloadJson)
+            .`when`()
+            .post("http://localhost:$port/veilarbaktivitet/api/aktivitet/${happyBruker.oppfolgingsperiodeId}/ny")
+            .then()
+            .assertThat()
+            .statusCode(HttpStatus.FORBIDDEN.value())
+    }
+
+    @Test
+    fun veileder_uten_tilgang_til_bruker_med_kvp_skal_ikke_kunne_opprette_aktiviteter_på_bruker() {
+        val happyBruker = navMockService.createBruker()
+        val kvpOptions: BrukerOptions = happyBruker.brukerOptions.toBuilder().erUnderKvp(true).build()
+        navMockService.updateBruker(happyBruker, kvpOptions)
+
+        val veileder = navMockService.createVeilederMedNasjonalTilgang()
         val aktivitetPayloadJson = JsonUtils.toJson(AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.EGEN))
         veileder
             .createRequest(happyBruker)
