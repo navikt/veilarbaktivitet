@@ -1,5 +1,8 @@
 package no.nav.veilarbaktivitet.aktivitet
 
+import java.util.Arrays
+import java.util.Optional
+import kotlin.jvm.optionals.getOrNull
 import lombok.extern.slf4j.Slf4j
 import no.nav.common.types.identer.EnhetId
 import no.nav.poao.dab.spring_a2_annotations.auth.AuthorizeFnr
@@ -16,12 +19,18 @@ import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDataMapperService
 import no.nav.veilarbaktivitet.aktivitetskort.MigreringService
 import no.nav.veilarbaktivitet.config.AktivitetResource
 import no.nav.veilarbaktivitet.config.OppfolgingsperiodeResource
-import no.nav.veilarbaktivitet.eventsLogger.BigQueryClient
+import no.nav.veilarbaktivitet.kvp.KvpService
 import no.nav.veilarbaktivitet.person.UserInContext
 import org.springframework.http.HttpStatus
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.server.ResponseStatusException
-import java.util.*
 
 @Slf4j
 @RestController
@@ -32,7 +41,7 @@ class AktivitetsplanController(
     private val aktivitetDataMapperService: AktivitetDataMapperService,
     private val userInContext: UserInContext,
     private val migreringService: MigreringService,
-    private val bigQueryClient: BigQueryClient
+    private val kvpService: KvpService,
 ) {
     @Deprecated("Bruk graphql endepunkt")
     @GetMapping
@@ -80,6 +89,9 @@ class AktivitetsplanController(
         @RequestBody aktivitet: AktivitetDTO,
         @RequestParam(required = false, defaultValue = "false") automatisk: Boolean
     ): AktivitetDTO {
+        if (authService.erInternBruker()) {
+            sjekkKvpTilgangTilPerson()
+        }
         return aktivitetDataMapperService.mapTilOpprettAktivitetData(aktivitet, automatisk)
             .let { aktivitetData -> appService.opprettNyAktivitet(aktivitetData) }
             .let { a -> AktivitetDTOMapper.mapTilAktivitetDTO(a, authService.erEksternBruker()) }
@@ -148,5 +160,16 @@ class AktivitetsplanController(
 
     private fun filtrerKontorsperret(aktivitet: AktivitetData): Boolean {
         return aktivitet.kontorsperreEnhetId == null || authService.harTilgangTilEnhet(EnhetId.of(aktivitet.kontorsperreEnhetId))
+    }
+
+    private fun sjekkKvpTilgangTilPerson() {
+        val aktorId = userInContext.getAktorId()
+        val kontorsperreEnhet = kvpService.getKontorSperreEnhet(aktorId)?.getOrNull()
+
+        kontorsperreEnhet?.let {
+            if (!authService.harTilgangTilEnhet(it)) {
+                throw ResponseStatusException(HttpStatus.FORBIDDEN, "Veileder har ikke tilgang til bruker med KVP")
+            }
+        }
     }
 }

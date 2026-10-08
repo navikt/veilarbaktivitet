@@ -78,7 +78,7 @@ class AktivitetOpprettOgOppdaterFlowTest {
         aktivitetService = AktivitetService(aktivitetDAO, avtaltMedNavService, metricService, sistePeriodeService, oversiktenService)
         appService = AktivitetAppService(authService, aktivitetService, metricService, personService, bigQueryClient, oversiktenService)
         mapperService = AktivitetDataMapperService(authService, aktorOppslagClient, userInContext, kvpService, oppfolgingsperiodeService)
-        controller = AktivitetsplanController(authService, appService, mapperService, userInContext, migreringService, bigQueryClient)
+        controller = AktivitetsplanController(authService, appService, mapperService, userInContext, migreringService, kvpService)
     }
 
     private fun setupNavBrukerContext() {
