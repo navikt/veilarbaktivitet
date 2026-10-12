@@ -40,6 +40,7 @@ public class KvpAvsluttetKafkaConsumer extends no.nav.common.kafka.consumer.util
         Person.AktorId aktorId = Person.aktorId(kvpAvsluttetDto.getAktorId());
         String begrunnelse = kvpAvsluttetDto.getAvsluttetBegrunnelse();
         Date sluttDato = new Date(kvpAvsluttetDto.getAvsluttetDato().toInstant().toEpochMilli());
+
         kvpService.settAktiviteterInomKVPPeriodeTilAvbrutt(aktorId, begrunnelse, sluttDato);
 
         return ConsumeStatus.OK;
