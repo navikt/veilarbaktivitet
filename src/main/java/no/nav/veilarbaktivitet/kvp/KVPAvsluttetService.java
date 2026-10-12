@@ -18,6 +18,11 @@ public class KVPAvsluttetService {
     private final AktivitetDAO aktivitetDAO;
     private final OversiktenService oversiktenService;
 
+    public boolean finnesAktivitetMedKontorsperreEnhet(Person.AktorId aktoerId, String kontorsperreEnhetId) {
+        return aktivitetDAO.hentAktiviteterForAktorId(aktoerId).stream()
+                .anyMatch(aktivitet -> kontorsperreEnhetId.equals(aktivitet.getKontorsperreEnhetId()) && erAktiv(aktivitet));
+    }
+
     public void settAktiviteterInomKVPPeriodeTilAvbrutt(Person.AktorId aktoerId, String avsluttetBegrunnelse, Date avsluttetDato) {
         aktivitetDAO.hentAktiviteterForAktorId(aktoerId).stream()
                 .filter(this::filtrerKontorSperretOgStatusErIkkeAvBruttEllerFullfort)
@@ -36,8 +41,12 @@ public class KVPAvsluttetService {
 
 
     private boolean filtrerKontorSperretOgStatusErIkkeAvBruttEllerFullfort(AktivitetData aktivitetData) {
+        return aktivitetData.getKontorsperreEnhetId() != null && erAktiv(aktivitetData);
+    }
+
+    private boolean erAktiv(AktivitetData aktivitetData) {
         var aktivitetStatus = aktivitetData.getStatus();
-        return aktivitetData.getKontorsperreEnhetId() != null && !(aktivitetStatus.equals(AktivitetStatus.AVBRUTT) || aktivitetStatus.equals(AktivitetStatus.FULLFORT));
+        return aktivitetStatus != AktivitetStatus.AVBRUTT && aktivitetStatus != AktivitetStatus.FULLFORT;
     }
 
     private boolean filtrerEksterneAktiviteter(AktivitetData aktivitetData) {

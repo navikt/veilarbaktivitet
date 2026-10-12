@@ -44,11 +44,22 @@ class KvpPerioderKafkaConsumerTest : SpringBootTestBase() {
     }
 
     @Test
-    fun `skal avbryte aktiviteter ved avsluttet hendelse`() {
+    fun `skal avbryte aktiviteter ved avsluttet hendelse fra ny topic`() {
         val aktivitet = aktivitetTestService.opprettAktivitetViaHttp(mockBruker, AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.EGEN))
         assertThat(aktivitet.status).isEqualTo(AktivitetStatus.PLANLAGT)
 
         publiserKvpPerioderHendelse(kvpAvsluttet("c5b85f02-0d8e-42d7-af4f-d8f10af6f71e", ZonedDateTime.now().plusMinutes(1)))
+
+        val oppdatertAktivitet = aktivitetTestService.hentAktivitet(mockBruker, aktivitet.id)
+        assertThat(oppdatertAktivitet.status).isEqualTo(AktivitetStatus.AVBRUTT)
+    }
+
+    @Test
+    fun `skal avbryte aktiviteter ved avsluttet hendelse fra gammel topic`() {
+        val aktivitet = aktivitetTestService.opprettAktivitetViaHttp(mockBruker, AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.EGEN))
+        assertThat(aktivitet.status).isEqualTo(AktivitetStatus.PLANLAGT)
+
+        publiserKvpAvsluttetHendelse(lagGammelAvsluttetHendelse( ZonedDateTime.now().plusMinutes(1)))
 
         val oppdatertAktivitet = aktivitetTestService.hentAktivitet(mockBruker, aktivitet.id)
         assertThat(oppdatertAktivitet.status).isEqualTo(AktivitetStatus.AVBRUTT)
@@ -66,28 +77,23 @@ class KvpPerioderKafkaConsumerTest : SpringBootTestBase() {
     }
 
     @Test
-    fun `skal deduplisere avsluttet mellom gammel og ny topic`() {
+    fun `skal handtere avsluttet mellom gammel og ny topic uten sideeffekt`() {
         val aktivitet = aktivitetTestService.opprettAktivitetViaHttp(mockBruker, AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.EGEN))
         val avsluttetDato = ZonedDateTime.now().plusMinutes(1)
+        val kontorsperreEnhetId = hentKontorsperreEnhetId(aktivitet.id.toLong())
 
         publiserKvpAvsluttetHendelse(lagGammelAvsluttetHendelse(avsluttetDato))
-        publiserKvpPerioderHendelse(kvpAvsluttet("f3efe6c2-04f5-4693-aa4d-87345ec5ac71", avsluttetDato))
+        publiserKvpPerioderHendelse(kvpAvsluttet("f3efe6c2-04f5-4693-aa4d-87345ec5ac71", avsluttetDato, kontorsperreEnhetId))
 
-        val dedupKey = "AVSLUTTET:${mockBruker.aktorId.get()}:${avsluttetDato.toInstant().toEpochMilli()}"
-        assertThat(hentAntallProsesserteHendelser(dedupKey)).isEqualTo(1)
         assertThat(aktivitetTestService.hentAktivitet(mockBruker, aktivitet.id).status).isEqualTo(AktivitetStatus.AVBRUTT)
     }
 
     @Test
-    fun `skal deduplisere startet på ny topic`() {
+    fun `skal ikke avslutte aktivitet nar enhet ikke matcher kontorsperre`() {
         val aktivitet = aktivitetTestService.opprettAktivitetViaHttp(mockBruker, AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.EGEN))
-        val startetDato = ZonedDateTime.now()
+        val avsluttetDato = ZonedDateTime.now().plusMinutes(1)
 
-        publiserKvpPerioderHendelse(kvpStartet("f0e4d76a-46e0-4de9-ab13-12d9d924dc9c", startetDato))
-        publiserKvpPerioderHendelse(kvpStartet("3d11f675-44a8-48d5-80da-df264f2d498a", startetDato))
-
-        val dedupKey = "STARTET:${mockBruker.aktorId.get()}:${startetDato.toInstant().toEpochMilli()}"
-        assertThat(hentAntallProsesserteHendelser(dedupKey)).isEqualTo(1)
+        publiserKvpPerioderHendelse(kvpAvsluttet("db0bbdcf-1f70-46b0-bbff-7b5f2aaae117", avsluttetDato, "9999"))
         assertThat(aktivitetTestService.hentAktivitet(mockBruker, aktivitet.id).status).isEqualTo(AktivitetStatus.PLANLAGT)
     }
 
@@ -100,12 +106,13 @@ class KvpPerioderKafkaConsumerTest : SpringBootTestBase() {
         }
     }
 
-    private fun kvpAvsluttet(uuid: String, avsluttetDato: ZonedDateTime): KvpPerioderKafkaDTO {
+    private fun kvpAvsluttet(uuid: String, avsluttetDato: ZonedDateTime, enhetId: String? = null): KvpPerioderKafkaDTO {
         return KvpPerioderKafkaDTO().apply {
             this.uuid = uuid
             aktorId = mockBruker.aktorId.get()
             event = KvpPeriodeEvent.AVSLUTTET
             avsluttet = avsluttetDato
+            this.enhetId = enhetId
         }
     }
 
@@ -126,11 +133,11 @@ class KvpPerioderKafkaConsumerTest : SpringBootTestBase() {
         kafkaTestService.assertErKonsumert(kvpAvsluttetTopic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, offset)
     }
 
-    private fun hentAntallProsesserteHendelser(dedupKey: String): Int {
+    private fun hentKontorsperreEnhetId(aktivitetId: Long): String {
         return jdbcTemplate.queryForObject(
-            "SELECT COUNT(*) FROM KVP_HENDELSE_PROSESSERT WHERE DEDUP_KEY = ?",
-            Int::class.java,
-            dedupKey
-        ) ?: 0
+            "SELECT kontorsperre_enhet_id FROM AKTIVITET WHERE aktivitet_id = ? AND gjeldende = 1",
+            String::class.java,
+            aktivitetId
+        )!!
     }
 }

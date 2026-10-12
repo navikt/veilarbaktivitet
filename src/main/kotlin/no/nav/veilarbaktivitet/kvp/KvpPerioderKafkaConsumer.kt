@@ -9,12 +9,11 @@ import no.nav.veilarbaktivitet.person.Person
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
-import java.util.Date
+import java.util.*
 
 @Service
 class KvpPerioderKafkaConsumer(
     private val kvpAvsluttetService: KVPAvsluttetService,
-    private val dedupService: KvpHendelseDedupService,
     @Value("\${topic.inn.kvpPerioder}")
     topic: String
 ) : TopicConsumerConfig<String, KvpPerioderKafkaDTO>(), TopicConsumer<String, KvpPerioderKafkaDTO> {
@@ -34,28 +33,23 @@ class KvpPerioderKafkaConsumer(
         val melding = consumerRecord.value()
         val aktorId = Person.aktorId(melding.aktorId)
 
-        if (melding.event == KvpPeriodeEvent.STARTET) {
-            val startetDato = melding.hentStartTidspunkt()
-                .map { zonedDateTime -> Date.from(zonedDateTime.toInstant()) }
-                .orElseThrow { IllegalArgumentException("Mangler startDato/startet for KVP STARTET") }
+        when (melding.event) {
+            KvpPeriodeEvent.STARTET -> return ConsumeStatus.OK
+            KvpPeriodeEvent.AVSLUTTET -> {
+                val sluttDato = melding.hentSluttTidspunkt()
+                    .map { zonedDateTime -> Date.from(zonedDateTime.toInstant()) }
+                    .orElseThrow { IllegalArgumentException("Mangler sluttDato/avsluttet for KVP AVSLUTTET") }
 
-            dedupService.reserverStartetHendelse(aktorId, startetDato)
-            return ConsumeStatus.OK
-        }
+                val kontorsperreEnhetId = melding.enhetId
+                val finnesAktiveAktiviteterMedKontorsperre = kvpAvsluttetService.finnesAktivitetMedKontorsperreEnhet(aktorId, kontorsperreEnhetId)
+                if (kontorsperreEnhetId != null && !finnesAktiveAktiviteterMedKontorsperre) {
+                    return ConsumeStatus.OK
+                }
 
-        if (melding.event == KvpPeriodeEvent.AVSLUTTET) {
-            val sluttDato = melding.hentSluttTidspunkt()
-                .map { zonedDateTime -> Date.from(zonedDateTime.toInstant()) }
-                .orElseThrow { IllegalArgumentException("Mangler sluttDato/avsluttet for KVP AVSLUTTET") }
-
-            if (!dedupService.reserverAvsluttetHendelse(aktorId, sluttDato)) {
+                kvpAvsluttetService.settAktiviteterInomKVPPeriodeTilAvbrutt(aktorId, STANDARD_AVSLUTTET_BEGRUNNELSE, sluttDato)
                 return ConsumeStatus.OK
             }
-
-            kvpAvsluttetService.settAktiviteterInomKVPPeriodeTilAvbrutt(aktorId, STANDARD_AVSLUTTET_BEGRUNNELSE, sluttDato)
-            return ConsumeStatus.OK
+            null -> throw IllegalArgumentException("Ukjent KVP event: ${melding.event}")
         }
-
-        throw IllegalArgumentException("Ukjent KVP event: ${melding.event}")
     }
 }
