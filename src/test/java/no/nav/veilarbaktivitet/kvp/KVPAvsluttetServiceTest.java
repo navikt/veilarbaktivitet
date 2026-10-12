@@ -80,7 +80,7 @@ public class KVPAvsluttetServiceTest {
 
         when(aktivitetDAO.hentAktiviteterForAktorId(aktorId)).thenReturn(List.of(avbruttAktivitet, fullfortAktivitet));
 
-        assertThat(kvpService.finnesAktivitetMedKontorsperreEnhet(aktorId)).isFalse();
+        assertThat(kvpService.finnesAktivAktivitetMedKontorsperreEnhet(aktorId)).isFalse();
     }
 
     @Test
@@ -95,6 +95,6 @@ public class KVPAvsluttetServiceTest {
 
         when(aktivitetDAO.hentAktiviteterForAktorId(aktorId)).thenReturn(List.of(planlagtAktivitet));
 
-        assertThat(kvpService.finnesAktivitetMedKontorsperreEnhet(aktorId)).isTrue();
+        assertThat(kvpService.finnesAktivAktivitetMedKontorsperreEnhet(aktorId)).isTrue();
     }
 }

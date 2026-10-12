@@ -19,7 +19,7 @@ public class KVPAvsluttetService {
     private final AktivitetDAO aktivitetDAO;
     private final OversiktenService oversiktenService;
 
-    public boolean finnesAktivitetMedKontorsperreEnhet(Person.AktorId aktoerId) {
+    public boolean finnesAktivAktivitetMedKontorsperreEnhet(Person.AktorId aktoerId) {
         return aktivitetDAO.hentAktiviteterForAktorId(aktoerId).stream()
                 .anyMatch(aktivitet -> aktivitet.getKontorsperreEnhetId() != null && erAktiv(aktivitet));
     }
@@ -42,7 +42,7 @@ public class KVPAvsluttetService {
 
     public void håndterKvpAvsluttet(Person.AktorId aktoerId, Optional<String> begrunnelse, Optional<Date> sluttDato) {
         Date kvpAvsluttetTidspunkt = sluttDato.orElseThrow(() -> new IllegalArgumentException("Mangler sluttDato/avsluttet for KVP AVSLUTTET"));
-        boolean finnesAktivitetMedKontorSperrePåBruker = finnesAktivitetMedKontorsperreEnhet(aktoerId);
+        boolean finnesAktivitetMedKontorSperrePåBruker = finnesAktivAktivitetMedKontorsperreEnhet(aktoerId);
         if (!finnesAktivitetMedKontorSperrePåBruker) {
             return;
         }
