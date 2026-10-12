@@ -12,10 +12,6 @@ import java.util.*
 class KvpPerioderKafkaConsumer(
     private val kvpAvsluttetService: KVPAvsluttetService
 ) : TopicConsumer<String, KvpPerioderKafkaDTO> {
-    companion object {
-        private const val STANDARD_AVSLUTTET_BEGRUNNELSE = "KVP avsluttet"
-    }
-
     @Timed(value = "kvp_perioder_consumer")
     override fun consume(consumerRecord: ConsumerRecord<String, KvpPerioderKafkaDTO>): ConsumeStatus {
         val melding = consumerRecord.value()
@@ -24,17 +20,10 @@ class KvpPerioderKafkaConsumer(
         when (melding.event) {
             KvpPeriodeEvent.STARTET -> return ConsumeStatus.OK
             KvpPeriodeEvent.AVSLUTTET -> {
-                val sluttDato = melding.hentSluttTidspunkt()
-                    .map { zonedDateTime -> Date.from(zonedDateTime.toInstant()) }
+                val sluttDato = melding.hentSluttTidspunkt().map { zonedDateTime -> Date.from(zonedDateTime.toInstant()) }
                     .orElseThrow { IllegalArgumentException("Mangler sluttDato/avsluttet for KVP AVSLUTTET") }
 
-                val kontorsperreEnhetId = melding.enhetId
-                val finnesAktivitetMedKontorSperrePåBruker = kvpAvsluttetService.finnesAktivitetMedKontorsperreEnhet(aktorId, kontorsperreEnhetId)
-                if (kontorsperreEnhetId != null && !finnesAktivitetMedKontorSperrePåBruker) {
-                    return ConsumeStatus.OK
-                }
-
-                kvpAvsluttetService.settAktiviteterInomKVPPeriodeTilAvbrutt(aktorId, STANDARD_AVSLUTTET_BEGRUNNELSE, sluttDato)
+                kvpAvsluttetService.håndterKvpAvsluttet(aktorId, Optional.empty(), Optional.of(sluttDato))
                 return ConsumeStatus.OK
             }
             null -> throw IllegalArgumentException("Ukjent KVP event: ${melding.event}")

@@ -17,6 +17,7 @@ import org.mockito.MockitoAnnotations;
 import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.util.DateUtil.now;
@@ -56,7 +57,7 @@ public class KVPAvsluttetServiceTest {
 
         when(aktivitetDAO.hentAktiviteterForAktorId(aktorId)).thenReturn(List.of(aktivitet));
 
-        kvpService.settAktiviteterInomKVPPeriodeTilAvbrutt(aktorId, "ferdig kvp", now());
+        kvpService.håndterKvpAvsluttet(aktorId, Optional.of("ferdig kvp"), Optional.of(now()));
 
         verify(oversiktenService).lagreStoppMeldingOmUdeltSamtalereferatIUtboks(aktorId, aktivitetId);
         verify(aktivitetDAO).oppdaterAktivitet(any());
@@ -79,7 +80,7 @@ public class KVPAvsluttetServiceTest {
 
         when(aktivitetDAO.hentAktiviteterForAktorId(aktorId)).thenReturn(List.of(avbruttAktivitet, fullfortAktivitet));
 
-        assertThat(kvpService.finnesAktivitetMedKontorsperreEnhet(aktorId, "9001")).isFalse();
+        assertThat(kvpService.finnesAktivitetMedKontorsperreEnhet(aktorId)).isFalse();
     }
 
     @Test
@@ -94,6 +95,6 @@ public class KVPAvsluttetServiceTest {
 
         when(aktivitetDAO.hentAktiviteterForAktorId(aktorId)).thenReturn(List.of(planlagtAktivitet));
 
-        assertThat(kvpService.finnesAktivitetMedKontorsperreEnhet(aktorId, "9001")).isTrue();
+        assertThat(kvpService.finnesAktivitetMedKontorsperreEnhet(aktorId)).isTrue();
     }
 }

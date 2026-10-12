@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.kafka.core.KafkaTemplate
 import java.time.ZonedDateTime
+import java.util.*
 import java.util.concurrent.TimeUnit
 
 class KvpPerioderKafkaConsumerTest : SpringBootTestBase() {
@@ -74,7 +75,7 @@ class KvpPerioderKafkaConsumerTest : SpringBootTestBase() {
         assertAktivitetHarForventetKontorsperreEnhet(aktivitet.id.toLong(), kvpEnhetId)
 
         publiserKvpPerioderHendelse(
-            kvpStartetJson("b53f68f7-3aeb-457e-a66f-6dd6c3bc8e31", ZonedDateTime.now())
+            kvpStartetJson(UUID.randomUUID().toString(), ZonedDateTime.now())
         )
 
         val oppdatertAktivitet = aktivitetTestService.hentAktivitet(mockBrukerMedKvp, aktivitet.id)
@@ -82,7 +83,7 @@ class KvpPerioderKafkaConsumerTest : SpringBootTestBase() {
     }
 
     @Test
-    fun `skal handtere avsluttet mellom gammel og ny topic uten sideeffekt`() {
+    fun `skal handtere avsluttet på både gammel og ny topic uten ekstra sideeffekt`() {
         val aktivitet = aktivitetTestService.opprettAktivitetViaHttp(mockBrukerMedKvp, AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.EGEN))
         val avsluttetDato = ZonedDateTime.now().plusMinutes(1)
         val kontorsperreEnhetId = hentKontorsperreEnhetId(aktivitet.id.toLong())
@@ -90,22 +91,10 @@ class KvpPerioderKafkaConsumerTest : SpringBootTestBase() {
 
         publiserKvpAvsluttetHendelse(kvpAvsluttetGammelJson(avsluttetDato))
         publiserKvpPerioderHendelse(
-            kvpAvsluttetJson("f3efe6c2-04f5-4693-aa4d-87345ec5ac71", avsluttetDato, kontorsperreEnhetId)
+            kvpAvsluttetJson(UUID.randomUUID().toString(), avsluttetDato, kontorsperreEnhetId)
         )
 
         assertThat(aktivitetTestService.hentAktivitet(mockBrukerMedKvp, aktivitet.id).status).isEqualTo(AktivitetStatus.AVBRUTT)
-    }
-
-    @Test
-    fun `skal ikke avslutte aktivitet nar enhet ikke matcher kontorsperre`() {
-        val aktivitet = aktivitetTestService.opprettAktivitetViaHttp(mockBrukerMedKvp, AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.EGEN))
-        val avsluttetDato = ZonedDateTime.now().plusMinutes(1)
-        assertAktivitetHarForventetKontorsperreEnhet(aktivitet.id.toLong(), kvpEnhetId)
-
-        publiserKvpPerioderHendelse(
-            kvpAvsluttetJson("db0bbdcf-1f70-46b0-bbff-7b5f2aaae117", avsluttetDato, "9999")
-        )
-        assertThat(aktivitetTestService.hentAktivitet(mockBrukerMedKvp, aktivitet.id).status).isEqualTo(AktivitetStatus.PLANLAGT)
     }
 
     private fun kvpStartetJson(uuid: String, startetDato: ZonedDateTime): String {

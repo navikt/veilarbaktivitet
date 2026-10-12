@@ -11,6 +11,7 @@ import no.nav.veilarbaktivitet.person.Person;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -18,17 +19,17 @@ public class KVPAvsluttetService {
     private final AktivitetDAO aktivitetDAO;
     private final OversiktenService oversiktenService;
 
-    public boolean finnesAktivitetMedKontorsperreEnhet(Person.AktorId aktoerId, String kontorsperreEnhetId) {
+    public boolean finnesAktivitetMedKontorsperreEnhet(Person.AktorId aktoerId) {
         return aktivitetDAO.hentAktiviteterForAktorId(aktoerId).stream()
-                .anyMatch(aktivitet -> kontorsperreEnhetId.equals(aktivitet.getKontorsperreEnhetId()) && erAktiv(aktivitet));
+                .anyMatch(aktivitet -> aktivitet.getKontorsperreEnhetId() != null && erAktiv(aktivitet));
     }
 
-    public void settAktiviteterInomKVPPeriodeTilAvbrutt(Person.AktorId aktoerId, String avsluttetBegrunnelse, Date avsluttetDato) {
+    private void settAktiviteterInomKVPPeriodeTilAvbrutt(Person.AktorId aktoerId, String avsluttetBegrunnelse, Date kvpAvsluttetTidspunkt) {
         aktivitetDAO.hentAktiviteterForAktorId(aktoerId).stream()
                 .filter(this::filtrerKontorSperretOgStatusErIkkeAvBruttEllerFullfort)
                 .filter(this::filtrerEksterneAktiviteter)
-                .filter(aktivitet -> aktivitet.getOpprettetDato().before(avsluttetDato))
-                .map(aktivitet -> settKVPAktivitetTilAvbrutt(aktivitet, avsluttetBegrunnelse, avsluttetDato))
+                .filter(aktivitet -> aktivitet.getOpprettetDato().before(kvpAvsluttetTidspunkt))
+                .map(aktivitet -> settKVPAktivitetTilAvbrutt(aktivitet, avsluttetBegrunnelse, kvpAvsluttetTidspunkt))
                 .forEach(oppdatertAktivitet -> {
                     aktivitetDAO.oppdaterAktivitet(oppdatertAktivitet);
 
@@ -37,6 +38,15 @@ public class KVPAvsluttetService {
                         );
                     }
                 });
+    }
+
+    public void håndterKvpAvsluttet(Person.AktorId aktoerId, Optional<String> begrunnelse, Optional<Date> sluttDato) {
+        Date kvpAvsluttetTidspunkt = sluttDato.orElseThrow(() -> new IllegalArgumentException("Mangler sluttDato/avsluttet for KVP AVSLUTTET"));
+        boolean finnesAktivitetMedKontorSperrePåBruker = finnesAktivitetMedKontorsperreEnhet(aktoerId);
+        if (!finnesAktivitetMedKontorSperrePåBruker) {
+            return;
+        }
+        settAktiviteterInomKVPPeriodeTilAvbrutt(aktoerId, begrunnelse.orElse("KVP avsluttet"), kvpAvsluttetTidspunkt);
     }
 
 
