@@ -4,7 +4,6 @@ import no.nav.veilarbaktivitet.SpringBootTestBase
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO
 import no.nav.veilarbaktivitet.config.kafka.NavCommonKafkaConfig
-import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaJsonTemplate
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder
@@ -13,8 +12,8 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.kafka.core.KafkaTemplate
 import java.time.ZonedDateTime
 import java.util.concurrent.TimeUnit
 
@@ -23,12 +22,7 @@ class KvpPerioderKafkaConsumerTest : SpringBootTestBase() {
     private lateinit var mockVeileder: MockVeileder
 
     @Autowired
-    @Qualifier("navCommonKafkaJsonTemplate")
-    private lateinit var navCommonKafkaJsonTemplate: KafkaJsonTemplate<KvpPerioderKafkaDTO>
-
-    @Autowired
-    @Qualifier("navCommonKafkaJsonTemplate")
-    private lateinit var kvpAvsluttetKafkaJsonTemplate: KafkaJsonTemplate<KvpAvsluttetKafkaDTO>
+    private lateinit var producer: KafkaTemplate<String, String>
 
     @Value("\${topic.inn.kvpPerioder}")
     private lateinit var kvpPerioderTopic: String
@@ -48,7 +42,9 @@ class KvpPerioderKafkaConsumerTest : SpringBootTestBase() {
         val aktivitet = aktivitetTestService.opprettAktivitetViaHttp(mockBruker, AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.EGEN))
         assertThat(aktivitet.status).isEqualTo(AktivitetStatus.PLANLAGT)
 
-        publiserKvpPerioderHendelse(kvpAvsluttet("c5b85f02-0d8e-42d7-af4f-d8f10af6f71e", ZonedDateTime.now().plusMinutes(1)))
+        publiserKvpPerioderHendelse(
+            kvpAvsluttetJson("c5b85f02-0d8e-42d7-af4f-d8f10af6f71e", ZonedDateTime.now().plusMinutes(1))
+        )
 
         val oppdatertAktivitet = aktivitetTestService.hentAktivitet(mockBruker, aktivitet.id)
         assertThat(oppdatertAktivitet.status).isEqualTo(AktivitetStatus.AVBRUTT)
@@ -59,7 +55,7 @@ class KvpPerioderKafkaConsumerTest : SpringBootTestBase() {
         val aktivitet = aktivitetTestService.opprettAktivitetViaHttp(mockBruker, AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.EGEN))
         assertThat(aktivitet.status).isEqualTo(AktivitetStatus.PLANLAGT)
 
-        publiserKvpAvsluttetHendelse(lagGammelAvsluttetHendelse( ZonedDateTime.now().plusMinutes(1)))
+        publiserKvpAvsluttetHendelse(kvpAvsluttetGammelJson(ZonedDateTime.now().plusMinutes(1)))
 
         val oppdatertAktivitet = aktivitetTestService.hentAktivitet(mockBruker, aktivitet.id)
         assertThat(oppdatertAktivitet.status).isEqualTo(AktivitetStatus.AVBRUTT)
@@ -70,7 +66,9 @@ class KvpPerioderKafkaConsumerTest : SpringBootTestBase() {
         val aktivitet = aktivitetTestService.opprettAktivitetViaHttp(mockBruker, AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.EGEN))
         assertThat(aktivitet.status).isEqualTo(AktivitetStatus.PLANLAGT)
 
-        publiserKvpPerioderHendelse(kvpStartet("b53f68f7-3aeb-457e-a66f-6dd6c3bc8e31", ZonedDateTime.now()))
+        publiserKvpPerioderHendelse(
+            kvpStartetJson("b53f68f7-3aeb-457e-a66f-6dd6c3bc8e31", ZonedDateTime.now())
+        )
 
         val oppdatertAktivitet = aktivitetTestService.hentAktivitet(mockBruker, aktivitet.id)
         assertThat(oppdatertAktivitet.status).isEqualTo(AktivitetStatus.PLANLAGT)
@@ -82,8 +80,10 @@ class KvpPerioderKafkaConsumerTest : SpringBootTestBase() {
         val avsluttetDato = ZonedDateTime.now().plusMinutes(1)
         val kontorsperreEnhetId = hentKontorsperreEnhetId(aktivitet.id.toLong())
 
-        publiserKvpAvsluttetHendelse(lagGammelAvsluttetHendelse(avsluttetDato))
-        publiserKvpPerioderHendelse(kvpAvsluttet("f3efe6c2-04f5-4693-aa4d-87345ec5ac71", avsluttetDato, kontorsperreEnhetId))
+        publiserKvpAvsluttetHendelse(kvpAvsluttetGammelJson(avsluttetDato))
+        publiserKvpPerioderHendelse(
+            kvpAvsluttetJson("f3efe6c2-04f5-4693-aa4d-87345ec5ac71", avsluttetDato, kontorsperreEnhetId)
+        )
 
         assertThat(aktivitetTestService.hentAktivitet(mockBruker, aktivitet.id).status).isEqualTo(AktivitetStatus.AVBRUTT)
     }
@@ -93,43 +93,63 @@ class KvpPerioderKafkaConsumerTest : SpringBootTestBase() {
         val aktivitet = aktivitetTestService.opprettAktivitetViaHttp(mockBruker, AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.EGEN))
         val avsluttetDato = ZonedDateTime.now().plusMinutes(1)
 
-        publiserKvpPerioderHendelse(kvpAvsluttet("db0bbdcf-1f70-46b0-bbff-7b5f2aaae117", avsluttetDato, "9999"))
+        publiserKvpPerioderHendelse(
+            kvpAvsluttetJson("db0bbdcf-1f70-46b0-bbff-7b5f2aaae117", avsluttetDato, "9999")
+        )
         assertThat(aktivitetTestService.hentAktivitet(mockBruker, aktivitet.id).status).isEqualTo(AktivitetStatus.PLANLAGT)
     }
 
-    private fun kvpStartet(uuid: String, startetDato: ZonedDateTime): KvpPerioderKafkaDTO {
-        return KvpPerioderKafkaDTO().apply {
-            this.uuid = uuid
-            aktorId = mockBruker.aktorId.get()
-            event = KvpPeriodeEvent.STARTET
-            startet = startetDato
-        }
+    private fun kvpStartetJson(uuid: String, startetDato: ZonedDateTime): String {
+        val sluttDato = startetDato.plusDays(14)
+        return """
+            {
+              "uuid": "$uuid",
+              "aktorId": "${mockBruker.aktorId.get()}",
+              "event": "STARTET",
+              "enhetId": "9001",
+              "startet": "${startetDato.toOffsetDateTime()}",
+              "avsluttet": "${sluttDato.toOffsetDateTime()}",
+              "startDato": "${startetDato.toOffsetDateTime()}",
+              "sluttDato": "${sluttDato.toOffsetDateTime()}"
+            }
+        """.trimIndent()
     }
 
-    private fun kvpAvsluttet(uuid: String, avsluttetDato: ZonedDateTime, enhetId: String? = null): KvpPerioderKafkaDTO {
-        return KvpPerioderKafkaDTO().apply {
-            this.uuid = uuid
-            aktorId = mockBruker.aktorId.get()
-            event = KvpPeriodeEvent.AVSLUTTET
-            avsluttet = avsluttetDato
-            this.enhetId = enhetId
-        }
+    private fun kvpAvsluttetJson(uuid: String, avsluttetDato: ZonedDateTime, enhetId: String? = null): String {
+        val startDato = avsluttetDato.minusDays(14)
+        val enhet = enhetId ?: "9001"
+        return """
+            {
+              "uuid": "$uuid",
+              "aktorId": "${mockBruker.aktorId.get()}",
+              "event": "AVSLUTTET",
+              "enhetId": "$enhet",
+              "startet": "${startDato.toOffsetDateTime()}",
+              "avsluttet": "${avsluttetDato.toOffsetDateTime()}",
+              "startDato": "${startDato.toOffsetDateTime()}",
+              "sluttDato": "${avsluttetDato.toOffsetDateTime()}"
+            }
+        """.trimIndent()
     }
 
-    private fun lagGammelAvsluttetHendelse(avsluttetDato: ZonedDateTime): KvpAvsluttetKafkaDTO {
-        return KvpAvsluttetKafkaDTO()
-            .setAktorId(mockBruker.aktorId.get())
-            .setAvsluttetBegrunnelse("test")
-            .setAvsluttetDato(avsluttetDato)
+    private fun kvpAvsluttetGammelJson(avsluttetDato: ZonedDateTime): String {
+        return """
+            {
+              "aktorId": "${mockBruker.aktorId.get()}",
+              "avsluttetAv": "${mockVeileder.navIdent}",
+              "avsluttetDato": "${avsluttetDato.toOffsetDateTime()}",
+              "avsluttetBegrunnelse": "test"
+            }
+        """.trimIndent()
     }
 
-    private fun publiserKvpPerioderHendelse(hendelse: KvpPerioderKafkaDTO) {
-        val offset = navCommonKafkaJsonTemplate.send(kvpPerioderTopic, hendelse).get(2, TimeUnit.SECONDS).recordMetadata.offset()
+    private fun publiserKvpPerioderHendelse(rawJson: String) {
+        val offset = producer.send(kvpPerioderTopic, rawJson).get(2, TimeUnit.SECONDS).recordMetadata.offset()
         kafkaTestService.assertErKonsumert(kvpPerioderTopic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, offset)
     }
 
-    private fun publiserKvpAvsluttetHendelse(hendelse: KvpAvsluttetKafkaDTO) {
-        val offset = kvpAvsluttetKafkaJsonTemplate.send(kvpAvsluttetTopic, hendelse).get(2, TimeUnit.SECONDS).recordMetadata.offset()
+    private fun publiserKvpAvsluttetHendelse(rawJson: String) {
+        val offset = producer.send(kvpAvsluttetTopic, rawJson).get(2, TimeUnit.SECONDS).recordMetadata.offset()
         kafkaTestService.assertErKonsumert(kvpAvsluttetTopic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, offset)
     }
 
