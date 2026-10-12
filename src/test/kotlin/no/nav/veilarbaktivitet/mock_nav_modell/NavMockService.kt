@@ -3,6 +3,7 @@ package no.nav.veilarbaktivitet.mock_nav_modell
 import no.nav.common.types.identer.Fnr
 import no.nav.poao_tilgang.poao_tilgang_test_core.NavAnsatt
 import no.nav.poao_tilgang.poao_tilgang_test_core.NavContext
+import no.nav.poao_tilgang.poao_tilgang_test_core.PrivatBruker
 import no.nav.poao_tilgang.poao_tilgang_test_core.tilgjengligeAdGrupper
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeService
 import no.nav.veilarbaktivitet.oppfolging.periode.SisteOppfolgingsperiodeV1
@@ -25,9 +26,23 @@ class NavMockService(
         return createBruker(brukerOptions, fnr = null)
     }
 
+    private fun randomFnr(): String {
+        val date = (1..31).random().toString().padStart(2, '0')
+        val month = (1..12).random().toString().padStart(2, '0')
+        val year = (1..99).random().toString().padStart(2, '0')
+        val randomDigits = (1..5).map { (0..9).random() }.joinToString("")
+        return "${date}${month}${year}${randomDigits}"
+    }
+
     fun createBruker(brukerOptions: BrukerOptions = BrukerOptions.happyBruker(), fnr: Fnr? = null): MockBruker {
-        val ny = if (fnr != null) NAV_CONTEXT.privatBrukere.ny(fnr.get()) else NAV_CONTEXT.privatBrukere.ny()
-        val mockBruker = MockBruker(brukerOptions, ny)
+        val poaoPrivatBruker = PrivatBruker(
+            norskIdent = fnr?.get() ?: randomFnr(),
+            erSkjermet = false,
+            brukerOptions.oppfolgingsenhet,
+            null
+        )
+        NAV_CONTEXT.privatBrukere.add(poaoPrivatBruker)
+        val mockBruker = MockBruker(brukerOptions, poaoPrivatBruker)
         val leggTilOppfølgingsperiode = brukerOptions.isUnderOppfolging && !brukerOptions.isOppfolgingFeiler
         if (leggTilOppfølgingsperiode) {
             val oppfolgingsperiode = mockBruker.oppfolgingsperioder.first()
@@ -45,6 +60,7 @@ class NavMockService(
 
     fun updateBruker(mockBruker: MockBruker, brukerOptions: BrukerOptions) {
         mockBruker.brukerOptions = brukerOptions
+        mockBruker.privatbruker.oppfolgingsenhet = brukerOptions.oppfolgingsenhet
         WireMockUtil.stubBruker(mockBruker)
     }
 

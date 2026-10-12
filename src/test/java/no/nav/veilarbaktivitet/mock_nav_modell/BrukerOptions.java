@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.With;
 import no.nav.veilarbaktivitet.person.Navn;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 @Builder(toBuilder = true)
 @Getter
 @With
@@ -19,6 +21,7 @@ public class BrukerOptions {
     private Navn navn;
     private Long sakId;
     private String mål;
+    private String oppfolgingsenhet;
 
 
     /*
@@ -42,7 +45,13 @@ public class BrukerOptions {
                 .erUnderKvp(false)
                 .navn(new Navn("Navn", null, "Navnesen"))
                 .sakId(1000L)
-                .mål("Å få meg jobb");
+                .mål("Å få meg jobb")
+                .oppfolgingsenhet(nyOppfolgingsenhet());
 
+    }
+
+    private static String nyOppfolgingsenhet() {
+        // Avoid special-case units like 0000/9999 used in access helpers.
+        return String.valueOf(ThreadLocalRandom.current().nextInt(1000, 9000));
     }
 }
