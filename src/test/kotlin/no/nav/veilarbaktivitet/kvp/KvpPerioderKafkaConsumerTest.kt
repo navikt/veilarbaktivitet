@@ -15,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.kafka.core.KafkaTemplate
 import java.time.ZonedDateTime
-import java.util.*
 import java.util.concurrent.TimeUnit
 
 class KvpPerioderKafkaConsumerTest : SpringBootTestBase() {
@@ -49,7 +48,7 @@ class KvpPerioderKafkaConsumerTest : SpringBootTestBase() {
         assertAktivitetHarForventetKontorsperreEnhet(aktivitet.id.toLong(), kvpEnhetId)
 
         publiserKvpPerioderHendelse(
-            kvpAvsluttetJson("c5b85f02-0d8e-42d7-af4f-d8f10af6f71e", ZonedDateTime.now().plusMinutes(1))
+            kvpAvsluttetJson(ZonedDateTime.now().plusMinutes(1))
         )
 
         val oppdatertAktivitet = aktivitetTestService.hentAktivitet(mockBrukerMedKvp, aktivitet.id)
@@ -75,7 +74,7 @@ class KvpPerioderKafkaConsumerTest : SpringBootTestBase() {
         assertAktivitetHarForventetKontorsperreEnhet(aktivitet.id.toLong(), kvpEnhetId)
 
         publiserKvpPerioderHendelse(
-            kvpStartetJson(UUID.randomUUID().toString(), ZonedDateTime.now())
+            kvpStartetJson(ZonedDateTime.now())
         )
 
         val oppdatertAktivitet = aktivitetTestService.hentAktivitet(mockBrukerMedKvp, aktivitet.id)
@@ -91,42 +90,47 @@ class KvpPerioderKafkaConsumerTest : SpringBootTestBase() {
 
         publiserKvpAvsluttetHendelse(kvpAvsluttetGammelJson(avsluttetDato))
         publiserKvpPerioderHendelse(
-            kvpAvsluttetJson(UUID.randomUUID().toString(), avsluttetDato, kontorsperreEnhetId)
+            kvpAvsluttetJson(avsluttetDato, kontorsperreEnhetId)
         )
 
         assertThat(aktivitetTestService.hentAktivitet(mockBrukerMedKvp, aktivitet.id).status).isEqualTo(AktivitetStatus.AVBRUTT)
     }
 
-    private fun kvpStartetJson(uuid: String, startetDato: ZonedDateTime): String {
+    private fun kvpStartetJson(startetDato: ZonedDateTime): String {
         val enhetId = kvpEnhetId
-        val sluttDato = startetDato.plusDays(14)
         return """
             {
-              "uuid": "$uuid",
               "aktorId": "${mockBrukerMedKvp.aktorId.get()}",
               "event": "STARTET",
               "enhetId": "$enhetId",
-              "startet": "${startetDato.toOffsetDateTime()}",
-              "avsluttet": "${sluttDato.toOffsetDateTime()}",
-              "startDato": "${startetDato.toOffsetDateTime()}",
-              "sluttDato": "${sluttDato.toOffsetDateTime()}"
+              "startet": {
+                "opprettetAv": "${mockVeileder.navIdent}",
+                "opprettetDato": "${startetDato.toOffsetDateTime()}",
+                "opprettetBegrunnelse": "startet i test"
+              },
+              "avsluttet": null
             }
         """.trimIndent()
     }
 
-    private fun kvpAvsluttetJson(uuid: String, avsluttetDato: ZonedDateTime, enhetId: String? = null): String {
+    private fun kvpAvsluttetJson(avsluttetDato: ZonedDateTime, enhetId: String? = null): String {
         val startDato = avsluttetDato.minusDays(14)
         val enhet = enhetId ?: kvpEnhetId
         return """
             {
-              "uuid": "$uuid",
               "aktorId": "${mockBrukerMedKvp.aktorId.get()}",
               "event": "AVSLUTTET",
               "enhetId": "$enhet",
-              "startet": "${startDato.toOffsetDateTime()}",
-              "avsluttet": "${avsluttetDato.toOffsetDateTime()}",
-              "startDato": "${startDato.toOffsetDateTime()}",
-              "sluttDato": "${avsluttetDato.toOffsetDateTime()}"
+              "startet": {
+                "opprettetAv": "${mockVeileder.navIdent}",
+                "opprettetDato": "${startDato.toOffsetDateTime()}",
+                "opprettetBegrunnelse": "startet i test"
+              },
+              "avsluttet": {
+                "avsluttetAv": "${mockVeileder.navIdent}",
+                "avsluttetDato": "${avsluttetDato.toOffsetDateTime()}",
+                "avsluttetBegrunnelse": "test"
+              }
             }
         """.trimIndent()
     }

@@ -6,7 +6,8 @@ import no.nav.common.kafka.consumer.TopicConsumer
 import no.nav.veilarbaktivitet.person.Person
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.springframework.stereotype.Service
-import java.util.*
+import java.util.Date
+import java.util.Optional
 
 @Service
 class KvpPerioderKafkaConsumer(
@@ -18,15 +19,15 @@ class KvpPerioderKafkaConsumer(
         val aktorId = Person.aktorId(melding.aktorId)
 
         when (melding.event) {
-            KvpPeriodeEvent.STARTET -> return ConsumeStatus.OK
-            KvpPeriodeEvent.AVSLUTTET -> {
-                val sluttDato = melding.hentSluttTidspunkt().map { zonedDateTime -> Date.from(zonedDateTime.toInstant()) }
-                    .orElseThrow { IllegalArgumentException("Mangler sluttDato/avsluttet for KVP AVSLUTTET") }
+            KvpPeriodeEventType.STARTET -> return ConsumeStatus.OK
+            KvpPeriodeEventType.AVSLUTTET -> {
+                val sluttDato = Optional.ofNullable(melding.avsluttet?.avsluttetDato)
+                    .map { zonedDateTime -> Date.from(zonedDateTime.toInstant()) }
+                val begrunnelse = Optional.ofNullable(melding.avsluttet?.avsluttetBegrunnelse)
 
-                kvpAvsluttetService.håndterKvpAvsluttet(aktorId, Optional.empty(), Optional.of(sluttDato))
+                kvpAvsluttetService.håndterKvpAvsluttet(aktorId, begrunnelse, sluttDato)
                 return ConsumeStatus.OK
             }
-            null -> throw IllegalArgumentException("Ukjent KVP event: ${melding.event}")
         }
     }
 }

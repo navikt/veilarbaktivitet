@@ -1,29 +1,30 @@
 package no.nav.veilarbaktivitet.kvp
 
-import com.fasterxml.jackson.annotation.JsonAlias
-import no.nav.veilarbaktivitet.util.NavCommonKafkaSerialized
 import java.time.ZonedDateTime
-import java.util.Optional
 
-class KvpPerioderKafkaDTO : NavCommonKafkaSerialized {
-    var uuid: String? = null
-    var aktorId: String? = null
-    var event: KvpPeriodeEvent? = null
-    var enhetId: String? = null
-    var startet: ZonedDateTime? = null
-    var avsluttet: ZonedDateTime? = null
+typealias KvpPerioderKafkaDTO = KvpPeriode
 
-    @JsonAlias("startDato")
-    var startDato: ZonedDateTime? = null
+data class KvpPeriode(
+    val event: KvpPeriodeEventType,
+    val aktorId: String,
+    val enhetId: String?,
+    val startet: KvpStartet,
+    val avsluttet: KvpAvsluttet?
+)
 
-    @JsonAlias("sluttDato")
-    var sluttDato: ZonedDateTime? = null
-
-    fun hentStartTidspunkt(): Optional<ZonedDateTime> {
-        return Optional.ofNullable(startet ?: startDato)
-    }
-
-    fun hentSluttTidspunkt(): Optional<ZonedDateTime> {
-        return Optional.ofNullable(avsluttet ?: sluttDato)
-    }
+enum class KvpPeriodeEventType {
+    STARTET,
+    AVSLUTTET
 }
+
+data class KvpStartet(
+    var opprettetAv: String,
+    var opprettetDato: ZonedDateTime,
+    var opprettetBegrunnelse: String?
+)
+
+data class KvpAvsluttet(
+    val avsluttetAv: String,
+    val avsluttetDato: ZonedDateTime,
+    val avsluttetBegrunnelse: String?
+)
