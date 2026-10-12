@@ -3,29 +3,17 @@ package no.nav.veilarbaktivitet.kvp
 import io.micrometer.core.annotation.Timed
 import no.nav.common.kafka.consumer.ConsumeStatus
 import no.nav.common.kafka.consumer.TopicConsumer
-import no.nav.common.kafka.consumer.util.TopicConsumerConfig
-import no.nav.common.kafka.consumer.util.deserializer.Deserializers
 import no.nav.veilarbaktivitet.person.Person
 import org.apache.kafka.clients.consumer.ConsumerRecord
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.util.*
 
 @Service
 class KvpPerioderKafkaConsumer(
-    private val kvpAvsluttetService: KVPAvsluttetService,
-    @Value("\${topic.inn.kvpPerioder}")
-    topic: String
-) : TopicConsumerConfig<String, KvpPerioderKafkaDTO>(), TopicConsumer<String, KvpPerioderKafkaDTO> {
+    private val kvpAvsluttetService: KVPAvsluttetService
+) : TopicConsumer<String, KvpPerioderKafkaDTO> {
     companion object {
         private const val STANDARD_AVSLUTTET_BEGRUNNELSE = "KVP avsluttet"
-    }
-
-    init {
-        this.setTopic(topic)
-        this.setKeyDeserializer(Deserializers.stringDeserializer())
-        this.setValueDeserializer(Deserializers.jsonDeserializer(KvpPerioderKafkaDTO::class.java))
-        this.setConsumer(this)
     }
 
     @Timed(value = "kvp_perioder_consumer")
@@ -41,8 +29,7 @@ class KvpPerioderKafkaConsumer(
                     .orElseThrow { IllegalArgumentException("Mangler sluttDato/avsluttet for KVP AVSLUTTET") }
 
                 val kontorsperreEnhetId = melding.enhetId
-                val finnesAktiveAktiviteterMedKontorsperre = kvpAvsluttetService.finnesAktivitetMedKontorsperreEnhet(aktorId, kontorsperreEnhetId)
-                if (kontorsperreEnhetId != null && !finnesAktiveAktiviteterMedKontorsperre) {
+                if (kontorsperreEnhetId != null && !kvpAvsluttetService.finnesAktivitetMedKontorsperreEnhet(aktorId, kontorsperreEnhetId)) {
                     return ConsumeStatus.OK
                 }
 
