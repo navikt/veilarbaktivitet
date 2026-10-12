@@ -17,14 +17,17 @@ import java.util.Date;
 @EqualsAndHashCode(callSuper = false)
 public class KvpAvsluttetKafkaConsumer extends no.nav.common.kafka.consumer.util.TopicConsumerConfig<String, KvpAvsluttetKafkaDTO> implements TopicConsumer<String, KvpAvsluttetKafkaDTO> {
     private final KVPAvsluttetService kvpService;
+    private final KvpHendelseDedupService dedupService;
 
     public KvpAvsluttetKafkaConsumer(
             KVPAvsluttetService kvpService,
+            KvpHendelseDedupService dedupService,
             @Value("${topic.inn.kvpAvsluttet}")
                     String topic
     ) {
         super();
         this.kvpService = kvpService;
+        this.dedupService = dedupService;
 
         this.setTopic(topic);
         this.setKeyDeserializer(Deserializers.stringDeserializer());
@@ -40,6 +43,10 @@ public class KvpAvsluttetKafkaConsumer extends no.nav.common.kafka.consumer.util
         Person.AktorId aktorId = Person.aktorId(kvpAvsluttetDto.getAktorId());
         String begrunnelse = kvpAvsluttetDto.getAvsluttetBegrunnelse();
         Date sluttDato = new Date(kvpAvsluttetDto.getAvsluttetDato().toInstant().toEpochMilli());
+
+        if (!dedupService.reserverAvsluttetHendelse(aktorId, sluttDato)) {
+            return ConsumeStatus.OK;
+        }
 
         kvpService.settAktiviteterInomKVPPeriodeTilAvbrutt(aktorId, begrunnelse, sluttDato);
 
