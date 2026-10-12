@@ -29,7 +29,8 @@ class KvpPerioderKafkaConsumer(
                     .orElseThrow { IllegalArgumentException("Mangler sluttDato/avsluttet for KVP AVSLUTTET") }
 
                 val kontorsperreEnhetId = melding.enhetId
-                if (kontorsperreEnhetId != null && !kvpAvsluttetService.finnesAktivitetMedKontorsperreEnhet(aktorId, kontorsperreEnhetId)) {
+                val finnesAktivitetMedKontorSperrePåBruker = kvpAvsluttetService.finnesAktivitetMedKontorsperreEnhet(aktorId, kontorsperreEnhetId)
+                if (kontorsperreEnhetId != null && !finnesAktivitetMedKontorSperrePåBruker) {
                     return ConsumeStatus.OK
                 }
 
