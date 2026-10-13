@@ -19,11 +19,6 @@ public class KVPAvsluttetService {
     private final AktivitetDAO aktivitetDAO;
     private final OversiktenService oversiktenService;
 
-    public boolean finnesAktivAktivitetMedKontorsperreEnhet(Person.AktorId aktoerId) {
-        return aktivitetDAO.hentAktiviteterForAktorId(aktoerId).stream()
-                .anyMatch(aktivitet -> aktivitet.getKontorsperreEnhetId() != null && erAktiv(aktivitet));
-    }
-
     private void settAktiviteterInomKVPPeriodeTilAvbrutt(Person.AktorId aktoerId, String avsluttetBegrunnelse, Date kvpAvsluttetTidspunkt) {
         aktivitetDAO.hentAktiviteterForAktorId(aktoerId).stream()
                 .filter(this::filtrerKontorSperretOgStatusErIkkeAvBruttEllerFullfort)
@@ -42,10 +37,6 @@ public class KVPAvsluttetService {
 
     public void håndterKvpAvsluttet(Person.AktorId aktoerId, Optional<String> begrunnelse, Optional<Date> sluttDato) {
         Date kvpAvsluttetTidspunkt = sluttDato.orElseThrow(() -> new IllegalArgumentException("Mangler sluttDato/avsluttet for KVP AVSLUTTET"));
-        boolean finnesAktivitetMedKontorSperrePåBruker = finnesAktivAktivitetMedKontorsperreEnhet(aktoerId);
-        if (!finnesAktivitetMedKontorSperrePåBruker) {
-            return;
-        }
         settAktiviteterInomKVPPeriodeTilAvbrutt(aktoerId, begrunnelse.orElse("KVP avsluttet"), kvpAvsluttetTidspunkt);
     }
 

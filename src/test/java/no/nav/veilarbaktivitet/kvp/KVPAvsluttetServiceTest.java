@@ -8,7 +8,6 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
 import no.nav.veilarbaktivitet.oversikten.OversiktenService;
 import no.nav.veilarbaktivitet.person.Person;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mock;
@@ -19,7 +18,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.util.DateUtil.now;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -61,40 +59,5 @@ public class KVPAvsluttetServiceTest {
 
         verify(oversiktenService).lagreStoppMeldingOmUdeltSamtalereferatIUtboks(aktorId, aktivitetId);
         verify(aktivitetDAO).oppdaterAktivitet(any());
-    }
-
-    @Test
-    void finnes_aktivitet_med_kontorsperre_enhet_skal_kreve_aktiv_status() {
-        val aktorId = new Person.AktorId("1231231231230");
-
-        AktivitetData avbruttAktivitet = AktivitetData.builder()
-                .aktorId(aktorId)
-                .status(AktivitetStatus.AVBRUTT)
-                .kontorsperreEnhetId("9001")
-                .build();
-        AktivitetData fullfortAktivitet = AktivitetData.builder()
-                .aktorId(aktorId)
-                .status(AktivitetStatus.FULLFORT)
-                .kontorsperreEnhetId("9001")
-                .build();
-
-        when(aktivitetDAO.hentAktiviteterForAktorId(aktorId)).thenReturn(List.of(avbruttAktivitet, fullfortAktivitet));
-
-        assertThat(kvpService.finnesAktivAktivitetMedKontorsperreEnhet(aktorId)).isFalse();
-    }
-
-    @Test
-    void finnes_aktivitet_med_kontorsperre_enhet_skal_gi_true_for_aktiv_aktivitet() {
-        val aktorId = new Person.AktorId("1231231231230");
-
-        AktivitetData planlagtAktivitet = AktivitetData.builder()
-                .aktorId(aktorId)
-                .status(AktivitetStatus.PLANLAGT)
-                .kontorsperreEnhetId("9001")
-                .build();
-
-        when(aktivitetDAO.hentAktiviteterForAktorId(aktorId)).thenReturn(List.of(planlagtAktivitet));
-
-        assertThat(kvpService.finnesAktivAktivitetMedKontorsperreEnhet(aktorId)).isTrue();
     }
 }
