@@ -10,7 +10,10 @@ import no.nav.common.kafka.util.KafkaPropertiesPreset
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetsKortConsumerConfig
 import no.nav.veilarbaktivitet.kvp.KvpAvsluttetConsumerConfig
 import no.nav.veilarbaktivitet.kvp.KvpAvsluttetKafkaDTO
+import no.nav.veilarbaktivitet.kvp.KvpPerioderConsumerConfig
+import no.nav.veilarbaktivitet.kvp.KvpPerioderKafkaDTO
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeConsumerConfig
+import org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET_CONFIG
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
@@ -89,6 +92,25 @@ open class NavCommonKafkaConfig(
     }
 
     @Bean
+    open fun kvpPerioderConsumerClient(
+        topicConfig: KvpPerioderConsumerConfig,
+        meterRegistry: MeterRegistry,
+        consumerProperties: Properties,
+        unleash: Unleash
+    ): KafkaConsumerClient {
+        consumerProperties[AUTO_OFFSET_RESET_CONFIG] = "latest"
+        return KafkaConsumerClientBuilder.builder()
+            .withProperties(consumerProperties)
+            .withToggle { isKafkaDisabled(unleash, KVP_PERIODER_KAFKACONSUMER_DISABLED) }
+            .withTopicConfig(
+                KafkaConsumerClientBuilder.TopicConfig<String, KvpPerioderKafkaDTO>()
+                    .withConsumerConfig(topicConfig)
+                    .withMetrics(meterRegistry)
+                    .withLogging()
+            ).build()
+    }
+
+    @Bean
     open fun consumerClients(kafkaConsumerClients: List<KafkaConsumerClient>): List<KafkaConsumerClient> {
         return kafkaConsumerClients
             .onEach { it.start() }
@@ -126,6 +148,8 @@ open class NavCommonKafkaConfig(
             "veilarbaktivitet.kafka.aktivitetskort.aiven.consumer.disabled"
         private const val KVPAVSLUTTET_KAFKACONSUMER_DISABLED =
             "veilarbaktivitet.kafka.kvpavsluttet.aiven.consumer.disabled"
+        private const val KVP_PERIODER_KAFKACONSUMER_DISABLED =
+            "veilarbaktivitet.kafka.kvpperioder.aiven.consumer.disabled"
         private const val OPPFOLGINGSPERIODE_KAFKACONSUMER_DISABLED =
             "veilarbaktivitet.kafka.oppfolginsperiode.aiven.consumer.disabled"
     }

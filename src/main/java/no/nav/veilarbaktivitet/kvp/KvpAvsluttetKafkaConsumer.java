@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.Optional;
 
 
 @Service
@@ -41,7 +42,7 @@ public class KvpAvsluttetKafkaConsumer extends no.nav.common.kafka.consumer.util
         String begrunnelse = kvpAvsluttetDto.getAvsluttetBegrunnelse();
         Date sluttDato = new Date(kvpAvsluttetDto.getAvsluttetDato().toInstant().toEpochMilli());
 
-        kvpService.settAktiviteterInomKVPPeriodeTilAvbrutt(aktorId, begrunnelse, sluttDato);
+        kvpService.håndterKvpAvsluttet(aktorId, Optional.of(begrunnelse), Optional.of(sluttDato));
 
         return ConsumeStatus.OK;
     }
