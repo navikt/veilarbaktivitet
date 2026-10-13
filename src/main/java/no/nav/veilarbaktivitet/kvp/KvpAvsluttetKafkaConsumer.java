@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.kvp;
 
 import io.micrometer.core.annotation.Timed;
 import lombok.EqualsAndHashCode;
+import lombok.extern.slf4j.Slf4j;
 import no.nav.common.kafka.consumer.ConsumeStatus;
 import no.nav.common.kafka.consumer.TopicConsumer;
 import no.nav.common.kafka.consumer.util.deserializer.Deserializers;
@@ -15,6 +16,7 @@ import java.util.Date;
 import java.util.Optional;
 
 
+@Slf4j
 @Service
 @EqualsAndHashCode(callSuper = false)
 public class KvpAvsluttetKafkaConsumer extends no.nav.common.kafka.consumer.util.TopicConsumerConfig<String, KvpAvsluttetKafkaDTO> implements TopicConsumer<String, KvpAvsluttetKafkaDTO> {
@@ -46,6 +48,7 @@ public class KvpAvsluttetKafkaConsumer extends no.nav.common.kafka.consumer.util
         try {
             kvpService.håndterKvpAvsluttet(aktorId, Optional.of(begrunnelse), Optional.of(sluttDato));
         } catch (EndringAvUtdatertVersjonException e) {
+            log.warn("Kunne ikke avslutte aktiviteter pga avsluttet kvp-periode, fikk EndringAvUtdatertVersjonException", e);
             return ConsumeStatus.OK;
         }
 
