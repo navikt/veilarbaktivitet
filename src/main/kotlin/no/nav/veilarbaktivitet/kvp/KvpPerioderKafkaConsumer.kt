@@ -6,8 +6,9 @@ import no.nav.common.kafka.consumer.TopicConsumer
 import no.nav.veilarbaktivitet.person.Person
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.springframework.stereotype.Service
-import java.util.Date
-import java.util.Optional
+import java.time.ZoneId
+import java.time.ZonedDateTime
+import java.util.*
 
 @Service
 class KvpPerioderKafkaConsumer(
@@ -23,6 +24,13 @@ class KvpPerioderKafkaConsumer(
             KvpPeriodeEventType.AVSLUTTET -> {
                 val sluttDato = Optional.ofNullable(melding.avsluttet?.avsluttetDato)
                     .map { zonedDateTime -> Date.from(zonedDateTime.toInstant()) }
+
+                if (melding.avsluttet?.avsluttetDato != null && melding.avsluttet.avsluttetDato
+                    .isBefore(ZonedDateTime.of(2026, 10, 13, 0, 0, 0, 0, ZoneId.of("Europe/Oslo")))
+                ) {
+                    return ConsumeStatus.OK
+                }
+
                 val begrunnelse = Optional.ofNullable(melding.avsluttet?.avsluttetBegrunnelse)
 
                 kvpAvsluttetService.håndterKvpAvsluttet(aktorId, begrunnelse, sluttDato)

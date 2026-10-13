@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.kafka.core.KafkaTemplate
+import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.concurrent.TimeUnit
 
@@ -94,6 +95,20 @@ class KvpPerioderKafkaConsumerTest : SpringBootTestBase() {
         )
 
         assertThat(aktivitetTestService.hentAktivitet(mockBrukerMedKvp, aktivitet.id).status).isEqualTo(AktivitetStatus.AVBRUTT)
+    }
+
+    @Test
+    fun `skal ikke avbryte aktiviteter ved gammel avsluttet hendelse på ny topic`() {
+        val aktivitet = aktivitetTestService.opprettAktivitetViaHttp(mockBrukerMedKvp, AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.EGEN))
+        assertThat(aktivitet.status).isEqualTo(AktivitetStatus.PLANLAGT)
+        assertAktivitetHarForventetKontorsperreEnhet(aktivitet.id.toLong(), kvpEnhetId)
+
+        publiserKvpPerioderHendelse(
+            kvpAvsluttetJson(ZonedDateTime.of(2026, 10, 12, 23, 59, 59, 0, ZoneId.of("Europe/Oslo")))
+        )
+
+        val oppdatertAktivitet = aktivitetTestService.hentAktivitet(mockBrukerMedKvp, aktivitet.id)
+        assertThat(oppdatertAktivitet.status).isEqualTo(AktivitetStatus.PLANLAGT)
     }
 
     private fun kvpStartetJson(startetDato: ZonedDateTime): String {
