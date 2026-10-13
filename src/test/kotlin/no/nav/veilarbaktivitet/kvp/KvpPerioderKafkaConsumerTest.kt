@@ -151,6 +151,7 @@ class KvpPerioderKafkaConsumerTest : SpringBootTestBase() {
     }
 
     private fun publiserKvpPerioderHendelse(rawJson: String) {
+        kafkaTestService.assertConsumerGroupLytterPaTopic(kvpPerioderTopic, NavCommonKafkaConfig.CONSUMER_GROUP_ID)
         val offset = producer.send(kvpPerioderTopic, rawJson).get(2, TimeUnit.SECONDS).recordMetadata.offset()
         kafkaTestService.assertErKonsumert(kvpPerioderTopic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, offset)
     }
