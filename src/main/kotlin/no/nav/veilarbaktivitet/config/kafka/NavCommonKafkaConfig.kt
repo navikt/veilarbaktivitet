@@ -8,8 +8,6 @@ import no.nav.common.kafka.producer.KafkaProducerClient
 import no.nav.common.kafka.producer.util.KafkaProducerClientBuilder
 import no.nav.common.kafka.util.KafkaPropertiesPreset
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetsKortConsumerConfig
-import no.nav.veilarbaktivitet.kvp.KvpAvsluttetConsumerConfig
-import no.nav.veilarbaktivitet.kvp.KvpAvsluttetKafkaDTO
 import no.nav.veilarbaktivitet.kvp.KvpPerioderConsumerConfig
 import no.nav.veilarbaktivitet.kvp.KvpPerioderKafkaDTO
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeConsumerConfig
@@ -74,24 +72,6 @@ open class NavCommonKafkaConfig(
     }
 
     @Bean
-    open fun kvpAvsluttetConsumerClient(
-        topicConfig: KvpAvsluttetConsumerConfig,
-        meterRegistry: MeterRegistry,
-        consumerProperties: Properties,
-        unleash: Unleash
-    ): KafkaConsumerClient {
-        return KafkaConsumerClientBuilder.builder()
-            .withProperties(consumerProperties)
-            .withToggle { isKafkaDisabled(unleash, KVPAVSLUTTET_KAFKACONSUMER_DISABLED) }
-            .withTopicConfig(
-                KafkaConsumerClientBuilder.TopicConfig<String, KvpAvsluttetKafkaDTO>()
-                    .withConsumerConfig(topicConfig)
-                    .withMetrics(meterRegistry)
-                    .withLogging()
-            ).build()
-    }
-
-    @Bean
     open fun kvpPerioderConsumerClient(
         topicConfig: KvpPerioderConsumerConfig,
         meterRegistry: MeterRegistry,
@@ -146,8 +126,6 @@ open class NavCommonKafkaConfig(
         const val PRODUCER_CLIENT_ID = "veilarbaktivitet-producer"
         private const val AKTIVITETSKORT_KAFKACONSUMER_DISABLED =
             "veilarbaktivitet.kafka.aktivitetskort.aiven.consumer.disabled"
-        private const val KVPAVSLUTTET_KAFKACONSUMER_DISABLED =
-            "veilarbaktivitet.kafka.kvpavsluttet.aiven.consumer.disabled"
         private const val KVP_PERIODER_KAFKACONSUMER_DISABLED =
             "veilarbaktivitet.kafka.kvpperioder.aiven.consumer.disabled"
         private const val OPPFOLGINGSPERIODE_KAFKACONSUMER_DISABLED =
