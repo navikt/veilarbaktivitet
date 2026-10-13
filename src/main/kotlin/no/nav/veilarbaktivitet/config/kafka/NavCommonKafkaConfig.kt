@@ -13,6 +13,7 @@ import no.nav.veilarbaktivitet.kvp.KvpAvsluttetKafkaDTO
 import no.nav.veilarbaktivitet.kvp.KvpPerioderConsumerConfig
 import no.nav.veilarbaktivitet.kvp.KvpPerioderKafkaDTO
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeConsumerConfig
+import org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET_CONFIG
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
@@ -97,6 +98,7 @@ open class NavCommonKafkaConfig(
         consumerProperties: Properties,
         unleash: Unleash
     ): KafkaConsumerClient {
+        consumerProperties[AUTO_OFFSET_RESET_CONFIG] = "latest"
         return KafkaConsumerClientBuilder.builder()
             .withProperties(consumerProperties)
             .withToggle { isKafkaDisabled(unleash, KVP_PERIODER_KAFKACONSUMER_DISABLED) }
