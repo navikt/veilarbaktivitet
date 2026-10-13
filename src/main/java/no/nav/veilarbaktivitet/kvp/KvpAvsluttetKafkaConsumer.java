@@ -5,6 +5,7 @@ import lombok.EqualsAndHashCode;
 import no.nav.common.kafka.consumer.ConsumeStatus;
 import no.nav.common.kafka.consumer.TopicConsumer;
 import no.nav.common.kafka.consumer.util.deserializer.Deserializers;
+import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvUtdatertVersjonException;
 import no.nav.veilarbaktivitet.person.Person;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Value;
@@ -42,7 +43,11 @@ public class KvpAvsluttetKafkaConsumer extends no.nav.common.kafka.consumer.util
         String begrunnelse = kvpAvsluttetDto.getAvsluttetBegrunnelse();
         Date sluttDato = new Date(kvpAvsluttetDto.getAvsluttetDato().toInstant().toEpochMilli());
 
-        kvpService.håndterKvpAvsluttet(aktorId, Optional.of(begrunnelse), Optional.of(sluttDato));
+        try {
+            kvpService.håndterKvpAvsluttet(aktorId, Optional.of(begrunnelse), Optional.of(sluttDato));
+        } catch (EndringAvUtdatertVersjonException e) {
+            return ConsumeStatus.OK;
+        }
 
         return ConsumeStatus.OK;
     }
