@@ -16,6 +16,14 @@ class NavMockService(
 ) {
     companion object {
         val NAV_CONTEXT: NavContext = NavContext()
+
+        private fun randomFnr(): String {
+            val date = (1..31).random().toString().padStart(2, '0')
+            val month = (1..12).random().toString().padStart(2, '0')
+            val year = (1..99).random().toString().padStart(2, '0')
+            val randomDigits = (1..5).map { (0..9).random() }.joinToString("")
+            return "${date}${month}${year}${randomDigits}"
+        }
     }
 
     fun createHappyBruker(): MockBruker {
@@ -24,14 +32,6 @@ class NavMockService(
 
     fun createBruker(brukerOptions: BrukerOptions = BrukerOptions.happyBruker()): MockBruker {
         return createBruker(brukerOptions, fnr = null)
-    }
-
-    private fun randomFnr(): String {
-        val date = (1..31).random().toString().padStart(2, '0')
-        val month = (1..12).random().toString().padStart(2, '0')
-        val year = (1..99).random().toString().padStart(2, '0')
-        val randomDigits = (1..5).map { (0..9).random() }.joinToString("")
-        return "${date}${month}${year}${randomDigits}"
     }
 
     fun createBruker(brukerOptions: BrukerOptions = BrukerOptions.happyBruker(), fnr: Fnr? = null): MockBruker {

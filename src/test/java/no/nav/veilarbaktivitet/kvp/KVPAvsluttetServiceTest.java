@@ -8,7 +8,6 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
 import no.nav.veilarbaktivitet.oversikten.OversiktenService;
 import no.nav.veilarbaktivitet.person.Person;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mock;
@@ -17,6 +16,7 @@ import org.mockito.MockitoAnnotations;
 import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.util.DateUtil.now;
 import static org.mockito.ArgumentMatchers.any;
@@ -55,7 +55,7 @@ public class KVPAvsluttetServiceTest {
 
         when(aktivitetDAO.hentAktiviteterForAktorId(aktorId)).thenReturn(List.of(aktivitet));
 
-        kvpService.settAktiviteterInomKVPPeriodeTilAvbrutt(aktorId, "ferdig kvp", now());
+        kvpService.håndterKvpAvsluttet(aktorId, Optional.of("ferdig kvp"), Optional.of(now()));
 
         verify(oversiktenService).lagreStoppMeldingOmUdeltSamtalereferatIUtboks(aktorId, aktivitetId);
         verify(aktivitetDAO).oppdaterAktivitet(any());

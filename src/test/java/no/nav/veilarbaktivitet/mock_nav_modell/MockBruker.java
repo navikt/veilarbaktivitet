@@ -50,7 +50,6 @@ public class MockBruker extends RestassuredUser {
         return Person.aktorId(new StringBuilder(getFnr()).reverse().toString());
     }
 
-
     public Person.Fnr getFnrAsFnr() {
         return Person.fnr(super.ident);
     }

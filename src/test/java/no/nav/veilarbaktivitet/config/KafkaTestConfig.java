@@ -39,7 +39,7 @@ public class KafkaTestConfig {
     public EmbeddedKafkaKraftBroker embeddedKafka(
             @Value("${topic.inn.stillingFraNav}") String innStillingFraNav,
             @Value("${topic.ut.stillingFraNav}") String utStillingFraNav,
-            @Value("${topic.inn.kvpAvsluttet}") String kvpAvsluttetTopic,
+            @Value("${topic.inn.kvpPerioder}") String kvpPerioderTopic,
 //            @Value("${topic.inn.eksternVarselKvittering}") String eksternVarselKvittering,
             @Value("${topic.ut.portefolje}") String portefoljeTopic,
             @Value("${topic.inn.oppfolgingsperiode}") String oppfolgingsperiode,
@@ -50,7 +50,7 @@ public class KafkaTestConfig {
                 1,
                 innStillingFraNav,
                 utStillingFraNav,
-                kvpAvsluttetTopic,
+                kvpPerioderTopic,
 //                eksternVarselKvittering,
                 portefoljeTopic,
                 oppfolgingsperiode,
@@ -87,7 +87,7 @@ public class KafkaTestConfig {
 
     /*
     Kafka template som bruker nav.common.kafka sin json serializer.
-    Brukt for å teste RekrutteringsbistandStatusoppdatering og KvpAvsluttetKafkaDTO.
+    Brukt for å teste RekrutteringsbistandStatusoppdatering.
      */
     @Bean
     <T extends NavCommonKafkaSerialized> KafkaJsonTemplate<T> navCommonKafkaJsonTemplate(ProducerFactory<String, T> navCommonJsonProducerFactory) {

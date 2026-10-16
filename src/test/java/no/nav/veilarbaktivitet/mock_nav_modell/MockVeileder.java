@@ -6,7 +6,6 @@ import no.nav.common.auth.context.UserRole;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.poao_tilgang.core.domain.AdGruppe;
 import no.nav.poao_tilgang.core.provider.NavEnhetTilgang;
-import no.nav.poao_tilgang.poao_tilgang_test_core.DomainKt;
 import no.nav.poao_tilgang.poao_tilgang_test_core.NavAnsatt;
 
 import java.util.LinkedList;
@@ -36,7 +35,7 @@ public class MockVeileder extends RestassuredUser {
 
     public void addBruker(MockBruker bruker) {
         brukerList.add(bruker);
-        String oppfolgingsenhet = bruker.privatbruker.getOppfolgingsenhet();
+        String oppfolgingsenhet = bruker.getOppfolgingsenhet();
         if(oppfolgingsenhet == null) {
             return;
         }
