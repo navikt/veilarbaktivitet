@@ -136,6 +136,13 @@ public class KafkaTestService {
                 .atMost(DEFAULT_WAIT_TIMEOUT_DURATION).until(() -> erKonsumert(topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, producerOffset));
     }
 
+    public void assertConsumerGroupLytterPaTopic(String topic, String groupId) {
+        await()
+                .with()
+                .conditionEvaluationListener(condition -> log.debug("Venter på aktiv consumer for topic {} i groupId {} - Tid brukt: {}ms Tid gjenstående: {}ms", topic, groupId, condition.getElapsedTimeInMS(), condition.getRemainingTimeInMS()))
+                .atMost(DEFAULT_WAIT_TIMEOUT_DURATION).until(() -> consumerGroupLytterPaTopic(topic, groupId));
+    }
+
     @SneakyThrows
     private boolean erKonsumert(String topic, String groupId, long producerOffset) {
         Map<TopicPartition, OffsetAndMetadata> topicPartitionOffsetAndMetadataMap = kafkaAdminClient.listConsumerGroupOffsets(groupId).partitionsToOffsetAndMetadata().get();
@@ -148,6 +155,18 @@ public class KafkaTestService {
         long commitedOffset = offsetAndMetadata.offset();
         // Consumer-group offsets er på meldinger som ikke er committet/behandlet enda
         return commitedOffset>= producerOffset + 1;
+    }
+
+    @SneakyThrows
+    private boolean consumerGroupLytterPaTopic(String topic, String groupId) {
+        var groupDescription = kafkaAdminClient.describeConsumerGroups(List.of(groupId)).all().get().get(groupId);
+        if (groupDescription == null || groupDescription.members().isEmpty()) {
+            return false;
+        }
+
+        return groupDescription.members().stream()
+                .flatMap(memberDescription -> memberDescription.assignment().topicPartitions().stream())
+                .anyMatch(topicPartition -> topicPartition.topic().equals(topic));
     }
 
     @SneakyThrows
