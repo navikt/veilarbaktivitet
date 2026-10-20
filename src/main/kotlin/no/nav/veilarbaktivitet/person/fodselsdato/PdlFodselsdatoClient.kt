@@ -8,7 +8,6 @@ import no.nav.common.types.identer.Fnr
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.time.LocalDate
-
 data class Foedselsdato(
     val foedselsdato: String?,
     val foedselsaar: String?,
@@ -31,7 +30,8 @@ data class HentFodselsdato(
 )
 
 data class HentFodselsdatoQuery(
-    val hentPerson: HentFodselsdato,
+    /* Graphql rammeverket krever at felter er nullable */
+    val hentPerson: HentFodselsdato?,
 )
 
 private data class QueryVariables(
@@ -44,7 +44,7 @@ class HentFodselsdatoGraphqlWrapper: GraphqlResponse<HentFodselsdatoQuery>()
 class PdlFodselsdatoClient(val pdlClient: PdlClient) {
     val logger = LoggerFactory.getLogger(PdlFodselsdatoClient::class.java)
 
-    fun erUnder18(fnr: Fnr): Boolean {
+    fun  erUnder18(fnr: Fnr): Boolean {
         val fodselsdato = hentFodselsdato(fnr)
         return fodselsdato?.let { erUnder18Aar(it) } ?: throw IllegalArgumentException("Fant ingen fødselsdatoer på person i PDL")
     }
@@ -59,7 +59,7 @@ class PdlFodselsdatoClient(val pdlClient: PdlClient) {
             throw kotlin.RuntimeException("Feil ved henting av fødselsdato fra pdl ${result?.errors.toString()}")
         }
 
-        return result.data.hentPerson.foedselsdato.firstNotNullOfOrNull { it.toLocalDateWithFallback() }
+        return result.data.hentPerson?.foedselsdato?.firstNotNullOfOrNull { it.toLocalDateWithFallback() }
     }
 
     private fun erUnder18Aar(fodselsdato: LocalDate): Boolean {
