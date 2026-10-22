@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
 
 @RestController
-@RequestMapping("/api/kassering")
+@RequestMapping("/api")
 class KasserController(
     private val authService: IAuthService,
     private val aktivitetDAO: AktivitetDAO,
@@ -20,18 +20,28 @@ class KasserController(
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
-    @PutMapping("/{aktivitetId}")
+    @PutMapping("/kassering/{aktivitetId}")
     @ResponseStatus(value = HttpStatus.OK)
     fun kasserAktivitet(@PathVariable aktivitetId: String) {
         val id = aktivitetId.toLong()
         val aktivitetData = aktivitetDAO.hentAktivitet(id)
         val veilederIdent = Person.navIdent(authService.getInnloggetVeilederIdent().get())
-        kjorHvisTilgang(aktivitetData.aktorId, aktivitetId) {
+        kjorHvisTilgang(aktivitetData.aktorId, aktivitetId, "kasserte") {
             kasseringsService.kasserAktivitet(aktivitetData, veilederIdent)
         }
     }
 
-    private fun kjorHvisTilgang(aktorId: Person.AktorId, id: String, kasser: () -> Unit) {
+    @DeleteMapping("/admin/aktiviteter/{aktivitetId}")
+    @ResponseStatus(value = HttpStatus.OK)
+    fun slettAktivitet(@PathVariable aktivitetId: String) {
+        val id = aktivitetId.toLong()
+        val aktivitetData = aktivitetDAO.hentAktivitet(id)
+        kjorHvisTilgang(aktivitetData.aktorId, aktivitetId, "slettet") {
+            kasseringsService.slettAktivitet(aktivitetData)
+        }
+    }
+
+    private fun kjorHvisTilgang(aktorId: Person.AktorId, id: String, handling: String, callback: () -> Unit) {
         authService.sjekkInternbrukerHarSkriveTilgangTilPerson(aktorId.otherAktorId())
         val veilederIdent = authService.getInnloggetVeilederIdent()
         val godkjente = godkjenteIdenter.split(",".toRegex()).dropLastWhile { it.isEmpty() }
@@ -48,11 +58,12 @@ class KasserController(
             )
         }
 
-        kasser()
+        callback()
 
         log.info(
-            "[KASSERING] {} kasserte en aktivitet. AktoerId: {} aktivitet_id: {}",
+            "[KASSERING] {} {} en aktivitet. AktoerId: {} aktivitet_id: {}",
             veilederIdent,
+            handling,
             aktorId,
             id
         )

@@ -12,7 +12,14 @@ import no.nav.veilarbaktivitet.aktivitetskort.feil.ErrorMessage
 import no.nav.veilarbaktivitet.oversikten.OversiktenService
 import no.nav.veilarbaktivitet.person.Innsender
 import no.nav.veilarbaktivitet.person.Person
+import no.nav.veilarbaktivitet.veilarbportefolje.AktivitetKafkaProducerService
+import no.nav.veilarbaktivitet.veilarbportefolje.EndringsType
+import no.nav.veilarbaktivitet.veilarbportefolje.dto.AktivitetTypeDTO
+import no.nav.veilarbaktivitet.veilarbportefolje.dto.KafkaAktivitetMeldingV4
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.server.ResponseStatusException
 import java.util.*
 
 @Service
@@ -21,6 +28,7 @@ class KasseringsService(
     private val aktivitetDAO: AktivitetDAO,
     private val kasseringDAO: KasseringDAO,
     private val oversiktenService: OversiktenService,
+    private val aktivitetKafkaProducerService: AktivitetKafkaProducerService,
 ) {
 
     fun kasserAktivitet(aktivitet: AktivitetData, ident: Person.NavIdent, begrunnelse: String? = null) {
@@ -53,5 +61,48 @@ class KasseringsService(
             val navIdent = Person.navIdent(kasseringsBestilling.navIdent.get())
             kasserAktivitet(aktivitet.get(), navIdent, kasseringsBestilling.begrunnelse)
         }
+    }
+
+    @Transactional
+    fun slettAktivitet(aktivitet: AktivitetData) {
+        if (!aktivitet.fhoId.isNullOrBlank()) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Aktiviteter med forhåndsorientering kan ikke slettes")
+        }
+
+        // Vi sletter kun EKSTERNAKTIVITET. Aktiviteter med forhåndsorientering, møter som kan ha SMS-varsling,
+        // aktiviteter aktive filtre i porteføljen eller aktiviteter med uløste Min Side-varsler bør ikke slettes via admin.
+        if (aktivitet.aktivitetType != AktivitetTypeData.EKSTERNAKTIVITET) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Kun aktiviteter av typen EKSTERNAKTIVITET kan slettes")
+        }
+
+        val kafkaMelding = lagKafkaMeldingForSletting(aktivitet)
+        aktivitetKafkaProducerService.sendAktivitetMelding(kafkaMelding)
+        kasseringDAO.slettAktivitet(aktivitet.id)
+    }
+
+    private fun lagKafkaMeldingForSletting(aktivitet: AktivitetData): KafkaAktivitetMeldingV4 {
+        val eksternAktivitet = aktivitet.eksternAktivitetData
+            ?: throw IllegalStateException("Kan ikke slette EKSTERNAKTIVITET uten ekstern aktivitet-data")
+        val tiltakskode = eksternAktivitet.tiltaksKode
+            ?: AktivitetTypeDTO.aktivitetsKortTypeToArenaTiltakskode(eksternAktivitet.type)
+        val oppfolgingsperiodeId = aktivitet.oppfolgingsperiodeId?.toString()
+            ?: throw IllegalStateException("Kan ikke slette aktivitet ${aktivitet.id} uten oppfølgingsperiode")
+
+        return KafkaAktivitetMeldingV4.builder()
+            .aktivitetId(aktivitet.id.toString())
+            .version(aktivitet.versjon)
+            .aktorId(aktivitet.aktorId.get())
+            .fraDato(aktivitet.fraDato)
+            .tilDato(aktivitet.tilDato)
+            .endretDato(aktivitet.endretDato)
+            .aktivitetType(AktivitetTypeDTO.TILTAK)
+            .aktivitetStatus(AktivitetStatus.AVBRUTT)
+            .endringsType(EndringsType.HISTORISK)
+            .lagtInnAv(aktivitet.endretAvType)
+            .avtalt(aktivitet.isAvtalt)
+            .historisk(aktivitet.historiskDato != null)
+            .tiltakskode(tiltakskode)
+            .oppfolgingsperiodeId(oppfolgingsperiodeId)
+            .build()
     }
 }
