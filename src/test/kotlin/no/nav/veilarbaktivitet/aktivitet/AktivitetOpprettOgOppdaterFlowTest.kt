@@ -9,7 +9,6 @@ import no.nav.veilarbaktivitet.aktivitet.domain.*
 import no.nav.veilarbaktivitet.aktivitet.dto.*
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDataMapperService
-import no.nav.veilarbaktivitet.aktivitetskort.MigreringService
 import no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavService
 import no.nav.veilarbaktivitet.eventsLogger.BigQueryClient
 import no.nav.veilarbaktivitet.kvp.KvpService
@@ -58,7 +57,6 @@ class AktivitetOpprettOgOppdaterFlowTest {
     @Mock lateinit var userInContext: UserInContext
     @Mock lateinit var kvpService: KvpService
     @Mock lateinit var oppfolgingsperiodeService: OppfolgingsperiodeService
-    @Mock lateinit var migreringService: MigreringService
 
     private lateinit var aktivitetService: AktivitetService
     private lateinit var appService: AktivitetAppService
@@ -78,7 +76,7 @@ class AktivitetOpprettOgOppdaterFlowTest {
         aktivitetService = AktivitetService(aktivitetDAO, avtaltMedNavService, metricService, sistePeriodeService, oversiktenService)
         appService = AktivitetAppService(authService, aktivitetService, metricService, personService, bigQueryClient, oversiktenService)
         mapperService = AktivitetDataMapperService(authService, aktorOppslagClient, userInContext, kvpService, oppfolgingsperiodeService)
-        controller = AktivitetsplanController(authService, appService, mapperService, userInContext, migreringService, kvpService)
+        controller = AktivitetsplanController(authService, appService, mapperService, userInContext, kvpService)
     }
 
     private fun setupNavBrukerContext() {

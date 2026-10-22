@@ -1,9 +1,7 @@
 package no.nav.veilarbaktivitet.aktivitetskort
 
-import io.getunleash.Unleash
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.MessageSource
-import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDAO
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingWithAktivitetStatus
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetTypeDTO
@@ -44,11 +42,7 @@ class MigreringServiceTest {
     @Test
     fun `skal telle feil status og riktig status`() {
         val metrikker = mock(AktivitetskortMetrikker::class.java)
-        val migreringService = MigreringService(
-            unleash = mock(Unleash::class.java),
-            idMappingDAO = mock(IdMappingDAO::class.java),
-            aktivitetskortMetrikker = metrikker
-        )
+        val migreringService = MigreringService(metrikker)
         migreringService.countArenaAktiviteter(
             foer = testAktiviteter,
             idMappings = mapOf(
@@ -76,11 +70,7 @@ class MigreringServiceTest {
     @Test
     fun `skal telle riktig når ingen er migrert`() {
         val metrikker = mock(AktivitetskortMetrikker::class.java)
-        val migreringService = MigreringService(
-            unleash = mock(Unleash::class.java),
-            idMappingDAO = mock(IdMappingDAO::class.java),
-            aktivitetskortMetrikker = metrikker
-        )
+        val migreringService = MigreringService(metrikker)
         migreringService.countArenaAktiviteter(
             foer = testAktiviteter,
             idMappings = mapOf()
@@ -91,11 +81,7 @@ class MigreringServiceTest {
     @Test
     fun `skal telle riktig når alle er feil status`() {
         val metrikker = mock(AktivitetskortMetrikker::class.java)
-        val migreringService = MigreringService(
-            unleash = mock(Unleash::class.java),
-            idMappingDAO = mock(IdMappingDAO::class.java),
-            aktivitetskortMetrikker = metrikker
-        )
+        val migreringService = MigreringService(metrikker)
         migreringService.countArenaAktiviteter(
             foer = testAktiviteter,
             idMappings = mapOf(
@@ -131,11 +117,7 @@ class MigreringServiceTest {
     @Test
     fun `skal telle riktig når alle er aktiviteter ikke har oppfølgingsperiode`() {
         val metrikker = mock(AktivitetskortMetrikker::class.java)
-        val migreringService = MigreringService(
-            unleash = mock(Unleash::class.java),
-            idMappingDAO = mock(IdMappingDAO::class.java),
-            aktivitetskortMetrikker = metrikker
-        )
+        val migreringService = MigreringService(metrikker)
         migreringService.countArenaAktiviteter(
             foer = testAktiviteter.let {
                listOf(

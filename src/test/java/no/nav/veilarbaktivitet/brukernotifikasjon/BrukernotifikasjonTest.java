@@ -48,7 +48,6 @@ import java.util.UUID;
 import static no.nav.veilarbaktivitet.util.KafkaTestService.DEFAULT_WAIT_TIMEOUT_DURATION;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.when;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
 class BrukernotifikasjonTest extends SpringBootTestBase {
@@ -100,8 +99,6 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
         brukerVarselConsumer = brukernotifikasjonAsserts.getBrukervarselConsumer().getConsumer();
         brukerVarselHendelseConsumer = kafkaTestService.createStringStringConsumer(brukervarselHendelseTopic);
         DbTestUtils.cleanupTestDb(jdbc.getJdbcTemplate());
-
-        when(unleash.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)).thenReturn(true);
     }
 
     @AfterEach
@@ -327,7 +324,6 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
 
     @Test
     void skal_kunne_opprette_brukernotifications_pa_fho_pa_arena_aktiviteter_som_ER_migrert_og_ha_lenke_med_riktig_id() {
-        when(unleash.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)).thenReturn(true);
         var mockBruker = navMockService.createBruker(BrukerOptions.happyBruker());
         var mockVeileder = navMockService.createVeileder(mockBruker);
         var arenaId = new ArenaId("ARENATA123");

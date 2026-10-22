@@ -175,7 +175,7 @@ open class ArenaService(
             sisteIdMappinger
         )
 
-        val skalFiltreresBort = migreringService.filtrerBortArenaTiltakHvisToggleAktiv(idMappings.keys)
+        val skalFiltreresBort = migreringService.filtrerBortArenaTiltak(idMappings.keys)
         val filtrerteArenaAktiviteter = arenaAktiviteter
             // Bare vis arena aktiviteter som mangler id, dvs ikke er migrert
             .filter { skalFiltreresBort(it) }
