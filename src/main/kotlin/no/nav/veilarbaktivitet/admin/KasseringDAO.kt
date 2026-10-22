@@ -67,10 +67,6 @@ open class KasseringDAO (
     open fun slettAktivitet(aktivitetId: Long) {
         val params = MapSqlParameterSource().addValue("aktivitetId", aktivitetId)
         namedParameterJdbcTemplate.update(
-            "DELETE FROM AKTIVITET_BRUKERNOTIFIKASJON WHERE AKTIVITET_ID = :aktivitetId",
-            params
-        )
-        namedParameterJdbcTemplate.update(
             "DELETE FROM EKSTERNAKTIVITET WHERE AKTIVITET_ID = :aktivitetId",
             params
         )
