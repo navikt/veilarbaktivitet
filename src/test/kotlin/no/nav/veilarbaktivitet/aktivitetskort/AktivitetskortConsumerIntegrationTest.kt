@@ -93,7 +93,6 @@ class AktivitetskortConsumerIntegrationTest(
 
     @BeforeEach
     fun cleanupBetweenTests() {
-        Mockito.`when`(unleash.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)).thenReturn(true)
         brukernotifikasjonAsserts = BrukernotifikasjonAsserts(brukernotifikasjonAssertsConfig)
         aktivitetskortFeilListener.clearQueue()
     }
@@ -1029,57 +1028,22 @@ class AktivitetskortConsumerIntegrationTest(
     fun tiltak_endepunkt_skal_legge_pa_aktivitet_id_og_versjon_pa_migrerte_arena_aktiviteteter() {
         val arenaaktivitetId = ArenaId("ARENATA123")
         val tiltaksaktivitet = aktivitetskort(UUID.randomUUID(), AktivitetskortStatus.PLANLAGT)
-        Mockito.`when`(unleash.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE))
-            .thenReturn(false)
+
         val preMigreringArenaAktiviteter = aktivitetTestService.hentArenaAktiviteter(mockBruker, arenaaktivitetId)
         assertThat(preMigreringArenaAktiviteter).hasSize(1)
         assertThat(preMigreringArenaAktiviteter[0].id).isEqualTo(arenaaktivitetId.id()) // Skal være arenaid
         val context = arenaMeldingHeaders(mockBruker, arenaaktivitetId)
         aktivitetTestService.opprettEksterntArenaKort(ArenaKort(tiltaksaktivitet, context))
-        Mockito.`when`(unleash.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)).thenReturn(true)
+
         val aktivitet = aktivitetTestService.hentAktiviteterForFnr(mockBruker).aktiviteter.stream().findFirst().get()
         val tekniskId = aktivitet.id
         val versjon = aktivitet.versjon.toLong()
-        Mockito.`when`(unleash.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE))
-            .thenReturn(false)
+
         val postMigreringArenaAktiviteter = aktivitetTestService.hentArenaAktiviteter(mockBruker, arenaaktivitetId)
         assertThat(postMigreringArenaAktiviteter).hasSize(1)
         val migrertArenaAktivitet = postMigreringArenaAktiviteter[0]
         assertThat(migrertArenaAktivitet.id).isEqualTo(tekniskId)
         assertThat(migrertArenaAktivitet.versjon).isEqualTo(versjon)
-    }
-
-    @Test
-    fun skal_alltid_vere_like_mange_aktiviteter_med_toggle_av_eller_pa() {
-        val arenaaktivitetId = ArenaId("ARENATA3123")
-        val tiltaksaktivitet = aktivitetskort(UUID.randomUUID(), AktivitetskortStatus.PLANLAGT)
-
-        // Default toggle for testene er på
-        Mockito.`when`(unleash.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE))
-            .thenReturn(false)
-        val preMigreringArenaAktiviteter = aktivitetTestService.hentArenaAktiviteter(mockBruker, arenaaktivitetId)
-        assertThat(preMigreringArenaAktiviteter).hasSize(0) // ikke 1, fordi alle tiltak er filtrert bort
-        val preMigreringVeilarbAktiviteter = aktivitetTestService.hentAktiviteterForFnr(mockBruker).aktiviteter
-        assertThat(preMigreringVeilarbAktiviteter).isEmpty()
-
-        // Migrer aktivtet
-        aktivitetTestService.opprettEksterntArenaKort(
-            ArenaKort(
-                tiltaksaktivitet,
-                arenaMeldingHeaders(mockBruker, arenaaktivitetId)
-            )
-        )
-        // Toggle av, skal ikke vise migrerte aktiviteter
-        val toggleAvArenaAktiviteter = aktivitetTestService.hentArenaAktiviteter(mockBruker, arenaaktivitetId)
-        assertThat(toggleAvArenaAktiviteter).hasSize(0) // Ikke 1, fordi alle tiltak er filtrert bort
-        val toggleAvVeilarbAktiviteter = aktivitetTestService.hentAktiviteterForFnr(mockBruker).aktiviteter
-        assertThat(toggleAvVeilarbAktiviteter).isEmpty()
-        // Toggle på, skal vise migrerte aktiviteter
-        Mockito.`when`(unleash.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)).thenReturn(true)
-        val togglePaArenaAktiviteter = aktivitetTestService.hentArenaAktiviteter(mockBruker, arenaaktivitetId)
-        assertThat(togglePaArenaAktiviteter).isEmpty()
-        val togglePaVeilarbAktiviteter = aktivitetTestService.hentAktiviteterForFnr(mockBruker).aktiviteter
-        assertThat(togglePaVeilarbAktiviteter).hasSize(1)
     }
 
     @Test
@@ -1132,11 +1096,12 @@ class AktivitetskortConsumerIntegrationTest(
     }
 
     @Test
-    fun skal_vise_lonnstilskudd_men_ikke_migrerte_arena_aktiviteter_hvis_toggle_er_av() {
+    fun `skal vise både akaaas aktiviteter via ACL (arenakort) og nye ekstern kort (ikke fra acl)`() {
         val arenaAktivitet = aktivitetskort(UUID.randomUUID(), AktivitetskortStatus.PLANLAGT)
         val arenata123 = ArenaId("ARENATA123")
         val kontekst = arenaMeldingHeaders(mockBruker, arenata123, "MIDLONNTIL")
         aktivitetTestService.opprettEksterntArenaKort(listOf(ArenaKort(arenaAktivitet, kontekst)))
+
         val midlertidigLonnstilskudd = aktivitetskort(UUID.randomUUID(), AktivitetskortStatus.PLANLAGT)
         val kafkaAktivitetskortWrapperDTO = KafkaAktivitetskortWrapperDTO(
             midlertidigLonnstilskudd,
@@ -1145,15 +1110,9 @@ class AktivitetskortConsumerIntegrationTest(
             MessageSource.TEAM_TILTAK
         )
         aktivitetTestService.opprettEksterntAktivitetsKort(listOf(kafkaAktivitetskortWrapperDTO))
-        Mockito.`when`(unleash.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)).thenReturn(true)
+
         val alleEksternAktiviteter = aktivitetTestService.hentAktiviteterForFnr(mockBruker)
         assertThat(alleEksternAktiviteter.aktiviteter).hasSize(2)
-        Mockito.`when`(unleash.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE))
-            .thenReturn(false)
-        val eksterneAktiviteterUnntattMigrerteArenaAktiviteter = aktivitetTestService.hentAktiviteterForFnr(mockBruker)
-        assertThat(eksterneAktiviteterUnntattMigrerteArenaAktiviteter.aktiviteter).hasSize(1)
-        val aktivitet = eksterneAktiviteterUnntattMigrerteArenaAktiviteter.getAktiviteter()[0]
-        assertThat(aktivitet.eksternAktivitet.type).isEqualTo(AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD)
     }
 
     @Test

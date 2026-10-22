@@ -71,7 +71,7 @@ class ArenaControllerTest {
     private final Unleash unleash = mock(Unleash.class);
     private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
     private final AktivitetskortMetrikker aktivitetskortMetrikker = new AktivitetskortMetrikker(meterRegistry);
-    private final MigreringService migreringService = new MigreringService(unleash, idMappingDAO, aktivitetskortMetrikker);
+    private final MigreringService migreringService = new MigreringService(aktivitetskortMetrikker);
     private final OppfolgingsperiodeDAO oppfolgingsperiodeDAO = mock(OppfolgingsperiodeDAO.class);
     private final ArenaService arenaService = new ArenaService(fhoDao, meterRegistry, brukernotifikasjonArenaAktivitetService, veilarbarenaClient, idMappingDAO, personService, aktivitetDAO, oppfolgingsperiodeDAO, migreringService);
 

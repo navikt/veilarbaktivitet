@@ -1,8 +1,5 @@
 package no.nav.veilarbaktivitet.aktivitet
 
-import java.util.Arrays
-import java.util.Optional
-import kotlin.jvm.optionals.getOrNull
 import lombok.extern.slf4j.Slf4j
 import no.nav.common.types.identer.EnhetId
 import no.nav.poao.dab.spring_a2_annotations.auth.AuthorizeFnr
@@ -16,21 +13,15 @@ import no.nav.veilarbaktivitet.aktivitet.dto.EtikettTypeDTO
 import no.nav.veilarbaktivitet.aktivitet.dto.KanalDTO
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDataMapperService
-import no.nav.veilarbaktivitet.aktivitetskort.MigreringService
 import no.nav.veilarbaktivitet.config.AktivitetResource
 import no.nav.veilarbaktivitet.config.OppfolgingsperiodeResource
 import no.nav.veilarbaktivitet.kvp.KvpService
 import no.nav.veilarbaktivitet.person.UserInContext
 import org.springframework.http.HttpStatus
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.PutMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
+import java.util.*
+import kotlin.jvm.optionals.getOrNull
 
 @Slf4j
 @RestController
@@ -40,7 +31,6 @@ class AktivitetsplanController(
     private val appService: AktivitetAppService,
     private val aktivitetDataMapperService: AktivitetDataMapperService,
     private val userInContext: UserInContext,
-    private val migreringService: MigreringService,
     private val kvpService: KvpService,
 ) {
     @Deprecated("Bruk graphql endepunkt")
@@ -55,8 +45,7 @@ class AktivitetsplanController(
             .filter { aktivitet -> filtrerKontorsperret(aktivitet) }
             .map { a -> AktivitetDTOMapper.mapTilAktivitetDTO(a, erEksternBruker) }
             .toList()
-        val filtrerteAktiviter = migreringService.visMigrerteArenaAktiviteterHvisToggleAktiv(aktiviter)
-        return AktivitetsplanDTO().setAktiviteter(filtrerteAktiviter)
+        return AktivitetsplanDTO().setAktiviteter(aktiviter)
     }
 
     @GetMapping("/{id}") //kan ikke bruke anotasjonen pga kasserings endepunktet

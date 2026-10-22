@@ -64,11 +64,10 @@ class AktivitetskortController(
 
     private fun getAktiviteter(userFnr: Person): List<AktivitetDTO> {
         val erEksternBruker: Boolean = authService.erEksternBruker()
-        val aktiviter = appService
+        return appService
             .hentAktiviteterForIdent(userFnr)
             .let { filtrerKontorsperret(it) }
             .map { a -> AktivitetDTOMapper.mapTilAktivitetDTO(a, erEksternBruker) }
-        return migreringService.visMigrerteArenaAktiviteterHvisToggleAktiv(aktiviter)
     }
 
     @QueryMapping

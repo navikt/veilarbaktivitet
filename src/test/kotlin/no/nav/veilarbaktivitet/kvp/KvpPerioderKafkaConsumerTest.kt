@@ -4,7 +4,6 @@ import no.nav.veilarbaktivitet.SpringBootTestBase
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortUtil
-import no.nav.veilarbaktivitet.aktivitetskort.MigreringService
 import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortStatus
 import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType
 import no.nav.veilarbaktivitet.aktivitetskort.dto.KafkaAktivitetskortWrapperDTO
@@ -17,7 +16,6 @@ import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.kafka.core.KafkaTemplate
@@ -45,7 +43,6 @@ class KvpPerioderKafkaConsumerTest : SpringBootTestBase() {
             .build()
         mockBrukerMedKvp = navMockService.createBruker(medKvp)
         mockVeileder = navMockService.createVeileder(mockBrukerMedKvp)
-        whenever(unleash.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)).thenReturn(true)
     }
 
     @Test

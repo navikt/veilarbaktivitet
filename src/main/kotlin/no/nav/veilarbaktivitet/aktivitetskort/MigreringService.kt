@@ -1,23 +1,17 @@
 package no.nav.veilarbaktivitet.aktivitetskort
 
-import io.getunleash.Unleash
 import lombok.extern.slf4j.Slf4j
-import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.MessageSource
-import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDAO
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingWithAktivitetStatus
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetTypeDTO
 import no.nav.veilarbaktivitet.arena.model.ArenaId
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import java.util.*
 
 @Service
 @Slf4j
 class MigreringService (
-    private val unleash: Unleash,
-    private val idMappingDAO: IdMappingDAO,
     private val aktivitetskortMetrikker: AktivitetskortMetrikker
 ) {
     val log = LoggerFactory.getLogger(javaClass)
@@ -78,42 +72,18 @@ class MigreringService (
         aktivitetskortMetrikker.countMigrerteArenaAktiviteter(type, total, migrertRiktigStatus, migrertFeilStatus, ikkeMigrert, ikkeMigrertManglerOppfolg, migrertAvAndreTeam)
     }
 
-    fun filtrerBortArenaTiltakHvisToggleAktiv(arenaIds: Set<ArenaId?>): (ArenaAktivitetDTO) -> Boolean {
-        return if (unleash.isEnabled(VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)) {
-            // Hvis migrert, skjul fra /tiltak endepunkt
-            { arenaAktivitetDTO: ArenaAktivitetDTO ->
-                /* Fjern "historiserte" arena-aktiviteter ref
+    fun filtrerBortArenaTiltak(arenaIds: Set<ArenaId?>): (ArenaAktivitetDTO) -> Boolean {
+        // Hvis migrert, skjul fra /tiltak endepunkt
+        return { arenaAktivitetDTO ->
+            /* Fjern "historiserte" arena-aktiviteter ref
                 * https://confluence.adeo.no/pages/viewpage.action?pageId=414017745 */
-                val erHistorisertTiltak = arenaAktivitetDTO.id.startsWith("ARENATAH")
-                val erMigrert = arenaIds.contains(ArenaId(arenaAktivitetDTO.id))
-                val skalVises = !erHistorisertTiltak && !erMigrert
-                skalVises
-            }
-        } else {
-            { true }
+            val erHistorisertTiltak = arenaAktivitetDTO.id.startsWith("ARENATAH")
+            val erMigrert = arenaIds.contains(ArenaId(arenaAktivitetDTO.id))
+            val skalVises = !erHistorisertTiltak && !erMigrert
+            skalVises
         }
-    }
-
-    fun visMigrerteArenaAktiviteterHvisToggleAktiv(aktiviteter: List<AktivitetDTO>): List<AktivitetDTO> {
-        return if (unleash.isEnabled(VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)) {
-            aktiviteter
-        } else {
-            // Ikke vis migrerte aktiviter
-            val funksjonelleIds = aktiviteter.stream().map { obj: AktivitetDTO -> obj.funksjonellId }
-                .filter { obj: UUID? -> Objects.nonNull(obj) }
-                .toList()
-            val idMapping = idMappingDAO.getMappingsByFunksjonellId(funksjonelleIds)
-            aktiviteter.stream().filter { aktivitet: AktivitetDTO -> !idMapping.containsKey(aktivitet.funksjonellId) }
-                .toList()
-        }
-    }
-
-    companion object {
-        const val VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE = "veilarbaktivitet.vis_migrerte_arena_aktiviteter"
     }
 }
-
-typealias OppfolgingsperiodeId = UUID
 
 enum class MigreringsStatus {
     IkkeMigrert,
