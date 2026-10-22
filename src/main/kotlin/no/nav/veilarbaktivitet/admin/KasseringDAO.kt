@@ -66,6 +66,9 @@ open class KasseringDAO (
     @Transactional
     open fun slettAktivitet(aktivitetId: Long) {
         val params = MapSqlParameterSource().addValue("aktivitetId", aktivitetId)
+        /* Sletter ikke fra ID_MAPPINGER for ekstern-aktiviteter. Id-mappinger sier om en arena-aktivitet har blitt migrert over
+        * på AKAAS enten via arena-aktivitet-acl eller direkte fra et annet team. Sletting av ekstern-aktivitet skjer
+        * som oftest fordi samme aktivitet er duplisert og da er den fortsatt å anse som migrert */
         namedParameterJdbcTemplate.update(
             "DELETE FROM EKSTERNAKTIVITET WHERE AKTIVITET_ID = :aktivitetId",
             params
