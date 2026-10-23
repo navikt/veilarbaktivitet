@@ -591,6 +591,17 @@ public class AktivitetTestService {
                 .extract().response();
     }
 
+    public void slettAktivitet(MockVeileder veileder, String aktivitetId) {
+        veileder
+                .createRequest()
+                .and()
+                .when()
+                .pathParam("aktivitetId", aktivitetId)
+                .delete("http://localhost:" + port + "/veilarbaktivitet/api/admin/aktiviteter/{aktivitetId}")
+                .then()
+                .assertThat().statusCode(HttpStatus.OK.value());
+    }
+
     @SuppressWarnings("unchecked")
     @SneakyThrows
     public void opprettEksterntAktivitetsKort(List<KafkaAktivitetskortWrapperDTO> meldinger) {
@@ -604,8 +615,9 @@ public class AktivitetTestService {
     }
 
     public AktivitetDTO hentAktivitetByFunksjonellId(MockBruker mockBruker, MockVeileder veileder, UUID funksjonellId) {
-        return hentAktiviteterForFnr(mockBruker, veileder)
-                .getAktiviteter().stream()
+        var aktiviteter = hentAktiviteterForFnr(mockBruker, veileder)
+                .getAktiviteter();
+        return aktiviteter.stream()
                 .filter((a) -> Objects.equals(a.getFunksjonellId(), funksjonellId))
                 .findFirst().orElseThrow(() -> new IllegalStateException("Fant ikke aktivitet med funksjonellId %s".formatted(funksjonellId)));
     }
