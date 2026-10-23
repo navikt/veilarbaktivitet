@@ -65,7 +65,7 @@ class KasseringsService(
 
     @Transactional
     fun slettAktivitet(aktivitet: AktivitetData) {
-        if (!aktivitet.fhoId.isNullOrBlank()) {
+        if (aktivitet.fhoId.isNullOrBlank()) {
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Aktiviteter med forhåndsorientering kan ikke slettes")
         }
 
