@@ -9,6 +9,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.KasseringsBestilling
 import no.nav.veilarbaktivitet.aktivitetskort.feil.AktivitetIkkeFunnetFeil
 import no.nav.veilarbaktivitet.aktivitetskort.feil.ErrorMessage
+import no.nav.veilarbaktivitet.avtalt_med_nav.Forhaandsorientering
 import no.nav.veilarbaktivitet.oversikten.OversiktenService
 import no.nav.veilarbaktivitet.person.Innsender
 import no.nav.veilarbaktivitet.person.Person
@@ -64,8 +65,8 @@ class KasseringsService(
     }
 
     @Transactional
-    fun slettAktivitet(aktivitet: AktivitetData) {
-        if (aktivitet.fhoId.isNullOrBlank()) {
+    fun slettAktivitet(aktivitet: AktivitetData, fho: Forhaandsorientering?) {
+        if (fho != null) {
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Aktiviteter med forhåndsorientering kan ikke slettes")
         }
 

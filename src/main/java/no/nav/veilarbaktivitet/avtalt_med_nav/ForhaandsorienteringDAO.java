@@ -16,6 +16,7 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
@@ -181,6 +182,7 @@ public class ForhaandsorienteringDAO {
         }).flatMap(List::stream).toList();
     }
 
+    @Nullable
     public Forhaandsorientering getFhoForAktivitet(long aktivitetId) {
         try {
             MapSqlParameterSource params = new MapSqlParameterSource()

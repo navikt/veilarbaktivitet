@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.admin
 
 import no.nav.poao.dab.spring_auth.IAuthService
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO
+import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDAO
 import no.nav.veilarbaktivitet.person.Person
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
@@ -14,6 +15,7 @@ import org.springframework.web.server.ResponseStatusException
 class KasserController(
     private val authService: IAuthService,
     private val aktivitetDAO: AktivitetDAO,
+    private val fhoDAO: ForhaandsorienteringDAO,
     private val kasseringsService: KasseringsService,
     @Value("\${app.env.kassering.godkjenteIdenter}")
     private val godkjenteIdenter: String
@@ -37,7 +39,8 @@ class KasserController(
         val id = aktivitetId.toLong()
         val aktivitetData = aktivitetDAO.hentAktivitet(id)
         kjorHvisTilgang(aktivitetData.aktorId, aktivitetId, "slettet") {
-            kasseringsService.slettAktivitet(aktivitetData)
+            val fho = fhoDAO.getFhoForAktivitet(id)
+            kasseringsService.slettAktivitet(aktivitetData, fho)
         }
     }
 
