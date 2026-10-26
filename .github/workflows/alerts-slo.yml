@@ -36,12 +36,12 @@ jobs:
           path: alerts-feilrate-slo.yaml
 
       - name: deploy to dev-gcp
-        uses: nais/deploy/actions/deploy@7ad7c2b833e1db74a80954e3ee6bb6ac060a8ae7
+        uses: nais/deploy/actions/deploy@f93637de5533a1bb573f940ceb7527a5b3b0dea0
         env:
           CLUSTER: dev-gcp
           RESOURCE:  alerts-feilrate-slo.yaml
       - name: deploy to prod-gcp
-        uses: nais/deploy/actions/deploy@7ad7c2b833e1db74a80954e3ee6bb6ac060a8ae7
+        uses: nais/deploy/actions/deploy@f93637de5533a1bb573f940ceb7527a5b3b0dea0
         env:
           CLUSTER: prod-gcp
           RESOURCE: alerts-feilrate-slo.yaml
