@@ -12,7 +12,6 @@ import no.nav.veilarbaktivitet.util.DateUtils
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.Test
-import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
 
@@ -40,7 +39,7 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
         """.trimIndent().replace("\n", "")
 
         val gammelPeriodeId = UUID.randomUUID()
-        val gammelperiodeStart = ZonedDateTime.now().minusYears(5)
+        val gammelperiodeStart = mockBruker.oppfolgingsperioder.first().startTid.minusYears(1)
         val gammelperiodeSlutt = gammelperiodeStart
         val nyPeriode = mockBruker.oppfolgingsperiodeId
         val jobbAktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
@@ -64,7 +63,7 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
         assertThat(nyestePeriode?.start).isCloseTo(mockBruker.oppfolgingsperioder.first().startTid, within(1, ChronoUnit.MILLIS))
         assertThat(nyestePeriode?.slutt).isNull()
         assertThat(gammelPeriode?.start).isCloseTo(gammelperiodeStart, within(1, ChronoUnit.MILLIS))
-        assertThat(gammelPeriode?.start).isCloseTo(gammelperiodeSlutt, within(1, ChronoUnit.MILLIS))
+        assertThat(gammelPeriode?.slutt).isCloseTo(gammelperiodeSlutt, within(1, ChronoUnit.MILLIS))
     }
 
     @Test
