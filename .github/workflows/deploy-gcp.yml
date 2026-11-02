@@ -30,12 +30,12 @@ jobs:
           java-version: 21
           distribution: 'temurin'
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6
+        uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c
       - name: Execute Gradle build
         run: ./gradlew build --scan
       - name: Slack Notification (test failure)
         if: failure()
-        uses: rtCamp/action-slack-notify@33ca3be66c6f378fe1610fd1d5258632dbed5e58
+        uses: rtCamp/action-slack-notify@06cc13f74fa8d4d2296c09455d91e9453e4025f4
         env:
           SLACK_COLOR: danger
           SLACK_USERNAME: Github Actions
@@ -84,7 +84,7 @@ jobs:
           TELEMETRY: ${{ needs.test-build-and-push.outputs.telemetry }}
       - name: Slack Notification (deploy failure)
         if: failure()
-        uses: rtCamp/action-slack-notify@33ca3be66c6f378fe1610fd1d5258632dbed5e58
+        uses: rtCamp/action-slack-notify@06cc13f74fa8d4d2296c09455d91e9453e4025f4
         env:
           SLACK_COLOR: danger
           SLACK_USERNAME: Github Actions
