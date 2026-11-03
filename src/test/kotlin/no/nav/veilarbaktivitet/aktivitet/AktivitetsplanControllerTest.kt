@@ -4,6 +4,8 @@ import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import no.nav.common.json.JsonUtils
 import no.nav.veilarbaktivitet.SpringBootTestBase
+import no.nav.veilarbaktivitet.aktivitet.domain.Motedeltaker
+import no.nav.veilarbaktivitet.aktivitet.domain.MotedeltakerRolle
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions
 import no.nav.veilarbaktivitet.oversikten.OversiktenMelding
@@ -14,6 +16,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertNotNull
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 
@@ -394,5 +397,53 @@ internal class AktivitetsplanControllerTest: SpringBootTestBase() {
         // Verifiser at det fortsatt bare er 2 meldinger (START og STOPP fra før)
         val meldingerEtterNyttReferat = oversiktenMeldingMedMetadataRepository.hentAlleSomSkalSendes()
         assertThat(meldingerEtterNyttReferat.size).isEqualTo(2)
+    }
+
+
+    @Test
+    fun `Skal kunne legge til møtedeltakere når man oppretter nytt møte`() {
+        val happyBruker = navMockService.createBruker()
+        val veileder = navMockService.createVeileder(happyBruker)
+
+        val aktivitet = aktivitetTestService.opprettAktivitetViaHttp(
+            happyBruker,
+            veileder,
+            AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE)
+                .setOppfolgingsperiodeId(happyBruker.oppfolgingsperiodeId)
+                .setMotedeltakere(listOf(
+                    Motedeltaker(rolle = MotedeltakerRolle.VEILEDER, navn = "Veileder Veiledersen"),
+                    Motedeltaker(rolle = MotedeltakerRolle.BRUKER, navn = "Bruker Brukersen"),
+                    Motedeltaker(rolle = MotedeltakerRolle.MENTOR_FADDER, navn = "Fadder Faddersen"),
+                ))
+        )
+
+        assertThat(aktivitet.motedeltakere.size).isEqualTo(3)
+        aktivitet.motedeltakere.map { it.deltakerId }.forEach {deltakerId ->
+            assertNotNull(deltakerId)
+        }
+        aktivitet.motedeltakere.map { it.opprettet }.forEach {opprettet ->
+            assertNotNull(opprettet)
+            assertThat(opprettet).isCloseTo(ZonedDateTime.now(), within(500, ChronoUnit.MILLIS))
+        }
+    }
+
+    @Test
+    fun `Veileder skal kunne legge til møtedeltakere på eksisterende møter`() {
+
+    }
+
+    @Test
+    fun `Veileder skal kunne fjerne møtedeltakere fra eksisterende møter`() {
+
+    }
+
+    @Test
+    fun `Bruker skal ikke kunne legge til møtedeltakere på eksisterende møter`() {
+
+    }
+
+    @Test
+    fun `Veileder skal ikke kunne fjerne møtedeltakere fra eksisterende møter`() {
+
     }
 }

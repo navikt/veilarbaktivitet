@@ -405,52 +405,6 @@ class AktivitetOpprettOgOppdaterFlowTest {
             assertThat(captured.behandlingAktivitetData).isNull()
         }
 
-
-        @Test
-        fun `Skal kunne legge til møtedeltakere når man oppretter nytt møte`() {
-            setupNavBrukerContext()
-            val dto = baseDtoMedUnikeVerdier(AktivitetTypeDTO.MOTE)
-            dto.setMotedeltakere(listOf(
-                Motedeltaker(rolle = MotedeltakerRolle.VEILEDER, navn = "Veileder Veiledersen"),
-                Motedeltaker(rolle = MotedeltakerRolle.BRUKER, navn = "Bruker Brukersen"),
-                Motedeltaker(rolle = MotedeltakerRolle.MENTOR_FADDER, navn = "Fadder Faddersen"),
-            ))
-            stubOpprettNyAktivitetReturnsInput()
-
-            val response = controller.opprettNyAktivitetPaOppfolgingsPeriode(dto, false)
-
-            val capturedArgument = captureOpprettNyAktivitet()
-            assertThat(capturedArgument.moteData.motedeltakere.size).isEqualTo(3)
-            assertThat(response.motedeltakere.size).isEqualTo(capturedArgument.moteData.motedeltakere.size)
-            val opprettetTidspunkter = response.motedeltakere.map { it.opprettet }
-            opprettetTidspunkter.forEach {
-                assertThat(it).isCloseTo(
-                    ZonedDateTime.now(),
-                    within(500, ChronoUnit.MILLIS)
-                )
-            }
-        }
-
-        @Test
-        fun `Veileder skal kunne legge til møtedeltakere på eksisterende møter`() {
-
-        }
-
-        @Test
-        fun `Veileder skal kunne fjerne møtedeltakere fra eksisterende møter`() {
-
-        }
-
-        @Test
-        fun `Bruker skal ikke kunne legge til møtedeltakere på eksisterende møter`() {
-
-        }
-
-        @Test
-        fun `Veileder skal ikke kunne fjerne møtedeltakere fra eksisterende møter`() {
-
-        }
-
         @Test
         fun `opprett SAMTALEREFERAT - alle felter mappes korrekt og ikke forvekslet`() {
             setupNavBrukerContext()

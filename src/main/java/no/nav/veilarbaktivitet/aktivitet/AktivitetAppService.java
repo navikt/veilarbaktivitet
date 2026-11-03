@@ -2,10 +2,7 @@ package no.nav.veilarbaktivitet.aktivitet;
 
 import lombok.RequiredArgsConstructor;
 import no.nav.poao.dab.spring_auth.IAuthService;
-import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
-import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
-import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
-import no.nav.veilarbaktivitet.aktivitet.domain.MoteData;
+import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.AktivitetsEndring;
 import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.AktivitetsOpprettelse;
 import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.Mote;

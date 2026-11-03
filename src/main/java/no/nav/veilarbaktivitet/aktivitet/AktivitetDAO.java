@@ -9,6 +9,7 @@ import no.nav.common.json.JsonUtils;
 import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.aktivitet.feil.AktivitetVersjonOutOfOrderException;
 import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvUtdatertVersjonException;
+import no.nav.veilarbaktivitet.config.database.Database;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.stilling_fra_nav.CvKanDelesData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.KontaktpersonData;
@@ -230,11 +231,11 @@ public class AktivitetDAO {
         insertSokeAvtale(aktivitetId, versjon, aktivitet.getSokeAvtaleAktivitetData());
         insertIJobb(aktivitetId, versjon, aktivitet.getIJobbAktivitetData());
         insertBehandling(aktivitetId, versjon, aktivitet.getBehandlingAktivitetData());
-        insertMote(aktivitetId, versjon, aktivitet.getMoteData());
+        var oppdatertMoteData = insertMote(aktivitetId, versjon, aktivitet.getMoteData());
         insertStillingFraNav(aktivitetId, versjon, aktivitet.getStillingFraNavData());
         insertEksternAktivitet(aktivitetId, versjon, aktivitet.getEksternAktivitetData());
 
-        AktivitetData nyAktivitet = aktivitet.withId(aktivitetId).withVersjon(versjon);
+        AktivitetData nyAktivitet = aktivitet.withId(aktivitetId).withVersjon(versjon).withMoteData(oppdatertMoteData);
 
         log.info("opprettet {}", nyAktivitet);
         return nyAktivitet;
@@ -251,10 +252,11 @@ public class AktivitetDAO {
                 versjon);
     }
 
-    private void insertMote(long aktivitetId, long versjon, MoteData moteData) {
+    private MoteData insertMote(long aktivitetId, long versjon, MoteData moteData) {
         // language=sql
         String sql = """
-                    INSERT INTO MOTE(aktivitet_id, versjon, adresse, forberedelser, kanal, referat, referat_publisert) VALUES (
+                    
+                INSERT INTO MOTE(aktivitet_id, versjon, adresse, forberedelser, kanal, referat, referat_publisert) VALUES (
                     :aktivitet_id,
                     :versjon,
                     :adresse,
@@ -273,12 +275,12 @@ public class AktivitetDAO {
                     .addValue("referat", moteData.getReferat())
                     .addValue("referat_publisert", moteData.isReferatPublisert());
             namedParameterJdbcTemplate.update(sql, params);
-            insertMotedeltakere(aktivitetId, versjon, moteData.getMotedeltakere() != null ? moteData.getMotedeltakere() : Collections.emptyList());
         });
+        return moteData.withMotedeltakere(insertMotedeltakere(aktivitetId, versjon, moteData));
     }
 
-    private void insertMotedeltakere(long aktivitetId, long versjon, List<Motedeltaker> motedeltakere) {
-        if (motedeltakere.isEmpty()) return;
+    private List<Motedeltaker> insertMotedeltakere(long aktivitetId, long versjon, MoteData moteData) {
+        if (moteData == null || moteData.getMotedeltakere().isEmpty()) return List.of();
 
         String sql = """
                INSERT INTO MOTEDELTAKER(aktivitet_id, versjon, deltaker_id, rolle, navn) VALUES (
@@ -286,11 +288,11 @@ public class AktivitetDAO {
                 :versjon,
                 :deltaker_id,
                 :rolle,
-                :opprettet
-                :navn) 
+                :navn)
+                RETURNING deltaker_id, opprettet, rolle, navn
            """;
 
-        List<SqlParameterSource> paramsList = motedeltakere.stream().map(motedeltaker -> new VeilarbAktivitetSqlParameterSource()
+        List<SqlParameterSource> paramsList = moteData.getMotedeltakere().stream().map(motedeltaker -> new VeilarbAktivitetSqlParameterSource()
                 .addValue(AKTIVITETID, aktivitetId)
                 .addValue(VERSJON, versjon)
                 .addValue("deltaker_id", UUID.randomUUID())
@@ -299,7 +301,17 @@ public class AktivitetDAO {
                 .addValue("opprettet", motedeltaker.getOpprettet())
         ).collect(Collectors.toList());
 
-        namedParameterJdbcTemplate.batchUpdate(sql, paramsList.toArray(VeilarbAktivitetSqlParameterSource[]::new));
+        List<Motedeltaker> opprettedeMotedeltakere = paramsList.stream()
+                .map(params -> namedParameterJdbcTemplate.queryForObject(sql, params, (rs, rowNum) ->
+                        new Motedeltaker(
+                                EnumUtils.valueOf(MotedeltakerRolle.class, rs.getString("rolle")),
+                                rs.getString("navn"),
+                                Database.hentZonedDateTime(rs, "opprettet"),
+                                rs.getObject("deltaker_id", UUID.class)
+                        )
+                ))
+                .toList();
+        return opprettedeMotedeltakere;
     }
 
     private void insertStillingsSoek(long aktivitetId, long versjon, StillingsoekAktivitetData stillingsSoekAktivitet) {

@@ -21,6 +21,7 @@ public class AktivitetAssertUtils {
                 .transaksjonsType(actual.getTransaksjonsType())
                 .oppfolgingsperiodeId(actual.getOppfolgingsperiodeId())
                 .forhaandsorientering(actual.getForhaandsorientering())
+                .motedeltakere(actual.getMotedeltakere())
                 .build();
         // sammenlign resten - forutsetter implementert equals
         assertEquals(aktivitetDTO, actual);

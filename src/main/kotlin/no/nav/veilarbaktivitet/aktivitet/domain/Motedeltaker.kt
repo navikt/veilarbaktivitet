@@ -1,12 +1,14 @@
 package no.nav.veilarbaktivitet.aktivitet.domain
 
 import java.time.ZonedDateTime
+import java.util.UUID
 
 
 data class Motedeltaker(
     val rolle: MotedeltakerRolle,
     val navn: String,
-    val opprettet: ZonedDateTime = ZonedDateTime.now()
+    val opprettet: ZonedDateTime? = null,
+    val deltakerId: UUID? = null,
 )
 
 enum class MotedeltakerRolle(val rolle: String) {
