@@ -12,6 +12,7 @@ import no.nav.veilarbaktivitet.oversikten.OversiktenMelding
 import no.nav.veilarbaktivitet.oversikten.OversiktenMeldingMedMetadataDAO
 import no.nav.veilarbaktivitet.oversikten.UtsendingStatus
 import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder
+import no.nav.veilarbaktivitet.util.AktivitetTestService
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.Assertions
@@ -429,6 +430,26 @@ internal class AktivitetsplanControllerTest: SpringBootTestBase() {
 
     @Test
     fun `Veileder skal kunne legge til møtedeltakere på eksisterende møter`() {
+        val happyBruker = navMockService.createBruker()
+        val veileder = navMockService.createVeileder(happyBruker)
+        val aktivitetMedMøtedeltaker = aktivitetTestService.opprettAktivitetViaHttp(
+            happyBruker,
+            veileder,
+            AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE)
+                .setOppfolgingsperiodeId(happyBruker.oppfolgingsperiodeId)
+                .setMotedeltakere(listOf(
+                    Motedeltaker(rolle = MotedeltakerRolle.VEILEDER, navn = "Veileder Veiledersen"),
+                    Motedeltaker(rolle = MotedeltakerRolle.BRUKER, navn = "Bruker Brukersen"),
+                    Motedeltaker(rolle = MotedeltakerRolle.MENTOR_FADDER, navn = "Fadder Faddersen"),
+                ))
+        )
+
+        val aktivitetMedNyDeltaker = aktivitetMedMøtedeltaker.setMotedeltakere(
+            aktivitetMedMøtedeltaker.motedeltakere + Motedeltaker(rolle = MotedeltakerRolle.ARBEIDSGIVER, navn = "Arbeidsgiver Arbeidsgiversen")
+        )
+        val oppdatertAktivitet = aktivitetTestService.oppdaterAktivitetOk(happyBruker, veileder, aktivitetMedNyDeltaker)
+
+        assertThat(oppdatertAktivitet.motedeltakere.size).isEqualTo(4)
 
     }
 

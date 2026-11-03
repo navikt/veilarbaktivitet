@@ -186,6 +186,23 @@ public class AktivitetService {
         aktivitetDAO.oppdaterAktivitet(oppdatertAktivitet);
     }
 
+    public void oppdaterMotedeltakere(AktivitetData originalAktivitet, Mote.Endre aktivitetData) {
+        // TODO: Oppdater deltakere
+        final var oppdatertAktivitet = originalAktivitet
+                .toBuilder()
+                .tittel(aktivitetData.getMuterbareFelter().getTittel())
+                .beskrivelse(aktivitetData.getMuterbareFelter().getBeskrivelse())
+                .endretAvType(aktivitetData.getSporing().getEndretAvType())
+                .endretAv(aktivitetData.getSporing().getEndretAv())
+                .endretDato(DateUtils.zonedDateTimeToDate(aktivitetData.getSporing().getEndretDato()))
+                .transaksjonsType(AktivitetTransaksjonsType.DETALJER_ENDRET)
+                .moteData(ofNullable(originalAktivitet.getMoteData()).map(moteData ->
+                        moteData.withMotedeltakere(aktivitetData.getMoteData().getMotedeltakere())
+                ).orElse(null))
+                .build();
+        aktivitetDAO.oppdaterAktivitet(oppdatertAktivitet);
+    }
+
     public AktivitetData oppdaterReferat(
             AktivitetData originalAktivitet,
             ReferatEndring referatEndring

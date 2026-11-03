@@ -178,6 +178,7 @@ public class AktivitetAppService {
             if (original.getAktivitetType() == AktivitetTypeData.MOTE) {
                 boolean tidOgStedEndret = erMoteTidOgStedEndret(original, (Mote.Endre) aktivitet);
                 boolean detaljerEndret = erMoteDetaljerEndret(original, (Mote.Endre) aktivitet);
+                boolean motedeltakereEndret = erMoteDeltakereEndret(original, (Mote.Endre) aktivitet);
 
                 if (tidOgStedEndret) {
                     aktivitetService.oppdaterMoteTidStedOgKanal(original, (Mote.Endre) aktivitet);
@@ -186,6 +187,9 @@ public class AktivitetAppService {
                 }
                 if (detaljerEndret) {
                     aktivitetService.oppdaterMoteDetaljer(original, (Mote.Endre) aktivitet);
+                }
+                if (motedeltakereEndret) {
+                    aktivitetService.oppdaterMotedeltakere(original, (Mote.Endre) aktivitet);
                 }
             } else {
                 aktivitetService.oppdaterAktivitetFrist(original, aktivitet);
@@ -221,6 +225,16 @@ public class AktivitetAppService {
                 !Objects.equals(originalMote.getForberedelser(), nyMote.getForberedelser());
 
         return tittelEndret || beskrivelseEndret || forberedelserEndret;
+    }
+
+    private boolean erMoteDeltakereEndret(AktivitetData original, Mote.Endre aktivitet) {
+        MoteData originalMote = original.getMoteData();
+        MoteData nyMote = aktivitet.getMoteData();
+
+        boolean motedeltakereEndret = originalMote != null && nyMote != null &&
+                !Objects.equals(originalMote.getMotedeltakere(), nyMote.getMotedeltakere());
+
+        return motedeltakereEndret;
     }
 
     private void oppdaterSomEksternBruker(AktivitetsEndring aktivitet, AktivitetData original) {
