@@ -65,6 +65,7 @@ public class AktivitetDTOMapper {
                 .setAdresse(moteData.getAdresse())
                 .setForberedelser(moteData.getForberedelser())
                 .setKanal(moteData.getKanal())
+                .setMotedeltakere(moteData.getMotedeltakere())
                 .setReferat(skalViseReferat ? moteData.getReferat() : null)
                 .setErReferatPublisert(moteData.isReferatPublisert());
     }

@@ -7,10 +7,12 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
+import no.nav.veilarbaktivitet.aktivitet.domain.Motedeltaker;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
 
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -77,6 +79,7 @@ public class AktivitetDTO {
     private KanalDTO kanal;
     private String referat;
     private boolean erReferatPublisert;
+    private List<Motedeltaker> motedeltakere;
 
     private StillingFraNavData stillingFraNavData;
 

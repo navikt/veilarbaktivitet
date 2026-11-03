@@ -273,7 +273,33 @@ public class AktivitetDAO {
                     .addValue("referat", moteData.getReferat())
                     .addValue("referat_publisert", moteData.isReferatPublisert());
             namedParameterJdbcTemplate.update(sql, params);
+            insertMotedeltakere(aktivitetId, versjon, moteData.getMotedeltakere() != null ? moteData.getMotedeltakere() : Collections.emptyList());
         });
+    }
+
+    private void insertMotedeltakere(long aktivitetId, long versjon, List<Motedeltaker> motedeltakere) {
+        if (motedeltakere.isEmpty()) return;
+
+        String sql = """
+               INSERT INTO MOTEDELTAKER(aktivitet_id, versjon, deltaker_id, rolle, navn) VALUES (
+                :aktivitet_id,
+                :versjon,
+                :deltaker_id,
+                :rolle,
+                :opprettet
+                :navn) 
+           """;
+
+        List<SqlParameterSource> paramsList = motedeltakere.stream().map(motedeltaker -> new VeilarbAktivitetSqlParameterSource()
+                .addValue(AKTIVITETID, aktivitetId)
+                .addValue(VERSJON, versjon)
+                .addValue("deltaker_id", UUID.randomUUID())
+                .addValue("rolle", EnumUtils.getName(motedeltaker.getRolle()))
+                .addValue("navn", motedeltaker.getNavn())
+                .addValue("opprettet", motedeltaker.getOpprettet())
+        ).collect(Collectors.toList());
+
+        namedParameterJdbcTemplate.batchUpdate(sql, paramsList.toArray(VeilarbAktivitetSqlParameterSource[]::new));
     }
 
     private void insertStillingsSoek(long aktivitetId, long versjon, StillingsoekAktivitetData stillingsSoekAktivitet) {

@@ -248,6 +248,7 @@ class AktivitetDataMapperService(
             .kanal(aktivitetDTO.kanal)
             .referat(aktivitetDTO.referat)
             .referatPublisert(aktivitetDTO.isErReferatPublisert)
+            .motedeltakere(aktivitetDTO.motedeltakere)
             .build()
     }
 }
