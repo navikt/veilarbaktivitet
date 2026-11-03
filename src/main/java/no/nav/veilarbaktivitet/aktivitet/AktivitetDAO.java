@@ -281,12 +281,12 @@ public class AktivitetDAO {
         if (motedeltakere.isEmpty()) return;
 
         String sql = """
-               INSERT INTO MOTEDELTAKER(aktivitet_id, versjon, deltaker_id, rolle, navn) VALUES (
+               INSERT INTO MOTEDELTAKER(aktivitet_id, versjon, deltaker_id, rolle, opprettet, navn) VALUES (
                 :aktivitet_id,
                 :versjon,
                 :deltaker_id,
                 :rolle,
-                :opprettet
+                :opprettet,
                 :navn) 
            """;
 

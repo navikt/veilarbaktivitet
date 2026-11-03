@@ -7,6 +7,8 @@ import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.aktivitet.domain.MoteData;
+import no.nav.veilarbaktivitet.aktivitet.domain.Motedeltaker;
+import no.nav.veilarbaktivitet.aktivitet.domain.MotedeltakerRolle;
 import no.nav.veilarbaktivitet.aktivitet.dto.KanalDTO;
 import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvUtdatertVersjonException;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
@@ -23,6 +25,8 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -32,6 +36,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.junit.jupiter.api.Assertions.fail;
 
 @Slf4j
@@ -109,6 +114,29 @@ class LestAktivitetDAOTest extends SpringBootTestBase { //TODO burde denne skriv
 
         assertThat(aktiviteter).hasSize(1);
         assertThat(aktivitet).isEqualTo(aktiviteter.getFirst());
+    }
+
+    @Test
+    void opprette_mote_med_motedeltakere() {
+        final var opprettet = ZonedDateTime.parse("2026-01-15T10:00:00+01:00[Europe/Oslo]");
+        final var motedeltakere = List.of(
+                new Motedeltaker(MotedeltakerRolle.VEILEDER, "Veileder", opprettet),
+                new Motedeltaker(MotedeltakerRolle.TOLK, "Tolk", opprettet.plusMinutes(1))
+        );
+        final var mote = AktivitetDataTestBuilder.nyMoteAktivitet();
+        final var aktivitet = addAktivitet(mote.withMoteData(mote.getMoteData().withMotedeltakere(motedeltakere)));
+
+        final var lagredeDeltakere = jdbcTemplate.queryForList(
+                "SELECT rolle, navn, opprettet FROM MOTEDELTAKER WHERE aktivitet_id = ? AND versjon = ?",
+                aktivitet.getId(), aktivitet.getVersjon()
+        );
+
+        assertThat(lagredeDeltakere)
+                .extracting(deltaker -> deltaker.get("rolle"), deltaker -> deltaker.get("navn"), deltaker -> deltaker.get("opprettet"))
+                .containsExactlyInAnyOrder(
+                        tuple("VEILEDER", "Veileder", Timestamp.from(opprettet.toInstant())),
+                        tuple("TOLK", "Tolk", Timestamp.from(opprettet.plusMinutes(1).toInstant()))
+                );
     }
 
     @Test
