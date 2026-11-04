@@ -1,10 +1,14 @@
 package no.nav.veilarbaktivitet.arkivering.mapper
 
 import no.nav.veilarbaktivitet.aktivitet.Historikk
+import no.nav.veilarbaktivitet.aktivitet.domain.Motedeltaker
+import no.nav.veilarbaktivitet.aktivitet.domain.MotedeltakerRolle
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Attributt
+import no.nav.veilarbaktivitet.arkivering.Stil
 import no.nav.veilarbaktivitet.person.Innsender
 import no.nav.veilarbaktivitet.stilling_fra_nav.CvKanDelesData
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder
+import no.nav.veilarbaktivitet.testutils.AktivitetTypeDataTestBuilder
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.sql.Date
@@ -27,6 +31,41 @@ class LestAktivitetDtoArkivPayloadTest {
                 "Forberedelser til møtet",
                 "Samtalereferat"
             )
+    }
+
+    @Test
+    fun `For møtekort skal også deltakere mappes`() {
+        val møtedata = AktivitetTypeDataTestBuilder.moteData().withMotedeltakere(
+            listOf(
+                Motedeltaker(navn = "Bruker Brukersen", roller = listOf(MotedeltakerRolle.BRUKER)),
+                Motedeltaker(navn = "Sjef Sjefesen", roller = listOf(MotedeltakerRolle.ARBEIDSGIVER, MotedeltakerRolle.MENTOR_FADDER)),
+                Motedeltaker(navn = "Veileder Veiledersen", roller = listOf(MotedeltakerRolle.VEILEDER)),
+                Motedeltaker(navn = "Tolk Tolkesen", roller = listOf(MotedeltakerRolle.TOLK))
+            )
+        )
+        val møte = AktivitetDataTestBuilder.nyMoteAktivitet().withMoteData(møtedata)
+
+        val arkivPayload = møte.toArkivPayload(null, Historikk(emptyList()))
+
+        val deltakerDetalj = arkivPayload.detaljer.find { it.tittel == "Deltakere" }
+        assertThat(deltakerDetalj?.stil).isEqualTo(Stil.HEL_LINJE)
+        assertThat(deltakerDetalj?.tekst).isEqualTo("""
+            Bruker Brukersen (Bruker)
+            Sjef Sjefesen (Arbeidsgiver, Mentor/Fadder)
+            Veileder Veiledersen (Veileder)
+            Tolk
+        """.trimIndent())
+    }
+
+    @Test
+    fun `For møtekort uten deltakere skal det ikke lages detalj for deltakere`() {
+        val møtedata = AktivitetTypeDataTestBuilder.moteData().withMotedeltakere(emptyList())
+        val møte = AktivitetDataTestBuilder.nyMoteAktivitet().withMoteData(møtedata)
+
+        val arkivPayload = møte.toArkivPayload(null, Historikk(emptyList()))
+
+        val deltakerDetalj = arkivPayload.detaljer.find { it.tittel == "Deltakere" }
+        assertThat(deltakerDetalj).isNull()
     }
 
     @Test
