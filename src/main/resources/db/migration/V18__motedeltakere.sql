@@ -1,5 +1,3 @@
-drop table motedeltaker;
-
 create table if not exists motedeltaker
 (
     aktivitet_id             bigint    not null,
