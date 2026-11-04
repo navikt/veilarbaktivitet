@@ -80,6 +80,8 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
     private static MoteData mapMoteData(ResultSet resultSet) throws SQLException {
         final var rs = new VeilarbAktivitetResultSet(resultSet);
 
+
+
         return MoteData.builder()
                 .adresse(rs.getString("adresse"))
                 .forberedelser(rs.getString("forberedelser"))

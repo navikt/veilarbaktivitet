@@ -90,7 +90,12 @@ public class AktivitetDAO {
         String sql = SELECT_AKTIVITET +
                 " WHERE A.aktivitet_id = :aktivitetId and A.gjeldende = 1";
 
-        return namedParameterJdbcTemplate.queryForObject(sql, params, aktivitetsDataRowMapper);
+        AktivitetData aktivitet = namedParameterJdbcTemplate.queryForObject(sql, params, aktivitetsDataRowMapper);
+        if (aktivitet.getMoteData() != null) {
+            var deltakere = hentMotedeltakere(aktivitet.getId(), aktivitet.getVersjon());
+            aktivitet = aktivitet.withMoteData(aktivitet.getMoteData().withMotedeltakere(deltakere));
+        }
+        return aktivitet;
     }
 
     public Long hentPortefoljeKafkaOffsetAiven(long aktivitetId, long versjon) {
@@ -280,7 +285,7 @@ public class AktivitetDAO {
     }
 
     private List<Motedeltaker> insertMotedeltakere(long aktivitetId, long versjon, MoteData moteData) {
-        if (moteData == null || moteData.getMotedeltakere().isEmpty()) return List.of();
+        if (moteData == null || moteData.getMotedeltakere() == null || moteData.getMotedeltakere().isEmpty()) return List.of();
 
         String sql = """
                INSERT INTO MOTEDELTAKER(aktivitet_id, versjon, deltaker_id, rolle, navn) VALUES (
@@ -593,5 +598,21 @@ public class AktivitetDAO {
                     historisk_dato = null
                 WHERE aktivitet_id = :aktivitetId
                 """, params);
+    }
+
+    private List<Motedeltaker> hentMotedeltakere(long aktivitetId, long versjon) {
+        var params = new MapSqlParameterSource()
+                .addValue(AKTIVITETID, aktivitetId)
+                .addValue(VERSJON, versjon);
+        return namedParameterJdbcTemplate.query(
+                "SELECT deltaker_id, opprettet, rolle, navn FROM MOTEDELTAKER WHERE aktivitet_id = :aktivitet_id AND versjon = :versjon",
+                params,
+                (rs, rowNum) -> new Motedeltaker(
+                        EnumUtils.valueOf(MotedeltakerRolle.class, rs.getString("rolle")),
+                        rs.getString("navn"),
+                        Database.hentZonedDateTime(rs, "opprettet"),
+                        rs.getObject("deltaker_id", UUID.class)
+                )
+        );
     }
 }

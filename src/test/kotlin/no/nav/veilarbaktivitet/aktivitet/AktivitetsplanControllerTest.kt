@@ -429,7 +429,7 @@ internal class AktivitetsplanControllerTest: SpringBootTestBase() {
     }
 
     @Test
-    fun `Veileder skal kunne legge til møtedeltakere på eksisterende møter`() {
+    fun `Veileder skal kunne fjerne og legge til møtedeltakere på eksisterende møter`() {
         val happyBruker = navMockService.createBruker()
         val veileder = navMockService.createVeileder(happyBruker)
         val aktivitetMedMøtedeltaker = aktivitetTestService.opprettAktivitetViaHttp(
@@ -444,13 +444,15 @@ internal class AktivitetsplanControllerTest: SpringBootTestBase() {
                 ))
         )
 
-        val aktivitetMedNyDeltaker = aktivitetMedMøtedeltaker.setMotedeltakere(
-            aktivitetMedMøtedeltaker.motedeltakere + Motedeltaker(rolle = MotedeltakerRolle.ARBEIDSGIVER, navn = "Arbeidsgiver Arbeidsgiversen")
-        )
-        val oppdatertAktivitet = aktivitetTestService.oppdaterAktivitetOk(happyBruker, veileder, aktivitetMedNyDeltaker)
+        val møtedeltakereMedEnFjernetOgEnNy = aktivitetMedMøtedeltaker.motedeltakere
+            .filter { it.rolle != MotedeltakerRolle.MENTOR_FADDER } +
+                Motedeltaker(rolle = MotedeltakerRolle.ARBEIDSGIVER, navn = "Arbeidsgiver Arbeidsgiversen")
+        aktivitetMedMøtedeltaker.setMotedeltakere(møtedeltakereMedEnFjernetOgEnNy)
+        val oppdatertAktivitet = aktivitetTestService.oppdaterAktivitetOk(happyBruker, veileder, aktivitetMedMøtedeltaker)
 
-        assertThat(oppdatertAktivitet.motedeltakere.size).isEqualTo(4)
-
+        assertThat(oppdatertAktivitet.motedeltakere.size).isEqualTo(3)
+        val nyDeltaker = oppdatertAktivitet.motedeltakere.find { it.rolle == MotedeltakerRolle.ARBEIDSGIVER }
+        assertNotNull(nyDeltaker)
     }
 
     @Test

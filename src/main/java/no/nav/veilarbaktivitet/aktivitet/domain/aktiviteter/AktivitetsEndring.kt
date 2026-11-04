@@ -90,6 +90,7 @@ object AktivitetsEndringUtil {
             .withAdresse(moteData.getAdresse())
             .withForberedelser(moteData.getForberedelser())
             .withKanal(moteData.getKanal())
+            .withMotedeltakere(moteData.getMotedeltakere())
     }
 
     private fun mergeStillingSok(

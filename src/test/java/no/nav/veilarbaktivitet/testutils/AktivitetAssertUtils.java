@@ -35,6 +35,7 @@ public class AktivitetAssertUtils {
                 .endretAv(actual.getEndretAv())
                 .endretAvType(actual.getEndretAvType())
                 .transaksjonsType(actual.getTransaksjonsType())
+                .motedeltakere(actual.getMotedeltakere())
                 .build();
         // sammenlign resten - forutsetter implementert equals
         assertEquals(aktivitetDTO, actual);

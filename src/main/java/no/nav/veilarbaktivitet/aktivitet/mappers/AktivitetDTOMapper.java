@@ -67,7 +67,8 @@ public class AktivitetDTOMapper {
                 .setKanal(moteData.getKanal())
                 .setMotedeltakere(moteData.getMotedeltakere())
                 .setReferat(skalViseReferat ? moteData.getReferat() : null)
-                .setErReferatPublisert(moteData.isReferatPublisert());
+                .setErReferatPublisert(moteData.isReferatPublisert())
+                .setMotedeltakere(moteData.getMotedeltakere());
     }
 
     private static void mapBehandleAktivitetData(AktivitetDTO aktivitetDTO, BehandlingAktivitetData behandlingAktivitetData) {

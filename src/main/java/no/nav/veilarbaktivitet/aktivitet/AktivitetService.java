@@ -179,15 +179,16 @@ public class AktivitetService {
                 .endretAv(aktivitetData.getSporing().getEndretAv())
                 .endretDato(DateUtils.zonedDateTimeToDate(aktivitetData.getSporing().getEndretDato()))
                 .transaksjonsType(AktivitetTransaksjonsType.DETALJER_ENDRET)
-                .moteData(ofNullable(originalAktivitet.getMoteData()).map(moteData ->
-                        moteData.withForberedelser(aktivitetData.getMoteData().getForberedelser())
-                ).orElse(null))
+                .moteData(ofNullable(originalAktivitet.getMoteData())
+                        .map(moteData -> moteData
+                                .withForberedelser(aktivitetData.getMoteData().getForberedelser())
+                                .withMotedeltakere(aktivitetData.getMoteData().getMotedeltakere()))
+                        .orElse(null))
                 .build();
         aktivitetDAO.oppdaterAktivitet(oppdatertAktivitet);
     }
 
     public void oppdaterMotedeltakere(AktivitetData originalAktivitet, Mote.Endre aktivitetData) {
-        // TODO: Oppdater deltakere
         final var oppdatertAktivitet = originalAktivitet
                 .toBuilder()
                 .tittel(aktivitetData.getMuterbareFelter().getTittel())

@@ -178,7 +178,6 @@ public class AktivitetAppService {
             if (original.getAktivitetType() == AktivitetTypeData.MOTE) {
                 boolean tidOgStedEndret = erMoteTidOgStedEndret(original, (Mote.Endre) aktivitet);
                 boolean detaljerEndret = erMoteDetaljerEndret(original, (Mote.Endre) aktivitet);
-                boolean motedeltakereEndret = erMoteDeltakereEndret(original, (Mote.Endre) aktivitet);
 
                 if (tidOgStedEndret) {
                     aktivitetService.oppdaterMoteTidStedOgKanal(original, (Mote.Endre) aktivitet);
@@ -187,9 +186,6 @@ public class AktivitetAppService {
                 }
                 if (detaljerEndret) {
                     aktivitetService.oppdaterMoteDetaljer(original, (Mote.Endre) aktivitet);
-                }
-                if (motedeltakereEndret) {
-                    aktivitetService.oppdaterMotedeltakere(original, (Mote.Endre) aktivitet);
                 }
             } else {
                 aktivitetService.oppdaterAktivitetFrist(original, aktivitet);
@@ -217,6 +213,7 @@ public class AktivitetAppService {
     private boolean erMoteDetaljerEndret(AktivitetData original, Mote.Endre aktivitet) {
         boolean tittelEndret = !Objects.equals(original.getTittel(), aktivitet.getMuterbareFelter().getTittel());
         boolean beskrivelseEndret = !Objects.equals(original.getBeskrivelse(), aktivitet.getMuterbareFelter().getBeskrivelse());
+        boolean motedeltakereEndret = !Objects.equals(original.getMoteData().getMotedeltakere(), aktivitet.getMoteData().getMotedeltakere());
 
         MoteData originalMote = original.getMoteData();
         MoteData nyMote = aktivitet.getMoteData();
@@ -224,17 +221,7 @@ public class AktivitetAppService {
         boolean forberedelserEndret = originalMote != null && nyMote != null &&
                 !Objects.equals(originalMote.getForberedelser(), nyMote.getForberedelser());
 
-        return tittelEndret || beskrivelseEndret || forberedelserEndret;
-    }
-
-    private boolean erMoteDeltakereEndret(AktivitetData original, Mote.Endre aktivitet) {
-        MoteData originalMote = original.getMoteData();
-        MoteData nyMote = aktivitet.getMoteData();
-
-        boolean motedeltakereEndret = originalMote != null && nyMote != null &&
-                !Objects.equals(originalMote.getMotedeltakere(), nyMote.getMotedeltakere());
-
-        return motedeltakereEndret;
+        return tittelEndret || beskrivelseEndret || forberedelserEndret || motedeltakereEndret;
     }
 
     private void oppdaterSomEksternBruker(AktivitetsEndring aktivitet, AktivitetData original) {
