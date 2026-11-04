@@ -13,7 +13,8 @@ import static java.util.Optional.ofNullable;
 
 public class AktivitetDTOMapper {
 
-    private AktivitetDTOMapper() {}
+    private AktivitetDTOMapper() {
+    }
 
     public static AktivitetDTO mapTilAktivitetDTO(AktivitetData aktivitet, boolean erEkstern) {
 
@@ -53,7 +54,7 @@ public class AktivitetDTOMapper {
     private static void mapStillingFraNavData(AktivitetDTO aktivitetDTO, StillingFraNavData stillingFraNavData, boolean erEkstern) {
         CvKanDelesData cvKanDelesData = null;
 
-        if(stillingFraNavData.getCvKanDelesData() != null) {
+        if (stillingFraNavData.getCvKanDelesData() != null) {
             cvKanDelesData = stillingFraNavData.getCvKanDelesData().withEndretAv(erEkstern ? null : stillingFraNavData.getCvKanDelesData().getEndretAv());
         }
         aktivitetDTO.setStillingFraNavData(stillingFraNavData.withCvKanDelesData(cvKanDelesData));
@@ -61,6 +62,9 @@ public class AktivitetDTOMapper {
 
     private static void mapMoteData(AktivitetDTO aktivitetDTO, MoteData moteData, boolean erEkstern) {
         boolean skalViseReferat = moteData.isReferatPublisert() || !erEkstern;
+        boolean skalViseTolkensNavn = !erEkstern;
+
+
         aktivitetDTO
                 .setAdresse(moteData.getAdresse())
                 .setForberedelser(moteData.getForberedelser())
@@ -68,7 +72,14 @@ public class AktivitetDTOMapper {
                 .setMotedeltakere(moteData.getMotedeltakere())
                 .setReferat(skalViseReferat ? moteData.getReferat() : null)
                 .setErReferatPublisert(moteData.isReferatPublisert())
-                .setMotedeltakere(moteData.getMotedeltakere());
+                .setMotedeltakere(moteData.getMotedeltakere().stream().map(motedeltaker -> {
+                            if (motedeltaker.getRolle() == MotedeltakerRolle.TOLK && !skalViseTolkensNavn) {
+                                return motedeltaker.viskUtNavn();
+                            } else {
+                                return motedeltaker;
+                            }
+                        }
+                ).toList());
     }
 
     private static void mapBehandleAktivitetData(AktivitetDTO aktivitetDTO, BehandlingAktivitetData behandlingAktivitetData) {

@@ -9,7 +9,11 @@ data class Motedeltaker(
     val navn: String,
     val opprettet: ZonedDateTime? = null,
     val deltakerId: UUID? = null,
-)
+) {
+    fun viskUtNavn(): Motedeltaker {
+        return this.copy(navn = "")
+    }
+}
 
 enum class MotedeltakerRolle(val rolle: String) {
     ARBEIDSGIVER("Arbeidsgiver"),

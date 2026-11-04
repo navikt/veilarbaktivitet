@@ -306,17 +306,9 @@ public class AktivitetDAO {
                 .addValue("opprettet", motedeltaker.getOpprettet())
         ).collect(Collectors.toList());
 
-        List<Motedeltaker> opprettedeMotedeltakere = paramsList.stream()
-                .map(params -> namedParameterJdbcTemplate.queryForObject(sql, params, (rs, rowNum) ->
-                        new Motedeltaker(
-                                EnumUtils.valueOf(MotedeltakerRolle.class, rs.getString("rolle")),
-                                rs.getString("navn"),
-                                Database.hentZonedDateTime(rs, "opprettet"),
-                                rs.getObject("deltaker_id", UUID.class)
-                        )
-                ))
+        return paramsList.stream()
+                .map(params -> namedParameterJdbcTemplate.queryForObject(sql, params, motedeltakerRowMapper))
                 .toList();
-        return opprettedeMotedeltakere;
     }
 
     private void insertStillingsSoek(long aktivitetId, long versjon, StillingsoekAktivitetData stillingsSoekAktivitet) {
@@ -600,6 +592,35 @@ public class AktivitetDAO {
                 """, params);
     }
 
+    public Map<Long, List<Motedeltaker>> hentMotedeltakere(Collection<AktivitetVersjon> aktivitetVersjoner) {
+        if (aktivitetVersjoner == null || aktivitetVersjoner.isEmpty()) return Map.of();
+
+        List<Object[]> idVersjonPar = aktivitetVersjoner.stream()
+                .map(it -> new Object[]{it.aktivitetId(), it.versjon()})
+                .toList();
+
+        var params = new MapSqlParameterSource()
+                .addValue("idVersjonPar", idVersjonPar);
+        // language=sql
+        String sql = """
+        SELECT aktivitet_id, deltaker_id, opprettet, rolle, navn
+        FROM MOTEDELTAKER
+        WHERE (aktivitet_id, versjon) IN (:idVersjonPar)
+        """;
+
+        return namedParameterJdbcTemplate.query(sql, params, rs -> {
+            Map<Long, List<Motedeltaker>> motedeltakerePerAktivitet = new HashMap<>();
+            while (rs.next()) {
+                long aktivitetId = rs.getLong("aktivitet_id");
+                var motedeltaker = motedeltakerRowMapper.mapRow(rs, 0);
+                motedeltakerePerAktivitet
+                        .computeIfAbsent(aktivitetId, k -> new ArrayList<>())
+                        .add(motedeltaker);
+            }
+            return motedeltakerePerAktivitet;
+        });
+    }
+
     private List<Motedeltaker> hentMotedeltakere(long aktivitetId, long versjon) {
         var params = new MapSqlParameterSource()
                 .addValue(AKTIVITETID, aktivitetId)
@@ -615,4 +636,14 @@ public class AktivitetDAO {
                 )
         );
     }
+
+    private static final RowMapper<Motedeltaker> motedeltakerRowMapper = (rs, rowNum) ->
+            new Motedeltaker(
+                    EnumUtils.valueOf(MotedeltakerRolle.class, rs.getString("rolle")),
+                    rs.getString("navn"),
+                    Database.hentZonedDateTime(rs, "opprettet"),
+                    rs.getObject("deltaker_id", UUID.class)
+            );
+
+    public record AktivitetVersjon(long aktivitetId, long versjon) {}
 }

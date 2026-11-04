@@ -25,6 +25,7 @@ import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 
@@ -46,9 +47,14 @@ public class AktivitetService {
         var aktiviteter = aktivitetDAO.hentAktiviteterForAktorId(aktorId);
         var fhoIder = aktiviteter.stream().map(AktivitetData::getFhoId).toList();
         var forhaandsorienteringer = avtaltMedNavService.hentFHO(fhoIder);
+        Map<Long, List<Motedeltaker>> aktivitetIderMedMøtedeltakere = aktivitetDAO.hentMotedeltakere(aktiviteter.stream().map(aktivitetData ->
+                new AktivitetDAO.AktivitetVersjon(aktivitetData.getId(), aktivitetData.getVersjon()))
+                .toList()
+        );
 
         return aktiviteter.stream()
                 .map(mergeMedForhaandsorientering(forhaandsorienteringer))
+                .map(mergeMedMotedeltakere(aktivitetIderMedMøtedeltakere))
                 .toList();
     }
 
@@ -188,22 +194,6 @@ public class AktivitetService {
         aktivitetDAO.oppdaterAktivitet(oppdatertAktivitet);
     }
 
-    public void oppdaterMotedeltakere(AktivitetData originalAktivitet, Mote.Endre aktivitetData) {
-        final var oppdatertAktivitet = originalAktivitet
-                .toBuilder()
-                .tittel(aktivitetData.getMuterbareFelter().getTittel())
-                .beskrivelse(aktivitetData.getMuterbareFelter().getBeskrivelse())
-                .endretAvType(aktivitetData.getSporing().getEndretAvType())
-                .endretAv(aktivitetData.getSporing().getEndretAv())
-                .endretDato(DateUtils.zonedDateTimeToDate(aktivitetData.getSporing().getEndretDato()))
-                .transaksjonsType(AktivitetTransaksjonsType.DETALJER_ENDRET)
-                .moteData(ofNullable(originalAktivitet.getMoteData()).map(moteData ->
-                        moteData.withMotedeltakere(aktivitetData.getMoteData().getMotedeltakere())
-                ).orElse(null))
-                .build();
-        aktivitetDAO.oppdaterAktivitet(oppdatertAktivitet);
-    }
-
     public AktivitetData oppdaterReferat(
             AktivitetData originalAktivitet,
             ReferatEndring referatEndring
@@ -309,4 +299,11 @@ public class AktivitetService {
         );
     }
 
+    private Function<AktivitetData, AktivitetData> mergeMedMotedeltakere(Map<Long, List<Motedeltaker>> motedeltakere) {
+        return aktivitetData -> {
+            if (aktivitetData.getMoteData() == null) return aktivitetData;
+            return aktivitetData.withMoteData(aktivitetData.getMoteData()
+                    .withMotedeltakere(motedeltakere.getOrDefault(aktivitetData.getId(), List.of())));
+        };
+    }
 }

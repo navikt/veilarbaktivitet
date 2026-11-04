@@ -16,5 +16,6 @@ public class MoteData {
     KanalDTO kanal;
     String referat;
     boolean referatPublisert;
-    List<Motedeltaker> motedeltakere;
+    @Builder.Default
+    List<Motedeltaker> motedeltakere = List.of();
 }

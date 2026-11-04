@@ -3,6 +3,8 @@ package no.nav.veilarbaktivitet.aktivitetskort.graphql
 import no.nav.common.json.JsonMapper
 import no.nav.veilarbaktivitet.SpringBootTestBase
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
+import no.nav.veilarbaktivitet.aktivitet.domain.Motedeltaker
+import no.nav.veilarbaktivitet.aktivitet.domain.MotedeltakerRolle
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder
@@ -356,4 +358,87 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
         assertThat(matchMedTidssone || matchZulu).isTrue()
     }
 
+    @Test
+    fun `veileder skal kunne se tolkens navn i lista over møtedeltakere`() {
+        val bruker = navMockService.createBruker()
+        val veileder = navMockService.createVeilederMedNasjonalTilgang()
+        val motedeltakereInput = listOf(
+            Motedeltaker(rolle = MotedeltakerRolle.VEILEDER, navn = "Veileder Veiledersen"),
+            Motedeltaker(rolle = MotedeltakerRolle.BRUKER, navn = "Bruker Brukersen"),
+            Motedeltaker(rolle = MotedeltakerRolle.TOLK, navn = "Tolk Tolkesen"),
+        )
+        aktivitetTestService.opprettAktivitetViaHttp(
+            bruker,
+            veileder,
+            AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE)
+                .setOppfolgingsperiodeId(bruker.oppfolgingsperiodeId)
+                .setMotedeltakere(motedeltakereInput)
+        )
+
+        val fnrParam = "\$fnr"
+        val query = """
+            query($fnrParam: String!) {
+                perioder(fnr: $fnrParam) { 
+                id,
+                aktiviteter {
+                    motedeltakere {
+                        navn
+                        rolle
+                        deltakerId
+                        opprettet
+                        }
+                    }                
+                }
+            }
+        """.trimIndent().replace("\n", "")
+
+        val result = aktivitetTestService.queryAktivitetskort(bruker, veileder, query)
+        assertThat(result.data?.perioder?.firstOrNull()?.aktiviteter).hasSize(1)
+        val motedeltakere = result.data?.perioder?.first()?.aktiviteter?.firstOrNull()?.motedeltakere
+        assertThat(motedeltakere).hasSize(3)
+        val tolk = motedeltakere?.first { it.rolle == MotedeltakerRolle.TOLK }
+        assertThat(tolk?.navn).isEqualTo("Tolk Tolkesen")
+    }
+
+    @Test
+    fun `Bruker skal ikke kunne se tolkens navn i lista over møtedeltakere`() {
+        val bruker = navMockService.createBruker()
+        val veileder = navMockService.createVeilederMedNasjonalTilgang()
+        val motedeltakereInput = listOf(
+            Motedeltaker(rolle = MotedeltakerRolle.VEILEDER, navn = "Veileder Veiledersen"),
+            Motedeltaker(rolle = MotedeltakerRolle.BRUKER, navn = "Bruker Brukersen"),
+            Motedeltaker(rolle = MotedeltakerRolle.TOLK, navn = "Tolk Tolkesen"),
+        )
+        aktivitetTestService.opprettAktivitetViaHttp(
+            bruker,
+            veileder,
+            AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE)
+                .setOppfolgingsperiodeId(bruker.oppfolgingsperiodeId)
+                .setMotedeltakere(motedeltakereInput)
+        )
+
+        val fnrParam = "\$fnr"
+        val query = """
+            query($fnrParam: String!) {
+                perioder(fnr: $fnrParam) { 
+                id,
+                aktiviteter {
+                    motedeltakere {
+                        navn
+                        rolle
+                        deltakerId
+                        opprettet
+                        }
+                    }                
+                }
+            }
+        """.trimIndent().replace("\n", "")
+
+        val result = aktivitetTestService.queryAktivitetskort(bruker, bruker, query)
+        assertThat(result.data?.perioder?.firstOrNull()?.aktiviteter).hasSize(1)
+        val motedeltakere = result.data?.perioder?.first()?.aktiviteter?.firstOrNull()?.motedeltakere
+        assertThat(motedeltakere).hasSize(3)
+        val tolk = motedeltakere?.first { it.rolle == MotedeltakerRolle.TOLK }
+        assertThat(tolk?.navn).isEqualTo("")
+    }
 }

@@ -90,6 +90,7 @@ type AktivitetDTO {
     kanal: KanalDTO
     referat: String
     erReferatPublisert: Boolean
+    motedeltakere: [Motedeltaker]
 
     stillingFraNavData: StillingFraNavData
 
@@ -179,6 +180,16 @@ enum AktivitetskortType {
     DELE_CV_MED_ARBEIDSGIVER
 }
 
+type Motedeltaker {
+    rolle: MotedeltakerRolle,
+    navn: String,
+    opprettet: Date,
+    deltakerId: String
+}
+
+enum MotedeltakerRolle {
+    ARBEIDSGIVER MENTOR_FADDER VEILEDER TOLK BRUKER ANNET
+}
 
 type StillingFraNavData {
     cvKanDelesData: CvKanDelesData
