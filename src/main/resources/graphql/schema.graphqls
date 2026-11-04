@@ -3,6 +3,11 @@ type Query {
     aktivitet(aktivitetId: String!, versjon: String): AktivitetDTO
     eier(aktivitetId: String!): Eier
     tiltaksaktiviteter(fnr: String!): [TiltaksAktivitet]
+    brukersNavn(fnr: String!): BrukerNavn
+}
+
+type BrukerNavn {
+    fulltNavn: String
 }
 
 type Eier {

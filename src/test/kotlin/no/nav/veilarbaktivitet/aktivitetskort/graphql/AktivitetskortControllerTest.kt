@@ -378,6 +378,9 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
         val fnrParam = "\$fnr"
         val query = """
             query($fnrParam: String!) {
+                brukersNavn(fnr: $fnrParam) {
+                    fulltNavn
+                }
                 perioder(fnr: $fnrParam) { 
                 id,
                 aktiviteter {
@@ -398,6 +401,7 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
         assertThat(motedeltakere).hasSize(3)
         val tolk = motedeltakere?.first { it.roller.contains(MotedeltakerRolle.TOLK) }
         assertThat(tolk?.navn).isEqualTo("Tolk Tolkesen")
+        assertThat(result.data?.brukersNavn?.fulltNavn).isEqualTo(bruker.navn.tilFornavnMellomnavnEtternavn())
     }
 
     @Test

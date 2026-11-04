@@ -8,7 +8,8 @@ class GraphqlResult(
 class QueryAktivitetsPerioder(
     val perioder: List<OppfolgingsPeriode>? = emptyList(),
     val aktivitet: AktivitetQueryDto? = null,
-    val eier: Eier? = null
+    val eier: Eier? = null,
+    val brukersNavn: BrukerNavn? = null,
 )
 
 class Location(val line: String, val column: Int)
