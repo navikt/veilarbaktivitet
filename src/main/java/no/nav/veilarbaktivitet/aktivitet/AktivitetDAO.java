@@ -301,7 +301,7 @@ public class AktivitetDAO {
                 .addValue(AKTIVITETID, aktivitetId)
                 .addValue(VERSJON, versjon)
                 .addValue("deltaker_id", UUID.randomUUID())
-                .addValue("rolle", EnumUtils.getName(motedeltaker.getRolle()))
+                .addValue("rolle", joinRoller(motedeltaker.getRoller()))
                 .addValue("navn", motedeltaker.getNavn())
                 .addValue("opprettet", motedeltaker.getOpprettet())
         ).collect(Collectors.toList());
@@ -628,22 +628,33 @@ public class AktivitetDAO {
         return namedParameterJdbcTemplate.query(
                 "SELECT deltaker_id, opprettet, rolle, navn FROM MOTEDELTAKER WHERE aktivitet_id = :aktivitet_id AND versjon = :versjon",
                 params,
-                (rs, rowNum) -> new Motedeltaker(
-                        EnumUtils.valueOf(MotedeltakerRolle.class, rs.getString("rolle")),
-                        rs.getString("navn"),
-                        Database.hentZonedDateTime(rs, "opprettet"),
-                        rs.getObject("deltaker_id", UUID.class)
-                )
+                motedeltakerRowMapper
         );
     }
 
     private static final RowMapper<Motedeltaker> motedeltakerRowMapper = (rs, rowNum) ->
             new Motedeltaker(
-                    EnumUtils.valueOf(MotedeltakerRolle.class, rs.getString("rolle")),
+                    parseRoller(rs.getString("rolle")),
                     rs.getString("navn"),
                     Database.hentZonedDateTime(rs, "opprettet"),
                     rs.getObject("deltaker_id", UUID.class)
             );
+
+    private static String joinRoller(List<MotedeltakerRolle> roller) {
+        return roller.stream()
+                .map(EnumUtils::getName)
+                .collect(Collectors.joining(","));
+    }
+
+    private static List<MotedeltakerRolle> parseRoller(String roller) {
+        if (roller == null || roller.isBlank()) return List.of();
+        return Arrays.stream(roller.split(","))
+                .map(String::trim)
+                .filter(rolle -> !rolle.isEmpty())
+                .map(rolle -> EnumUtils.valueOf(MotedeltakerRolle.class, rolle))
+                .filter(Objects::nonNull)
+                .toList();
+    }
 
     public record AktivitetVersjon(long aktivitetId, long versjon) {}
 }

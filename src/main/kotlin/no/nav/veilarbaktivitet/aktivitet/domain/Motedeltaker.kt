@@ -5,7 +5,7 @@ import java.util.UUID
 
 
 data class Motedeltaker(
-    val rolle: MotedeltakerRolle,
+    val roller: List<MotedeltakerRolle>,
     val navn: String,
     val opprettet: ZonedDateTime? = null,
     val deltakerId: UUID? = null,

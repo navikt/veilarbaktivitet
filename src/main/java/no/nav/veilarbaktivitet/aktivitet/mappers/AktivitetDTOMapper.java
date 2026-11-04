@@ -73,7 +73,7 @@ public class AktivitetDTOMapper {
                 .setReferat(skalViseReferat ? moteData.getReferat() : null)
                 .setErReferatPublisert(moteData.isReferatPublisert())
                 .setMotedeltakere(moteData.getMotedeltakere().stream().map(motedeltaker -> {
-                            if (motedeltaker.getRolle() == MotedeltakerRolle.TOLK && !skalViseTolkensNavn) {
+                            if (motedeltaker.getRoller().contains(MotedeltakerRolle.TOLK) && !skalViseTolkensNavn) {
                                 return motedeltaker.viskUtNavn();
                             } else {
                                 return motedeltaker;

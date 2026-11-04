@@ -412,9 +412,9 @@ internal class AktivitetsplanControllerTest: SpringBootTestBase() {
             AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE)
                 .setOppfolgingsperiodeId(happyBruker.oppfolgingsperiodeId)
                 .setMotedeltakere(listOf(
-                    Motedeltaker(rolle = MotedeltakerRolle.VEILEDER, navn = "Veileder Veiledersen"),
-                    Motedeltaker(rolle = MotedeltakerRolle.BRUKER, navn = "Bruker Brukersen"),
-                    Motedeltaker(rolle = MotedeltakerRolle.MENTOR_FADDER, navn = "Fadder Faddersen"),
+                    Motedeltaker(roller = listOf(MotedeltakerRolle.VEILEDER), navn = "Veileder Veiledersen"),
+                    Motedeltaker(roller = listOf(MotedeltakerRolle.BRUKER), navn = "Bruker Brukersen"),
+                    Motedeltaker(roller = listOf(MotedeltakerRolle.MENTOR_FADDER), navn = "Fadder Faddersen"),
                 ))
         )
 
@@ -438,21 +438,46 @@ internal class AktivitetsplanControllerTest: SpringBootTestBase() {
             AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE)
                 .setOppfolgingsperiodeId(happyBruker.oppfolgingsperiodeId)
                 .setMotedeltakere(listOf(
-                    Motedeltaker(rolle = MotedeltakerRolle.VEILEDER, navn = "Veileder Veiledersen"),
-                    Motedeltaker(rolle = MotedeltakerRolle.BRUKER, navn = "Bruker Brukersen"),
-                    Motedeltaker(rolle = MotedeltakerRolle.MENTOR_FADDER, navn = "Fadder Faddersen"),
+                    Motedeltaker(roller = listOf(MotedeltakerRolle.VEILEDER), navn = "Veileder Veiledersen"),
+                    Motedeltaker(roller = listOf(MotedeltakerRolle.BRUKER), navn = "Bruker Brukersen"),
+                    Motedeltaker(roller = listOf(MotedeltakerRolle.MENTOR_FADDER), navn = "Fadder Faddersen"),
                 ))
         )
 
         val møtedeltakereMedEnFjernetOgEnNy = aktivitetMedMøtedeltaker.motedeltakere
-            .filter { it.rolle != MotedeltakerRolle.MENTOR_FADDER } +
-                Motedeltaker(rolle = MotedeltakerRolle.ARBEIDSGIVER, navn = "Arbeidsgiver Arbeidsgiversen")
+            .filter { !it.roller.contains(MotedeltakerRolle.MENTOR_FADDER) } +
+                Motedeltaker(roller = listOf(MotedeltakerRolle.ARBEIDSGIVER), navn = "Arbeidsgiver Arbeidsgiversen")
         aktivitetMedMøtedeltaker.setMotedeltakere(møtedeltakereMedEnFjernetOgEnNy)
         val oppdatertAktivitet = aktivitetTestService.oppdaterAktivitetOk(happyBruker, veileder, aktivitetMedMøtedeltaker)
 
         assertThat(oppdatertAktivitet.motedeltakere.size).isEqualTo(3)
-        val nyDeltaker = oppdatertAktivitet.motedeltakere.find { it.rolle == MotedeltakerRolle.ARBEIDSGIVER }
+        val nyDeltaker = oppdatertAktivitet.motedeltakere.find { it.roller.contains(MotedeltakerRolle.ARBEIDSGIVER) }
         assertNotNull(nyDeltaker)
+    }
+
+    @Test
+    fun `En møtedeltaker kan ha flere roller lagret som én deltaker`() {
+        val happyBruker = navMockService.createBruker()
+        val veileder = navMockService.createVeileder(happyBruker)
+
+        val aktivitet = aktivitetTestService.opprettAktivitetViaHttp(
+            happyBruker,
+            veileder,
+            AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE)
+                .setOppfolgingsperiodeId(happyBruker.oppfolgingsperiodeId)
+                .setMotedeltakere(listOf(
+                    Motedeltaker(
+                        roller = listOf(MotedeltakerRolle.VEILEDER, MotedeltakerRolle.TOLK),
+                        navn = "Veileder Tolkesen"
+                    ),
+                    Motedeltaker(roller = listOf(MotedeltakerRolle.BRUKER), navn = "Bruker Brukersen"),
+                ))
+        )
+
+        assertThat(aktivitet.motedeltakere.size).isEqualTo(2)
+        val deltakerMedFlereRoller = aktivitet.motedeltakere.first { it.navn == "Veileder Tolkesen" }
+        assertThat(deltakerMedFlereRoller.roller)
+            .containsExactlyInAnyOrder(MotedeltakerRolle.VEILEDER, MotedeltakerRolle.TOLK)
     }
 
     @Test
