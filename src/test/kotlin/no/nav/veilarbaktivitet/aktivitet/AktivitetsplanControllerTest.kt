@@ -404,27 +404,22 @@ internal class AktivitetsplanControllerTest: SpringBootTestBase() {
     fun `Skal kunne legge til møtedeltakere når man oppretter nytt møte`() {
         val happyBruker = navMockService.createBruker()
         val veileder = navMockService.createVeileder(happyBruker)
+        val motedeltakere = listOf(
+            Motedeltaker(roller = listOf(MotedeltakerRolle.VEILEDER), navn = "Veileder Veiledersen"),
+            Motedeltaker(roller = listOf(MotedeltakerRolle.BRUKER), navn = "Bruker Brukersen"),
+            Motedeltaker(roller = listOf(MotedeltakerRolle.MENTOR_FADDER), navn = "Fadder Faddersen"),
+        )
 
         val aktivitet = aktivitetTestService.opprettAktivitetViaHttp(
             happyBruker,
             veileder,
             AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE)
                 .setOppfolgingsperiodeId(happyBruker.oppfolgingsperiodeId)
-                .setMotedeltakere(listOf(
-                    Motedeltaker(roller = listOf(MotedeltakerRolle.VEILEDER), navn = "Veileder Veiledersen"),
-                    Motedeltaker(roller = listOf(MotedeltakerRolle.BRUKER), navn = "Bruker Brukersen"),
-                    Motedeltaker(roller = listOf(MotedeltakerRolle.MENTOR_FADDER), navn = "Fadder Faddersen"),
-                ))
+                .setMotedeltakere(motedeltakere)
         )
 
         assertThat(aktivitet.motedeltakere.size).isEqualTo(3)
-        aktivitet.motedeltakere.map { it.deltakerId }.forEach {deltakerId ->
-            assertNotNull(deltakerId)
-        }
-        aktivitet.motedeltakere.map { it.opprettet }.forEach {opprettet ->
-            assertNotNull(opprettet)
-            assertThat(opprettet).isCloseTo(ZonedDateTime.now(), within(500, ChronoUnit.MILLIS))
-        }
+        assertThat(aktivitet.motedeltakere).isEqualTo(motedeltakere)
     }
 
     @Test

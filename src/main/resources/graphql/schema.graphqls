@@ -187,9 +187,7 @@ enum AktivitetskortType {
 
 type Motedeltaker {
     roller: [MotedeltakerRolle],
-    navn: String,
-    opprettet: Date,
-    deltakerId: String
+    navn: String
 }
 
 enum MotedeltakerRolle {

@@ -64,12 +64,10 @@ public class AktivitetDTOMapper {
         boolean skalViseReferat = moteData.isReferatPublisert() || !erEkstern;
         boolean skalViseTolkensNavn = !erEkstern;
 
-
         aktivitetDTO
                 .setAdresse(moteData.getAdresse())
                 .setForberedelser(moteData.getForberedelser())
                 .setKanal(moteData.getKanal())
-                .setMotedeltakere(moteData.getMotedeltakere())
                 .setReferat(skalViseReferat ? moteData.getReferat() : null)
                 .setErReferatPublisert(moteData.isReferatPublisert())
                 .setMotedeltakere(moteData.getMotedeltakere().stream().map(motedeltaker -> {

@@ -9,7 +9,6 @@ import no.nav.common.json.JsonUtils;
 import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.aktivitet.feil.AktivitetVersjonOutOfOrderException;
 import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvUtdatertVersjonException;
-import no.nav.veilarbaktivitet.config.database.Database;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.stilling_fra_nav.CvKanDelesData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.KontaktpersonData;
@@ -236,11 +235,11 @@ public class AktivitetDAO {
         insertSokeAvtale(aktivitetId, versjon, aktivitet.getSokeAvtaleAktivitetData());
         insertIJobb(aktivitetId, versjon, aktivitet.getIJobbAktivitetData());
         insertBehandling(aktivitetId, versjon, aktivitet.getBehandlingAktivitetData());
-        var oppdatertMoteData = insertMote(aktivitetId, versjon, aktivitet.getMoteData());
+        insertMote(aktivitetId, versjon, aktivitet.getMoteData());
         insertStillingFraNav(aktivitetId, versjon, aktivitet.getStillingFraNavData());
         insertEksternAktivitet(aktivitetId, versjon, aktivitet.getEksternAktivitetData());
 
-        AktivitetData nyAktivitet = aktivitet.withId(aktivitetId).withVersjon(versjon).withMoteData(oppdatertMoteData);
+        AktivitetData nyAktivitet = aktivitet.withId(aktivitetId).withVersjon(versjon);
 
         log.info("opprettet {}", nyAktivitet);
         return nyAktivitet;
@@ -257,7 +256,7 @@ public class AktivitetDAO {
                 versjon);
     }
 
-    private MoteData insertMote(long aktivitetId, long versjon, MoteData moteData) {
+    private void insertMote(long aktivitetId, long versjon, MoteData moteData) {
         // language=sql
         String sql = """
                     
@@ -281,34 +280,28 @@ public class AktivitetDAO {
                     .addValue("referat_publisert", moteData.isReferatPublisert());
             namedParameterJdbcTemplate.update(sql, params);
         });
-        return moteData.withMotedeltakere(insertMotedeltakere(aktivitetId, versjon, moteData));
+        insertMotedeltakere(aktivitetId, versjon, moteData);
     }
 
-    private List<Motedeltaker> insertMotedeltakere(long aktivitetId, long versjon, MoteData moteData) {
-        if (moteData == null || moteData.getMotedeltakere() == null || moteData.getMotedeltakere().isEmpty()) return List.of();
+    private void insertMotedeltakere(long aktivitetId, long aktivitetVersjon, MoteData moteData) {
+        if (moteData == null || moteData.getMotedeltakere() == null || moteData.getMotedeltakere().isEmpty()) return;
 
         String sql = """
-               INSERT INTO MOTEDELTAKER(aktivitet_id, versjon, deltaker_id, rolle, navn) VALUES (
+               INSERT INTO MOTEDELTAKER(aktivitet_id, aktivitet_versjon, roller, navn) VALUES (
                 :aktivitet_id,
-                :versjon,
-                :deltaker_id,
-                :rolle,
+                :aktivitet_versjon,
+                :roller,
                 :navn)
-                RETURNING deltaker_id, opprettet, rolle, navn
            """;
 
-        List<SqlParameterSource> paramsList = moteData.getMotedeltakere().stream().map(motedeltaker -> new VeilarbAktivitetSqlParameterSource()
+        SqlParameterSource[] paramsList = moteData.getMotedeltakere().stream().map(motedeltaker -> new VeilarbAktivitetSqlParameterSource()
                 .addValue(AKTIVITETID, aktivitetId)
-                .addValue(VERSJON, versjon)
-                .addValue("deltaker_id", UUID.randomUUID())
-                .addValue("rolle", joinRoller(motedeltaker.getRoller()))
+                .addValue("aktivitet_versjon", aktivitetVersjon)
+                .addValue("roller", joinRoller(motedeltaker.getRoller()))
                 .addValue("navn", motedeltaker.getNavn())
-                .addValue("opprettet", motedeltaker.getOpprettet())
-        ).collect(Collectors.toList());
+        ).toArray(SqlParameterSource[]::new);
 
-        return paramsList.stream()
-                .map(params -> namedParameterJdbcTemplate.queryForObject(sql, params, motedeltakerRowMapper))
-                .toList();
+        namedParameterJdbcTemplate.batchUpdate(sql, paramsList);
     }
 
     private void insertStillingsSoek(long aktivitetId, long versjon, StillingsoekAktivitetData stillingsSoekAktivitet) {
@@ -603,9 +596,9 @@ public class AktivitetDAO {
                 .addValue("idVersjonPar", idVersjonPar);
         // language=sql
         String sql = """
-        SELECT aktivitet_id, deltaker_id, opprettet, rolle, navn
+        SELECT aktivitet_id, roller, navn
         FROM MOTEDELTAKER
-        WHERE (aktivitet_id, versjon) IN (:idVersjonPar)
+        WHERE (aktivitet_id, aktivitet_versjon) IN (:idVersjonPar)
         """;
 
         return namedParameterJdbcTemplate.query(sql, params, rs -> {
@@ -626,7 +619,7 @@ public class AktivitetDAO {
                 .addValue(AKTIVITETID, aktivitetId)
                 .addValue(VERSJON, versjon);
         return namedParameterJdbcTemplate.query(
-                "SELECT deltaker_id, opprettet, rolle, navn FROM MOTEDELTAKER WHERE aktivitet_id = :aktivitet_id AND versjon = :versjon",
+                "SELECT roller, navn FROM MOTEDELTAKER WHERE aktivitet_id = :aktivitet_id AND aktivitet_versjon = :versjon",
                 params,
                 motedeltakerRowMapper
         );
@@ -634,10 +627,8 @@ public class AktivitetDAO {
 
     private static final RowMapper<Motedeltaker> motedeltakerRowMapper = (rs, rowNum) ->
             new Motedeltaker(
-                    parseRoller(rs.getString("rolle")),
-                    rs.getString("navn"),
-                    Database.hentZonedDateTime(rs, "opprettet"),
-                    rs.getObject("deltaker_id", UUID.class)
+                    parseRoller(rs.getString("roller")),
+                    rs.getString("navn")
             );
 
     private static String joinRoller(List<MotedeltakerRolle> roller) {

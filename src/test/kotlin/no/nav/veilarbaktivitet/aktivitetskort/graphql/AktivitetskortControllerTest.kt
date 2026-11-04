@@ -387,8 +387,6 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
                     motedeltakere {
                         navn
                         roller
-                        deltakerId
-                        opprettet
                         }
                     }                
                 }
@@ -430,8 +428,6 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
                     motedeltakere {
                         navn
                         roller
-                        deltakerId
-                        opprettet
                         }
                     }                
                 }
