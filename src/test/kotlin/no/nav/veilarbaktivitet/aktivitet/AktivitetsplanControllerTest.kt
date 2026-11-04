@@ -1,7 +1,5 @@
 package no.nav.veilarbaktivitet.aktivitet
 
-import java.time.ZonedDateTime
-import java.time.temporal.ChronoUnit
 import no.nav.common.json.JsonUtils
 import no.nav.veilarbaktivitet.SpringBootTestBase
 import no.nav.veilarbaktivitet.aktivitet.domain.Motedeltaker
@@ -12,7 +10,6 @@ import no.nav.veilarbaktivitet.oversikten.OversiktenMelding
 import no.nav.veilarbaktivitet.oversikten.OversiktenMeldingMedMetadataDAO
 import no.nav.veilarbaktivitet.oversikten.UtsendingStatus
 import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder
-import no.nav.veilarbaktivitet.util.AktivitetTestService
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.Assertions
@@ -20,6 +17,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertNotNull
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
+import java.time.ZonedDateTime
+import java.time.temporal.ChronoUnit
 
 internal class AktivitetsplanControllerTest: SpringBootTestBase() {
 
@@ -481,17 +480,32 @@ internal class AktivitetsplanControllerTest: SpringBootTestBase() {
     }
 
     @Test
-    fun `Veileder skal kunne fjerne møtedeltakere fra eksisterende møter`() {
+    fun `Bruker skal ikke kunne endre på møtedeltakere`() {
+        val happyBruker = navMockService.createBruker()
+        val veileder = navMockService.createVeileder(happyBruker)
+        val aktivitetMedMøtedeltaker = aktivitetTestService.opprettAktivitetViaHttp(
+            happyBruker,
+            veileder,
+            AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE)
+                .setOppfolgingsperiodeId(happyBruker.oppfolgingsperiodeId)
+                .setMotedeltakere(listOf(
+                    Motedeltaker(roller = listOf(MotedeltakerRolle.VEILEDER), navn = "Veileder Veiledersen"),
+                    Motedeltaker(roller = listOf(MotedeltakerRolle.BRUKER), navn = "Bruker Brukersen"),
+                    Motedeltaker(roller = listOf(MotedeltakerRolle.MENTOR_FADDER), navn = "Fadder Faddersen"),
+                ))
+        )
+        val møtedeltakereMedEnFjernetOgEnNy = aktivitetMedMøtedeltaker.motedeltakere
+            .filter { !it.roller.contains(MotedeltakerRolle.MENTOR_FADDER) } +
+                Motedeltaker(roller = listOf(MotedeltakerRolle.ARBEIDSGIVER), navn = "Arbeidsgiver Arbeidsgiversen")
+        aktivitetMedMøtedeltaker.setMotedeltakere(møtedeltakereMedEnFjernetOgEnNy)
 
-    }
-
-    @Test
-    fun `Bruker skal ikke kunne legge til møtedeltakere på eksisterende møter`() {
-
-    }
-
-    @Test
-    fun `Veileder skal ikke kunne fjerne møtedeltakere fra eksisterende møter`() {
-
+        happyBruker
+            .createRequest()
+            .and()
+            .body(JsonUtils.toJson(aktivitetMedMøtedeltaker))
+            .`when`()
+            .put("http://localhost:" + port + "/veilarbaktivitet/api/aktivitet/" + aktivitetMedMøtedeltaker.getId())
+            .then()
+            .assertThat().statusCode(HttpStatus.BAD_REQUEST.value());
     }
 }
