@@ -1,16 +1,20 @@
 package no.nav.veilarbaktivitet.admin
 
 import lombok.extern.slf4j.Slf4j
+import no.nav.poao.dab.spring_auth.AuthService
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeService
 import no.nav.veilarbaktivitet.person.Person
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.server.ResponseStatusException
 
 @Slf4j
 @RestController
@@ -18,14 +22,19 @@ import org.springframework.web.bind.annotation.RestController
 class AdminController(
     val aktivitetService: AktivitetService,
     val periodeService: OppfolgingsperiodeService,
-    val aktivitetDAO: AktivitetDAO
+    val aktivitetDAO: AktivitetDAO,
+    val authService: AuthService,
+    @Value("\${app.env.kassering.godkjenteIdenter}")
+    private val godkjenteIdenter: String
 ) {
     private val logger = LoggerFactory.getLogger(this::class.java)
 
     @PostMapping("/flytt-aktiviteter-til-siste-periode")
     fun flyttAktiviteter(@RequestBody personDto: PersonDto): Map<String, Int> {
-        return personDto.aktorIds.associateWith {
-            flyttAktiviteter(it)
+        return kjorHvisTilgang {
+            personDto.aktorIds.associateWith {
+                flyttAktiviteter(it)
+            }
         }
     }
 
@@ -55,6 +64,21 @@ class AdminController(
         logger.info("Flyttet ${aktiviteterINestSistePeriode.size} aktiviteter fra periode ${nestSistePeriode.oppfolgingsperiodeId} til periode ${sisteÅpenPeriode.oppfolgingsperiodeId}")
         return aktiviteterINestSistePeriode.size
     }
+
+    private fun kjorHvisTilgang(callback: () -> Map<String, Int>): Map<String, Int> {
+        val veilederIdent = authService.getInnloggetVeilederIdent()
+        val godkjente = godkjenteIdenter.split(",".toRegex()).dropLastWhile { it.isEmpty() }
+            .toTypedArray()
+        if (!godkjente.contains(veilederIdent.get())) {
+            throw ResponseStatusException(
+                HttpStatus.FORBIDDEN,
+                "${veilederIdent} har ikke tilgang til flytte aktiviteter"
+            )
+        }
+
+        return callback()
+    }
+
 }
 
 data class PersonDto(
