@@ -119,7 +119,7 @@ spec:
     sqlInstances:
       - name: veilarbaktivitet-gcp
         type: POSTGRES_18
-        tier: db-custom-6-53248
+        tier: db-custom-6-49152
         diskType: SSD
         diskAutoresize: true
         highAvailability: true
