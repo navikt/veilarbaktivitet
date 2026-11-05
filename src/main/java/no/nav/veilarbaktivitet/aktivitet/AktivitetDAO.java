@@ -588,8 +588,8 @@ public class AktivitetDAO {
     public Map<Long, List<Motedeltaker>> hentMotedeltakere(Collection<AktivitetVersjon> aktivitetVersjoner) {
         if (aktivitetVersjoner == null || aktivitetVersjoner.isEmpty()) return Map.of();
 
-        List<Object[]> idVersjonPar = aktivitetVersjoner.stream()
-                .map(it -> new Object[]{it.aktivitetId(), it.versjon()})
+        List<Long[]> idVersjonPar = aktivitetVersjoner.stream()
+                .map(it -> new Long[]{it.aktivitetId(), it.versjon()})
                 .toList();
 
         var params = new MapSqlParameterSource()
