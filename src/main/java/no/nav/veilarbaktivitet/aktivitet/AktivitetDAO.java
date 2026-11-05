@@ -604,7 +604,7 @@ public class AktivitetDAO {
         return namedParameterJdbcTemplate.query(sql, params, rs -> {
             Map<Long, List<Motedeltaker>> motedeltakerePerAktivitet = new HashMap<>();
             while (rs.next()) {
-                long aktivitetId = rs.getLong("aktivitet_id");
+                long aktivitetId = rs.getLong(AKTIVITETID);
                 var motedeltaker = motedeltakerRowMapper.mapRow(rs, 0);
                 motedeltakerePerAktivitet
                         .computeIfAbsent(aktivitetId, k -> new ArrayList<>())
