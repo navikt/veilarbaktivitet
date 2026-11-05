@@ -26,7 +26,7 @@ jobs:
           distribution: temurin
           java-version: 21
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6
+        uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c
       - name: Execute Gradle build
         run: ./gradlew assemble --scan
       - name: Push docker image to GAR
@@ -46,7 +46,7 @@ jobs:
         - name: Checkout
           uses: actions/checkout@v7
         - name: Deploy
-          uses: nais/deploy/actions/deploy@7ad7c2b833e1db74a80954e3ee6bb6ac060a8ae7
+          uses: nais/deploy/actions/deploy@7b60caaded00332e9aa117a8342daa0876851dfe
           env:
             CLUSTER: dev-gcp
             RESOURCE: nais/nais-dev-gcp.yaml

@@ -2,8 +2,8 @@ val spring_boot_version = "4.1.1"
 val tomcat_version = "11.0.26"
 
 extra["tomcat.version"] = tomcat_version
-val common_version = "4.2026.10.01_11.30-68a5418edc3c"
-val dab_common_version = "2026.09.25-13.28.46942f27c0f0"
+val common_version = "4.2026.10.30_22.48-ed045c9bbfa2"
+val dab_common_version = "2026.11.03-09.22.cb2db26aaf5b"
 val poao_tilgang_version = "4.2026.10.02_08.32-32a40f5f5ced"
 val shedlock_version = "7.10.1"
 val avroVersion = "1.12.2"
