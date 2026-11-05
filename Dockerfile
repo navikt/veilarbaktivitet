@@ -6,4 +6,4 @@ WORKDIR /app
 COPY build/libs/veilarbaktivitet.jar ./
 EXPOSE 8080
 USER nonroot
-CMD ["veilarbaktivitet.jar"]
+CMD ["-jar", "veilarbaktivitet.jar"]
