@@ -2,10 +2,7 @@ package no.nav.veilarbaktivitet.aktivitet;
 
 import lombok.RequiredArgsConstructor;
 import no.nav.poao.dab.spring_auth.IAuthService;
-import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
-import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
-import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
-import no.nav.veilarbaktivitet.aktivitet.domain.MoteData;
+import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.AktivitetsEndring;
 import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.AktivitetsOpprettelse;
 import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.Mote;
@@ -216,6 +213,7 @@ public class AktivitetAppService {
     private boolean erMoteDetaljerEndret(AktivitetData original, Mote.Endre aktivitet) {
         boolean tittelEndret = !Objects.equals(original.getTittel(), aktivitet.getMuterbareFelter().getTittel());
         boolean beskrivelseEndret = !Objects.equals(original.getBeskrivelse(), aktivitet.getMuterbareFelter().getBeskrivelse());
+        boolean motedeltakereEndret = !Objects.equals(original.getMoteData().getMotedeltakere(), aktivitet.getMoteData().getMotedeltakere());
 
         MoteData originalMote = original.getMoteData();
         MoteData nyMote = aktivitet.getMoteData();
@@ -223,7 +221,7 @@ public class AktivitetAppService {
         boolean forberedelserEndret = originalMote != null && nyMote != null &&
                 !Objects.equals(originalMote.getForberedelser(), nyMote.getForberedelser());
 
-        return tittelEndret || beskrivelseEndret || forberedelserEndret;
+        return tittelEndret || beskrivelseEndret || forberedelserEndret || motedeltakereEndret;
     }
 
     private void oppdaterSomEksternBruker(AktivitetsEndring aktivitet, AktivitetData original) {

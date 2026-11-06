@@ -14,3 +14,7 @@ class OppfolgingsPeriode(
 class Eier(
     val fnr: String
 )
+
+class BrukerNavn(
+    val fulltNavn: String
+)

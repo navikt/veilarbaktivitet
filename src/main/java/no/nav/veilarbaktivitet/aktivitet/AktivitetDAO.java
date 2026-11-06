@@ -89,7 +89,12 @@ public class AktivitetDAO {
         String sql = SELECT_AKTIVITET +
                 " WHERE A.aktivitet_id = :aktivitetId and A.gjeldende = 1";
 
-        return namedParameterJdbcTemplate.queryForObject(sql, params, aktivitetsDataRowMapper);
+        AktivitetData aktivitet = namedParameterJdbcTemplate.queryForObject(sql, params, aktivitetsDataRowMapper);
+        if (aktivitet.getMoteData() != null) {
+            var deltakere = hentMotedeltakere(aktivitet.getId(), aktivitet.getVersjon());
+            aktivitet = aktivitet.withMoteData(aktivitet.getMoteData().withMotedeltakere(deltakere));
+        }
+        return aktivitet;
     }
 
     public Long hentPortefoljeKafkaOffsetAiven(long aktivitetId, long versjon) {
@@ -254,7 +259,8 @@ public class AktivitetDAO {
     private void insertMote(long aktivitetId, long versjon, MoteData moteData) {
         // language=sql
         String sql = """
-                    INSERT INTO MOTE(aktivitet_id, versjon, adresse, forberedelser, kanal, referat, referat_publisert) VALUES (
+                    
+                INSERT INTO MOTE(aktivitet_id, versjon, adresse, forberedelser, kanal, referat, referat_publisert) VALUES (
                     :aktivitet_id,
                     :versjon,
                     :adresse,
@@ -274,6 +280,28 @@ public class AktivitetDAO {
                     .addValue("referat_publisert", moteData.isReferatPublisert());
             namedParameterJdbcTemplate.update(sql, params);
         });
+        insertMotedeltakere(aktivitetId, versjon, moteData);
+    }
+
+    private void insertMotedeltakere(long aktivitetId, long aktivitetVersjon, MoteData moteData) {
+        if (moteData == null || moteData.getMotedeltakere() == null || moteData.getMotedeltakere().isEmpty()) return;
+
+        String sql = """
+               INSERT INTO MOTEDELTAKER(aktivitet_id, aktivitet_versjon, roller, navn) VALUES (
+                :aktivitet_id,
+                :aktivitet_versjon,
+                :roller,
+                :navn)
+           """;
+
+        SqlParameterSource[] paramsList = moteData.getMotedeltakere().stream().map(motedeltaker -> new VeilarbAktivitetSqlParameterSource()
+                .addValue(AKTIVITETID, aktivitetId)
+                .addValue("aktivitet_versjon", aktivitetVersjon)
+                .addValue("roller", joinRoller(motedeltaker.getRoller()))
+                .addValue("navn", motedeltaker.getNavn())
+        ).toArray(SqlParameterSource[]::new);
+
+        namedParameterJdbcTemplate.batchUpdate(sql, paramsList);
     }
 
     private void insertStillingsSoek(long aktivitetId, long versjon, StillingsoekAktivitetData stillingsSoekAktivitet) {
@@ -556,4 +584,68 @@ public class AktivitetDAO {
                 WHERE aktivitet_id = :aktivitetId
                 """, params);
     }
+
+    public Map<Long, List<Motedeltaker>> hentMotedeltakere(Collection<AktivitetVersjon> aktivitetVersjoner) {
+        if (aktivitetVersjoner == null || aktivitetVersjoner.isEmpty()) return Map.of();
+
+        List<Long[]> idVersjonPar = aktivitetVersjoner.stream()
+                .map(it -> new Long[]{it.aktivitetId(), it.versjon()})
+                .toList();
+
+        var params = new MapSqlParameterSource()
+                .addValue("idVersjonPar", idVersjonPar);
+        // language=sql
+        String sql = """
+        SELECT aktivitet_id, roller, navn
+        FROM MOTEDELTAKER
+        WHERE (aktivitet_id, aktivitet_versjon) IN (:idVersjonPar)
+        """;
+
+        return namedParameterJdbcTemplate.query(sql, params, rs -> {
+            Map<Long, List<Motedeltaker>> motedeltakerePerAktivitet = new HashMap<>();
+            while (rs.next()) {
+                long aktivitetId = rs.getLong(AKTIVITETID);
+                var motedeltaker = motedeltakerRowMapper.mapRow(rs, 0);
+                motedeltakerePerAktivitet
+                        .computeIfAbsent(aktivitetId, k -> new ArrayList<>())
+                        .add(motedeltaker);
+            }
+            return motedeltakerePerAktivitet;
+        });
+    }
+
+    private List<Motedeltaker> hentMotedeltakere(long aktivitetId, long versjon) {
+        var params = new MapSqlParameterSource()
+                .addValue(AKTIVITETID, aktivitetId)
+                .addValue(VERSJON, versjon);
+        return namedParameterJdbcTemplate.query(
+                "SELECT roller, navn FROM MOTEDELTAKER WHERE aktivitet_id = :aktivitet_id AND aktivitet_versjon = :versjon",
+                params,
+                motedeltakerRowMapper
+        );
+    }
+
+    private static final RowMapper<Motedeltaker> motedeltakerRowMapper = (rs, rowNum) ->
+            new Motedeltaker(
+                    parseRoller(rs.getString("roller")),
+                    rs.getString("navn")
+            );
+
+    private static String joinRoller(List<MotedeltakerRolle> roller) {
+        return roller.stream()
+                .map(EnumUtils::getName)
+                .collect(Collectors.joining(","));
+    }
+
+    private static List<MotedeltakerRolle> parseRoller(String roller) {
+        if (roller == null || roller.isBlank()) return List.of();
+        return Arrays.stream(roller.split(","))
+                .map(String::trim)
+                .filter(rolle -> !rolle.isEmpty())
+                .map(rolle -> EnumUtils.valueOf(MotedeltakerRolle.class, rolle))
+                .filter(Objects::nonNull)
+                .toList();
+    }
+
+    public record AktivitetVersjon(long aktivitetId, long versjon) {}
 }

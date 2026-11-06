@@ -1,9 +1,9 @@
 package no.nav.veilarbaktivitet.aktivitet
 
-import java.time.ZonedDateTime
-import java.time.temporal.ChronoUnit
 import no.nav.common.json.JsonUtils
 import no.nav.veilarbaktivitet.SpringBootTestBase
+import no.nav.veilarbaktivitet.aktivitet.domain.Motedeltaker
+import no.nav.veilarbaktivitet.aktivitet.domain.MotedeltakerRolle
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions
 import no.nav.veilarbaktivitet.oversikten.OversiktenMelding
@@ -14,8 +14,11 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertNotNull
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
+import java.time.ZonedDateTime
+import java.time.temporal.ChronoUnit
 
 internal class AktivitetsplanControllerTest: SpringBootTestBase() {
 
@@ -394,5 +397,110 @@ internal class AktivitetsplanControllerTest: SpringBootTestBase() {
         // Verifiser at det fortsatt bare er 2 meldinger (START og STOPP fra før)
         val meldingerEtterNyttReferat = oversiktenMeldingMedMetadataRepository.hentAlleSomSkalSendes()
         assertThat(meldingerEtterNyttReferat.size).isEqualTo(2)
+    }
+
+
+    @Test
+    fun `Skal kunne legge til møtedeltakere når man oppretter nytt møte`() {
+        val happyBruker = navMockService.createBruker()
+        val veileder = navMockService.createVeileder(happyBruker)
+        val motedeltakere = listOf(
+            Motedeltaker(roller = listOf(MotedeltakerRolle.VEILEDER), navn = "Veileder Veiledersen"),
+            Motedeltaker(roller = listOf(MotedeltakerRolle.BRUKER), navn = "Bruker Brukersen"),
+            Motedeltaker(roller = listOf(MotedeltakerRolle.MENTOR_FADDER), navn = "Fadder Faddersen"),
+        )
+
+        val aktivitet = aktivitetTestService.opprettAktivitetViaHttp(
+            happyBruker,
+            veileder,
+            AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE)
+                .setOppfolgingsperiodeId(happyBruker.oppfolgingsperiodeId)
+                .setMotedeltakere(motedeltakere)
+        )
+
+        assertThat(aktivitet.motedeltakere.size).isEqualTo(3)
+        assertThat(aktivitet.motedeltakere).isEqualTo(motedeltakere)
+    }
+
+    @Test
+    fun `Veileder skal kunne fjerne og legge til møtedeltakere på eksisterende møter`() {
+        val happyBruker = navMockService.createBruker()
+        val veileder = navMockService.createVeileder(happyBruker)
+        val aktivitetMedMøtedeltaker = aktivitetTestService.opprettAktivitetViaHttp(
+            happyBruker,
+            veileder,
+            AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE)
+                .setOppfolgingsperiodeId(happyBruker.oppfolgingsperiodeId)
+                .setMotedeltakere(listOf(
+                    Motedeltaker(roller = listOf(MotedeltakerRolle.VEILEDER), navn = "Veileder Veiledersen"),
+                    Motedeltaker(roller = listOf(MotedeltakerRolle.BRUKER), navn = "Bruker Brukersen"),
+                    Motedeltaker(roller = listOf(MotedeltakerRolle.MENTOR_FADDER), navn = "Fadder Faddersen"),
+                ))
+        )
+
+        val møtedeltakereMedEnFjernetOgEnNy = aktivitetMedMøtedeltaker.motedeltakere
+            .filter { !it.roller.contains(MotedeltakerRolle.MENTOR_FADDER) } +
+                Motedeltaker(roller = listOf(MotedeltakerRolle.ARBEIDSGIVER), navn = "Arbeidsgiver Arbeidsgiversen")
+        aktivitetMedMøtedeltaker.setMotedeltakere(møtedeltakereMedEnFjernetOgEnNy)
+        val oppdatertAktivitet = aktivitetTestService.oppdaterAktivitetOk(happyBruker, veileder, aktivitetMedMøtedeltaker)
+
+        assertThat(oppdatertAktivitet.motedeltakere.size).isEqualTo(3)
+        val nyDeltaker = oppdatertAktivitet.motedeltakere.find { it.roller.contains(MotedeltakerRolle.ARBEIDSGIVER) }
+        assertNotNull(nyDeltaker)
+    }
+
+    @Test
+    fun `En møtedeltaker kan ha flere roller lagret som én deltaker`() {
+        val happyBruker = navMockService.createBruker()
+        val veileder = navMockService.createVeileder(happyBruker)
+
+        val aktivitet = aktivitetTestService.opprettAktivitetViaHttp(
+            happyBruker,
+            veileder,
+            AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE)
+                .setOppfolgingsperiodeId(happyBruker.oppfolgingsperiodeId)
+                .setMotedeltakere(listOf(
+                    Motedeltaker(
+                        roller = listOf(MotedeltakerRolle.VEILEDER, MotedeltakerRolle.TOLK),
+                        navn = "Veileder Tolkesen"
+                    ),
+                    Motedeltaker(roller = listOf(MotedeltakerRolle.BRUKER), navn = "Bruker Brukersen"),
+                ))
+        )
+
+        assertThat(aktivitet.motedeltakere.size).isEqualTo(2)
+        val deltakerMedFlereRoller = aktivitet.motedeltakere.first { it.navn == "Veileder Tolkesen" }
+        assertThat(deltakerMedFlereRoller.roller)
+            .containsExactlyInAnyOrder(MotedeltakerRolle.VEILEDER, MotedeltakerRolle.TOLK)
+    }
+
+    @Test
+    fun `Bruker skal ikke kunne endre på møtedeltakere`() {
+        val happyBruker = navMockService.createBruker()
+        val veileder = navMockService.createVeileder(happyBruker)
+        val aktivitetMedMøtedeltaker = aktivitetTestService.opprettAktivitetViaHttp(
+            happyBruker,
+            veileder,
+            AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE)
+                .setOppfolgingsperiodeId(happyBruker.oppfolgingsperiodeId)
+                .setMotedeltakere(listOf(
+                    Motedeltaker(roller = listOf(MotedeltakerRolle.VEILEDER), navn = "Veileder Veiledersen"),
+                    Motedeltaker(roller = listOf(MotedeltakerRolle.BRUKER), navn = "Bruker Brukersen"),
+                    Motedeltaker(roller = listOf(MotedeltakerRolle.MENTOR_FADDER), navn = "Fadder Faddersen"),
+                ))
+        )
+        val møtedeltakereMedEnFjernetOgEnNy = aktivitetMedMøtedeltaker.motedeltakere
+            .filter { !it.roller.contains(MotedeltakerRolle.MENTOR_FADDER) } +
+                Motedeltaker(roller = listOf(MotedeltakerRolle.ARBEIDSGIVER), navn = "Arbeidsgiver Arbeidsgiversen")
+        aktivitetMedMøtedeltaker.setMotedeltakere(møtedeltakereMedEnFjernetOgEnNy)
+
+        happyBruker
+            .createRequest()
+            .and()
+            .body(JsonUtils.toJson(aktivitetMedMøtedeltaker))
+            .`when`()
+            .put("http://localhost:" + port + "/veilarbaktivitet/api/aktivitet/" + aktivitetMedMøtedeltaker.getId())
+            .then()
+            .assertThat().statusCode(HttpStatus.BAD_REQUEST.value());
     }
 }

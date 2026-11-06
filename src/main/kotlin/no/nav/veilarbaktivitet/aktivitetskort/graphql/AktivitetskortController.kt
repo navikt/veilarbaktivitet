@@ -16,6 +16,7 @@ import no.nav.veilarbaktivitet.arena.ArenaService
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO
 import no.nav.veilarbaktivitet.config.ownerProviders.AktivitetOwnerProvider
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeService
+import no.nav.veilarbaktivitet.person.EksternNavnService
 import no.nav.veilarbaktivitet.person.Person
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.graphql.data.method.annotation.Argument
@@ -37,6 +38,7 @@ class AktivitetskortController(
     val aktorOppslagClient: AktorOppslagClient,
     val authService: IAuthService,
     val arenaService: ArenaService,
+    val eksternNavnService: EksternNavnService,
 ) {
     @Value("\${app.env.poaoAdminIdenter}")
     var godkjenteAdminIdenterInput: String? = null
@@ -88,6 +90,13 @@ class AktivitetskortController(
             ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "No owner found for aktivitetId")
         authService.sjekkTilgangTilPerson(eksternBrukerId, TilgangsType.LESE)
         return Eier(eksternBrukerId.get())
+    }
+
+    @QueryMapping
+    fun brukersNavn(@Argument fnr: String): BrukerNavn {
+        val eksternBrukerId = getContextUserIdent(fnr)
+        authService.sjekkTilgangTilPerson(eksternBrukerId.otherFnr(), TilgangsType.LESE)
+        return BrukerNavn(eksternNavnService.hentNavn(eksternBrukerId).tilFornavnMellomnavnEtternavn())
     }
 
     @QueryMapping

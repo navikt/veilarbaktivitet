@@ -5,12 +5,15 @@ import no.nav.veilarbaktivitet.aktivitet.Historikk
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData.*
+import no.nav.veilarbaktivitet.aktivitet.domain.Motedeltaker
+import no.nav.veilarbaktivitet.aktivitet.domain.MotedeltakerRolle
 import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.LenkeType
 import no.nav.veilarbaktivitet.arkivering.ArkivAktivitet
 import no.nav.veilarbaktivitet.arkivering.ArkivDialogtråd
 import no.nav.veilarbaktivitet.arkivering.Detalj
 import no.nav.veilarbaktivitet.arkivering.EksternHandling
+import no.nav.veilarbaktivitet.arkivering.Stil
 import no.nav.veilarbaktivitet.arkivering.Stil.*
 import no.nav.veilarbaktivitet.arkivering.etiketter.getArkivEtiketter
 import no.nav.veilarbaktivitet.person.Innsender
@@ -134,20 +137,28 @@ fun AktivitetData.toDetaljer(): List<Detalj> =
         EKSTERNAKTIVITET -> toEksternAktivitetDetaljer()
     }
 
-fun AktivitetData.toMoteDetaljer() = listOf(
-    Detalj(stil = HALV_LINJE, tittel = "Dato", tekst = norskDato(fraDato)),
-    Detalj(stil = HALV_LINJE, tittel = "Klokkeslett", tekst = klokkeslett(fraDato)),
-    Detalj(stil = HALV_LINJE, tittel = "Møteform", tekst = moteData?.kanal?.tekst),
-    Detalj(stil = HALV_LINJE, tittel = "Varighet", tekst = beregnVarighet()),
-    Detalj(stil = HEL_LINJE, tittel = "Møtested eller annen praktisk informasjon", tekst = moteData?.adresse),
-    Detalj(stil = HEL_LINJE, tittel = "Hensikt med møtet", tekst = beskrivelse),
-    Detalj(stil = HEL_LINJE, tittel = "Forberedelser til møtet", tekst = moteData?.forberedelser),
-    Detalj(
-        stil = PARAGRAF,
-        tittel = "Samtalereferat",
-        tekst = if (moteData?.isReferatPublisert == true) moteData?.referat else ""
-    ),
-)
+fun AktivitetData.toMoteDetaljer(): List<Detalj> {
+    val mappetMøtedeltakere = moteData?.motedeltakere?.joinToString(separator = "\n") {
+        if (it.roller.contains(MotedeltakerRolle.TOLK)) "Tolk"
+        else "${it.navn} (${it.roller.joinToString(separator = ", ") { it.rolle }})"
+    }
+
+    return listOfNotNull(
+        Detalj(stil = HALV_LINJE, tittel = "Dato", tekst = norskDato(fraDato)),
+        Detalj(stil = HALV_LINJE, tittel = "Klokkeslett", tekst = klokkeslett(fraDato)),
+        Detalj(stil = HALV_LINJE, tittel = "Møteform", tekst = moteData?.kanal?.tekst),
+        Detalj(stil = HALV_LINJE, tittel = "Varighet", tekst = beregnVarighet()),
+        if (mappetMøtedeltakere.isNullOrBlank()) null else Detalj(stil = HEL_LINJE, tittel = "Deltakere", tekst = mappetMøtedeltakere),
+        Detalj(stil = HEL_LINJE, tittel = "Møtested eller annen praktisk informasjon", tekst = moteData?.adresse),
+        Detalj(stil = HEL_LINJE, tittel = "Hensikt med møtet", tekst = beskrivelse),
+        Detalj(stil = HEL_LINJE, tittel = "Forberedelser til møtet", tekst = moteData?.forberedelser),
+        Detalj(
+            stil = PARAGRAF,
+            tittel = "Samtalereferat",
+            tekst = if (moteData?.isReferatPublisert == true) moteData?.referat else ""
+        ),
+    )
+}
 
 fun AktivitetData.toEgenaktivitetDetaljer() = listOf(
     Detalj(stil = HALV_LINJE, tittel = "Fra dato", tekst = norskDato(fraDato)),

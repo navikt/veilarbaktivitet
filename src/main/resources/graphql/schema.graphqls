@@ -3,6 +3,11 @@ type Query {
     aktivitet(aktivitetId: String!, versjon: String): AktivitetDTO
     eier(aktivitetId: String!): Eier
     tiltaksaktiviteter(fnr: String!): [TiltaksAktivitet]
+    brukersNavn(fnr: String!): BrukerNavn
+}
+
+type BrukerNavn {
+    fulltNavn: String
 }
 
 type Eier {
@@ -90,6 +95,7 @@ type AktivitetDTO {
     kanal: KanalDTO
     referat: String
     erReferatPublisert: Boolean
+    motedeltakere: [Motedeltaker]
 
     stillingFraNavData: StillingFraNavData
 
@@ -179,6 +185,14 @@ enum AktivitetskortType {
     DELE_CV_MED_ARBEIDSGIVER
 }
 
+type Motedeltaker {
+    roller: [MotedeltakerRolle],
+    navn: String
+}
+
+enum MotedeltakerRolle {
+    ARBEIDSGIVER MENTOR_FADDER VEILEDER TOLK BRUKER ANNET
+}
 
 type StillingFraNavData {
     cvKanDelesData: CvKanDelesData
