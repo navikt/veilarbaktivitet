@@ -1,4 +1,4 @@
-val spring_boot_version = "4.1.1"
+val spring_boot_version = "4.1.2"
 val tomcat_version = "11.0.26"
 
 extra["tomcat.version"] = tomcat_version
@@ -26,7 +26,7 @@ plugins {
     id("project-report")
     id("jacoco")
     id("org.sonarqube") version "7.5.0.8588"
-    id("org.springframework.boot") version "4.1.1"
+    id("org.springframework.boot") version "4.1.2"
     id("io.freefair.lombok") version "9.5.0"
 }
 
