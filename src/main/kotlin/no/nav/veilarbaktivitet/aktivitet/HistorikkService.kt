@@ -103,6 +103,7 @@ private fun hentEndringstekster(
                 val til = oppdatertVersjon?.fraDato?.let {norskDatoOgKlokkeslett(it)} ?: "ingen dato"
                 "$endretAvTekst endret tid for møtet fra $fra til $til"
             }
+            MOTE_DELTAGERE_ENDRET -> "$endretAvTekst endret deltakere på møtet"
             MOTE_STED_ENDRET -> "$endretAvTekst endret sted for møtet fra ${forrigeVersjon?.moteData?.adresse ?: "ingen adresse"} til ${oppdatertVersjon.moteData.adresse ?: "ingen adresse"}"
             MOTE_KANAL_ENDRET -> "$endretAvTekst endret kanal for møtet fra ${forrigeVersjon?.moteData?.kanal?.tekst ?: "ingen kanal"} til ${oppdatertVersjon.moteData?.kanal?.tekst ?: "ingen kanal"}"
             MOTE_FORBEREDELSER_ENDRET -> "$endretAvTekst endret møteforberedelser"
@@ -203,6 +204,7 @@ fun utledAktivitetendringsType(forrigeVersjon: AktivitetData?, oppdatertVersjon:
     if (oppdatertVersjon.aktivitetType != AktivitetTypeData.MOTE && forrigeVersjon.fraDato != oppdatertVersjon.fraDato)
         endringer.add(FRA_DATO_ENDRET)
     if (erMøtetidspunktEndret(forrigeVersjon, oppdatertVersjon)) endringer.add(MOTE_TIDSPUNKT_ENDRET)
+    if (erMoteDeltakereEndret(forrigeVersjon, oppdatertVersjon)) endringer.add(MOTE_DELTAGERE_ENDRET)
     if (erMøtestedEndret(forrigeVersjon, oppdatertVersjon)) endringer.add(MOTE_STED_ENDRET)
     if (erMøtekanalEndret(forrigeVersjon, oppdatertVersjon)) endringer.add(MOTE_KANAL_ENDRET)
     if (erMøteForberedelserEndret(forrigeVersjon, oppdatertVersjon)) endringer.add(MOTE_FORBEREDELSER_ENDRET)
@@ -227,6 +229,11 @@ private fun erMøtetidspunktEndret(forrigeVersjon: AktivitetData, oppdatertVersj
     val startTidspunktEndret = forrigeVersjon.fraDato != oppdatertVersjon.fraDato
     val sluttTidspunktEndret = forrigeVersjon.tilDato != oppdatertVersjon.tilDato
     return startTidspunktEndret || sluttTidspunktEndret
+}
+
+private fun erMoteDeltakereEndret(forrigeVersjon: AktivitetData, oppdatertVersjon: AktivitetData): Boolean {
+    if (forrigeVersjon.aktivitetType != AktivitetTypeData.MOTE) return false
+    return forrigeVersjon.moteData.motedeltakere != oppdatertVersjon.moteData.motedeltakere
 }
 
 private fun erMøtestedEndret(forrigeVersjon: AktivitetData, oppdatertVersjon: AktivitetData): Boolean {
@@ -317,6 +324,7 @@ enum class AktivitetendringsType {
     FRA_DATO_ENDRET,
     STILLINGSOK_ETIKETT_ENDRET,
     MOTE_TIDSPUNKT_ENDRET,
+    MOTE_DELTAGERE_ENDRET,
     MOTE_STED_ENDRET,
     MOTE_KANAL_ENDRET,
     MOTE_FORBEREDELSER_ENDRET,

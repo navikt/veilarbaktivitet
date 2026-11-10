@@ -106,6 +106,28 @@ class HistorikkServiceTest {
     }
 
     @Test
+    fun `Skal deltaker historikk på endring deltakere på møte`() {
+        val aktivitet = nyMoteAktivitet()
+        val aktivitetMedArbeidsgiver = endreAktivitet(aktivitet, oppdatertMoteData = aktivitet.moteData.withMotedeltakere(
+            listOf(
+                Motedeltaker(
+                    roller = listOf(MotedeltakerRolle.ARBEIDSGIVER),
+                    "Hans Christian Holte"
+                )
+            )
+        ))
+
+        val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, aktivitetMedArbeidsgiver)))
+
+        assert(
+            historikk[aktivitet.id]!!,
+            aktivitetMedArbeidsgiver,
+            "NAV endret deltakere på møtet",
+            "${aktivitetMedArbeidsgiver.endretAv} endret deltakere på møtet"
+        )
+    }
+
+    @Test
     fun `Skal lage historikk på referat endret`() {
         val aktivitet = nyAktivitet(AktivitetTypeData.MOTE).toBuilder().build()
         val møteDataMedEndretReferat = aktivitet.moteData.withReferat("Endret referat")
@@ -504,7 +526,6 @@ class HistorikkServiceTest {
             .tilDato(tilDato)
             .tittel(tittel)
             .beskrivelse(beskrivelse)
-            .versjon(aktivitet.versjon + 1)
             .status(oppdatertStatus)
             .avsluttetKommentar(aktivitet.avsluttetKommentar)
             .endretAvType(endretAvType)
