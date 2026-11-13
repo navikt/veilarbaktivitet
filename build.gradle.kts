@@ -1,9 +1,9 @@
 val spring_boot_version = "4.1.2"
-val tomcat_version = "11.0.26"
+val tomcat_version = "11.0.27"
 
 extra["tomcat.version"] = tomcat_version
-val common_version = "4.2026.10.30_22.48-ed045c9bbfa2"
-val dab_common_version = "2026.11.03-09.22.cb2db26aaf5b"
+val common_version = "4.2026.11.05_07.24-dd0ce2805c16"
+val dab_common_version = "2026.11.13-12.42.75d49f2e48f7"
 val poao_tilgang_version = "4.2026.10.02_08.32-32a40f5f5ced"
 val shedlock_version = "7.10.1"
 val avroVersion = "1.12.2"
@@ -21,7 +21,7 @@ plugins {
     kotlin("plugin.lombok") version kotlinVersion
     id("application")
     id("maven-publish")
-    id("org.openapi.generator") version "7.25.0"
+    id("org.openapi.generator") version "7.27.0"
     id("io.github.androa.gradle.plugin.avro") version "0.0.12"
     id("project-report")
     id("jacoco")
