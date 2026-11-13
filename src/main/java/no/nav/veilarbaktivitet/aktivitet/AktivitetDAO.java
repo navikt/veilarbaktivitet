@@ -60,6 +60,7 @@ public class AktivitetDAO {
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private static final String AKTIVITETID = "aktivitet_id";
     private static final String VERSJON = "versjon";
+    private static final String AKTIVITET_VERSJON = "aktivitet_versjon";
 
     private static final RowMapper<AktivitetData> aktivitetsDataRowMapper = (rs, rowNum) -> AktivitetDataRowMapper.mapAktivitet(rs);
 
@@ -525,7 +526,10 @@ public class AktivitetDAO {
                             WHERE A.aktivitet_id = :aktivitetId
                             ORDER BY A.versjon desc
                         """;
-        return namedParameterJdbcTemplate.query(sql, params, aktivitetsDataRowMapper);
+
+        var aktiviteter = namedParameterJdbcTemplate.query(sql, params, aktivitetsDataRowMapper);
+
+        return medMoteDeltakerePerVersjon(aktiviteter);
     }
 
     public Map<Long, List<AktivitetData>> hentAktivitetVersjoner(List<Long> aktivitetIder) {
@@ -538,7 +542,7 @@ public class AktivitetDAO {
                             ORDER BY A.versjon desc
                         """;
         var aktiviteter = namedParameterJdbcTemplate.query(sql, params, aktivitetsDataRowMapper);
-        return aktiviteter.stream().collect(Collectors.groupingBy(AktivitetData::getId));
+        return medMoteDeltakerePerVersjon(aktiviteter).stream().collect(Collectors.groupingBy(AktivitetData::getId));
     }
 
 
@@ -585,7 +589,7 @@ public class AktivitetDAO {
                 """, params);
     }
 
-    public Map<Long, List<Motedeltaker>> hentMotedeltakere(Collection<AktivitetVersjon> aktivitetVersjoner) {
+    public Map<AktivitetVersjon, List<Motedeltaker>> hentMotedeltakere(Collection<AktivitetVersjon> aktivitetVersjoner) {
         if (aktivitetVersjoner == null || aktivitetVersjoner.isEmpty()) return Map.of();
 
         List<Long[]> idVersjonPar = aktivitetVersjoner.stream()
@@ -596,22 +600,49 @@ public class AktivitetDAO {
                 .addValue("idVersjonPar", idVersjonPar);
         // language=sql
         String sql = """
-        SELECT aktivitet_id, roller, navn
+        SELECT aktivitet_id, aktivitet_versjon, roller, navn
         FROM MOTEDELTAKER
         WHERE (aktivitet_id, aktivitet_versjon) IN (:idVersjonPar)
+        ORDER BY aktivitet_id, aktivitet_versjon, navn, roller
         """;
 
         return namedParameterJdbcTemplate.query(sql, params, rs -> {
-            Map<Long, List<Motedeltaker>> motedeltakerePerAktivitet = new HashMap<>();
+            Map<AktivitetVersjon, List<Motedeltaker>> motedeltakerePerVersjon = new HashMap<>();
             while (rs.next()) {
-                long aktivitetId = rs.getLong(AKTIVITETID);
+                var aktivitetVersjon = new AktivitetVersjon(
+                        rs.getLong(AKTIVITETID),
+                        rs.getLong(AKTIVITET_VERSJON)
+                );
+
                 var motedeltaker = motedeltakerRowMapper.mapRow(rs, 0);
-                motedeltakerePerAktivitet
-                        .computeIfAbsent(aktivitetId, k -> new ArrayList<>())
+                motedeltakerePerVersjon
+                        .computeIfAbsent(aktivitetVersjon, k -> new ArrayList<>())
                         .add(motedeltaker);
             }
-            return motedeltakerePerAktivitet;
+            return motedeltakerePerVersjon;
         });
+    }
+
+    private List<AktivitetData> medMoteDeltakerePerVersjon(List<AktivitetData> aktiviteter) {
+        var moteVersjoner = aktiviteter.stream()
+                .filter(aktivitet -> aktivitet.getMoteData() != null)
+                .map(aktivitet -> new AktivitetVersjon(aktivitet.getId(), aktivitet.getVersjon()))
+                .toList();
+
+        var deltakerePerVersjon = hentMotedeltakere(moteVersjoner);
+        return aktiviteter.stream()
+                .map(aktivitet -> {
+                    if (aktivitet.getMoteData() == null) return aktivitet;
+
+                    var deltakere = deltakerePerVersjon.getOrDefault(
+                            new AktivitetVersjon(aktivitet.getId(), aktivitet.getVersjon()),
+                            List.of()
+                    );
+                    return aktivitet.withMoteData(
+                            aktivitet.getMoteData().withMotedeltakere(deltakere)
+                    );
+                })
+                .toList();
     }
 
     private List<Motedeltaker> hentMotedeltakere(long aktivitetId, long versjon) {
