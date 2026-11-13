@@ -233,7 +233,13 @@ private fun erMøtetidspunktEndret(forrigeVersjon: AktivitetData, oppdatertVersj
 
 private fun erMoteDeltakereEndret(forrigeVersjon: AktivitetData, oppdatertVersjon: AktivitetData): Boolean {
     if (forrigeVersjon.aktivitetType != AktivitetTypeData.MOTE) return false
-    return forrigeVersjon.moteData.motedeltakere != oppdatertVersjon.moteData.motedeltakere
+
+    fun deltakerInnhold(aktivitet: AktivitetData) =
+        aktivitet.moteData.motedeltakere
+            .groupingBy { it.navn to it.roller.toSet() }
+            .eachCount()
+
+    return deltakerInnhold(forrigeVersjon) != deltakerInnhold(oppdatertVersjon)
 }
 
 private fun erMøtestedEndret(forrigeVersjon: AktivitetData, oppdatertVersjon: AktivitetData): Boolean {

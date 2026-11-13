@@ -47,14 +47,16 @@ public class AktivitetService {
         var aktiviteter = aktivitetDAO.hentAktiviteterForAktorId(aktorId);
         var fhoIder = aktiviteter.stream().map(AktivitetData::getFhoId).toList();
         var forhaandsorienteringer = avtaltMedNavService.hentFHO(fhoIder);
-        Map<Long, List<Motedeltaker>> aktivitetIderMedMøtedeltakere = aktivitetDAO.hentMotedeltakere(aktiviteter.stream().map(aktivitetData ->
-                new AktivitetDAO.AktivitetVersjon(aktivitetData.getId(), aktivitetData.getVersjon()))
-                .toList()
-        );
+
+        var aktivitetVersjoner = aktiviteter.stream()
+                .map(aktivitet -> new AktivitetDAO.AktivitetVersjon(aktivitet.getId(), aktivitet.getVersjon()))
+                .toList();
+
+        var deltakerePerVersjon = aktivitetDAO.hentMotedeltakere(aktivitetVersjoner);
 
         return aktiviteter.stream()
                 .map(mergeMedForhaandsorientering(forhaandsorienteringer))
-                .map(mergeMedMotedeltakere(aktivitetIderMedMøtedeltakere))
+                .map(mergeMedMotedeltakere(deltakerePerVersjon))
                 .toList();
     }
 
@@ -299,11 +301,14 @@ public class AktivitetService {
         );
     }
 
-    private Function<AktivitetData, AktivitetData> mergeMedMotedeltakere(Map<Long, List<Motedeltaker>> motedeltakere) {
+    private Function<AktivitetData, AktivitetData> mergeMedMotedeltakere(Map<AktivitetDAO.AktivitetVersjon, List<Motedeltaker>> motedeltakerePerVersjon) {
         return aktivitetData -> {
             if (aktivitetData.getMoteData() == null) return aktivitetData;
-            return aktivitetData.withMoteData(aktivitetData.getMoteData()
-                    .withMotedeltakere(motedeltakere.getOrDefault(aktivitetData.getId(), List.of())));
+            var aktivitetVersjon = new AktivitetDAO.AktivitetVersjon(aktivitetData.getId(), aktivitetData.getVersjon());
+
+            return aktivitetData.withMoteData(aktivitetData.getMoteData().
+                    withMotedeltakere(motedeltakerePerVersjon.getOrDefault(aktivitetVersjon, List.of())));
         };
+
     }
 }
