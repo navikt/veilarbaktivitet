@@ -126,6 +126,11 @@ private fun hentEndringstekster(
             IKKE_FATT_JOBBEN, FATT_JOBBEN ->  "$endretAvTekst avsluttet aktiviteten fordi kandidaten har ${oppdatertVersjon.stillingFraNavData.soknadsstatus.text}"
             TITTEL_ENDRET -> "$endretAvTekst endret tittelen på aktiviteten fra \"${forrigeVersjon?.tittel}\" til \"${oppdatertVersjon.tittel}\""
             BESKRIVELSE_ENDRET -> "$endretAvTekst endret beskrivelsen på aktiviteten fra ${forrigeVersjon?.beskrivelse} til ${oppdatertVersjon.beskrivelse}"
+            ARBEIDSGIVER_ENDRET -> "$endretAvTekst endret arbeidsgiver på aktiviteten fra \"${forrigeVersjon?.stillingsSoekAktivitetData?.arbeidsgiver ?: ""}\" til \"${oppdatertVersjon.stillingsSoekAktivitetData?.arbeidsgiver ?: ""}\""
+            KONTAKTPERSON_ENDRET -> "$endretAvTekst endret kontaktperson på aktiviteten fra \"${forrigeVersjon?.stillingsSoekAktivitetData?.kontaktPerson ?: ""}\" til \"${oppdatertVersjon.stillingsSoekAktivitetData?.kontaktPerson ?: ""}\""
+            ARBEIDSSTED_ENDRET -> "$endretAvTekst endret arbeidssted på aktiviteten fra \"${forrigeVersjon?.stillingsSoekAktivitetData?.arbeidssted ?: ""}\" til \"${oppdatertVersjon.stillingsSoekAktivitetData?.arbeidssted ?: ""}\""
+            LENKE_ENDRET -> "$endretAvTekst endret lenke på aktiviteten fra \"${forrigeVersjon?.lenke ?: ""}\" til \"${oppdatertVersjon.lenke ?: ""}\""
+            AVTALE_OPPFOLGING_ENDRET -> "$endretAvTekst endret avtaleoppfølging på aktiviteten fra \"${forrigeVersjon?.sokeAvtaleAktivitetData?.avtaleOppfolging ?: ""}\" til \"${oppdatertVersjon.sokeAvtaleAktivitetData?.avtaleOppfolging ?: ""}\""
             DETALJER_ENDRET -> "$endretAvTekst endret detaljer på aktiviteten"
         }
     }
@@ -221,6 +226,11 @@ fun utledAktivitetendringsType(forrigeVersjon: AktivitetData?, oppdatertVersjon:
     if (forrigeVersjon.beskrivelse != oppdatertVersjon.beskrivelse) endringer.add(BESKRIVELSE_ENDRET)
     if (erDetaljerEndret(forrigeVersjon, oppdatertVersjon)) endringer.add(DETALJER_ENDRET)
     if (erAntallSoknaderIAvtaleEndret(forrigeVersjon, oppdatertVersjon)) endringer.add(ANTALL_SOKNADER_I_AVTALE_ENDRET)
+    if (erArbeidsgiverEndret(forrigeVersjon, oppdatertVersjon)) endringer.add(ARBEIDSGIVER_ENDRET)
+    if (erKontaktpersonEndret(forrigeVersjon, oppdatertVersjon)) endringer.add(KONTAKTPERSON_ENDRET)
+    if (erArbeidsstedEndret(forrigeVersjon, oppdatertVersjon)) endringer.add(ARBEIDSSTED_ENDRET)
+    if (erLenkeEndret(forrigeVersjon, oppdatertVersjon)) endringer.add(LENKE_ENDRET)
+    if (erAvtaleOppfolgingEndret(forrigeVersjon, oppdatertVersjon)) endringer.add(AVTALE_OPPFOLGING_ENDRET)
     return endringer
 }
 
@@ -233,7 +243,13 @@ private fun erMøtetidspunktEndret(forrigeVersjon: AktivitetData, oppdatertVersj
 
 private fun erMoteDeltakereEndret(forrigeVersjon: AktivitetData, oppdatertVersjon: AktivitetData): Boolean {
     if (forrigeVersjon.aktivitetType != AktivitetTypeData.MOTE) return false
-    return forrigeVersjon.moteData.motedeltakere != oppdatertVersjon.moteData.motedeltakere
+
+    fun deltakerInnhold(aktivitet: AktivitetData) =
+        aktivitet.moteData.motedeltakere
+            .groupingBy { it.navn to it.roller.toSet() }
+            .eachCount()
+
+    return deltakerInnhold(forrigeVersjon) != deltakerInnhold(oppdatertVersjon)
 }
 
 private fun erMøtestedEndret(forrigeVersjon: AktivitetData, oppdatertVersjon: AktivitetData): Boolean {
@@ -301,6 +317,35 @@ private fun erAntallSoknaderIAvtaleEndret(forrigeVersjon: AktivitetData, oppdate
     return forrigeVersjon.sokeAvtaleAktivitetData.antallStillingerIUken != oppdatertVersjon.sokeAvtaleAktivitetData?.antallStillingerIUken
 }
 
+private fun erArbeidsgiverEndret(forrigeVersjon: AktivitetData, oppdatertVersjon: AktivitetData): Boolean {
+    if (forrigeVersjon.aktivitetType == AktivitetTypeData.JOBBSOEKING &&
+        forrigeVersjon.stillingsSoekAktivitetData?.arbeidsgiver != oppdatertVersjon.stillingsSoekAktivitetData?.arbeidsgiver) return true
+    return false;
+}
+
+private fun erKontaktpersonEndret(forrigeVersjon: AktivitetData, oppdatertVersjon: AktivitetData): Boolean {
+    if (forrigeVersjon.aktivitetType == AktivitetTypeData.JOBBSOEKING &&
+        forrigeVersjon.stillingsSoekAktivitetData?.kontaktPerson != oppdatertVersjon.stillingsSoekAktivitetData?.kontaktPerson) return true
+    return false;
+}
+
+private fun erArbeidsstedEndret(forrigeVersjon: AktivitetData, oppdatertVersjon: AktivitetData): Boolean {
+    if (forrigeVersjon.aktivitetType == AktivitetTypeData.JOBBSOEKING &&
+        forrigeVersjon.stillingsSoekAktivitetData?.arbeidssted != oppdatertVersjon.stillingsSoekAktivitetData?.arbeidssted) return true
+    return false;
+}
+
+private fun erLenkeEndret(forrigeVersjon: AktivitetData, oppdatertVersjon: AktivitetData): Boolean {
+    if (forrigeVersjon.lenke != oppdatertVersjon.lenke) return true
+    return false;
+}
+
+private fun erAvtaleOppfolgingEndret(forrigeVersjon: AktivitetData, oppdatertVersjon: AktivitetData): Boolean {
+    if (forrigeVersjon.aktivitetType == AktivitetTypeData.SOKEAVTALE &&
+        forrigeVersjon.sokeAvtaleAktivitetData.avtaleOppfolging != oppdatertVersjon.sokeAvtaleAktivitetData.avtaleOppfolging) return true
+    return false;
+}
+
 // TODO: Kanskje teste denne grundig?
 private fun erDetaljerEndret(forrigeVersjon: AktivitetData, oppdatertVersjon: AktivitetData): Boolean {
     val egenAktivitetDataEndret = forrigeVersjon.egenAktivitetData != oppdatertVersjon.egenAktivitetData
@@ -317,6 +362,7 @@ enum class AktivitetendringsType {
     OPPRETTET,
     OPPRETTET_SOM_AVTALT,
     KASSERT,
+
     // Endringer som kan opptre sammen med andre endringer
     STATUS_ENDRET,
     BLITT_AVTALT,
@@ -340,4 +386,10 @@ enum class AktivitetendringsType {
     BESKRIVELSE_ENDRET,
     DETALJER_ENDRET,
     ANTALL_SOKNADER_I_AVTALE_ENDRET,
+    ARBEIDSGIVER_ENDRET,
+    KONTAKTPERSON_ENDRET,
+    ARBEIDSSTED_ENDRET,
+    LENKE_ENDRET,
+    AVTALE_OPPFOLGING_ENDRET,
 }
+
