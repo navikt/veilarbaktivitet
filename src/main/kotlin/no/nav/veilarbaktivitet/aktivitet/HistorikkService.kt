@@ -130,6 +130,7 @@ private fun hentEndringstekster(
             KONTAKTPERSON_ENDRET -> "$endretAvTekst endret kontaktperson på aktiviteten fra \"${forrigeVersjon?.stillingsSoekAktivitetData?.kontaktPerson ?: ""}\" til \"${oppdatertVersjon.stillingsSoekAktivitetData?.kontaktPerson ?: ""}\""
             ARBEIDSSTED_ENDRET -> "$endretAvTekst endret arbeidssted på aktiviteten fra \"${forrigeVersjon?.stillingsSoekAktivitetData?.arbeidssted ?: ""}\" til \"${oppdatertVersjon.stillingsSoekAktivitetData?.arbeidssted ?: ""}\""
             LENKE_ENDRET -> "$endretAvTekst endret lenke på aktiviteten fra \"${forrigeVersjon?.lenke ?: ""}\" til \"${oppdatertVersjon.lenke ?: ""}\""
+            AVTALE_OPPFOLGING_ENDRET -> "$endretAvTekst endret avtaleoppfølging på aktiviteten fra \"${forrigeVersjon?.sokeAvtaleAktivitetData?.avtaleOppfolging ?: ""}\" til \"${oppdatertVersjon.sokeAvtaleAktivitetData?.avtaleOppfolging ?: ""}\""
             DETALJER_ENDRET -> "$endretAvTekst endret detaljer på aktiviteten"
         }
     }
@@ -229,6 +230,7 @@ fun utledAktivitetendringsType(forrigeVersjon: AktivitetData?, oppdatertVersjon:
     if (erKontaktpersonEndret(forrigeVersjon, oppdatertVersjon)) endringer.add(KONTAKTPERSON_ENDRET)
     if (erArbeidsstedEndret(forrigeVersjon, oppdatertVersjon)) endringer.add(ARBEIDSSTED_ENDRET)
     if (erLenkeEndret(forrigeVersjon, oppdatertVersjon)) endringer.add(LENKE_ENDRET)
+    if (erAvtaleOppfolgingEndret(forrigeVersjon, oppdatertVersjon)) endringer.add(AVTALE_OPPFOLGING_ENDRET)
     return endringer
 }
 
@@ -338,6 +340,12 @@ private fun erLenkeEndret(forrigeVersjon: AktivitetData, oppdatertVersjon: Aktiv
     return false;
 }
 
+private fun erAvtaleOppfolgingEndret(forrigeVersjon: AktivitetData, oppdatertVersjon: AktivitetData): Boolean {
+    if (forrigeVersjon.aktivitetType == AktivitetTypeData.SOKEAVTALE &&
+        forrigeVersjon.sokeAvtaleAktivitetData.avtaleOppfolging != oppdatertVersjon.sokeAvtaleAktivitetData.avtaleOppfolging) return true
+    return false;
+}
+
 // TODO: Kanskje teste denne grundig?
 private fun erDetaljerEndret(forrigeVersjon: AktivitetData, oppdatertVersjon: AktivitetData): Boolean {
     val egenAktivitetDataEndret = forrigeVersjon.egenAktivitetData != oppdatertVersjon.egenAktivitetData
@@ -354,6 +362,7 @@ enum class AktivitetendringsType {
     OPPRETTET,
     OPPRETTET_SOM_AVTALT,
     KASSERT,
+
     // Endringer som kan opptre sammen med andre endringer
     STATUS_ENDRET,
     BLITT_AVTALT,
@@ -381,4 +390,6 @@ enum class AktivitetendringsType {
     KONTAKTPERSON_ENDRET,
     ARBEIDSSTED_ENDRET,
     LENKE_ENDRET,
+    AVTALE_OPPFOLGING_ENDRET,
 }
+
