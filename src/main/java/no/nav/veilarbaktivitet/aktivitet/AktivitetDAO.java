@@ -297,7 +297,7 @@ public class AktivitetDAO {
 
         SqlParameterSource[] paramsList = moteData.getMotedeltakere().stream().map(motedeltaker -> new VeilarbAktivitetSqlParameterSource()
                 .addValue(AKTIVITETID, aktivitetId)
-                .addValue("aktivitet_versjon", aktivitetVersjon)
+                .addValue(AKTIVITET_VERSJON, aktivitetVersjon)
                 .addValue("roller", joinRoller(motedeltaker.getRoller()))
                 .addValue("navn", motedeltaker.getNavn())
         ).toArray(SqlParameterSource[]::new);
