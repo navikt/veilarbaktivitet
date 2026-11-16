@@ -126,10 +126,10 @@ private fun hentEndringstekster(
             IKKE_FATT_JOBBEN, FATT_JOBBEN ->  "$endretAvTekst avsluttet aktiviteten fordi kandidaten har ${oppdatertVersjon.stillingFraNavData.soknadsstatus.text}"
             TITTEL_ENDRET -> "$endretAvTekst endret tittelen på aktiviteten fra \"${forrigeVersjon?.tittel}\" til \"${oppdatertVersjon.tittel}\""
             BESKRIVELSE_ENDRET -> "$endretAvTekst endret beskrivelsen på aktiviteten fra ${forrigeVersjon?.beskrivelse} til ${oppdatertVersjon.beskrivelse}"
-            ARBEIDSGIVER_ENDRET -> "$endretAvTekst endret arbeidsgiver på aktiviteten fra \"${forrigeVersjon?.stillingsSoekAktivitetData?.arbeidsgiver}\" til \"${oppdatertVersjon.stillingsSoekAktivitetData?.arbeidsgiver}\""
-            KONTAKTPERSON_ENDRET -> "$endretAvTekst endret kontaktperson på aktiviteten fra \"${forrigeVersjon?.stillingsSoekAktivitetData?.kontaktPerson}\" til \"${oppdatertVersjon.stillingsSoekAktivitetData?.kontaktPerson}\""
-            ARBEIDSSTED_ENDRET -> "$endretAvTekst endret arbeidssted på aktiviteten fra \"${forrigeVersjon?.stillingsSoekAktivitetData?.arbeidssted}\" til \"${oppdatertVersjon.stillingsSoekAktivitetData?.arbeidssted}\""
-            LENKE_ENDRET -> "$endretAvTekst endret lenke på aktiviteten fra \"${forrigeVersjon?.lenke}\" til \"${oppdatertVersjon.lenke}\""
+            ARBEIDSGIVER_ENDRET -> "$endretAvTekst endret arbeidsgiver på aktiviteten fra \"${forrigeVersjon?.stillingsSoekAktivitetData?.arbeidsgiver ?: ""}\" til \"${oppdatertVersjon.stillingsSoekAktivitetData?.arbeidsgiver ?: ""}\""
+            KONTAKTPERSON_ENDRET -> "$endretAvTekst endret kontaktperson på aktiviteten fra \"${forrigeVersjon?.stillingsSoekAktivitetData?.kontaktPerson ?: ""}\" til \"${oppdatertVersjon.stillingsSoekAktivitetData?.kontaktPerson ?: ""}\""
+            ARBEIDSSTED_ENDRET -> "$endretAvTekst endret arbeidssted på aktiviteten fra \"${forrigeVersjon?.stillingsSoekAktivitetData?.arbeidssted ?: ""}\" til \"${oppdatertVersjon.stillingsSoekAktivitetData?.arbeidssted ?: ""}\""
+            LENKE_ENDRET -> "$endretAvTekst endret lenke på aktiviteten fra \"${forrigeVersjon?.lenke ?: ""}\" til \"${oppdatertVersjon.lenke ?: ""}\""
             DETALJER_ENDRET -> "$endretAvTekst endret detaljer på aktiviteten"
         }
     }
