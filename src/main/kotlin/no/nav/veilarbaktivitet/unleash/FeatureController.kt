@@ -8,7 +8,6 @@ import jakarta.servlet.http.HttpServletResponse
 import lombok.extern.slf4j.Slf4j
 import no.nav.common.auth.context.AuthContextHolder
 import no.nav.common.auth.utils.CookieUtils
-import okhttp3.internal.toHexString
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.GetMapping
@@ -16,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.server.ResponseStatusException
+import java.lang.Long.toHexString
 import java.util.*
 
 @RestController
@@ -60,7 +60,7 @@ class FeatureController(
 
     private fun generateSessionId(httpServletResponse: HttpServletResponse): String {
         val uuid = UUID.randomUUID()
-        val sessionId = uuid.mostSignificantBits.toHexString() + uuid.leastSignificantBits.toHexString()
+        val sessionId = toHexString(uuid.mostSignificantBits) + toHexString(uuid.leastSignificantBits)
         val cookie = Cookie(UNLEASH_SESSION_ID_COOKIE_NAME, sessionId)
         cookie.path = "/"
         cookie.maxAge = -1
