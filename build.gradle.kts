@@ -196,7 +196,7 @@ dependencies {
     implementation("tools.jackson.dataformat:jackson-dataformat-yaml")
 
     // BigQuery
-    implementation(platform("com.google.cloud:libraries-bom:26.88.1"))
+    implementation(platform("com.google.cloud:libraries-bom:26.94.0"))
     implementation("com.google.cloud:google-cloud-bigquery")
 
     implementation("io.getunleash:unleash-client-java:12.3.0")
