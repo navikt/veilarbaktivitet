@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter
 
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData
 import no.nav.veilarbaktivitet.aktivitet.domain.MoteData
 
 class Mote {
@@ -17,5 +18,8 @@ class Mote {
         override val muterbareFelter: AktivitetMuterbareFelter,
         override val sporing: SporingsData,
         val moteData: MoteData,
-    ): AktivitetsEndring
+        aktivitetTypeData: AktivitetTypeData,
+    ): AktivitetsEndring {
+        override val aktivitetType = aktivitetTypeData
+    }
 }

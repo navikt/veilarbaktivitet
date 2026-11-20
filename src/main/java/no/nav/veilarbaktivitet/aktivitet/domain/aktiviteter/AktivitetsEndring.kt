@@ -11,6 +11,7 @@ sealed interface AktivitetsEndring {
     val id: Long
     val versjon: Long
     val sporing: SporingsData
+    val aktivitetType: AktivitetTypeData
 }
 
 object AktivitetsEndringUtil {

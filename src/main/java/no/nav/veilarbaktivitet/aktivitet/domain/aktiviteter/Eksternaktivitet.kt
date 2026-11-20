@@ -1,7 +1,9 @@
 package no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter
 
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData
 import no.nav.veilarbaktivitet.aktivitet.domain.EksternAktivitetData
+import no.nav.veilarbaktivitet.internapi.model.AktivitetType
 import java.util.*
 
 class Eksternaktivitet {
@@ -23,5 +25,7 @@ class Eksternaktivitet {
         val eksternAktivitetData: EksternAktivitetData,
         val erAvtalt: Boolean,
         val status: AktivitetStatus
-    ): AktivitetsEndring
+    ): AktivitetsEndring {
+        override val aktivitetType = AktivitetTypeData.EKSTERNAKTIVITET
+    }
 }

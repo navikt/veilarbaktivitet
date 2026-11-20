@@ -6,6 +6,7 @@ import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
 
+import javax.annotation.Nullable;
 import java.util.Date;
 import java.util.UUID;
 
@@ -79,13 +80,21 @@ public class AktivitetData {
 
     private UUID oppfolgingsperiodeId;
 
+    @Nullable
     private EgenAktivitetData egenAktivitetData;
+    @Nullable
     private StillingsoekAktivitetData stillingsSoekAktivitetData;
+    @Nullable
     private SokeAvtaleAktivitetData sokeAvtaleAktivitetData;
+    @Nullable
     private IJobbAktivitetData iJobbAktivitetData;
+    @Nullable
     private BehandlingAktivitetData behandlingAktivitetData;
+    @Nullable
     private MoteData moteData;
+    @Nullable
     private StillingFraNavData stillingFraNavData;
+    @Nullable
     private EksternAktivitetData eksternAktivitetData;
 
     public boolean endringTillatt() {

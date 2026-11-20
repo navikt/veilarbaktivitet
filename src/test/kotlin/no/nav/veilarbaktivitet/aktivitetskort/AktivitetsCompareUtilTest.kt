@@ -33,7 +33,7 @@ internal class AktivitetsCompareUtilTest {
                 endretAvType = endretAvType,
                 endretDato = ZonedDateTime.now(),
             ),
-            eksternAktivitetData = eksternAktivitetData,
+            eksternAktivitetData = eksternAktivitetData!!,
             erAvtalt = isAvtalt,
             status = status,
         )
@@ -43,7 +43,7 @@ internal class AktivitetsCompareUtilTest {
     fun deltakelsestatusendring_skal_være_faktisk_endring() {
         val gammelAktivitet = AktivitetDataTestBuilder.nyEksternAktivitet()
         val nyAktivitet = gammelAktivitet.toEndre().copy(
-            eksternAktivitetData = gammelAktivitet.eksternAktivitetData.copy(
+            eksternAktivitetData = gammelAktivitet.eksternAktivitetData!!.copy(
                 etiketter = listOf(
                     Etikett("Deltar", Sentiment.POSITIVE, "DELTAR")
                 )
@@ -97,7 +97,7 @@ internal class AktivitetsCompareUtilTest {
     fun tiltaksnavn_endring_er_faktisk_endring() {
         val gammelAktivitet = AktivitetDataTestBuilder.nyEksternAktivitet()
         val nyAktivitet = gammelAktivitet.toEndre().copy(
-            eksternAktivitetData = gammelAktivitet.eksternAktivitetData.copy(
+            eksternAktivitetData = gammelAktivitet.eksternAktivitetData!!.copy(
                 detaljer = listOf(
                     Attributt("tiltaksnavn", "Hurra AS")
                 )

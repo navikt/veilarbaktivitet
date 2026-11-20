@@ -112,7 +112,7 @@ class LestAktivitetDtoArkivPayloadTest {
     @Test
     fun `Stilling fra NAV lager riktig svartekst når veileder har svart ja`() {
         val mote = AktivitetDataTestBuilder.nyStillingFraNavMedCVKanDeles()
-        mote.stillingFraNavData.cvKanDelesData =
+        mote.stillingFraNavData!!.cvKanDelesData =
             CvKanDelesData.builder()
                 .kanDeles(true)
                 .endretAvType(Innsender.NAV)
@@ -136,7 +136,7 @@ class LestAktivitetDtoArkivPayloadTest {
     @Test
     fun `Stilling fra NAV lager riktig svartekst når bruker har svart ja`() {
         val mote = AktivitetDataTestBuilder.nyStillingFraNavMedCVKanDeles()
-        mote.stillingFraNavData.cvKanDelesData =
+        mote.stillingFraNavData!!.cvKanDelesData =
             CvKanDelesData.builder()
                 .kanDeles(true)
                 .endretAvType(Innsender.BRUKER)
@@ -161,7 +161,7 @@ class LestAktivitetDtoArkivPayloadTest {
     @Test
     fun `Stilling fra NAV lager riktig svartekst når veileder har svart nei`() {
         val mote = AktivitetDataTestBuilder.nyStillingFraNavMedCVKanDeles()
-        mote.stillingFraNavData.cvKanDelesData =
+        mote.stillingFraNavData!!.cvKanDelesData =
             CvKanDelesData.builder()
                 .kanDeles(false)
                 .endretAvType(Innsender.NAV)
@@ -182,7 +182,7 @@ class LestAktivitetDtoArkivPayloadTest {
     @Test
     fun `Stilling fra NAV lager riktig svartekst når bruker har svart nei`() {
         val mote = AktivitetDataTestBuilder.nyStillingFraNavMedCVKanDeles()
-        mote.stillingFraNavData.cvKanDelesData =
+        mote.stillingFraNavData!!.cvKanDelesData =
             CvKanDelesData.builder()
                 .kanDeles(false)
                 .endretAvType(Innsender.BRUKER)
@@ -247,7 +247,7 @@ class LestAktivitetDtoArkivPayloadTest {
     fun `Eksternaktivitet skal ha riktige felt`() {
         val eksternAktivitet = AktivitetDataTestBuilder
             .nyEksternAktivitet()
-            .let { it.withEksternAktivitetData(it.eksternAktivitetData.copy(
+            .let { it.withEksternAktivitetData(it.eksternAktivitetData!!.copy(
                 detaljer = listOf(
                     Attributt("Detail label", "Detail value")
                 ),
