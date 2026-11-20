@@ -120,7 +120,7 @@ class AktivitetAppService(
     }
 
     @Transactional
-    fun oppdaterAktivitet(aktivitet: AktivitetsEndring): AktivitetData? {
+    fun oppdaterAktivitet(aktivitet: AktivitetsEndring): AktivitetData {
         val original = hentAktivitet(aktivitet.id)
         kanEndreAktivitetGuard(original, aktivitet.versjon)
         if (original.aktivitetType == AktivitetTypeData.STILLING_FRA_NAV) {
@@ -248,7 +248,7 @@ class AktivitetAppService(
     }
 
     @Transactional
-    fun oppdaterEtikett(aktivitet: EtikettEndring): AktivitetData? {
+    fun oppdaterEtikett(aktivitet: EtikettEndring): AktivitetData {
         val originalAktivitet = hentAktivitet(aktivitet.id)
         kanEndreAktivitetEtikettGuard(originalAktivitet, aktivitet)
         aktivitetService.oppdaterEtikett(originalAktivitet, aktivitet)
@@ -256,7 +256,7 @@ class AktivitetAppService(
     }
 
     @Transactional
-    fun oppdaterReferat(aktivitet: ReferatEndring): AktivitetData? {
+    fun oppdaterReferat(aktivitet: ReferatEndring): AktivitetData {
         val originalAktivitet = hentAktivitet(aktivitet.id)
         aktivitet.kanEndreAktivitetGuard(originalAktivitet, aktivitet.versjon)
 
