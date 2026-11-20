@@ -3,7 +3,8 @@ package no.nav.veilarbaktivitet.aktivitet
 import no.nav.poao.dab.spring_auth.IAuthService
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData
-import no.nav.veilarbaktivitet.aktivitet.domain.MoteData
+import no.nav.veilarbaktivitet.aktivitet.domain.TYPER_SOM_KAN_ENDRES_EKSTERNT
+import no.nav.veilarbaktivitet.aktivitet.domain.TYPER_SOM_KAN_OPPRETTES_EKSTERNT
 import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.AktivitetsEndring
 import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.AktivitetsOpprettelse
 import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.Mote
@@ -11,6 +12,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.spesialEndringer.Eti
 import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.spesialEndringer.ReferatEndring
 import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.spesialEndringer.StatusEndring
 import no.nav.veilarbaktivitet.aktivitet.domain.erAktivitetsVersjonSynligForEksterne
+import no.nav.veilarbaktivitet.aktivitet.domain.hentEventTypeForReferat
 import no.nav.veilarbaktivitet.aktivitet.domain.nyopprettetAktivitetKanHaReferat
 import no.nav.veilarbaktivitet.aktivitet.domain.referatErDeltMedBruker
 import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvFerdigAktivitetException
@@ -26,7 +28,6 @@ import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.server.ResponseStatusException
-import java.util.*
 
 @Service
 class AktivitetAppService(
@@ -122,7 +123,7 @@ class AktivitetAppService(
     fun oppdaterAktivitet(aktivitet: AktivitetsEndring): AktivitetData? {
         val original = hentAktivitet(aktivitet.id)
         kanEndreAktivitetGuard(original, aktivitet.versjon)
-        if (original.getAktivitetType() == AktivitetTypeData.STILLING_FRA_NAV) {
+        if (original.aktivitetType == AktivitetTypeData.STILLING_FRA_NAV) {
             throw ResponseStatusException(HttpStatus.BAD_REQUEST)
         }
 
@@ -140,8 +141,8 @@ class AktivitetAppService(
 
     private fun oppdaterSomNav(aktivitet: AktivitetsEndring, original: AktivitetData) {
         var original = original
-        if (original.isAvtalt()) {
-            if (original.getAktivitetType() == AktivitetTypeData.MOTE) {
+        if (original.isAvtalt) {
+            if (original.aktivitetType == AktivitetTypeData.MOTE) {
                 val tidOgStedEndret = erMoteTidOgStedEndret(
                     original,
                     (aktivitet as no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.Mote.Endre?)!!
@@ -151,7 +152,7 @@ class AktivitetAppService(
                 if (tidOgStedEndret) {
                     aktivitetService.oppdaterMoteTidStedOgKanal(original, aktivitet)
                     // Hent oppdatert aktivitet for eventuell detaljer-oppdatering
-                    original = aktivitetService.hentAktivitetMedForhaandsorientering(original.getId())
+                    original = aktivitetService.hentAktivitetMedForhaandsorientering(original.id)
                 }
                 if (detaljerEndret) {
                     aktivitetService.oppdaterMoteDetaljer(original, aktivitet)
@@ -276,52 +277,5 @@ class AktivitetAppService(
         } else if (eventType == EventType.SAMTALEREFERAT_DELT_MED_BRUKER) {
             oversiktenService.lagreStoppMeldingOmUdeltSamtalereferatIUtboks(aktivitet.aktorId, aktivitet.id)
         }
-    }
-
-    private fun hentEventTypeForReferat(
-        orginalMoteData: MoteData,
-        oppdatertAktivitet: ReferatEndring
-    ): EventType? {
-        val forrigeReferat = orginalMoteData.referat ?: ""
-        val nesteReferat = oppdatertAktivitet.moteData.referat ?: ""
-
-        val referatHarNåFåttInnhold = forrigeReferat.isEmpty() && nesteReferat.isNotEmpty()
-        val referatHarNåBlittDeltMedBruker =
-            !orginalMoteData.isReferatPublisert && oppdatertAktivitet.moteData.isReferatPublisert
-        val referatVarAlleredeDelt = orginalMoteData.isReferatPublisert
-
-        return if (referatHarNåFåttInnhold && !referatHarNåBlittDeltMedBruker && !referatVarAlleredeDelt) {
-            EventType.SAMTALEREFERAT_OPPRETTET
-        } else if (referatHarNåFåttInnhold && referatHarNåBlittDeltMedBruker) {
-            EventType.SAMTALEREFERAT_OPPRETTET_OG_DELT_MED_BRUKER
-        } else if (!referatHarNåFåttInnhold && referatHarNåBlittDeltMedBruker) {
-            EventType.SAMTALEREFERAT_DELT_MED_BRUKER
-        } else if (referatHarNåFåttInnhold && referatVarAlleredeDelt) {
-            EventType.SAMTALEREFERAT_FIKK_INNHOLD
-        } else {
-            null
-        }
-    }
-
-    companion object {
-        private val TYPER_SOM_KAN_ENDRES_EKSTERNT: Set<AktivitetTypeData> = HashSet(
-            listOf(
-                AktivitetTypeData.EGENAKTIVITET,
-                AktivitetTypeData.JOBBSOEKING,
-                AktivitetTypeData.SOKEAVTALE,
-                AktivitetTypeData.IJOBB,
-                AktivitetTypeData.BEHANDLING,
-                AktivitetTypeData.STILLING_FRA_NAV
-            )
-        )
-
-        private val TYPER_SOM_KAN_OPPRETTES_EKSTERNT: MutableSet<AktivitetTypeData?> = HashSet(
-            listOf(
-                AktivitetTypeData.BEHANDLING,
-                AktivitetTypeData.EGENAKTIVITET,
-                AktivitetTypeData.JOBBSOEKING,
-                AktivitetTypeData.IJOBB
-            )
-        )
     }
 }
