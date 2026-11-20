@@ -12,10 +12,16 @@ open class OversiktenProducer(
     val aivenProducerClient: KafkaProducerClient<String, String>,
     @Value("\${topic.ut.oversikten}")
     private val topic: String,
+    @Value("\${topic.ut.siste-aktivitet-hendelse}")
+    private val sisteAktivitetHendelseTopic: String,
 ) {
 
     open fun sendMelding(key: String, melding: String) {
         val producerRecord = ProducerRecord(topic, key, melding)
         aivenProducerClient.sendSync(producerRecord)
+    }
+
+    open fun sendSisteAktivitetHendelse(key: String, melding: String) {
+        aivenProducerClient.sendSync(ProducerRecord(sisteAktivitetHendelseTopic, key, melding))
     }
 }

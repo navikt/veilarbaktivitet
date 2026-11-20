@@ -84,6 +84,7 @@ public class AktivitetService {
     public AktivitetData opprettAktivitetIDB(AktivitetsOpprettelse aktivitet) throws IngenGjeldendePeriodeException {
         var nyAktivivitet = tilAktivitetsData(aktivitet);
         var opprettetAktivitet = aktivitetDAO.opprettNyAktivitet(nyAktivivitet);
+        // TODO: hvis møte/samtalereferat opprettet -> send kafkamelding
         metricService.opprettNyAktivitetMetrikk(opprettetAktivitet);
         return opprettetAktivitet;
     }
@@ -100,11 +101,13 @@ public class AktivitetService {
                 .transaksjonsType(AktivitetTransaksjonsType.STATUS_ENDRET)
                 .build();
 
+        // TODO: hvis endret dato -> send kafkamelding på nytt topic
         if(nyAktivitet.getStatus() == AktivitetStatus.AVBRUTT || nyAktivitet.getStatus() == AktivitetStatus.FULLFORT){
             avtaltMedNavService.settVarselFerdig(originalAktivitet.getFhoId());
         }
 
         if(erAvbruttMoteEllerSamtalereferat(nyAktivitet)){
+            // TODO: send kafkamelding på nytt topic om avbrutt mote/samtalereferat
             oversiktenService.lagreStoppMeldingOmUdeltSamtalereferatIUtboks(nyAktivitet.getAktorId(), nyAktivitet.getId());
         }
         return aktivitetDAO.oppdaterAktivitet(nyAktivitet);
