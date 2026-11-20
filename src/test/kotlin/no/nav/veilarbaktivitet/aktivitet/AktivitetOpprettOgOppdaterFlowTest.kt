@@ -75,7 +75,7 @@ class AktivitetOpprettOgOppdaterFlowTest {
 
     @BeforeEach
     fun setup() {
-        aktivitetService = AktivitetService(aktivitetDAO, avtaltMedNavService, metricService, sistePeriodeService, oversiktenService)
+        aktivitetService = AktivitetService(aktivitetDAO, avtaltMedNavService, metricService, oversiktenService)
         appService = AktivitetAppService(authService, aktivitetService, metricService, personService, bigQueryClient, oversiktenService)
         mapperService = AktivitetDataMapperService(authService, aktorOppslagClient, userInContext, kvpService, oppfolgingsperiodeService)
         controller = AktivitetsplanController(authService, appService, mapperService, userInContext, kvpService)
