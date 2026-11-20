@@ -17,28 +17,23 @@ import no.nav.veilarbaktivitet.oppfolging.periode.Oppfolgingsperiode
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeService
 import no.nav.veilarbaktivitet.oppfolging.periode.SistePeriodeService
 import no.nav.veilarbaktivitet.oversikten.OversiktenService
-import no.nav.veilarbaktivitet.oversikten.SisteMøte
 import no.nav.veilarbaktivitet.person.Innsender
 import no.nav.veilarbaktivitet.person.PersonService
 import no.nav.veilarbaktivitet.person.UserInContext
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.EnumSource
 import org.mockito.ArgumentCaptor
 import org.mockito.Mock
 import org.mockito.Mockito.*
 import org.mockito.junit.jupiter.MockitoExtension
 import org.springframework.web.server.ResponseStatusException
 import java.time.ZonedDateTime
-import java.time.temporal.ChronoUnit
 import java.util.*
 
 /**
