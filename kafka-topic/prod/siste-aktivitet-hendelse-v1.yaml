@@ -1,0 +1,23 @@
+apiVersion: kafka.nais.io/v1
+kind: Topic
+metadata:
+  name: siste-aktivitet-hendelse-v1
+  namespace: dab
+  labels:
+    team: dab
+
+spec:
+  pool: nav-prod
+  config:
+    cleanupPolicy: compact
+    retentionHours: -1 # for alltid
+    minimumInSyncReplicas: 2
+    partitions: 4
+    replication: 2
+  acl:
+    - team: dab
+      application: veilarbaktivitet
+      access: write
+    - team: dab
+      application: dab-kafka-manager
+      access: read
