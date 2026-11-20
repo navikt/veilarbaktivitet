@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter
 
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData
 import no.nav.veilarbaktivitet.aktivitet.domain.IJobbAktivitetData
 
 class Ijobb {
@@ -17,5 +18,7 @@ class Ijobb {
         override val muterbareFelter: AktivitetMuterbareFelter,
         override val sporing: SporingsData,
         val iJobbAktivitetData: IJobbAktivitetData,
-    ): AktivitetsEndring
+    ): AktivitetsEndring {
+        override val aktivitetType = AktivitetTypeData.IJOBB
+    }
 }

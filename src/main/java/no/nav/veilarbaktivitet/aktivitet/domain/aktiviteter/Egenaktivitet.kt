@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter
 
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData
 import no.nav.veilarbaktivitet.aktivitet.domain.EgenAktivitetData
 
 class Egenaktivitet {
@@ -17,5 +18,7 @@ class Egenaktivitet {
         override val muterbareFelter: AktivitetMuterbareFelter,
         override val sporing: SporingsData,
         val egenAktivitetData: EgenAktivitetData,
-    ): AktivitetsEndring
+    ): AktivitetsEndring {
+        override val aktivitetType = AktivitetTypeData.EGENAKTIVITET
+    }
 }

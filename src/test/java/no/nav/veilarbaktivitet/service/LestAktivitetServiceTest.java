@@ -265,7 +265,8 @@ class LestAktivitetServiceTest {
                         aktivitet.getLenke()
                 ),
                 sporingsData,
-                aktivitet.getMoteData().withAdresse(nyAdresse)
+                aktivitet.getMoteData().withAdresse(nyAdresse),
+                AktivitetTypeData.MOTE
         );
         aktivitetService.oppdaterAktivitet(aktivitet, endring);
 

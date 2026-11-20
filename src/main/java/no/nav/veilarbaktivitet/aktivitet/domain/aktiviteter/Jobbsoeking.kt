@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter
 
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData
 import no.nav.veilarbaktivitet.aktivitet.domain.StillingsoekAktivitetData
 
 class Jobbsoeking {
@@ -17,5 +18,7 @@ class Jobbsoeking {
         override val muterbareFelter: AktivitetMuterbareFelter,
         override val sporing: SporingsData,
         val stillingsSoekAktivitetData: StillingsoekAktivitetData,
-    ): AktivitetsEndring
+    ): AktivitetsEndring {
+        override val aktivitetType = AktivitetTypeData.JOBBSOEKING
+    }
 }

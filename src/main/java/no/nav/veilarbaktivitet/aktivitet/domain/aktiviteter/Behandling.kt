@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter
 
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData
 import no.nav.veilarbaktivitet.aktivitet.domain.BehandlingAktivitetData
 
 class Behandling {
@@ -16,6 +17,8 @@ class Behandling {
         override val versjon: Long,
         override val muterbareFelter: AktivitetMuterbareFelter,
         override val sporing: SporingsData,
-        val behandlingAktivitetData: BehandlingAktivitetData
-    ): AktivitetsEndring
+        val behandlingAktivitetData: BehandlingAktivitetData,
+    ): AktivitetsEndring {
+        override val aktivitetType = AktivitetTypeData.BEHANDLING
+    }
 }

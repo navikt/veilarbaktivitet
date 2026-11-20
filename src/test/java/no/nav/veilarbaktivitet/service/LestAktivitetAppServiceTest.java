@@ -4,10 +4,7 @@ import no.nav.poao.dab.spring_auth.IAuthService;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetAppService;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
 import no.nav.veilarbaktivitet.aktivitet.MetricService;
-import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
-import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
-import no.nav.veilarbaktivitet.aktivitet.domain.BehandlingAktivitetData;
-import no.nav.veilarbaktivitet.aktivitet.domain.MoteData;
+import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.*;
 import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.spesialEndringer.EtikettEndring;
 import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.spesialEndringer.ReferatEndring;
@@ -585,7 +582,8 @@ public class LestAktivitetAppServiceTest {
                 aktivitet.getVersjon(),
                 muterbareFelter(aktivitet),
                 sporingsData(aktivitet),
-                aktivitet.getMoteData()
+                aktivitet.getMoteData(),
+                AktivitetTypeData.MOTE
         );
     }
 

@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter
 
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData
 
 class StillingFraNav {
@@ -17,5 +18,7 @@ class StillingFraNav {
         override val muterbareFelter: AktivitetMuterbareFelter,
         override val sporing: SporingsData,
         val stillingFraNavData: StillingFraNavData,
-    ): AktivitetsEndring
+    ): AktivitetsEndring {
+        override val aktivitetType = AktivitetTypeData.STILLING_FRA_NAV
+    }
 }

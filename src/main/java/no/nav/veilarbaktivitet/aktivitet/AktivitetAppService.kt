@@ -90,7 +90,7 @@ class AktivitetAppService(
     }
 
     @Transactional
-    fun opprettNyAktivitet(aktivitetData: AktivitetsOpprettelse): AktivitetData? {
+    fun opprettNyAktivitet(aktivitetData: AktivitetsOpprettelse): AktivitetData {
         if (aktivitetData.opprettFelter.aktivitetType == AktivitetTypeData.STILLING_FRA_NAV) {
             throw ResponseStatusException(HttpStatus.BAD_REQUEST)
         }
@@ -122,6 +122,8 @@ class AktivitetAppService(
     @Transactional
     fun oppdaterAktivitet(aktivitet: AktivitetsEndring): AktivitetData {
         val original = hentAktivitet(aktivitet.id)
+        if (original.aktivitetType != aktivitet.aktivitetType)
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Forrige versjon av aktivitet var av typen ${original.aktivitetType} men innkomende versjon var ${aktivitet.aktivitetType}")
         kanEndreAktivitetGuard(original, aktivitet.versjon)
         if (original.aktivitetType == AktivitetTypeData.STILLING_FRA_NAV) {
             throw ResponseStatusException(HttpStatus.BAD_REQUEST)
