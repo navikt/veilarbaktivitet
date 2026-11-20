@@ -10,6 +10,7 @@ import no.nav.veilarbaktivitet.person.Person.AktorId
 import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
+import java.time.Instant
 import java.util.*
 
 @Service
@@ -114,4 +115,14 @@ open class OversiktenService(
             lagreStoppMeldingOmUdeltSamtalereferatIUtboks(aktorId, aktivitetId)
         }
     }
+
+    // Lager test for denne
+    fun oppdaterSisteMøte(sisteMøte: SisteMøte) {
+
+    }
 }
+
+class SisteMøte(
+    val aktivitetId: AktivitetId,
+    val sistEndret: Instant,
+)

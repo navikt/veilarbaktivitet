@@ -16,6 +16,7 @@ import no.nav.veilarbaktivitet.aktivitet.dto.KanalDTO;
 import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvFerdigAktivitetException;
 import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvHistoriskAktivitetException;
 import no.nav.veilarbaktivitet.eventsLogger.BigQueryClient;
+import no.nav.veilarbaktivitet.oversikten.OversiktenService;
 import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
@@ -64,6 +65,9 @@ public class LestAktivitetAppServiceTest {
 
     @Mock
     BigQueryClient bigQueryClient;
+
+    @Mock
+    private OversiktenService oversiktenService;
 
     @Mock
     @SuppressWarnings("unused") // Blir faktisk brukt
