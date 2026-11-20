@@ -130,8 +130,8 @@ class AktivitetDataMapperService(
     }
 
     fun mapTilOppdaterAktivitetData(aktivitetDTO: AktivitetDTO): AktivitetsEndring {
-        val id = (aktivitetDTO.id as? String)?.let { it.ifEmpty { null } }?.toLong()
-        val versjon = (aktivitetDTO.versjon as? String)?.toLong()
+        val id = aktivitetDTO.id?.let { it.ifEmpty { null } }?.toLong()
+        val versjon = aktivitetDTO.versjon?.toLong()
         val aktivitetType = Helpers.Type.getData(aktivitetDTO.type)
         val sporing = getSporingsData()
 
@@ -158,7 +158,8 @@ class AktivitetDataMapperService(
             )
             AktivitetTypeData.MOTE,
             AktivitetTypeData.SAMTALEREFERAT -> Mote.Endre(
-                id, versjon,  muterbareFelter, sporing, moteData(aktivitetDTO)
+                id, versjon,  muterbareFelter, sporing, moteData(aktivitetDTO),
+                aktivitetType
             )
             AktivitetTypeData.STILLING_FRA_NAV -> StillingFraNav.Endre(
                 id, versjon,  muterbareFelter, sporing,aktivitetDTO.stillingFraNavData
