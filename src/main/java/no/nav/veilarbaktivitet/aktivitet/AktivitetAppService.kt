@@ -2,7 +2,6 @@ package no.nav.veilarbaktivitet.aktivitet
 
 import no.nav.poao.dab.spring_auth.IAuthService
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
-import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData
 import no.nav.veilarbaktivitet.aktivitet.domain.MoteData
 import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.AktivitetsEndring
@@ -11,6 +10,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.Mote
 import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.spesialEndringer.EtikettEndring
 import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.spesialEndringer.ReferatEndring
 import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.spesialEndringer.StatusEndring
+import no.nav.veilarbaktivitet.aktivitet.domain.erAktivitetsVersjonSynligForEksterne
 import no.nav.veilarbaktivitet.aktivitet.domain.nyopprettetAktivitetKanHaReferat
 import no.nav.veilarbaktivitet.aktivitet.domain.referatErDeltMedBruker
 import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvFerdigAktivitetException
@@ -50,7 +50,7 @@ class AktivitetAppService(
             .filter { aktivitet ->
                 val kontorsperreEnhetId = aktivitet.kontorsperreEnhetId
                 kontorsperreEnhetId == null || kontorsperreEnhetId.isBlank()
-            }.toList()
+            }
     }
 
     fun hentAktivitet(id: Long): AktivitetData {
@@ -68,25 +68,24 @@ class AktivitetAppService(
 
         val moteData = aktivitet.moteData
         /* Brukere skal ikke kunne se referat som ikke er publisert */
-        if (moteData != null && !moteData.isReferatPublisert() && erEksternBruker) return null
+        if (moteData != null && !moteData.isReferatPublisert && erEksternBruker) return null
         return aktivitet
     }
 
     fun hentAktivitetVersjoner(id: Long): List<AktivitetData> {
         return aktivitetService.hentAktivitetVersjoner(id)
             .filter { aktivitetData -> this.erEksternBrukerOgEndringenSkalVereSynnelig(aktivitetData) }
-            .toList()
     }
 
     private fun settLestAvBrukerHvisUlest(aktivitetData: AktivitetData) {
-        if (authService.erEksternBruker() && aktivitetData.getLestAvBrukerForsteGang() == null) {
-            val hentetAktivitet = aktivitetService.settLestAvBrukerTidspunkt(aktivitetData.getId())
+        if (authService.erEksternBruker() && aktivitetData.lestAvBrukerForsteGang == null) {
+            val hentetAktivitet = aktivitetService.settLestAvBrukerTidspunkt(aktivitetData.id)
             metricService.reportAktivitetLestAvBrukerForsteGang(hentetAktivitet)
         }
     }
 
     private fun erEksternBrukerOgEndringenSkalVereSynnelig(aktivitetData: AktivitetData): Boolean {
-        return !authService.erEksternBruker() || erSynligForEksterne(aktivitetData)
+        return !authService.erEksternBruker() || erAktivitetsVersjonSynligForEksterne(aktivitetData)
     }
 
     @Transactional
@@ -166,28 +165,28 @@ class AktivitetAppService(
     }
 
     private fun erMoteTidOgStedEndret(original: AktivitetData, aktivitet: Mote.Endre): Boolean {
-        val fraDatoEndret = original.getFraDato() != aktivitet.muterbareFelter.fraDato
-        val tilDatoEndret = original.getTilDato() != aktivitet.muterbareFelter.tilDato
+        val fraDatoEndret = original.fraDato != aktivitet.muterbareFelter.fraDato
+        val tilDatoEndret = original.tilDato != aktivitet.muterbareFelter.tilDato
 
-        val originalMote = original.getMoteData()
+        val originalMote = original.moteData
         val nyMote = aktivitet.moteData
 
-        val adresseEndret = originalMote != null && nyMote != null && (originalMote.getAdresse() != nyMote.getAdresse())
-        val kanalEndret = originalMote != null && nyMote != null && (originalMote.getKanal() != nyMote.getKanal())
+        val adresseEndret = originalMote != null && (originalMote.adresse != nyMote.adresse)
+        val kanalEndret = originalMote != null && (originalMote.kanal != nyMote.kanal)
 
         return fraDatoEndret || tilDatoEndret || adresseEndret || kanalEndret
     }
 
     private fun erMoteDetaljerEndret(original: AktivitetData, aktivitet: Mote.Endre): Boolean {
-        val tittelEndret = original.getTittel() != aktivitet.muterbareFelter.tittel
-        val beskrivelseEndret = original.getBeskrivelse() != aktivitet.muterbareFelter.beskrivelse
-        val motedeltakereEndret = original.getMoteData().getMotedeltakere() != aktivitet.moteData.getMotedeltakere()
+        val tittelEndret = original.tittel != aktivitet.muterbareFelter.tittel
+        val beskrivelseEndret = original.beskrivelse != aktivitet.muterbareFelter.beskrivelse
+        val motedeltakereEndret = original.moteData?.motedeltakere != aktivitet.moteData.motedeltakere
 
-        val originalMote = original.getMoteData()
+        val originalMote = original.moteData
         val nyMote = aktivitet.moteData
 
         val forberedelserEndret =
-            originalMote != null && nyMote != null && (originalMote.getForberedelser() != nyMote.getForberedelser())
+            originalMote != null && (originalMote.forberedelser != nyMote.forberedelser)
 
         return tittelEndret || beskrivelseEndret || forberedelserEndret || motedeltakereEndret
     }
@@ -305,8 +304,8 @@ class AktivitetAppService(
     }
 
     companion object {
-        private val TYPER_SOM_KAN_ENDRES_EKSTERNT: Set<AktivitetTypeData> = HashSet<AktivitetTypeData>(
-            listOf<AktivitetTypeData>(
+        private val TYPER_SOM_KAN_ENDRES_EKSTERNT: Set<AktivitetTypeData> = HashSet(
+            listOf(
                 AktivitetTypeData.EGENAKTIVITET,
                 AktivitetTypeData.JOBBSOEKING,
                 AktivitetTypeData.SOKEAVTALE,
@@ -316,28 +315,13 @@ class AktivitetAppService(
             )
         )
 
-        private val TYPER_SOM_KAN_OPPRETTES_EKSTERNT: MutableSet<AktivitetTypeData?> = HashSet<AktivitetTypeData?>(
-            listOf<AktivitetTypeData?>(
+        private val TYPER_SOM_KAN_OPPRETTES_EKSTERNT: MutableSet<AktivitetTypeData?> = HashSet(
+            listOf(
                 AktivitetTypeData.BEHANDLING,
                 AktivitetTypeData.EGENAKTIVITET,
                 AktivitetTypeData.JOBBSOEKING,
                 AktivitetTypeData.IJOBB
             )
         )
-
-        private fun erSynligForEksterne(aktivitetData: AktivitetData): Boolean {
-            return !(kanHaInterneForandringer(aktivitetData) && erReferatetEndretForDetErPublisert(aktivitetData))
-        }
-
-        private fun kanHaInterneForandringer(aktivitetData: AktivitetData): Boolean {
-            return aktivitetData.aktivitetType == AktivitetTypeData.MOTE ||
-                    aktivitetData.aktivitetType == AktivitetTypeData.SAMTALEREFERAT
-        }
-
-        private fun erReferatetEndretForDetErPublisert(aktivitetData: AktivitetData): Boolean {
-            val referatEndret = AktivitetTransaksjonsType.REFERAT_ENDRET == aktivitetData.transaksjonsType ||
-                    AktivitetTransaksjonsType.REFERAT_OPPRETTET == aktivitetData.transaksjonsType
-            return !aktivitetData.moteData.isReferatPublisert() && referatEndret
-        }
     }
 }

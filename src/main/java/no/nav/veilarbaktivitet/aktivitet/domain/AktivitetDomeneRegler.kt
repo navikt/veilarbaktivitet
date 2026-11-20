@@ -10,3 +10,19 @@ fun referatErDeltMedBruker(nyAktivitet: AktivitetData): Boolean {
     val moteData = nyAktivitet.moteData
     return moteData?.isReferatPublisert ?: false
 }
+
+fun erAktivitetsVersjonSynligForEksterne(aktivitetData: AktivitetData): Boolean {
+    return !(erMøteEllerSamtalereferat(aktivitetData) && erReferatetEndretForDetErPublisert(aktivitetData))
+}
+
+private fun erReferatetEndretForDetErPublisert(aktivitetData: AktivitetData): Boolean {
+    val referatEndret = AktivitetTransaksjonsType.REFERAT_ENDRET == aktivitetData.transaksjonsType ||
+            AktivitetTransaksjonsType.REFERAT_OPPRETTET == aktivitetData.transaksjonsType
+    return !(aktivitetData.moteData?.isReferatPublisert ?: false) && referatEndret
+}
+
+private fun erMøteEllerSamtalereferat
+            (aktivitetData: AktivitetData): Boolean {
+    return aktivitetData.aktivitetType == AktivitetTypeData.MOTE ||
+            aktivitetData.aktivitetType == AktivitetTypeData.SAMTALEREFERAT
+}
