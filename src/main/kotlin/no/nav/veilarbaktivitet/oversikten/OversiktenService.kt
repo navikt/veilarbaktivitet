@@ -40,33 +40,6 @@ open class OversiktenService(
         }
     }
 
-    //    Brukt til å hente gamle udelte samtalereferater der det ikke allerede er sendt melding.
-    //    Dette er en engangsjobb som ble kjørt i PROD 20.12.24 kl 13:50
-    //    Koden skal stå inntil videre, i tilfelle det dukker opp noen bugs
-    //    Kjørt igjen 26.11.25 kl 13
-    //    @Scheduled(cron = "0 0 13 * * ?")
-    //    @SchedulerLock(name = "oversikten_melding_gamle_udelte_scheduledTask", lockAtMostFor = "PT15M")
-    open fun sendAlleGamleUdelte() {
-        log.info("Starter henting av udelte samtalereferater i åpen periode")
-        val alleUdelte =
-            oversiktenMeldingMedMetadataRepository.hentAlleUdelteSamtalereferaterIÅpenPeriode()
-        log.info("antall udelte referat i åpen periode: ${alleUdelte.size}")
-        alleUdelte.forEach {
-            lagreStartMeldingOmUdeltSamtalereferatIUtboks(AktorId(it.aktorId.get()), it.aktivitetId)
-        }
-    }
-
-//        @Scheduled(cron = "0 50 14 * * ?")
-//        @SchedulerLock(name = "oversikten_melding_gamle_udelte_scheduledTask", lockAtMostFor = "PT15M")
-    open fun sendStoppMeldingPåAlleUdelteSamtalereferatIAvbruttAktivitet() {
-        log.info("Starter henting av udelte samtalereferater i avbrutt aktivitet")
-        val alleUdelte = oversiktenMeldingMedMetadataRepository.hentAlleUdelteSamtalereferaterIAvbruttAktivitet()
-        log.info("antall udelte referat i avbrutt aktivitet: ${alleUdelte.size}")
-        alleUdelte.forEach {
-            lagreStoppMeldingOmUdeltSamtalereferatIUtboks(AktorId(it.aktorId.get()), it.aktivitetId)
-        }
-    }
-
     /**
      * Engangsjobb for å rydde opp i tilfeller der det er sendt START-melding til oversikten,
      * men referatet allerede er publisert (referat_publisert = 1).
@@ -84,22 +57,6 @@ open class OversiktenService(
         log.info("Ferdig med opprydding av feilaktige START-meldinger")
     }
 
-    /**
-     * Engangsjobb for å rydde opp i kasserte aktiviteter (beskrivelse = 'Kassert av NAV')
-     * der det er sendt START-melding til oversikten, men ingen STOPP-melding.
-     */
-//    @Scheduled(cron = "0 0 12 * * ?")
-//    @SchedulerLock(name = "oversikten_stopp_kasserte_aktiviteter_scheduledTask", lockAtMostFor = "PT15M")
-    open fun sendStoppMeldingForKasserteAktiviteter() {
-        log.info("Starter opprydding av START-meldinger for kasserte aktiviteter")
-        val kasserteAktiviteter = oversiktenMeldingMedMetadataRepository.hentKasserteAktiviteterMedStartMeldingUtenStoppMelding()
-        log.info("Fant ${kasserteAktiviteter.size} kasserte aktiviteter med START-melding uten STOPP-melding")
-        kasserteAktiviteter.forEach {
-            log.info("Sender STOPP-melding for kassert aktivitet ${it.aktivitetId}")
-            lagreStoppMeldingOmUdeltSamtalereferatIUtboks(AktorId(it.aktorId.get()), it.aktivitetId)
-        }
-        log.info("Ferdig med opprydding av kasserte aktiviteter")
-    }
 
     open fun lagreStartMeldingOmUdeltSamtalereferatIUtboks(aktorId: AktorId, aktivitetId: AktivitetId) {
         val eksisterendeMeldingKey = oversiktenMeldingAktivitetMappingDao.hentMeldingKeyForAktivitet(aktivitetId, UDELT_SAMTALEREFERAT)

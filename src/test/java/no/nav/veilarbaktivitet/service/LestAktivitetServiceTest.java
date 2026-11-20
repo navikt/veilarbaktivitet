@@ -75,7 +75,7 @@ class LestAktivitetServiceTest {
 
     @BeforeEach
     public void setup() {
-        aktivitetService = new AktivitetService(aktivitetDAO, avtaltMedNavService, metricService, sistePeriodeService, oversiktenService);
+        aktivitetService = new AktivitetService(aktivitetDAO, avtaltMedNavService, metricService, oversiktenService);
     }
 
     @Test

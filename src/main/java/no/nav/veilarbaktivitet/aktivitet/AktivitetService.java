@@ -40,7 +40,6 @@ public class AktivitetService {
     private final AktivitetDAO aktivitetDAO;
     private final AvtaltMedNavService avtaltMedNavService;
     private final MetricService metricService;
-    private final SistePeriodeService sistePeriodeService;
     private final OversiktenService oversiktenService;
 
     public List<AktivitetData> hentAktiviteterForAktorId(Person.AktorId aktorId) {
