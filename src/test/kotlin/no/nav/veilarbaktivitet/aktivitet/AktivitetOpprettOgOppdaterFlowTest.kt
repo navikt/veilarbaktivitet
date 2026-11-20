@@ -179,6 +179,7 @@ class AktivitetOpprettOgOppdaterFlowTest {
     @Disabled
     @Nested
     inner class SisteMoteTilOversikten {
+        /*
 
         @ParameterizedTest
         @EnumSource(value = AktivitetTypeDTO::class, names = ["MOTE", "SAMTALEREFERAT"])
@@ -215,6 +216,7 @@ class AktivitetOpprettOgOppdaterFlowTest {
             assertThat(captor.value.aktivitetId).isEqualTo(lagret.id)
             assertThat(captor.value.sistEndret).isEqualTo(lagret.endretDato.toInstant())
         }
+         */
     }
 
     // =====================================================================
