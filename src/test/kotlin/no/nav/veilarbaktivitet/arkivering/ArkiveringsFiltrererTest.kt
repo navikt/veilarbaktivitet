@@ -128,11 +128,11 @@ class ArkiveringsFiltrererTest {
         )
         val filtrertData = filtrerArkiveringsData(arkiveringsData, filter)
         assertThat(filtrertData.aktiviteter).hasSize(3)
-        assertThat(filtrertData.aktiviteter[0].stillingFraNavData.soknadsstatus).isEqualTo(Soknadsstatus.FATT_JOBBEN)
-        assertThat(filtrertData.aktiviteter[1].stillingsSoekAktivitetData.stillingsoekEtikett).isEqualTo(
+        assertThat(filtrertData.aktiviteter[0].stillingFraNavData?.soknadsstatus).isEqualTo(Soknadsstatus.FATT_JOBBEN)
+        assertThat(filtrertData.aktiviteter[1].stillingsSoekAktivitetData?.stillingsoekEtikett).isEqualTo(
             StillingsoekEtikettData.SOKNAD_SENDT
         )
-        assertThat(filtrertData.aktiviteter[2].stillingsSoekAktivitetData.stillingsoekEtikett).isEqualTo(
+        assertThat(filtrertData.aktiviteter[2].stillingsSoekAktivitetData?.stillingsoekEtikett).isEqualTo(
             StillingsoekEtikettData.INNKALT_TIL_INTERVJU
         )
     }
@@ -210,8 +210,8 @@ class ArkiveringsFiltrererTest {
         assertThat(filtrertData.aktiviteter).hasSize(4)
         assertThat(filtrertData.aktiviteter[0].aktivitetType).isEqualTo(AktivitetTypeData.SAMTALEREFERAT)
         assertThat(filtrertData.aktiviteter[1].aktivitetType).isEqualTo(AktivitetTypeData.JOBBSOEKING) // JOBBSOKING mappes til STILLING
-        assertThat(filtrertData.aktiviteter[2].eksternAktivitetData.type).isEqualTo(AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD)
-        assertThat(filtrertData.aktiviteter[3].eksternAktivitetData.type).isEqualTo(AktivitetskortType.ARENA_TILTAK)
+        assertThat(filtrertData.aktiviteter[2].eksternAktivitetData?.type).isEqualTo(AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD)
+        assertThat(filtrertData.aktiviteter[3].eksternAktivitetData?.type).isEqualTo(AktivitetskortType.ARENA_TILTAK)
     }
 
     @Test

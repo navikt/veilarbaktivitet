@@ -42,8 +42,8 @@ class HistorikkServiceTest {
 
     @Test
     fun `Skal lage historikk på endret møtested`() {
-        val aktivitet = nyAktivitet(AktivitetTypeData.MOTE).toBuilder().moteData(nyMoteAktivitet().moteData.withAdresse("Gammel Adresse 1")).build()
-        val oppdatertMoteData = aktivitet.moteData.withAdresse("Ny Adresse 1")
+        val aktivitet = nyAktivitet(AktivitetTypeData.MOTE).toBuilder().moteData(nyMoteAktivitet().moteData!!.withAdresse("Gammel Adresse 1")).build()
+        val oppdatertMoteData = aktivitet.moteData!!.withAdresse("Ny Adresse 1")
         val oppdatertAktivitet = endreAktivitet(aktivitet, oppdatertMoteData = oppdatertMoteData)
 
         val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
@@ -59,8 +59,8 @@ class HistorikkServiceTest {
 
     @Test
     fun `Skal lage historikk på endret kanal for møte`() {
-        val aktivitet = nyAktivitet(AktivitetTypeData.MOTE).toBuilder().moteData(nyMoteAktivitet().moteData.withKanal(KanalDTO.OPPMOTE)).build()
-        val oppdatertMoteData = aktivitet.moteData.withKanal(KanalDTO.TELEFON)
+        val aktivitet = nyAktivitet(AktivitetTypeData.MOTE).toBuilder().moteData(nyMoteAktivitet().moteData!!.withKanal(KanalDTO.OPPMOTE)).build()
+        val oppdatertMoteData = aktivitet.moteData!!.withKanal(KanalDTO.TELEFON)
         val oppdatertAktivitet = endreAktivitet(aktivitet, oppdatertMoteData = oppdatertMoteData)
 
         val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
@@ -90,9 +90,9 @@ class HistorikkServiceTest {
 
     @Test
     fun `Skal lage historikk på opprettet referat på møte`() {
-        val moteDataUtenReferat = nyMoteAktivitet().moteData.withReferat("")
+        val moteDataUtenReferat = nyMoteAktivitet().moteData!!.withReferat("")
         val aktivitet = nyMoteAktivitet().withMoteData(moteDataUtenReferat)
-        val oppdatertMoteDataMedReferat = aktivitet.moteData.withReferat("Nå er det et referat her")
+        val oppdatertMoteDataMedReferat = aktivitet.moteData!!.withReferat("Nå er det et referat her")
         val oppdatertAktivitet = endreAktivitet(aktivitet, oppdatertMoteData = oppdatertMoteDataMedReferat)
 
         val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
@@ -108,7 +108,7 @@ class HistorikkServiceTest {
     @Test
     fun `Skal deltaker historikk på endring deltakere på møte`() {
         val aktivitet = nyMoteAktivitet()
-        val aktivitetMedArbeidsgiver = endreAktivitet(aktivitet, oppdatertMoteData = aktivitet.moteData.withMotedeltakere(
+        val aktivitetMedArbeidsgiver = endreAktivitet(aktivitet, oppdatertMoteData = aktivitet.moteData!!.withMotedeltakere(
             listOf(
                 Motedeltaker(
                     roller = listOf(MotedeltakerRolle.ARBEIDSGIVER),
@@ -130,7 +130,7 @@ class HistorikkServiceTest {
     @Test
     fun `Skal lage historikk på referat endret`() {
         val aktivitet = nyAktivitet(AktivitetTypeData.MOTE).toBuilder().build()
-        val møteDataMedEndretReferat = aktivitet.moteData.withReferat("Endret referat")
+        val møteDataMedEndretReferat = aktivitet.moteData!!.withReferat("Endret referat")
         val oppdatertAktivitet = endreAktivitet(aktivitet, oppdatertMoteData = møteDataMedEndretReferat)
 
         val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
@@ -145,9 +145,9 @@ class HistorikkServiceTest {
 
     @Test
     fun `Skal lage historikk på referat publisert`() {
-        val møteDataUtenPublisertReferat = nyMoteAktivitet().moteData.withReferatPublisert(false)
+        val møteDataUtenPublisertReferat = nyMoteAktivitet().moteData!!.withReferatPublisert(false)
         val aktivitet = nyAktivitet(AktivitetTypeData.MOTE).withMoteData(møteDataUtenPublisertReferat)
-        val møteDataMedReferatPublisert = aktivitet.moteData.withReferatPublisert(true)
+        val møteDataMedReferatPublisert = aktivitet.moteData!!.withReferatPublisert(true)
         val oppdatertAktivitet = endreAktivitet(aktivitet, oppdatertMoteData = møteDataMedReferatPublisert)
 
         val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
@@ -178,7 +178,7 @@ class HistorikkServiceTest {
     @Test
     fun `Skal lage historikk på at detaljer ble endret`() {
         val aktivitet = nyAktivitet(AktivitetTypeData.EGENAKTIVITET).toBuilder().build()
-        val oppdatertAktivitet = endreAktivitet(aktivitet, oppdatertEgenAktivitetData = aktivitet.egenAktivitetData.withHensikt("Ny hensikt"))
+        val oppdatertAktivitet = endreAktivitet(aktivitet, oppdatertEgenAktivitetData = aktivitet.egenAktivitetData!!.withHensikt("Ny hensikt"))
 
         val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
 
@@ -236,7 +236,7 @@ class HistorikkServiceTest {
     @Test
     fun `Skal lage historikk på at sokeavtale antall soknader ble endret`() {
         val aktivitet = nyAktivitet(AktivitetTypeData.SOKEAVTALE).toBuilder().build()
-        val oppdatertAktivitet = endreAktivitet(aktivitet, oppdatertSokeAvtaleAktivitetData = aktivitet.sokeAvtaleAktivitetData.withAntallStillingerIUken(3))
+        val oppdatertAktivitet = endreAktivitet(aktivitet, oppdatertSokeAvtaleAktivitetData = aktivitet.sokeAvtaleAktivitetData!!.withAntallStillingerIUken(3))
 
         val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
 
@@ -277,7 +277,7 @@ class HistorikkServiceTest {
             .endretAv("Bruker")
             .kanDeles(false)
             .build()
-        val besvartStillingFraNavData = aktivitet.stillingFraNavData.withCvKanDelesData(cvKanDelesData)
+        val besvartStillingFraNavData = aktivitet.stillingFraNavData!!.withCvKanDelesData(cvKanDelesData)
         val oppdatertAktivitet = endreAktivitet(aktivitet, endretAvType = Innsender.BRUKER, oppdatertStillingFraNavData = besvartStillingFraNavData)
 
         val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))

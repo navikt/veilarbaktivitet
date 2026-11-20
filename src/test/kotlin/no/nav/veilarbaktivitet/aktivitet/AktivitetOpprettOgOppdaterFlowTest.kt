@@ -17,6 +17,7 @@ import no.nav.veilarbaktivitet.oppfolging.periode.Oppfolgingsperiode
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeService
 import no.nav.veilarbaktivitet.oppfolging.periode.SistePeriodeService
 import no.nav.veilarbaktivitet.oversikten.OversiktenService
+import no.nav.veilarbaktivitet.oversikten.SisteMøte
 import no.nav.veilarbaktivitet.person.Innsender
 import no.nav.veilarbaktivitet.person.PersonService
 import no.nav.veilarbaktivitet.person.UserInContext
@@ -24,10 +25,13 @@ import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.EnumSource
 import org.mockito.ArgumentCaptor
 import org.mockito.Mock
 import org.mockito.Mockito.*
@@ -172,6 +176,47 @@ class AktivitetOpprettOgOppdaterFlowTest {
         assertThat(captured.fraDato).isNotEqualTo(captured.tilDato)
     }
 
+    @Disabled
+    @Nested
+    inner class SisteMoteTilOversikten {
+
+        @ParameterizedTest
+        @EnumSource(value = AktivitetTypeDTO::class, names = ["MOTE", "SAMTALEREFERAT"])
+        fun `oppretting av mote eller samtalereferat oppdaterer siste mote i oversikten`(type: AktivitetTypeDTO) {
+            setupNavBrukerContext()
+            val dto = baseDtoMedUnikeVerdier(type)
+            stubOpprettNyAktivitetReturnsInput()
+
+            val opprettet = controller.opprettNyAktivitetPaOppfolgingsPeriode(dto, false)
+
+            val captor = ArgumentCaptor.forClass(SisteMøte::class.java)
+            verify(oversiktenService).oppdaterSisteMøte(captor.capture())
+            assertThat(captor.value.aktivitetId.toString()).isEqualTo(opprettet.id)
+            assertThat(captor.value.sistEndret).isEqualTo(opprettet.endretDato.toInstant())
+        }
+
+        @ParameterizedTest
+        @EnumSource(value = AktivitetTypeData::class, names = ["MOTE", "SAMTALEREFERAT"])
+        fun `oppdatering av mote eller samtalereferat oppdaterer siste mote i oversikten`(type: AktivitetTypeData) {
+            setupNavBrukerContextForOppdater()
+            val eksisterende = AktivitetDataTestBuilder.nyAktivitet(type).toBuilder()
+                .id(60L).versjon(2L).avtalt(false).status(AktivitetStatus.PLANLAGT).historiskDato(null)
+                .endretDato(fraDato)
+                .build()
+            stubHentOgOppdater(eksisterende)
+            val dto = AktivitetDTOMapper.mapTilAktivitetDTO(eksisterende, false)
+            dto.tittel = "OPPDATERT_TITTEL"
+
+            controller.oppdaterAktivitet(dto)
+
+            val lagret = captureOppdaterAktivitet().single()
+            val captor = ArgumentCaptor.forClass(SisteMøte::class.java)
+            verify(oversiktenService).oppdaterSisteMøte(captor.capture())
+            assertThat(captor.value.aktivitetId).isEqualTo(lagret.id)
+            assertThat(captor.value.sistEndret).isEqualTo(lagret.endretDato.toInstant())
+        }
+    }
+
     // =====================================================================
     // OPPRETT TESTER
     // =====================================================================
@@ -193,13 +238,13 @@ class AktivitetOpprettOgOppdaterFlowTest {
             assertMuterbareFelter(captured, AktivitetTypeDTO.EGEN)
             // Type-spesifikke felter med kryss-sjekk
             assertThat(captured.egenAktivitetData).isNotNull
-            assertThat(captured.egenAktivitetData.hensikt).`as`("hensikt").isEqualTo("HENSIKT_UNIK")
-            assertThat(captured.egenAktivitetData.oppfolging).`as`("oppfolging").isEqualTo("OPPFOLGING_UNIK")
+            assertThat(captured.egenAktivitetData?.hensikt).`as`("hensikt").isEqualTo("HENSIKT_UNIK")
+            assertThat(captured.egenAktivitetData?.oppfolging).`as`("oppfolging").isEqualTo("OPPFOLGING_UNIK")
             // Kryss-sjekk: hensikt != oppfolging
-            assertThat(captured.egenAktivitetData.hensikt).isNotEqualTo(captured.egenAktivitetData.oppfolging)
+            assertThat(captured.egenAktivitetData?.hensikt).isNotEqualTo(captured.egenAktivitetData?.oppfolging)
             // Hensikt skal ikke havne i noe felles-felt
-            assertThat(captured.tittel).isNotEqualTo(captured.egenAktivitetData.hensikt)
-            assertThat(captured.beskrivelse).isNotEqualTo(captured.egenAktivitetData.hensikt)
+            assertThat(captured.tittel).isNotEqualTo(captured.egenAktivitetData?.hensikt)
+            assertThat(captured.beskrivelse).isNotEqualTo(captured.egenAktivitetData?.hensikt)
             // Andre type-data skal være null
             assertThat(captured.stillingsSoekAktivitetData).isNull()
             assertThat(captured.sokeAvtaleAktivitetData).isNull()
@@ -252,19 +297,19 @@ class AktivitetOpprettOgOppdaterFlowTest {
             assertMuterbareFelter(captured, AktivitetTypeDTO.STILLING)
             // Type-spesifikke felter
             assertThat(captured.stillingsSoekAktivitetData).isNotNull
-            assertThat(captured.stillingsSoekAktivitetData.arbeidsgiver).`as`("arbeidsgiver").isEqualTo("ARBEIDSGIVER_UNIK")
-            assertThat(captured.stillingsSoekAktivitetData.arbeidssted).`as`("arbeidssted").isEqualTo("ARBEIDSSTED_UNIK")
-            assertThat(captured.stillingsSoekAktivitetData.kontaktPerson).`as`("kontaktPerson").isEqualTo("KONTAKTPERSON_UNIK")
-            assertThat(captured.stillingsSoekAktivitetData.stillingsTittel).`as`("stillingsTittel").isEqualTo("STILLINGSTITTEL_UNIK")
-            assertThat(captured.stillingsSoekAktivitetData.stillingsoekEtikett).`as`("etikett").isEqualTo(StillingsoekEtikettData.AVSLAG)
+            assertThat(captured.stillingsSoekAktivitetData?.arbeidsgiver).`as`("arbeidsgiver").isEqualTo("ARBEIDSGIVER_UNIK")
+            assertThat(captured.stillingsSoekAktivitetData?.arbeidssted).`as`("arbeidssted").isEqualTo("ARBEIDSSTED_UNIK")
+            assertThat(captured.stillingsSoekAktivitetData?.kontaktPerson).`as`("kontaktPerson").isEqualTo("KONTAKTPERSON_UNIK")
+            assertThat(captured.stillingsSoekAktivitetData?.stillingsTittel).`as`("stillingsTittel").isEqualTo("STILLINGSTITTEL_UNIK")
+            assertThat(captured.stillingsSoekAktivitetData?.stillingsoekEtikett).`as`("etikett").isEqualTo(StillingsoekEtikettData.AVSLAG)
             // Kryss-sjekk: ingen forveksling mellom type-spesifikke felter
-            assertThat(captured.stillingsSoekAktivitetData.arbeidsgiver).isNotEqualTo(captured.stillingsSoekAktivitetData.arbeidssted)
-            assertThat(captured.stillingsSoekAktivitetData.arbeidsgiver).isNotEqualTo(captured.stillingsSoekAktivitetData.kontaktPerson)
-            assertThat(captured.stillingsSoekAktivitetData.arbeidsgiver).isNotEqualTo(captured.stillingsSoekAktivitetData.stillingsTittel)
-            assertThat(captured.stillingsSoekAktivitetData.arbeidssted).isNotEqualTo(captured.stillingsSoekAktivitetData.kontaktPerson)
-            assertThat(captured.stillingsSoekAktivitetData.arbeidssted).isNotEqualTo(captured.stillingsSoekAktivitetData.stillingsTittel)
+            assertThat(captured.stillingsSoekAktivitetData?.arbeidsgiver).isNotEqualTo(captured.stillingsSoekAktivitetData?.arbeidssted)
+            assertThat(captured.stillingsSoekAktivitetData?.arbeidsgiver).isNotEqualTo(captured.stillingsSoekAktivitetData?.kontaktPerson)
+            assertThat(captured.stillingsSoekAktivitetData?.arbeidsgiver).isNotEqualTo(captured.stillingsSoekAktivitetData?.stillingsTittel)
+            assertThat(captured.stillingsSoekAktivitetData?.arbeidssted).isNotEqualTo(captured.stillingsSoekAktivitetData?.kontaktPerson)
+            assertThat(captured.stillingsSoekAktivitetData?.arbeidssted).isNotEqualTo(captured.stillingsSoekAktivitetData?.stillingsTittel)
             // Kryss-sjekk: stillingsTittel != tittel (fellesfeltet)
-            assertThat(captured.stillingsSoekAktivitetData.stillingsTittel).isNotEqualTo(captured.tittel)
+            assertThat(captured.stillingsSoekAktivitetData?.stillingsTittel).isNotEqualTo(captured.tittel)
             // Andre type-data skal være null
             assertThat(captured.egenAktivitetData).isNull()
             assertThat(captured.sokeAvtaleAktivitetData).isNull()
@@ -289,11 +334,11 @@ class AktivitetOpprettOgOppdaterFlowTest {
             assertMuterbareFelter(captured, AktivitetTypeDTO.SOKEAVTALE)
             // Type-spesifikke felter
             assertThat(captured.sokeAvtaleAktivitetData).isNotNull
-            assertThat(captured.sokeAvtaleAktivitetData.antallStillingerSokes).`as`("antallStillingerSokes").isEqualTo(17)
-            assertThat(captured.sokeAvtaleAktivitetData.antallStillingerIUken).`as`("antallStillingerIUken").isEqualTo(3)
-            assertThat(captured.sokeAvtaleAktivitetData.avtaleOppfolging).`as`("avtaleOppfolging").isEqualTo("AVTALEOPPFOLGING_UNIK")
+            assertThat(captured.sokeAvtaleAktivitetData?.antallStillingerSokes).`as`("antallStillingerSokes").isEqualTo(17)
+            assertThat(captured.sokeAvtaleAktivitetData?.antallStillingerIUken).`as`("antallStillingerIUken").isEqualTo(3)
+            assertThat(captured.sokeAvtaleAktivitetData?.avtaleOppfolging).`as`("avtaleOppfolging").isEqualTo("AVTALEOPPFOLGING_UNIK")
             // Kryss-sjekk: antallStillingerSokes != antallStillingerIUken
-            assertThat(captured.sokeAvtaleAktivitetData.antallStillingerSokes).isNotEqualTo(captured.sokeAvtaleAktivitetData.antallStillingerIUken)
+            assertThat(captured.sokeAvtaleAktivitetData?.antallStillingerSokes).isNotEqualTo(captured.sokeAvtaleAktivitetData?.antallStillingerIUken)
             // Andre type-data skal være null
             assertThat(captured.egenAktivitetData).isNull()
             assertThat(captured.stillingsSoekAktivitetData).isNull()
@@ -318,11 +363,11 @@ class AktivitetOpprettOgOppdaterFlowTest {
             assertMuterbareFelter(captured, AktivitetTypeDTO.IJOBB)
             // Type-spesifikke felter
             assertThat(captured.iJobbAktivitetData).isNotNull
-            assertThat(captured.iJobbAktivitetData.jobbStatusType).`as`("jobbStatusType").isEqualTo(JobbStatusTypeData.DELTID)
-            assertThat(captured.iJobbAktivitetData.ansettelsesforhold).`as`("ansettelsesforhold").isEqualTo("ANSETTELSESFORHOLD_UNIK")
-            assertThat(captured.iJobbAktivitetData.arbeidstid).`as`("arbeidstid").isEqualTo("ARBEIDSTID_UNIK")
+            assertThat(captured.iJobbAktivitetData?.jobbStatusType).`as`("jobbStatusType").isEqualTo(JobbStatusTypeData.DELTID)
+            assertThat(captured.iJobbAktivitetData?.ansettelsesforhold).`as`("ansettelsesforhold").isEqualTo("ANSETTELSESFORHOLD_UNIK")
+            assertThat(captured.iJobbAktivitetData?.arbeidstid).`as`("arbeidstid").isEqualTo("ARBEIDSTID_UNIK")
             // Kryss-sjekk
-            assertThat(captured.iJobbAktivitetData.ansettelsesforhold).isNotEqualTo(captured.iJobbAktivitetData.arbeidstid)
+            assertThat(captured.iJobbAktivitetData?.ansettelsesforhold).isNotEqualTo(captured.iJobbAktivitetData?.arbeidstid)
             // Andre type-data skal være null
             assertThat(captured.egenAktivitetData).isNull()
             assertThat(captured.stillingsSoekAktivitetData).isNull()
@@ -348,16 +393,16 @@ class AktivitetOpprettOgOppdaterFlowTest {
             assertMuterbareFelter(captured, AktivitetTypeDTO.BEHANDLING)
             // Type-spesifikke felter
             assertThat(captured.behandlingAktivitetData).isNotNull
-            assertThat(captured.behandlingAktivitetData.behandlingType).`as`("behandlingType").isEqualTo("BEHANDLINGTYPE_UNIK")
-            assertThat(captured.behandlingAktivitetData.behandlingSted).`as`("behandlingSted").isEqualTo("BEHANDLINGSTED_UNIK")
-            assertThat(captured.behandlingAktivitetData.effekt).`as`("effekt").isEqualTo("EFFEKT_UNIK")
-            assertThat(captured.behandlingAktivitetData.behandlingOppfolging).`as`("behandlingOppfolging").isEqualTo("BEHANDLINGOPPFOLGING_UNIK")
+            assertThat(captured.behandlingAktivitetData?.behandlingType).`as`("behandlingType").isEqualTo("BEHANDLINGTYPE_UNIK")
+            assertThat(captured.behandlingAktivitetData?.behandlingSted).`as`("behandlingSted").isEqualTo("BEHANDLINGSTED_UNIK")
+            assertThat(captured.behandlingAktivitetData?.effekt).`as`("effekt").isEqualTo("EFFEKT_UNIK")
+            assertThat(captured.behandlingAktivitetData?.behandlingOppfolging).`as`("behandlingOppfolging").isEqualTo("BEHANDLINGOPPFOLGING_UNIK")
             // Kryss-sjekk: alle fire felter er distinkte
             val behandlingFelter = listOf(
-                captured.behandlingAktivitetData.behandlingType,
-                captured.behandlingAktivitetData.behandlingSted,
-                captured.behandlingAktivitetData.effekt,
-                captured.behandlingAktivitetData.behandlingOppfolging
+                captured.behandlingAktivitetData?.behandlingType,
+                captured.behandlingAktivitetData?.behandlingSted,
+                captured.behandlingAktivitetData?.effekt,
+                captured.behandlingAktivitetData?.behandlingOppfolging
             )
             assertThat(behandlingFelter).doesNotHaveDuplicates()
             // Andre type-data skal være null
@@ -386,17 +431,17 @@ class AktivitetOpprettOgOppdaterFlowTest {
             assertMuterbareFelter(captured, AktivitetTypeDTO.MOTE)
             // Type-spesifikke felter
             assertThat(captured.moteData).isNotNull
-            assertThat(captured.moteData.adresse).`as`("adresse").isEqualTo("ADRESSE_UNIK")
-            assertThat(captured.moteData.forberedelser).`as`("forberedelser").isEqualTo("FORBEREDELSER_UNIK")
-            assertThat(captured.moteData.kanal).`as`("kanal").isEqualTo(KanalDTO.TELEFON)
-            assertThat(captured.moteData.referat).`as`("referat").isEqualTo("REFERAT_UNIK")
-            assertThat(captured.moteData.isReferatPublisert).`as`("referatPublisert").isTrue()
+            assertThat(captured.moteData?.adresse).`as`("adresse").isEqualTo("ADRESSE_UNIK")
+            assertThat(captured.moteData?.forberedelser).`as`("forberedelser").isEqualTo("FORBEREDELSER_UNIK")
+            assertThat(captured.moteData?.kanal).`as`("kanal").isEqualTo(KanalDTO.TELEFON)
+            assertThat(captured.moteData?.referat).`as`("referat").isEqualTo("REFERAT_UNIK")
+            assertThat(captured.moteData?.isReferatPublisert).`as`("referatPublisert").isTrue()
             // Kryss-sjekk: adresse != forberedelser != referat
-            val moteFelter = listOf(captured.moteData.adresse, captured.moteData.forberedelser, captured.moteData.referat)
+            val moteFelter = listOf(captured.moteData?.adresse, captured.moteData?.forberedelser, captured.moteData?.referat)
             assertThat(moteFelter).doesNotHaveDuplicates()
             // adresse skal ikke forveksles med felles-felter
-            assertThat(captured.moteData.adresse).isNotEqualTo(captured.tittel)
-            assertThat(captured.moteData.adresse).isNotEqualTo(captured.beskrivelse)
+            assertThat(captured.moteData?.adresse).isNotEqualTo(captured.tittel)
+            assertThat(captured.moteData?.adresse).isNotEqualTo(captured.beskrivelse)
             // Andre type-data skal være null
             assertThat(captured.egenAktivitetData).isNull()
             assertThat(captured.stillingsSoekAktivitetData).isNull()
@@ -423,13 +468,13 @@ class AktivitetOpprettOgOppdaterFlowTest {
             assertMuterbareFelter(captured, AktivitetTypeDTO.SAMTALEREFERAT)
             // Type-spesifikke felter (samtalereferat bruker MoteData)
             assertThat(captured.moteData).isNotNull
-            assertThat(captured.moteData.adresse).`as`("adresse").isEqualTo("SAMTALE_ADRESSE_UNIK")
-            assertThat(captured.moteData.forberedelser).`as`("forberedelser").isEqualTo("SAMTALE_FORBEREDELSER_UNIK")
-            assertThat(captured.moteData.kanal).`as`("kanal").isEqualTo(KanalDTO.OPPMOTE)
-            assertThat(captured.moteData.referat).`as`("referat").isEqualTo("SAMTALE_REFERAT_UNIK")
-            assertThat(captured.moteData.isReferatPublisert).`as`("referatPublisert").isFalse()
+            assertThat(captured.moteData?.adresse).`as`("adresse").isEqualTo("SAMTALE_ADRESSE_UNIK")
+            assertThat(captured.moteData?.forberedelser).`as`("forberedelser").isEqualTo("SAMTALE_FORBEREDELSER_UNIK")
+            assertThat(captured.moteData?.kanal).`as`("kanal").isEqualTo(KanalDTO.OPPMOTE)
+            assertThat(captured.moteData?.referat).`as`("referat").isEqualTo("SAMTALE_REFERAT_UNIK")
+            assertThat(captured.moteData?.isReferatPublisert).`as`("referatPublisert").isFalse()
             // Kryss-sjekk
-            val moteFelter = listOf(captured.moteData.adresse, captured.moteData.forberedelser, captured.moteData.referat)
+            val moteFelter = listOf(captured.moteData?.adresse, captured.moteData?.forberedelser, captured.moteData?.referat)
             assertThat(moteFelter).doesNotHaveDuplicates()
         }
 
@@ -554,13 +599,13 @@ class AktivitetOpprettOgOppdaterFlowTest {
             assertThat(captured.tittel).`as`("tittel").isEqualTo("NY_TITTEL")
             assertThat(captured.beskrivelse).`as`("beskrivelse").isEqualTo("NY_BESKRIVELSE")
             assertThat(captured.lenke).`as`("lenke").isEqualTo("NY_LENKE")
-            assertThat(captured.egenAktivitetData.hensikt).`as`("hensikt").isEqualTo("NY_HENSIKT")
-            assertThat(captured.egenAktivitetData.oppfolging).`as`("oppfolging").isEqualTo("NY_OPPFOLGING")
+            assertThat(captured.egenAktivitetData?.hensikt).`as`("hensikt").isEqualTo("NY_HENSIKT")
+            assertThat(captured.egenAktivitetData?.oppfolging).`as`("oppfolging").isEqualTo("NY_OPPFOLGING")
             // Kryss-sjekk: ingen forveksling
             assertThat(captured.tittel).isNotEqualTo(captured.beskrivelse)
             assertThat(captured.tittel).isNotEqualTo(captured.lenke)
-            assertThat(captured.egenAktivitetData.hensikt).isNotEqualTo(captured.egenAktivitetData.oppfolging)
-            assertThat(captured.egenAktivitetData.hensikt).isNotEqualTo(captured.tittel)
+            assertThat(captured.egenAktivitetData?.hensikt).isNotEqualTo(captured.egenAktivitetData?.oppfolging)
+            assertThat(captured.egenAktivitetData?.hensikt).isNotEqualTo(captured.tittel)
             // Uendrede felter beholder opprinnelig verdi
             assertThat(captured.id).isEqualTo(42L)
             assertThat(captured.aktivitetType).isEqualTo(AktivitetTypeData.EGENAKTIVITET)
@@ -619,20 +664,20 @@ class AktivitetOpprettOgOppdaterFlowTest {
 
             val captured = captureOppdaterAktivitet().last()
             assertThat(captured.transaksjonsType).isEqualTo(AktivitetTransaksjonsType.DETALJER_ENDRET)
-            assertThat(captured.stillingsSoekAktivitetData.arbeidsgiver).`as`("arbeidsgiver").isEqualTo("NY_ARBEIDSGIVER")
-            assertThat(captured.stillingsSoekAktivitetData.stillingsTittel).`as`("stillingsTittel").isEqualTo("NY_STILLINGSTITTEL")
-            assertThat(captured.stillingsSoekAktivitetData.arbeidssted).`as`("arbeidssted").isEqualTo("NY_ARBEIDSSTED")
-            assertThat(captured.stillingsSoekAktivitetData.kontaktPerson).`as`("kontaktPerson").isEqualTo("NY_KONTAKTPERSON")
+            assertThat(captured.stillingsSoekAktivitetData?.arbeidsgiver).`as`("arbeidsgiver").isEqualTo("NY_ARBEIDSGIVER")
+            assertThat(captured.stillingsSoekAktivitetData?.stillingsTittel).`as`("stillingsTittel").isEqualTo("NY_STILLINGSTITTEL")
+            assertThat(captured.stillingsSoekAktivitetData?.arbeidssted).`as`("arbeidssted").isEqualTo("NY_ARBEIDSSTED")
+            assertThat(captured.stillingsSoekAktivitetData?.kontaktPerson).`as`("kontaktPerson").isEqualTo("NY_KONTAKTPERSON")
             // Kryss-sjekk: alle felt-verdier er distinkte
             val felter = listOf(
-                captured.stillingsSoekAktivitetData.arbeidsgiver,
-                captured.stillingsSoekAktivitetData.stillingsTittel,
-                captured.stillingsSoekAktivitetData.arbeidssted,
-                captured.stillingsSoekAktivitetData.kontaktPerson
+                captured.stillingsSoekAktivitetData?.arbeidsgiver,
+                captured.stillingsSoekAktivitetData?.stillingsTittel,
+                captured.stillingsSoekAktivitetData?.arbeidssted,
+                captured.stillingsSoekAktivitetData?.kontaktPerson
             )
             assertThat(felter).doesNotHaveDuplicates()
             // stillingsTittel er ikke forvekslet med felles tittel
-            assertThat(captured.stillingsSoekAktivitetData.stillingsTittel).isNotEqualTo(captured.tittel)
+            assertThat(captured.stillingsSoekAktivitetData?.stillingsTittel).isNotEqualTo(captured.tittel)
         }
 
         @Test
@@ -651,11 +696,11 @@ class AktivitetOpprettOgOppdaterFlowTest {
 
             val captured = captureOppdaterAktivitet().last()
             assertThat(captured.transaksjonsType).isEqualTo(AktivitetTransaksjonsType.DETALJER_ENDRET)
-            assertThat(captured.sokeAvtaleAktivitetData.antallStillingerSokes).`as`("antallStillingerSokes").isEqualTo(23)
-            assertThat(captured.sokeAvtaleAktivitetData.antallStillingerIUken).`as`("antallStillingerIUken").isEqualTo(7)
-            assertThat(captured.sokeAvtaleAktivitetData.avtaleOppfolging).`as`("avtaleOppfolging").isEqualTo("NY_AVTALEOPPFOLGING")
+            assertThat(captured.sokeAvtaleAktivitetData?.antallStillingerSokes).`as`("antallStillingerSokes").isEqualTo(23)
+            assertThat(captured.sokeAvtaleAktivitetData?.antallStillingerIUken).`as`("antallStillingerIUken").isEqualTo(7)
+            assertThat(captured.sokeAvtaleAktivitetData?.avtaleOppfolging).`as`("avtaleOppfolging").isEqualTo("NY_AVTALEOPPFOLGING")
             // Kryss-sjekk: de to tallene er ulike
-            assertThat(captured.sokeAvtaleAktivitetData.antallStillingerSokes).isNotEqualTo(captured.sokeAvtaleAktivitetData.antallStillingerIUken)
+            assertThat(captured.sokeAvtaleAktivitetData?.antallStillingerSokes).isNotEqualTo(captured.sokeAvtaleAktivitetData?.antallStillingerIUken)
         }
 
         @Test
@@ -673,12 +718,12 @@ class AktivitetOpprettOgOppdaterFlowTest {
 
             val captured = captureOppdaterAktivitet().last()
             assertThat(captured.transaksjonsType).isEqualTo(AktivitetTransaksjonsType.DETALJER_ENDRET)
-            assertThat(captured.iJobbAktivitetData.ansettelsesforhold).`as`("ansettelsesforhold").isEqualTo("NY_ANSETTELSESFORHOLD")
-            assertThat(captured.iJobbAktivitetData.arbeidstid).`as`("arbeidstid").isEqualTo("NY_ARBEIDSTID")
+            assertThat(captured.iJobbAktivitetData?.ansettelsesforhold).`as`("ansettelsesforhold").isEqualTo("NY_ANSETTELSESFORHOLD")
+            assertThat(captured.iJobbAktivitetData?.arbeidstid).`as`("arbeidstid").isEqualTo("NY_ARBEIDSTID")
             // Kryss-sjekk
-            assertThat(captured.iJobbAktivitetData.ansettelsesforhold).isNotEqualTo(captured.iJobbAktivitetData.arbeidstid)
+            assertThat(captured.iJobbAktivitetData?.ansettelsesforhold).isNotEqualTo(captured.iJobbAktivitetData?.arbeidstid)
             // jobbStatusType er uendret
-            assertThat(captured.iJobbAktivitetData.jobbStatusType).isEqualTo(eksisterende.iJobbAktivitetData.jobbStatusType)
+            assertThat(captured.iJobbAktivitetData?.jobbStatusType).isEqualTo(eksisterende.iJobbAktivitetData?.jobbStatusType)
         }
 
         @Test
@@ -702,16 +747,16 @@ class AktivitetOpprettOgOppdaterFlowTest {
 
             val captured = captureOppdaterAktivitet().last()
             assertThat(captured.transaksjonsType).isEqualTo(AktivitetTransaksjonsType.DETALJER_ENDRET)
-            assertThat(captured.behandlingAktivitetData.behandlingType).`as`("behandlingType").isEqualTo("NY_BEHANDLINGTYPE")
-            assertThat(captured.behandlingAktivitetData.behandlingSted).`as`("behandlingSted").isEqualTo("NY_BEHANDLINGSTED")
-            assertThat(captured.behandlingAktivitetData.effekt).`as`("effekt").isEqualTo("NY_EFFEKT")
-            assertThat(captured.behandlingAktivitetData.behandlingOppfolging).`as`("behandlingOppfolging").isEqualTo("NY_BEHANDLINGOPPFOLGING")
+            assertThat(captured.behandlingAktivitetData?.behandlingType).`as`("behandlingType").isEqualTo("NY_BEHANDLINGTYPE")
+            assertThat(captured.behandlingAktivitetData?.behandlingSted).`as`("behandlingSted").isEqualTo("NY_BEHANDLINGSTED")
+            assertThat(captured.behandlingAktivitetData?.effekt).`as`("effekt").isEqualTo("NY_EFFEKT")
+            assertThat(captured.behandlingAktivitetData?.behandlingOppfolging).`as`("behandlingOppfolging").isEqualTo("NY_BEHANDLINGOPPFOLGING")
             // Kryss-sjekk: alle fire felter er distinkte
             val behandlingFelter = listOf(
-                captured.behandlingAktivitetData.behandlingType,
-                captured.behandlingAktivitetData.behandlingSted,
-                captured.behandlingAktivitetData.effekt,
-                captured.behandlingAktivitetData.behandlingOppfolging
+                captured.behandlingAktivitetData?.behandlingType,
+                captured.behandlingAktivitetData?.behandlingSted,
+                captured.behandlingAktivitetData?.effekt,
+                captured.behandlingAktivitetData?.behandlingOppfolging
             )
             assertThat(behandlingFelter).doesNotHaveDuplicates()
         }
@@ -738,14 +783,14 @@ class AktivitetOpprettOgOppdaterFlowTest {
             val captured = captureOppdaterAktivitet().last()
             assertThat(captured.transaksjonsType).isEqualTo(AktivitetTransaksjonsType.DETALJER_ENDRET)
             assertThat(captured.tittel).`as`("tittel").isEqualTo("NY_MOTETITTEL")
-            assertThat(captured.moteData.adresse).`as`("adresse").isEqualTo("NY_ADRESSE")
-            assertThat(captured.moteData.forberedelser).`as`("forberedelser").isEqualTo("NY_FORBEREDELSER")
+            assertThat(captured.moteData?.adresse).`as`("adresse").isEqualTo("NY_ADRESSE")
+            assertThat(captured.moteData?.forberedelser).`as`("forberedelser").isEqualTo("NY_FORBEREDELSER")
             // Kryss-sjekk: tittel != adresse != forberedelser
-            assertThat(captured.tittel).isNotEqualTo(captured.moteData.adresse)
-            assertThat(captured.tittel).isNotEqualTo(captured.moteData.forberedelser)
-            assertThat(captured.moteData.adresse).isNotEqualTo(captured.moteData.forberedelser)
+            assertThat(captured.tittel).isNotEqualTo(captured.moteData?.adresse)
+            assertThat(captured.tittel).isNotEqualTo(captured.moteData?.forberedelser)
+            assertThat(captured.moteData?.adresse).isNotEqualTo(captured.moteData?.forberedelser)
             // Uendrede motefelter beholder opprinnelig verdi
-            assertThat(captured.moteData.kanal).`as`("kanal uendret").isEqualTo(KanalDTO.TELEFON)
+            assertThat(captured.moteData?.kanal).`as`("kanal uendret").isEqualTo(KanalDTO.TELEFON)
         }
 
         @Test
@@ -770,12 +815,12 @@ class AktivitetOpprettOgOppdaterFlowTest {
             val allCaptures = captureOppdaterAktivitet()
             val tidOgSted = allCaptures.first()
             assertThat(tidOgSted.transaksjonsType).isEqualTo(AktivitetTransaksjonsType.MOTE_TID_OG_STED_ENDRET)
-            assertThat(tidOgSted.moteData.adresse).`as`("adresse endret").isEqualTo("NY_ADRESSE")
+            assertThat(tidOgSted.moteData?.adresse).`as`("adresse endret").isEqualTo("NY_ADRESSE")
             assertThat(tidOgSted.fraDato).`as`("fraDato endret").isEqualTo(nyFraDato)
             assertThat(tidOgSted.endretAv).isEqualTo(navIdent.get())
             assertThat(tidOgSted.endretAvType).isEqualTo(Innsender.NAV)
             // Kanal beholdes
-            assertThat(tidOgSted.moteData.kanal).`as`("kanal uendret").isEqualTo(KanalDTO.TELEFON)
+            assertThat(tidOgSted.moteData?.kanal).`as`("kanal uendret").isEqualTo(KanalDTO.TELEFON)
             // Tittel og beskrivelse er IKKE endret i denne operasjonen
             assertThat(tidOgSted.tittel).`as`("tittel uendret").isEqualTo("UENDRET_TITTEL")
             assertThat(tidOgSted.beskrivelse).`as`("beskrivelse uendret").isEqualTo("UENDRET_BESKRIVELSE")
@@ -803,10 +848,10 @@ class AktivitetOpprettOgOppdaterFlowTest {
             val detaljer = allCaptures.last()
             assertThat(detaljer.transaksjonsType).isEqualTo(AktivitetTransaksjonsType.DETALJER_ENDRET)
             assertThat(detaljer.tittel).`as`("tittel endret").isEqualTo("NY_MOTETITTEL")
-            assertThat(detaljer.moteData.forberedelser).`as`("forberedelser endret").isEqualTo("NY_FORBEREDELSER")
+            assertThat(detaljer.moteData?.forberedelser).`as`("forberedelser endret").isEqualTo("NY_FORBEREDELSER")
             // Kryss-sjekk
-            assertThat(detaljer.tittel).isNotEqualTo(detaljer.moteData.forberedelser)
-            assertThat(detaljer.moteData.adresse).`as`("adresse uendret").isEqualTo("UENDRET_ADRESSE")
+            assertThat(detaljer.tittel).isNotEqualTo(detaljer.moteData?.forberedelser)
+            assertThat(detaljer.moteData?.adresse).`as`("adresse uendret").isEqualTo("UENDRET_ADRESSE")
         }
 
         @Test
@@ -832,10 +877,10 @@ class AktivitetOpprettOgOppdaterFlowTest {
             val allCaptures = captureOppdaterAktivitet()
             assertThat(allCaptures).hasSizeGreaterThanOrEqualTo(2)
             assertThat(allCaptures[0].transaksjonsType).isEqualTo(AktivitetTransaksjonsType.MOTE_TID_OG_STED_ENDRET)
-            assertThat(allCaptures[0].moteData.adresse).isEqualTo("NY_ADRESSE")
+            assertThat(allCaptures[0].moteData?.adresse).isEqualTo("NY_ADRESSE")
             assertThat(allCaptures[1].transaksjonsType).isEqualTo(AktivitetTransaksjonsType.DETALJER_ENDRET)
             assertThat(allCaptures[1].tittel).isEqualTo("NY_MOTETITTEL")
-            assertThat(allCaptures[1].moteData.forberedelser).isEqualTo("NY_FORBEREDELSER")
+            assertThat(allCaptures[1].moteData?.forberedelser).isEqualTo("NY_FORBEREDELSER")
         }
 
         @Test
@@ -883,16 +928,16 @@ class AktivitetOpprettOgOppdaterFlowTest {
             val captured = captureOppdaterAktivitet().last()
             assertThat(captured.endretAvType).isEqualTo(Innsender.BRUKER)
             assertThat(captured.transaksjonsType).isEqualTo(AktivitetTransaksjonsType.DETALJER_ENDRET)
-            assertThat(captured.behandlingAktivitetData.behandlingSted).`as`("behandlingSted").isEqualTo("EKSTERN_STED")
-            assertThat(captured.behandlingAktivitetData.behandlingType).`as`("behandlingType").isEqualTo("EKSTERN_TYPE")
-            assertThat(captured.behandlingAktivitetData.effekt).`as`("effekt").isEqualTo("EKSTERN_EFFEKT")
-            assertThat(captured.behandlingAktivitetData.behandlingOppfolging).`as`("behandlingOppfolging").isEqualTo("EKSTERN_OPPFOLGING")
+            assertThat(captured.behandlingAktivitetData?.behandlingSted).`as`("behandlingSted").isEqualTo("EKSTERN_STED")
+            assertThat(captured.behandlingAktivitetData?.behandlingType).`as`("behandlingType").isEqualTo("EKSTERN_TYPE")
+            assertThat(captured.behandlingAktivitetData?.effekt).`as`("effekt").isEqualTo("EKSTERN_EFFEKT")
+            assertThat(captured.behandlingAktivitetData?.behandlingOppfolging).`as`("behandlingOppfolging").isEqualTo("EKSTERN_OPPFOLGING")
             // Kryss-sjekk
             val felter = listOf(
-                captured.behandlingAktivitetData.behandlingSted,
-                captured.behandlingAktivitetData.behandlingType,
-                captured.behandlingAktivitetData.effekt,
-                captured.behandlingAktivitetData.behandlingOppfolging
+                captured.behandlingAktivitetData?.behandlingSted,
+                captured.behandlingAktivitetData?.behandlingType,
+                captured.behandlingAktivitetData?.effekt,
+                captured.behandlingAktivitetData?.behandlingOppfolging
             )
             assertThat(felter).doesNotHaveDuplicates()
         }
@@ -921,8 +966,8 @@ class AktivitetOpprettOgOppdaterFlowTest {
             assertThat(captured.endretAvType).isEqualTo(Innsender.BRUKER)
             // Alle andre felter beholdes
             assertThat(captured.tittel).`as`("tittel uendret").isEqualTo("UENDRET_TITTEL")
-            assertThat(captured.behandlingAktivitetData.behandlingType).`as`("behandlingType uendret").isEqualTo("UENDRET_TYPE")
-            assertThat(captured.behandlingAktivitetData.behandlingSted).`as`("behandlingSted uendret").isEqualTo("UENDRET_STED")
+            assertThat(captured.behandlingAktivitetData?.behandlingType).`as`("behandlingType uendret").isEqualTo("UENDRET_TYPE")
+            assertThat(captured.behandlingAktivitetData?.behandlingSted).`as`("behandlingSted uendret").isEqualTo("UENDRET_STED")
         }
 
         @Test
@@ -942,10 +987,10 @@ class AktivitetOpprettOgOppdaterFlowTest {
 
             val captured = captureOppdaterAktivitet().last()
             assertThat(captured.endretAvType).isEqualTo(Innsender.BRUKER)
-            assertThat(captured.egenAktivitetData.hensikt).`as`("hensikt").isEqualTo("EKSTERN_HENSIKT")
-            assertThat(captured.egenAktivitetData.oppfolging).`as`("oppfolging").isEqualTo("EKSTERN_OPPFOLGING")
+            assertThat(captured.egenAktivitetData?.hensikt).`as`("hensikt").isEqualTo("EKSTERN_HENSIKT")
+            assertThat(captured.egenAktivitetData?.oppfolging).`as`("oppfolging").isEqualTo("EKSTERN_OPPFOLGING")
             // Kryss-sjekk
-            assertThat(captured.egenAktivitetData.hensikt).isNotEqualTo(captured.egenAktivitetData.oppfolging)
+            assertThat(captured.egenAktivitetData?.hensikt).isNotEqualTo(captured.egenAktivitetData?.oppfolging)
         }
 
         @Test
@@ -967,10 +1012,10 @@ class AktivitetOpprettOgOppdaterFlowTest {
 
             val captured = captureOppdaterAktivitet().last()
             assertThat(captured.endretAvType).isEqualTo(Innsender.BRUKER)
-            assertThat(captured.stillingsSoekAktivitetData.arbeidsgiver).`as`("arbeidsgiver").isEqualTo("EKSTERN_ARBEIDSGIVER")
-            assertThat(captured.stillingsSoekAktivitetData.stillingsTittel).`as`("stillingsTittel").isEqualTo("EKSTERN_STILLINGSTITTEL")
+            assertThat(captured.stillingsSoekAktivitetData?.arbeidsgiver).`as`("arbeidsgiver").isEqualTo("EKSTERN_ARBEIDSGIVER")
+            assertThat(captured.stillingsSoekAktivitetData?.stillingsTittel).`as`("stillingsTittel").isEqualTo("EKSTERN_STILLINGSTITTEL")
             // Kryss-sjekk
-            assertThat(captured.stillingsSoekAktivitetData.arbeidsgiver).isNotEqualTo(captured.stillingsSoekAktivitetData.stillingsTittel)
+            assertThat(captured.stillingsSoekAktivitetData?.arbeidsgiver).isNotEqualTo(captured.stillingsSoekAktivitetData?.stillingsTittel)
         }
 
         @Test
@@ -988,9 +1033,9 @@ class AktivitetOpprettOgOppdaterFlowTest {
 
             val captured = captureOppdaterAktivitet().last()
             assertThat(captured.endretAvType).isEqualTo(Innsender.BRUKER)
-            assertThat(captured.iJobbAktivitetData.ansettelsesforhold).`as`("ansettelsesforhold").isEqualTo("EKSTERN_ANSETTELSE")
-            assertThat(captured.iJobbAktivitetData.arbeidstid).`as`("arbeidstid").isEqualTo("EKSTERN_ARBEIDSTID")
-            assertThat(captured.iJobbAktivitetData.ansettelsesforhold).isNotEqualTo(captured.iJobbAktivitetData.arbeidstid)
+            assertThat(captured.iJobbAktivitetData?.ansettelsesforhold).`as`("ansettelsesforhold").isEqualTo("EKSTERN_ANSETTELSE")
+            assertThat(captured.iJobbAktivitetData?.arbeidstid).`as`("arbeidstid").isEqualTo("EKSTERN_ARBEIDSTID")
+            assertThat(captured.iJobbAktivitetData?.ansettelsesforhold).isNotEqualTo(captured.iJobbAktivitetData?.arbeidstid)
         }
 
         @Test
@@ -1009,10 +1054,10 @@ class AktivitetOpprettOgOppdaterFlowTest {
 
             val captured = captureOppdaterAktivitet().last()
             assertThat(captured.endretAvType).isEqualTo(Innsender.BRUKER)
-            assertThat(captured.sokeAvtaleAktivitetData.antallStillingerSokes).`as`("antallStillingerSokes").isEqualTo(31)
-            assertThat(captured.sokeAvtaleAktivitetData.antallStillingerIUken).`as`("antallStillingerIUken").isEqualTo(4)
-            assertThat(captured.sokeAvtaleAktivitetData.avtaleOppfolging).`as`("avtaleOppfolging").isEqualTo("EKSTERN_OPPFOLGING")
-            assertThat(captured.sokeAvtaleAktivitetData.antallStillingerSokes).isNotEqualTo(captured.sokeAvtaleAktivitetData.antallStillingerIUken)
+            assertThat(captured.sokeAvtaleAktivitetData?.antallStillingerSokes).`as`("antallStillingerSokes").isEqualTo(31)
+            assertThat(captured.sokeAvtaleAktivitetData?.antallStillingerIUken).`as`("antallStillingerIUken").isEqualTo(4)
+            assertThat(captured.sokeAvtaleAktivitetData?.avtaleOppfolging).`as`("avtaleOppfolging").isEqualTo("EKSTERN_OPPFOLGING")
+            assertThat(captured.sokeAvtaleAktivitetData?.antallStillingerSokes).isNotEqualTo(captured.sokeAvtaleAktivitetData?.antallStillingerIUken)
         }
 
         @Test
@@ -1094,12 +1139,12 @@ class AktivitetOpprettOgOppdaterFlowTest {
 
             val captured = captureOppdaterAktivitet().last()
             assertThat(captured.transaksjonsType).isEqualTo(AktivitetTransaksjonsType.ETIKETT_ENDRET)
-            assertThat(captured.stillingsSoekAktivitetData.stillingsoekEtikett).`as`("etikett").isEqualTo(StillingsoekEtikettData.INNKALT_TIL_INTERVJU)
+            assertThat(captured.stillingsSoekAktivitetData?.stillingsoekEtikett).`as`("etikett").isEqualTo(StillingsoekEtikettData.INNKALT_TIL_INTERVJU)
             // Andre felter på stillingsaktiviteten skal være uendret
-            assertThat(captured.stillingsSoekAktivitetData.arbeidsgiver).`as`("arbeidsgiver").isEqualTo("ARBEIDSGIVER")
-            assertThat(captured.stillingsSoekAktivitetData.arbeidssted).`as`("arbeidssted").isEqualTo("ARBEIDSSTED")
-            assertThat(captured.stillingsSoekAktivitetData.kontaktPerson).`as`("kontaktPerson").isEqualTo("KONTAKTPERSON")
-            assertThat(captured.stillingsSoekAktivitetData.stillingsTittel).`as`("stillingsTittel").isEqualTo("STILLINGSTITTEL")
+            assertThat(captured.stillingsSoekAktivitetData?.arbeidsgiver).`as`("arbeidsgiver").isEqualTo("ARBEIDSGIVER")
+            assertThat(captured.stillingsSoekAktivitetData?.arbeidssted).`as`("arbeidssted").isEqualTo("ARBEIDSSTED")
+            assertThat(captured.stillingsSoekAktivitetData?.kontaktPerson).`as`("kontaktPerson").isEqualTo("KONTAKTPERSON")
+            assertThat(captured.stillingsSoekAktivitetData?.stillingsTittel).`as`("stillingsTittel").isEqualTo("STILLINGSTITTEL")
         }
 
         @Test
@@ -1124,8 +1169,8 @@ class AktivitetOpprettOgOppdaterFlowTest {
 
             val captured = captureOppdaterAktivitet().last()
             assertThat(captured.transaksjonsType).isEqualTo(AktivitetTransaksjonsType.ETIKETT_ENDRET)
-            assertThat(captured.stillingsSoekAktivitetData.stillingsoekEtikett).`as`("etikett").isEqualTo(StillingsoekEtikettData.JOBBTILBUD)
-            assertThat(captured.stillingsSoekAktivitetData.arbeidsgiver).`as`("arbeidsgiver").isEqualTo("ARBEIDSGIVER2")
+            assertThat(captured.stillingsSoekAktivitetData?.stillingsoekEtikett).`as`("etikett").isEqualTo(StillingsoekEtikettData.JOBBTILBUD)
+            assertThat(captured.stillingsSoekAktivitetData?.arbeidsgiver).`as`("arbeidsgiver").isEqualTo("ARBEIDSGIVER2")
         }
 
         @Test
@@ -1150,8 +1195,8 @@ class AktivitetOpprettOgOppdaterFlowTest {
 
             val captured = captureOppdaterAktivitet().last()
             assertThat(captured.transaksjonsType).isEqualTo(AktivitetTransaksjonsType.ETIKETT_ENDRET)
-            assertThat(captured.stillingsSoekAktivitetData.stillingsoekEtikett).`as`("etikett").isEqualTo(StillingsoekEtikettData.JOBBTILBUD)
-            assertThat(captured.stillingsSoekAktivitetData.arbeidsgiver).`as`("arbeidsgiver").isEqualTo("ARBEIDSGIVER2")
+            assertThat(captured.stillingsSoekAktivitetData?.stillingsoekEtikett).`as`("etikett").isEqualTo(StillingsoekEtikettData.JOBBTILBUD)
+            assertThat(captured.stillingsSoekAktivitetData?.arbeidsgiver).`as`("arbeidsgiver").isEqualTo("ARBEIDSGIVER2")
         }
 
 
