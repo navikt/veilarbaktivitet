@@ -188,7 +188,7 @@ class AktivitetOpprettOgOppdaterFlowTest {
 
             val captor = argumentCaptor<Person.AktorId>()
             verify(oversiktenService).lagreOppdaterSisteMøteMelding(captor.capture())
-            assertThat(captor.lastValue.get()).isEqualTo("123")
+            assertThat(captor.lastValue.get()).isEqualTo(TestData.KJENT_AKTOR_ID.get())
         }
 
         @ParameterizedTest
