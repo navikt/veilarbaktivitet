@@ -4,6 +4,7 @@ import net.javacrumbs.shedlock.spring.annotation.SchedulerLock
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.json.JsonUtils
 import no.nav.common.utils.EnvironmentUtils
+import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO
 import no.nav.veilarbaktivitet.aktivitet.AktivitetId
 import no.nav.veilarbaktivitet.oversikten.OversiktenMelding.Kategori.UDELT_SAMTALEREFERAT
 import no.nav.veilarbaktivitet.person.Person.AktorId
@@ -11,6 +12,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import java.time.Instant
+import java.time.LocalDateTime
 import java.util.*
 
 @Service
@@ -18,7 +20,8 @@ open class OversiktenService(
     private val aktorOppslagClient: AktorOppslagClient,
     private val oversiktenMeldingMedMetadataRepository: OversiktenMeldingMedMetadataDAO,
     private val oversiktenMeldingAktivitetMappingDao: OversiktenMeldingAktivitetMappingDAO,
-    private val oversiktenProducer: OversiktenProducer
+    private val oversiktenProducer: OversiktenProducer,
+    private val aktivitetDAO: AktivitetDAO
 
 ) {
     private val log = LoggerFactory.getLogger(OversiktenService::class.java)
@@ -116,13 +119,41 @@ open class OversiktenService(
         }
     }
 
-    // Lager test for denne
-    fun oppdaterSisteMøte(sisteMøte: SisteMøte) {
-
+    fun lagreOppdaterSisteMøteMelding(aktorId: AktorId) {
+        // Hent alle møter for en bruker
+        val møter = aktivitetDAO.hentAlleMoterForPerson(aktorId)
+        // Finn riktige tidspunkter og send ut
+        oversiktenProducer.sendSisteAktivitetHendelse(
+            aktorId.get(),
+            møter.finnTidspunkter()
+        )
     }
 }
 
-class SisteMøte(
-    val aktivitetId: AktivitetId,
-    val sistEndret: Instant,
+fun List<AktivitetsplanMote>.finnTidspunkter(): SisteAktivitetDto? {
+    if (this.isEmpty()) return null
+    val now = Instant.now()
+    val sorted = this.sortedBy { it.tidspunkt }
+    return SisteAktivitetDto(
+        sorted.filter { it.tidspunkt.isBefore(now) }
+            .maxByOrNull { it.tidspunkt }
+            ?.let { Mote( it.tidspunkt, it.id) },
+        sorted.firstOrNull { it.tidspunkt.isAfter(now) }?.let { Mote( it.tidspunkt, it.id) }
+    )
+}
+
+data class Mote(
+    val tidspunkt: Instant,
+    val id: Long,
+)
+
+/* Aktivtet som i noe har skjedd, ikke som i aktivitetsplanen-aktivitet */
+class SisteAktivitetDto(
+    val sisteGjennomforteMote: Mote?,
+    val nestePlanlagteMote: Mote?,
+)
+
+data class AktivitetsplanMote(
+    val id: Long,
+    val tidspunkt: Instant,
 )

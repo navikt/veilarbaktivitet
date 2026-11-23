@@ -17,17 +17,19 @@ import no.nav.veilarbaktivitet.oppfolging.periode.Oppfolgingsperiode
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeService
 import no.nav.veilarbaktivitet.oppfolging.periode.SistePeriodeService
 import no.nav.veilarbaktivitet.oversikten.OversiktenService
+import no.nav.veilarbaktivitet.oversikten.SisteMøte
 import no.nav.veilarbaktivitet.person.Innsender
 import no.nav.veilarbaktivitet.person.PersonService
 import no.nav.veilarbaktivitet.person.UserInContext
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.EnumSource
 import org.mockito.ArgumentCaptor
 import org.mockito.Mock
 import org.mockito.Mockito.*
@@ -171,10 +173,8 @@ class AktivitetOpprettOgOppdaterFlowTest {
         assertThat(captured.fraDato).isNotEqualTo(captured.tilDato)
     }
 
-    @Disabled
     @Nested
     inner class SisteMoteTilOversikten {
-        /*
 
         @ParameterizedTest
         @EnumSource(value = AktivitetTypeDTO::class, names = ["MOTE", "SAMTALEREFERAT"])
@@ -186,7 +186,7 @@ class AktivitetOpprettOgOppdaterFlowTest {
             val opprettet = controller.opprettNyAktivitetPaOppfolgingsPeriode(dto, false)
 
             val captor = ArgumentCaptor.forClass(SisteMøte::class.java)
-            verify(oversiktenService).oppdaterSisteMøte(captor.capture())
+            verify(oversiktenService).lagreOppdaterSisteMøteMelding(captor.capture())
             assertThat(captor.value.aktivitetId.toString()).isEqualTo(opprettet.id)
             assertThat(captor.value.sistEndret).isEqualTo(opprettet.endretDato.toInstant())
         }
@@ -207,11 +207,10 @@ class AktivitetOpprettOgOppdaterFlowTest {
 
             val lagret = captureOppdaterAktivitet().single()
             val captor = ArgumentCaptor.forClass(SisteMøte::class.java)
-            verify(oversiktenService).oppdaterSisteMøte(captor.capture())
+            verify(oversiktenService).lagreOppdaterSisteMøteMelding(captor.capture())
             assertThat(captor.value.aktivitetId).isEqualTo(lagret.id)
             assertThat(captor.value.sistEndret).isEqualTo(lagret.endretDato.toInstant())
         }
-         */
     }
 
     // =====================================================================

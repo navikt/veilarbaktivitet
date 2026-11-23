@@ -9,6 +9,7 @@ import no.nav.common.json.JsonUtils;
 import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.aktivitet.feil.AktivitetVersjonOutOfOrderException;
 import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvUtdatertVersjonException;
+import no.nav.veilarbaktivitet.oversikten.AktivitetsplanMote;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.stilling_fra_nav.CvKanDelesData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.KontaktpersonData;
@@ -654,6 +655,10 @@ public class AktivitetDAO {
                 params,
                 motedeltakerRowMapper
         );
+    }
+
+    public List<AktivitetsplanMote> hentAlleMoterForPerson(Person.AktorId aktorId) {
+
     }
 
     private static final RowMapper<Motedeltaker> motedeltakerRowMapper = (rs, rowNum) ->
