@@ -22,6 +22,7 @@ import no.nav.veilarbaktivitet.eventsLogger.EventType
 import no.nav.veilarbaktivitet.oversikten.OversiktenService
 import no.nav.veilarbaktivitet.person.Person
 import no.nav.veilarbaktivitet.person.PersonService
+import org.jetbrains.annotations.TestOnly
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
@@ -46,6 +47,7 @@ class AktivitetAppService(
             .orElseThrow { RuntimeException() }
     }
 
+    @TestOnly
     fun hentAktiviteterUtenKontorsperre(ident: Person): List<AktivitetData> {
         return hentAktiviteterForIdent(ident)
             .filter { aktivitet ->
