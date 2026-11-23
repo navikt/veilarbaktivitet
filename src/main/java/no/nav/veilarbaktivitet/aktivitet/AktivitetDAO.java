@@ -658,7 +658,21 @@ public class AktivitetDAO {
     }
 
     public List<AktivitetsplanMote> hentAlleMoterForPerson(Person.AktorId aktorId) {
-
+        return namedParameterJdbcTemplate.query(
+                """
+                        SELECT A.aktivitet_id, A.fra_dato
+                        FROM AKTIVITET A
+                        WHERE A.aktor_id = :aktorId 
+                          AND A.aktivitet_type_kode IN ('MOTE', 'SAMTALEREFERAT') 
+                          AND A.gjeldende = 1 
+                          AND A.livslopstatus_kode NOT IN ('AVBRUTT')
+                        """,
+                new MapSqlParameterSource().addValue("aktorId", aktorId.get()),
+                (rs, rowNum) -> new AktivitetsplanMote(
+                        rs.getLong("aktivitet_id"),
+                        rs.getTimestamp("fra_dato").toInstant()
+                )
+        );
     }
 
     private static final RowMapper<Motedeltaker> motedeltakerRowMapper = (rs, rowNum) ->
