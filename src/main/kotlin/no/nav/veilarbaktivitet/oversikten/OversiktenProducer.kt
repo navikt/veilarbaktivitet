@@ -21,7 +21,7 @@ open class OversiktenProducer(
         aivenProducerClient.sendSync(producerRecord)
     }
 
-    open fun sendSisteAktivitetHendelse(key: String, melding: String) {
+    open fun sendSisteAktivitetHendelse(key: String, melding: String?) {
         aivenProducerClient.sendSync(ProducerRecord(sisteAktivitetHendelseTopic, key, melding))
     }
 }

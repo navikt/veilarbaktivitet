@@ -120,14 +120,10 @@ open class OversiktenService(
     }
 
     fun lagreOppdaterSisteMøteMelding(aktorId: AktorId) {
-        // Hent alle møter for en bruker
         val møter = aktivitetDAO.hentAlleMoterForPerson(aktorId)
-        // Finn riktige tidspunkter og send ut
-
-
         oversiktenProducer.sendSisteAktivitetHendelse(
             aktorId.get(),
-            JsonUtils.toJson(møter.finnTidspunkter())
+            møter.finnTidspunkter()?.let { JsonUtils.toJson(it) }
         )
     }
 }
@@ -157,5 +153,8 @@ class SisteAktivitetDto(
 
 data class AktivitetsplanMote(
     val id: Long,
+    /**
+     *  Fra-tidspunkt på møter eller samtalereferat. Samtalererat settes bruker fra-dato starten av dagen
+     *  */
     val tidspunkt: Instant,
 )
