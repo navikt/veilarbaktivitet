@@ -123,9 +123,11 @@ open class OversiktenService(
         // Hent alle møter for en bruker
         val møter = aktivitetDAO.hentAlleMoterForPerson(aktorId)
         // Finn riktige tidspunkter og send ut
+
+
         oversiktenProducer.sendSisteAktivitetHendelse(
             aktorId.get(),
-            møter.finnTidspunkter()
+            JsonUtils.toJson(møter.finnTidspunkter())
         )
     }
 }

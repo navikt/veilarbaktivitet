@@ -664,7 +664,8 @@ public class AktivitetDAO {
                         FROM AKTIVITET A
                         WHERE A.aktor_id = :aktorId 
                           AND A.aktivitet_type_kode IN ('MOTE', 'SAMTALEREFERAT') 
-                          AND A.gjeldende = 1 
+                          AND A.gjeldende = 1
+                          AND A.historisk_dato IS NULL
                           AND A.livslopstatus_kode NOT IN ('AVBRUTT')
                         """,
                 new MapSqlParameterSource().addValue("aktorId", aktorId.get()),
