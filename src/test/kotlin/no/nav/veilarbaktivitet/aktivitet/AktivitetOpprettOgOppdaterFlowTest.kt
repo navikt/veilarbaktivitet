@@ -13,6 +13,7 @@ import no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavService
 import no.nav.veilarbaktivitet.eventsLogger.BigQueryClient
 import no.nav.veilarbaktivitet.kvp.KvpService
 import no.nav.veilarbaktivitet.mock.TestData
+import no.nav.veilarbaktivitet.mock.TestData.KJENT_AKTOR_ID
 import no.nav.veilarbaktivitet.oppfolging.periode.Oppfolgingsperiode
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeService
 import no.nav.veilarbaktivitet.oppfolging.periode.SistePeriodeService
@@ -184,11 +185,11 @@ class AktivitetOpprettOgOppdaterFlowTest {
             val dto = baseDtoMedUnikeVerdier(type)
             stubOpprettNyAktivitetReturnsInput()
 
-            val opprettet = controller.opprettNyAktivitetPaOppfolgingsPeriode(dto, false)
+            controller.opprettNyAktivitetPaOppfolgingsPeriode(dto, false)
 
             val captor = argumentCaptor<Person.AktorId>()
             verify(oversiktenService).lagreOppdaterSisteMøteMelding(captor.capture())
-            assertThat(captor.lastValue.get()).isEqualTo(TestData.KJENT_AKTOR_ID.get())
+            assertThat(captor.lastValue.get()).isEqualTo(KJENT_AKTOR_ID.get())
         }
 
         @ParameterizedTest
@@ -201,13 +202,50 @@ class AktivitetOpprettOgOppdaterFlowTest {
                 .build()
             stubHentOgOppdater(eksisterende)
             val dto = AktivitetDTOMapper.mapTilAktivitetDTO(eksisterende, false)
-            dto.tittel = "OPPDATERT_TITTEL"
+            dto.fraDato = Date()
 
             controller.oppdaterAktivitet(dto)
 
             val captor = argumentCaptor<Person.AktorId>()
             verify(oversiktenService).lagreOppdaterSisteMøteMelding(captor.capture())
-            assertThat(captor.lastValue.get()).isEqualTo("123")
+            assertThat(captor.lastValue.get()).isEqualTo(KJENT_AKTOR_ID.get())
+        }
+
+        @ParameterizedTest
+        @EnumSource(value = AktivitetTypeData::class, names = ["MOTE", "SAMTALEREFERAT"])
+        fun `oppdatering av mote eller samtalereferat til avbrutt oppdaterer siste mote i oversikten`(type: AktivitetTypeData) {
+            setupNavBrukerContextForOppdater()
+            val eksisterende = AktivitetDataTestBuilder.nyAktivitet(type).toBuilder()
+                .id(60L).versjon(2L).avtalt(false).status(AktivitetStatus.GJENNOMFORES).historiskDato(null)
+                .endretDato(fraDato)
+                .build()
+            stubHentOgOppdater(eksisterende)
+            val dto = AktivitetDTOMapper.mapTilAktivitetDTO(eksisterende, false)
+            dto.status = AktivitetStatus.AVBRUTT
+
+            controller.oppdaterStatus(dto)
+
+            val captor = argumentCaptor<Person.AktorId>()
+            verify(oversiktenService).lagreOppdaterSisteMøteMelding(captor.capture())
+            assertThat(captor.lastValue.get()).isEqualTo(KJENT_AKTOR_ID.get())
+        }
+
+        @Test // Samtalereferat kan ikke settes til avtalt
+        fun `oppdatering av fraDato på avtalt mote oppdaterer siste mote i oversikten`() {
+            setupNavBrukerContextForOppdater()
+            val eksisterende = AktivitetDataTestBuilder.nyAktivitet(AktivitetTypeData.MOTE).toBuilder()
+                .id(60L).versjon(2L).avtalt(true).status(AktivitetStatus.GJENNOMFORES).historiskDato(null)
+                .endretDato(fraDato)
+                .build()
+            stubHentOgOppdater(eksisterende)
+            val dto = AktivitetDTOMapper.mapTilAktivitetDTO(eksisterende, false)
+            dto.fraDato = Date()
+
+            controller.oppdaterAktivitet(dto)
+
+            val captor = argumentCaptor<Person.AktorId>()
+            verify(oversiktenService).lagreOppdaterSisteMøteMelding(captor.capture())
+            assertThat(captor.lastValue.get()).isEqualTo(KJENT_AKTOR_ID.get())
         }
     }
 

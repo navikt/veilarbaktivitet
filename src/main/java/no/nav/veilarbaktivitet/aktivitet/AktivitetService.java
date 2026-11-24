@@ -113,8 +113,8 @@ public class AktivitetService {
         }
 
         if(erAvbruttMoteEllerSamtalereferat(nyAktivitet)){
-            // TODO: send kafkamelding på nytt topic om avbrutt mote/samtalereferat
             oversiktenService.lagreStoppMeldingOmUdeltSamtalereferatIUtboks(nyAktivitet.getAktorId(), nyAktivitet.getId());
+            oversiktenService.lagreOppdaterSisteMøteMelding(originalAktivitet.getAktorId());
         }
         return aktivitetDAO.oppdaterAktivitet(nyAktivitet);
     }
@@ -185,6 +185,7 @@ public class AktivitetService {
                 ).orElse(null))
                 .build();
         aktivitetDAO.oppdaterAktivitet(oppdatertAktivitet);
+        oversiktenService.lagreOppdaterSisteMøteMelding(originalAktivitet.getAktorId());
     }
 
     public void oppdaterMoteDetaljer(AktivitetData originalAktivitet, Mote.Endre aktivitetData) {
@@ -259,6 +260,10 @@ public class AktivitetService {
                 .transaksjonsType(AktivitetTransaksjonsType.DETALJER_ENDRET).build();
         var oppdatertAktivitet = AktivitetsEndringUtil.berikMedAktivitetsTypeSpesifikkData(oppdatertAktivitetBuilder, aktivitet);
         final var result = aktivitetDAO.oppdaterAktivitet(oppdatertAktivitet);
+
+        if (TYPER_SOM_OPPDATERER_SISTE_AKTIVITET_MELDING.contains(aktivitet.getAktivitetType())) {
+            oversiktenService.lagreOppdaterSisteMøteMelding(originalAktivitet.getAktorId());
+        }
 
         metricService.oppdaterAktivitetMetrikk(result, false, originalAktivitet.isAutomatiskOpprettet());
         return result;
