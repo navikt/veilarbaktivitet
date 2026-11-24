@@ -10,10 +10,10 @@ import no.nav.veilarbaktivitet.outbox.OutboxService
 import no.nav.veilarbaktivitet.oversikten.OversiktenMelding.Kategori.UDELT_SAMTALEREFERAT
 import no.nav.veilarbaktivitet.person.Person.AktorId
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import java.time.Instant
-import java.time.LocalDateTime
 import java.util.*
 
 @Service
@@ -24,6 +24,8 @@ open class OversiktenService(
     private val oversiktenProducer: OversiktenProducer,
     private val aktivitetDAO: AktivitetDAO,
     private val outboxService: OutboxService,
+    @Value("\${topic.ut.siste-aktivitet-hendelse}")
+    private val sisteAktivitetHendelseTopic: String,
 
     ) {
     private val log = LoggerFactory.getLogger(OversiktenService::class.java)
@@ -123,10 +125,18 @@ open class OversiktenService(
 
     fun lagreOppdaterSisteMøteMelding(aktorId: AktorId) {
         val møter = aktivitetDAO.hentAlleMoterForPerson(aktorId)
-
-        oversiktenProducer.sendSisteAktivitetHendelse(
+        outboxService.lagreIOutbox(
+            sisteAktivitetHendelseTopic,
             aktorId.get(),
             møter.finnTidspunkter()?.let { JsonUtils.toJson(it) }
+        )
+    }
+
+    fun sendTombstoneForSiteMøteMelding(aktorId: AktorId) {
+        outboxService.lagreIOutbox(
+            sisteAktivitetHendelseTopic,
+            aktorId.get(),
+            null
         )
     }
 }

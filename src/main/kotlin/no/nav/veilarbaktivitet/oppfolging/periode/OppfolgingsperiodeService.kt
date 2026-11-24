@@ -40,7 +40,7 @@ class OppfolgingsperiodeService(
             log.warn("Fant ikke aktorId for oppfolgingsperiode: {}", oppfolgingsperiodeId)
             return
         }
-        // TODO: send stoppmelding på nytt kafka-topic
+        oversiktenService.sendTombstoneForSiteMøteMelding(AktorId(aktorId))
         oversiktenService.lagreStoppMeldingVedAvsluttOppfolging(AktorId(aktorId))
     }
 
