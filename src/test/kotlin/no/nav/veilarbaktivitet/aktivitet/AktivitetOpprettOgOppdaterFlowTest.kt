@@ -247,6 +247,17 @@ class AktivitetOpprettOgOppdaterFlowTest {
             verify(oversiktenService).lagreOppdaterSisteMøteMelding(captor.capture())
             assertThat(captor.lastValue.get()).isEqualTo(KJENT_AKTOR_ID.get())
         }
+
+        @Test // Samtalereferat kan ikke settes til avtalt
+        fun `skal tombstone siste-aktivitet på bruker når oppfølging avsluttes`() {
+            setupNavBrukerContextForOppdater()
+
+            controller.oppdaterAktivitet(dto)
+
+            val captor = argumentCaptor<Person.AktorId>()
+            verify(oversiktenService).lagreOppdaterSisteMøteMelding(captor.capture())
+            assertThat(captor.lastValue.get()).isEqualTo(KJENT_AKTOR_ID.get())
+        }
     }
 
     // =====================================================================

@@ -22,12 +22,6 @@ open class OppfolgingsperiodeConsumer(
         )
         log.info("oppfølgingsperiode: {}", sisteOppfolgingsperiodeV1)
         oppfolgingsperiodeService.upsertOppfolgingsperiode(sisteOppfolgingsperiodeV1)
-        if (sisteOppfolgingsperiodeV1.sluttDato != null) {
-            oppfolgingsperiodeService.avsluttOppfolgingsperiode(
-                sisteOppfolgingsperiodeV1.uuid,
-                sisteOppfolgingsperiodeV1.sluttDato
-            )
-        }
         return ConsumeStatus.OK
     }
 }

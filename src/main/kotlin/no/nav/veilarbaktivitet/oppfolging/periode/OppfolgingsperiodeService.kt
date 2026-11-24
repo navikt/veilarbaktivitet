@@ -11,6 +11,7 @@ import no.nav.veilarbaktivitet.person.Person.AktorId
 import no.nav.veilarbaktivitet.person.Person.Fnr
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.time.Duration
 import java.time.ZonedDateTime
 import java.util.*
@@ -44,6 +45,7 @@ class OppfolgingsperiodeService(
         oversiktenService.lagreStoppMeldingVedAvsluttOppfolging(AktorId(aktorId))
     }
 
+    @Transactional
     fun upsertOppfolgingsperiode(sisteOppfolgingsperiodeV1: SisteOppfolgingsperiodeV1) {
         val oppfolgingsperiode = Oppfolgingsperiode(
             sisteOppfolgingsperiodeV1.aktorId,
@@ -53,6 +55,12 @@ class OppfolgingsperiodeService(
         )
         oppfolgingsperiodeDAO.upsertOppfolgingsperide(oppfolgingsperiode)
         sistePeriodeDAO.uppsertOppfolingsperide(oppfolgingsperiode)
+        if (sisteOppfolgingsperiodeV1.sluttDato != null) {
+            avsluttOppfolgingsperiode(
+                sisteOppfolgingsperiodeV1.uuid,
+                sisteOppfolgingsperiodeV1.sluttDato
+            )
+        }
     }
 
     fun hentOppfolgingsperiode(aktorId: AktorId, oppfolgingsperiode: UUID): OppfolgingPeriodeMinimalDTO? {
