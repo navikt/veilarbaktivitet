@@ -21,6 +21,7 @@ class OutboxSender(
             meldinger.asSequence()
                 .map { sendUtKafkaMelding(it) }
                 .takeWhile { it.isSuccess }
+                .count() // Må terminere sekvensen for å faktisk sende meldingene
         } catch (e: PessimisticLockingFailureException) {
                 log.warn("Klarte ikke hente ut outbox meldinger, rader var låst")
         }
