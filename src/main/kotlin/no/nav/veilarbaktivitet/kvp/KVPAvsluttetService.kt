@@ -35,7 +35,7 @@ class KVPAvsluttetService(
             .forEach { oppdatertAktivitet ->
                 aktivitetDAO.oppdaterAktivitet(oppdatertAktivitet)
                 if (erAvbruttMoteEllerSamtalereferat(oppdatertAktivitet)) {
-                    // TODO: send kafkamelding på nytt topic om avbrutt mote/samtalereferat
+                    //oversiktenService.lagreOppdaterSisteMøteMelding(oppdatertAktivitet.aktorId)
                     oversiktenService.lagreStoppMeldingOmUdeltSamtalereferatIUtboks(
                         oppdatertAktivitet.aktorId, oppdatertAktivitet.id
                     )
