@@ -19,7 +19,7 @@ jobs:
       - name: List resource files
         run: echo "RESOURCE_FILES=$(find kafka-topic/prod -type f | tr '\n' ',' | sed 's/,$/\n/')" >> $GITHUB_ENV
       - name: Deploy kafka topics
-        uses: nais/deploy/actions/deploy@7b60caaded00332e9aa117a8342daa0876851dfe
+        uses: nais/deploy/actions/deploy@6fe576e10c7a325643bad96566bd6cb180a2f782
         env:
           CLUSTER: prod-gcp
           RESOURCE: ${{ env.RESOURCE_FILES }}

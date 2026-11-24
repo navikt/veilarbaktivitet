@@ -1,10 +1,10 @@
-val spring_boot_version = "4.1.2"
+val spring_boot_version = "4.2.0"
 val tomcat_version = "11.0.29"
 
 extra["tomcat.version"] = tomcat_version
-val common_version = "4.2026.11.16_22.48-f6f69ab8d9b9"
-val dab_common_version = "2026.11.16-12.40.44e53609da98"
-val poao_tilgang_version = "4.2026.10.02_08.32-32a40f5f5ced"
+val common_version = "4.2026.11.24_01.21-c252fd5dd64e"
+val dab_common_version = "2026.11.23-08.45.4db62b93b645"
+val poao_tilgang_version = "4.2026.11.23_08.40-fd799ad27a28"
 val shedlock_version = "7.10.1"
 val avroVersion = "1.12.2"
 val confluentKafkaAvroVersion = "8.2.0"
@@ -217,6 +217,7 @@ dependencies {
     testImplementation("org.springframework.kafka:spring-kafka-test")
     testImplementation("org.mockito:mockito-core")
     testImplementation("io.zonky.test:embedded-database-spring-test:2.8.0")
+    // styrer postgres-versjonen som brukes i testene. Versjon 18.x betyr Postgres 18.
     testImplementation(platform("io.zonky.test.postgres:embedded-postgres-binaries-bom:18.6.0"))
     testImplementation("io.zonky.test:embedded-postgres:2.2.2")
 }
