@@ -131,12 +131,15 @@ open class OversiktenService(
 fun List<AktivitetsplanMote>.finnTidspunkter(): SisteAktivitetDto? {
     if (this.isEmpty()) return null
     val now = Instant.now()
-    val sorted = this.sortedBy { it.tidspunkt }
+    val (moter, samtalereferat) = this
+        .sortedBy { it.tidspunkt }
+        .partition { it.type == MoteEllerSamtalereferatType.MOTE }
     return SisteAktivitetDto(
-        sorted.filter { it.tidspunkt.isBefore(now) }
+        samtalereferat.firstOrNull()?.let { Samtalereferat(it.tidspunkt, it.id) },
+        moter.filter { it.tidspunkt.isBefore(now) }
             .maxByOrNull { it.tidspunkt }
             ?.let { Mote( it.tidspunkt, it.id) },
-        sorted.firstOrNull { it.tidspunkt.isAfter(now) }?.let { Mote( it.tidspunkt, it.id) }
+        moter.firstOrNull { it.tidspunkt.isAfter(now) }?.let { Mote( it.tidspunkt, it.id) }
     )
 }
 
@@ -145,16 +148,27 @@ data class Mote(
     val id: Long,
 )
 
+data class Samtalereferat(
+    val tidspunkt: Instant,
+    val id: Long,
+)
+
 /* Aktivtet som i noe har skjedd, ikke som i aktivitetsplanen-aktivitet */
 class SisteAktivitetDto(
+    val sisteSamtalereferat: Samtalereferat?,
     val sisteGjennomforteMote: Mote?,
     val nestePlanlagteMote: Mote?,
 )
 
+enum class MoteEllerSamtalereferatType {
+    MOTE,
+    SAMTALEREFERAT,
+}
 data class AktivitetsplanMote(
     val id: Long,
     /**
      *  Fra-tidspunkt på møter eller samtalereferat. Samtalererat settes bruker fra-dato starten av dagen
      *  */
     val tidspunkt: Instant,
+    val type: MoteEllerSamtalereferatType,
 )

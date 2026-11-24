@@ -10,6 +10,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.aktivitet.feil.AktivitetVersjonOutOfOrderException;
 import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvUtdatertVersjonException;
 import no.nav.veilarbaktivitet.oversikten.AktivitetsplanMote;
+import no.nav.veilarbaktivitet.oversikten.MoteEllerSamtalereferatType;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.stilling_fra_nav.CvKanDelesData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.KontaktpersonData;
@@ -660,7 +661,7 @@ public class AktivitetDAO {
     public List<AktivitetsplanMote> hentAlleMoterForPerson(Person.AktorId aktorId) {
         return namedParameterJdbcTemplate.query(
                 """
-                        SELECT A.aktivitet_id, A.fra_dato
+                        SELECT A.aktivitet_id, A.fra_dato, A.aktivitet_type_kode
                         FROM AKTIVITET A
                         WHERE A.aktor_id = :aktorId 
                           AND A.aktivitet_type_kode IN ('MOTE', 'SAMTALEREFERAT') 
@@ -671,7 +672,8 @@ public class AktivitetDAO {
                 new MapSqlParameterSource().addValue("aktorId", aktorId.get()),
                 (rs, rowNum) -> new AktivitetsplanMote(
                         rs.getLong("aktivitet_id"),
-                        rs.getTimestamp("fra_dato").toInstant()
+                        rs.getTimestamp("fra_dato").toInstant(),
+                        MoteEllerSamtalereferatType.valueOf(rs.getString("aktivitet_type_kode"))
                 )
         );
     }
