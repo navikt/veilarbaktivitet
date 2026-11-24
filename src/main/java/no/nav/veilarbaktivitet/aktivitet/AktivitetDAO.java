@@ -27,6 +27,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static java.util.Optional.empty;
@@ -81,6 +82,24 @@ public class AktivitetDAO {
         String sql  = SELECT_AKTIVITET +
                 " WHERE A.AKTOR_ID = :aktorId and A.gjeldende = 1";
         return namedParameterJdbcTemplate.query(sql, params, aktivitetsDataRowMapper);
+    }
+
+    public Optional<PlanlagtMote> hentNestePlanlagteMote(Person.AktorId aktorId, Date tidspunkt) {
+        return hentNestePlanlagteMote(aktorId, tidspunkt, aktivitet -> true);
+    }
+
+    public Optional<PlanlagtMote> hentNestePlanlagteMote(
+            Person.AktorId aktorId, Date tidspunkt, Predicate<AktivitetData> aktivitetsfilter) {
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("aktorId", aktorId.get());
+        // language=sql
+        String sql = """
+                SELECT A.*, M.* FROM AKTIVITET A
+                LEFT JOIN MOTE M ON A.AKTIVITET_ID = M.AKTIVITET_ID AND A.VERSJON = M.VERSJON
+                WHERE A.AKTOR_ID = :aktorId AND A.GJELDENDE = 1 AND A.AKTIVITET_TYPE_KODE = 'MOTE'
+                """;
+        List<AktivitetData> moter = namedParameterJdbcTemplate.query(sql, params, aktivitetsDataRowMapper);
+        return ofNullable(PlanlagteMoter.nestePlanlagteMote(moter, tidspunkt, aktivitetsfilter));
     }
 
     public AktivitetData hentAktivitet(long aktivitetId) {

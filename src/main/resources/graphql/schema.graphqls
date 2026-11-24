@@ -4,6 +4,12 @@ type Query {
     eier(aktivitetId: String!): Eier
     tiltaksaktiviteter(fnr: String!): [TiltaksAktivitet]
     brukersNavn(fnr: String!): BrukerNavn
+    nestePlanlagteMote(fnr: String!): PlanlagtMote
+}
+
+type PlanlagtMote {
+    id: String!
+    fraDato: Date!
 }
 
 type BrukerNavn {
