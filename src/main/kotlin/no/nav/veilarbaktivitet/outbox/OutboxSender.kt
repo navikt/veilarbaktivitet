@@ -18,13 +18,19 @@ class OutboxSender(
     open fun sendMeldinger(event: OutboxService.OutboxMeldingLagretEvent? = null) {
         try {
             val meldinger = outboxDao.hentUsendteMeldinger(event)
-            meldinger.forEach { melding ->
-                kafkaTemplate.send(melding.topic, melding.key, melding.payload).get()
-                outboxDao.slett(melding.id)
-                log.info("Outbox-melding sendt og slettet: id={}, topic={}", melding.id, melding.topic)
-            }
+            meldinger.asSequence()
+                .map { sendUtKafkaMelding(it) }
+                .takeWhile { it.isSuccess }
         } catch (e: PessimisticLockingFailureException) {
-                log.warn("LOL")
+                log.warn("Klarte ikke hente ut outbox meldinger, rader var låst")
+        }
+    }
+
+    fun sendUtKafkaMelding(melding: OutboxRecord): Result<Unit> {
+        return runCatching {
+            kafkaTemplate.send(melding.topic, melding.key, melding.payload).get()
+            outboxDao.slett(melding.id)
+            log.info("Outbox-melding sendt og slettet: id={}, topic={}", melding.id, melding.topic)
         }
     }
 }
