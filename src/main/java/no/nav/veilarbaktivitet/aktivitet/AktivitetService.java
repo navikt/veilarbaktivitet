@@ -107,7 +107,6 @@ public class AktivitetService {
                 .transaksjonsType(AktivitetTransaksjonsType.STATUS_ENDRET)
                 .build();
 
-        // TODO: hvis endret dato -> send kafkamelding på nytt topic
         if(nyAktivitet.getStatus() == AktivitetStatus.AVBRUTT || nyAktivitet.getStatus() == AktivitetStatus.FULLFORT){
             avtaltMedNavService.settVarselFerdig(originalAktivitet.getFhoId());
         }

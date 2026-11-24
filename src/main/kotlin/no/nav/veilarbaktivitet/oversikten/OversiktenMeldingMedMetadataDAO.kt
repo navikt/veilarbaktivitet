@@ -4,6 +4,7 @@ import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarbaktivitet.config.database.Database
 import no.nav.veilarbaktivitet.veilarbdbutil.VeilarbAktivitetSqlParameterSource
+import org.jetbrains.annotations.TestOnly
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.jdbc.support.GeneratedKeyHolder
@@ -73,6 +74,7 @@ open class OversiktenMeldingMedMetadataDAO(
         return jdbc.queryForObject(sql, params, rowMapper)
     }
 
+    @TestOnly
     open fun hentUdelteSamtalereferatDerViIkkeHarSendtMeldingTilOversikten(): List<UdeltSamtalereferatUtenMelding> {
         val sql = """
             WITH oversikten_meldinger_gruppert_per_key_og_rangert AS (
