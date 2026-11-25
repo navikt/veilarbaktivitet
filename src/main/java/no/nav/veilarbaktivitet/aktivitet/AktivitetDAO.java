@@ -9,6 +9,7 @@ import no.nav.common.json.JsonUtils;
 import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.aktivitet.feil.AktivitetVersjonOutOfOrderException;
 import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvUtdatertVersjonException;
+import no.nav.veilarbaktivitet.config.database.Database;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.stilling_fra_nav.CvKanDelesData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.KontaktpersonData;
@@ -27,7 +28,6 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static java.util.Optional.empty;
@@ -84,22 +84,29 @@ public class AktivitetDAO {
         return namedParameterJdbcTemplate.query(sql, params, aktivitetsDataRowMapper);
     }
 
-    public Optional<PlanlagtMote> hentNestePlanlagteMote(Person.AktorId aktorId, Date tidspunkt) {
-        return hentNestePlanlagteMote(aktorId, tidspunkt, aktivitet -> true);
-    }
-
-    public Optional<PlanlagtMote> hentNestePlanlagteMote(
-            Person.AktorId aktorId, Date tidspunkt, Predicate<AktivitetData> aktivitetsfilter) {
+    public List<PlanlagtMote> hentPlanlagteMoter(Person.AktorId aktorId, Date tidspunkt) {
         MapSqlParameterSource params = new MapSqlParameterSource()
-                .addValue("aktorId", aktorId.get());
+                .addValue("aktorId", aktorId.get())
+                .addValue("tidspunkt", tidspunkt)
+                .addValue("avsluttedeStatuser", PlanlagtMote.IKKE_LENGER_PLANLAGT_STATUSER.stream().map(AktivitetStatus::name).toList());
         // language=sql
         String sql = """
-                SELECT A.*, M.* FROM AKTIVITET A
-                LEFT JOIN MOTE M ON A.AKTIVITET_ID = M.AKTIVITET_ID AND A.VERSJON = M.VERSJON
+                SELECT A.AKTIVITET_ID, A.FRA_DATO, A.KONTORSPERRE_ENHET_ID FROM AKTIVITET A
                 WHERE A.AKTOR_ID = :aktorId AND A.GJELDENDE = 1 AND A.AKTIVITET_TYPE_KODE = 'MOTE'
+                AND A.FRA_DATO > :tidspunkt
+                AND A.HISTORISK_DATO IS NULL
+                AND A.LIVSLOPSTATUS_KODE NOT IN (:avsluttedeStatuser)
+                ORDER BY A.FRA_DATO, A.AKTIVITET_ID
                 """;
-        List<AktivitetData> moter = namedParameterJdbcTemplate.query(sql, params, aktivitetsDataRowMapper);
-        return ofNullable(PlanlagteMoter.nestePlanlagteMote(moter, tidspunkt, aktivitetsfilter));
+        try (var moter = namedParameterJdbcTemplate.queryForStream(sql, params, (rs, rowNum) ->
+            new PlanlagtMote(
+                    rs.getLong("AKTIVITET_ID"),
+                    Database.hentDato(rs, "FRA_DATO"),
+                    rs.getString("KONTORSPERRE_ENHET_ID")
+            )
+        )) {
+            return moter.toList();
+        }
     }
 
     public AktivitetData hentAktivitet(long aktivitetId) {

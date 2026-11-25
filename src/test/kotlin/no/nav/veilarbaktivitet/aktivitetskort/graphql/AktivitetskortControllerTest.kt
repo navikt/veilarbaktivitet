@@ -53,6 +53,22 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
     }
 
     @Test
+    fun `AVBRUTT mote med fremtidig fraDato returneres ikke som planlagt`() {
+        aktivitetDAO.opprettNyAktivitet(
+            AktivitetDataTestBuilder.nyMoteAktivitet()
+                .withAktorId(mockBruker.aktorId)
+                .withFraDato(Date.from(Instant.now().plusSeconds(3600)))
+                .withStatus(AktivitetStatus.AVBRUTT)
+        )
+
+        val result = aktivitetTestService.queryAktivitetskort(mockBruker, mockBruker, planlagtMoteQuery)
+
+        assertThat(result.errors).isNull()
+        assertThat(result.data).isNotNull()
+        assertThat(result.data?.nestePlanlagteMote).isNull()
+    }
+
+    @Test
     fun `veileder uten persontilgang kan ikke hente neste planlagte mote`() {
         val annenBruker = navMockService.createHappyBruker()
         val result = aktivitetTestService.queryAktivitetskort(annenBruker, mockVeileder, planlagtMoteQuery)

@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.aktivitet;
 
 import lombok.AllArgsConstructor;
+import no.nav.common.types.identer.EnhetId;
 import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.AktivitetsEndring;
 import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.AktivitetsEndringUtil;
@@ -12,7 +13,6 @@ import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.spesialEndringer.Sta
 import no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavService;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.oppfolging.periode.IngenGjeldendePeriodeException;
-import no.nav.veilarbaktivitet.oppfolging.periode.SistePeriodeService;
 import no.nav.veilarbaktivitet.oversikten.OversiktenService;
 import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.person.Person;
@@ -24,10 +24,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 import static java.util.Optional.ofNullable;
 import static no.nav.common.utils.StringUtils.nullOrEmpty;
@@ -41,6 +44,18 @@ public class AktivitetService {
     private final AvtaltMedNavService avtaltMedNavService;
     private final MetricService metricService;
     private final OversiktenService oversiktenService;
+
+    public Optional<PlanlagtMote> hentNestePlanlagteMotePersonHarTilgangTil(
+            Person.AktorId aktorId, Predicate<EnhetId> harTilgangTilEnhet) {
+        // Cache oppslag på enheter hvis det skulle være flere forskjellige, mulig det finnes cache in AuthService via poao-tilgang bibloteket
+        Map<EnhetId, Boolean> enheterMedTilgang = new HashMap<>();
+        return aktivitetDAO.hentPlanlagteMoter(aktorId, new Date()).stream()
+                .filter(mote -> {
+                    var enhet = mote.getKontorsperreEnhetId();
+                    return enhet == null || enheterMedTilgang.computeIfAbsent(enhet, harTilgangTilEnhet::test);
+                })
+                .findFirst();
+    }
 
     public List<AktivitetData> hentAktiviteterForAktorId(Person.AktorId aktorId) {
         var aktiviteter = aktivitetDAO.hentAktiviteterForAktorId(aktorId);

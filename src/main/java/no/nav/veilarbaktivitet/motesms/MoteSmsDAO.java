@@ -3,6 +3,7 @@ package no.nav.veilarbaktivitet.motesms;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
+import no.nav.veilarbaktivitet.aktivitet.domain.PlanlagtMote;
 import no.nav.veilarbaktivitet.aktivitet.dto.KanalDTO;
 import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.MinSideVarselId;
 import no.nav.veilarbaktivitet.config.database.Database;
@@ -61,7 +62,7 @@ public class MoteSmsDAO {
         SqlParameterSource params = new VeilarbAktivitetSqlParameterSource()
                 .addValue("fra", ZonedDateTime.now().plus(fra))
                 .addValue("til", ZonedDateTime.now().plus(til))
-                .addValue("avslutteteAktiviteter", List.of(AktivitetStatus.AVBRUTT.name(), AktivitetStatus.FULLFORT.name()));
+                .addValue("avslutteteAktiviteter", PlanlagtMote.IKKE_LENGER_PLANLAGT_STATUSER.stream().map(AktivitetStatus::name).toList());
         return jdbc.query("""
                 select a.AKTIVITET_ID as id, a.VERSJON as aktivitet_version, a.AKTOR_ID as aktor_id, a.FRA_DATO as startdato, m.KANAL as kanal 
                 from AKTIVITET a

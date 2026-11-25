@@ -5,7 +5,6 @@ import no.nav.common.types.identer.EnhetId
 import no.nav.poao.dab.spring_auth.IAuthService
 import no.nav.poao.dab.spring_auth.TilgangsType
 import no.nav.veilarbaktivitet.aktivitet.AktivitetAppService
-import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService
 import no.nav.veilarbaktivitet.aktivitet.Historikk
 import no.nav.veilarbaktivitet.aktivitet.HistorikkService
@@ -13,7 +12,6 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
 import no.nav.veilarbaktivitet.aktivitet.domain.PlanlagtMote
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper
-import no.nav.veilarbaktivitet.aktivitetskort.MigreringService
 import no.nav.veilarbaktivitet.arena.ArenaService
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO
 import no.nav.veilarbaktivitet.config.ownerProviders.AktivitetOwnerProvider
@@ -27,12 +25,10 @@ import org.springframework.graphql.data.method.annotation.SchemaMapping
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Controller
 import org.springframework.web.server.ResponseStatusException
-import java.util.Date
 
 @Controller
 class AktivitetskortController(
     val appService: AktivitetAppService,
-    val migreringService: MigreringService,
     val historikkService: HistorikkService,
     val ownerProvider: AktivitetOwnerProvider,
     val aktivitetService: AktivitetService,
@@ -42,7 +38,6 @@ class AktivitetskortController(
     val authService: IAuthService,
     val arenaService: ArenaService,
     val eksternNavnService: EksternNavnService,
-    val aktivitetDAO: AktivitetDAO,
 ) {
     @Value("\${app.env.poaoAdminIdenter}")
     var godkjenteAdminIdenterInput: String? = null
@@ -108,10 +103,10 @@ class AktivitetskortController(
         val eksternBrukerId = getContextUserIdent(fnr)
         authService.sjekkTilgangTilPerson(eksternBrukerId.otherFnr(), TilgangsType.LESE)
         val aktorId = aktorOppslagClient.hentAktorId(eksternBrukerId.otherFnr())
-        val enheterMedTilgang = mutableMapOf<EnhetId, Boolean>()
-        return aktivitetDAO.hentNestePlanlagteMote(Person.AktorId(aktorId.get()), Date()) {
-            harTilgangTilAktivitet(it, enheterMedTilgang)
-        }.orElse(null)
+        return aktivitetService.hentNestePlanlagteMotePersonHarTilgangTil(
+            Person.AktorId(aktorId.get()),
+            { authService.harTilgangTilEnhet(it) })
+            .orElse(null)
     }
 
     @QueryMapping

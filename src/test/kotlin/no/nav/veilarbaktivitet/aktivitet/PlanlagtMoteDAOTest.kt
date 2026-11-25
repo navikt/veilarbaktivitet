@@ -7,6 +7,8 @@ import no.nav.veilarbaktivitet.person.Person
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.EnumSource
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.time.Instant
 import java.util.Date
@@ -16,6 +18,25 @@ class PlanlagtMoteDAOTest {
     private val dao = AktivitetDAO(NamedParameterJdbcTemplate(LocalDatabaseSingleton.postgres))
     private val aktorId = nyAktorId()
     private val tidspunkt = Date.from(Instant.parse("2026-01-01T12:00:00Z"))
+
+    @ParameterizedTest
+    @EnumSource(AktivitetStatus::class)
+    fun `bare uferdige moter teller som planlagt`(status: AktivitetStatus) {
+        val mote = dao.opprettNyAktivitet(
+            AktivitetDataTestBuilder.nyMoteAktivitet()
+                .withAktorId(aktorId)
+                .withFraDato(Date(tidspunkt.time + 60_000))
+                .withStatus(status)
+        )
+
+        val resultat = dao.hentPlanlagteMoter(aktorId, tidspunkt)
+
+        if (status == AktivitetStatus.FULLFORT || status == AktivitetStatus.AVBRUTT) {
+            assertThat(resultat).isEmpty()
+        } else {
+            assertThat(resultat).containsExactly(PlanlagtMote(mote.id, mote.fraDato))
+        }
+    }
 
     @Test
     fun `henter bare gjeldende fremtidige uferdige moter for riktig bruker`() {
@@ -36,22 +57,32 @@ class PlanlagtMoteDAOTest {
         val avbrutt = dao.opprettNyAktivitet(mote(1))
         dao.oppdaterAktivitet(avbrutt.withStatus(AktivitetStatus.AVBRUTT))
         val flyttet = dao.opprettNyAktivitet(mote(1))
-        dao.oppdaterAktivitet(flyttet.withFraDato(mote(10).fraDato))
-        dao.opprettNyAktivitet(mote(5))
+        val flyttetMote = dao.oppdaterAktivitet(flyttet.withFraDato(mote(10).fraDato))
+        val senere = dao.opprettNyAktivitet(mote(5))
         val neste = dao.opprettNyAktivitet(mote(2).withStatus(AktivitetStatus.GJENNOMFORES))
 
-        assertThat(dao.hentNestePlanlagteMote(aktorId, tidspunkt))
-            .contains(PlanlagtMote(neste.id, neste.fraDato))
-        assertThat(dao.hentNestePlanlagteMote(nyAktorId(), tidspunkt))
+        assertThat(dao.hentPlanlagteMoter(aktorId, tidspunkt))
+            .containsExactly(
+                PlanlagtMote(neste.id, neste.fraDato),
+                PlanlagtMote(senere.id, senere.fraDato),
+                PlanlagtMote(flyttetMote.id, flyttetMote.fraDato),
+            )
+        assertThat(dao.hentPlanlagteMoter(nyAktorId(), tidspunkt))
             .isEmpty()
     }
 
     @Test
-    fun `velger neste tilgjengelige mote nar tidligste er kontorsperret`() {
+    fun `henter alle planlagte moter uavhengig av kontorsperre`() {
         val skjult = dao.opprettNyAktivitet(
             AktivitetDataTestBuilder.nyMoteAktivitet()
                 .withAktorId(aktorId)
                 .withFraDato(Date(tidspunkt.time + 60_000))
+                .withKontorsperreEnhetId("1234")
+        )
+        val ogsaSkjult = dao.opprettNyAktivitet(
+            AktivitetDataTestBuilder.nyMoteAktivitet()
+                .withAktorId(aktorId)
+                .withFraDato(Date(tidspunkt.time + 90_000))
                 .withKontorsperreEnhetId("1234")
         )
         val synlig = dao.opprettNyAktivitet(
@@ -60,10 +91,42 @@ class PlanlagtMoteDAOTest {
                 .withFraDato(Date(tidspunkt.time + 120_000))
         )
 
-        assertThat(dao.hentNestePlanlagteMote(aktorId, tidspunkt))
-            .contains(PlanlagtMote(skjult.id, skjult.fraDato))
-        assertThat(dao.hentNestePlanlagteMote(aktorId, tidspunkt) { it.kontorsperreEnhetId == null })
-            .contains(PlanlagtMote(synlig.id, synlig.fraDato))
+        assertThat(dao.hentPlanlagteMoter(aktorId, tidspunkt))
+            .containsExactly(
+                PlanlagtMote(skjult.id, skjult.fraDato, "1234"),
+                PlanlagtMote(ogsaSkjult.id, ogsaSkjult.fraDato, "1234"),
+                PlanlagtMote(synlig.id, synlig.fraDato),
+            )
+    }
+
+    @Test
+    fun `sorterer pa id nar flere moter har samme starttid`() {
+        val mote = AktivitetDataTestBuilder.nyMoteAktivitet()
+            .withAktorId(aktorId)
+            .withFraDato(Date(tidspunkt.time + 60_000))
+        val forste = dao.opprettNyAktivitet(mote)
+        val andre = dao.opprettNyAktivitet(mote)
+
+        assertThat(dao.hentPlanlagteMoter(aktorId, tidspunkt))
+            .containsExactly(
+                PlanlagtMote(forste.id, forste.fraDato),
+                PlanlagtMote(andre.id, andre.fraDato),
+            )
+    }
+
+    @Test
+    fun `AVBRUTT mote med fremtidig fraDato teller ikke som planlagt`() {
+        val mote = dao.opprettNyAktivitet(
+            AktivitetDataTestBuilder.nyMoteAktivitet()
+                .withAktorId(aktorId)
+                .withFraDato(Date(tidspunkt.time + 60_000))
+        )
+        assertThat(dao.hentPlanlagteMoter(aktorId, tidspunkt))
+            .containsExactly(PlanlagtMote(mote.id, mote.fraDato))
+
+        dao.oppdaterAktivitet(mote.withStatus(AktivitetStatus.AVBRUTT))
+
+        assertThat(dao.hentPlanlagteMoter(aktorId, tidspunkt)).isEmpty()
     }
 
     private fun nyAktorId() = Person.aktorId(
