@@ -98,6 +98,7 @@ public class AktivitetDAO {
                 AND A.LIVSLOPSTATUS_KODE NOT IN (:avsluttedeStatuser)
                 ORDER BY A.FRA_DATO, A.AKTIVITET_ID
                 """;
+        // Bruker queryForStream istedetfor queryForObject for å ikke måtte catche exception hvis det ikke finnes noe møte
         try (var moter = namedParameterJdbcTemplate.queryForStream(sql, params, (rs, rowNum) ->
             new PlanlagtMote(
                     rs.getLong("AKTIVITET_ID"),

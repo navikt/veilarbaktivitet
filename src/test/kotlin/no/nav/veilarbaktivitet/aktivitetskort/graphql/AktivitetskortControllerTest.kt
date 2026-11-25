@@ -40,7 +40,7 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
         listOf(mockBruker, mockVeileder).forEach { innlogget ->
             val result = aktivitetTestService.queryAktivitetskort(mockBruker, innlogget, planlagtMoteQuery)
             assertThat(result.errors).isNull()
-            assertThat(result.data?.nestePlanlagteMote?.id).isEqualTo(mote.id)
+            assertThat(result.data?.nestePlanlagteMote?.id).isEqualTo(mote.id.toString())
             assertThat(result.data?.nestePlanlagteMote?.fraDato).isEqualTo(fraDato)
         }
     }
@@ -92,7 +92,7 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
 
         val result = aktivitetTestService.queryAktivitetskort(annenBruker, mockBruker, planlagtMoteQuery)
         assertThat(result.errors).isNull()
-        assertThat(result.data?.nestePlanlagteMote?.id).isEqualTo(egetMote.id)
+        assertThat(result.data?.nestePlanlagteMote?.id).isEqualTo(egetMote.id.toString())
     }
 
     @Test
@@ -101,10 +101,11 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
             BrukerOptions.happyBruker().toBuilder().erUnderKvp(true).build()
         )
         val veileder = navMockService.createVeilederMedNasjonalTilgang()
+        val veilederMedKontortilgang = navMockService.createVeileder(kvpBruker)
         val fraDato = Date.from(Instant.now().plusSeconds(3600))
         val skjult = aktivitetTestService.opprettAktivitetViaHttp(
             kvpBruker,
-            kvpBruker,
+            veilederMedKontortilgang,
             AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE)
                 .toBuilder().fraDato(fraDato).tilDato(Date(fraDato.time + 60_000)).build(),
         )
@@ -118,11 +119,11 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
         )
         val result = aktivitetTestService.queryAktivitetskort(kvpBruker, veileder, planlagtMoteQuery)
         assertThat(result.errors).isNull()
-        assertThat(result.data?.nestePlanlagteMote?.id).isEqualTo(synlig.id)
+        assertThat(result.data?.nestePlanlagteMote?.id).isEqualTo(synlig.id.toString())
 
         val egetResultat = aktivitetTestService.queryAktivitetskort(kvpBruker, kvpBruker, planlagtMoteQuery)
         assertThat(egetResultat.errors).isNull()
-        assertThat(egetResultat.data?.nestePlanlagteMote?.id).isEqualTo(skjult.id.toLong())
+        assertThat(egetResultat.data?.nestePlanlagteMote?.id).isEqualTo(skjult.id)
     }
 
     @Test
