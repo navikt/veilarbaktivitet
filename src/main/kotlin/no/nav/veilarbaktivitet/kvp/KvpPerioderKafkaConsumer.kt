@@ -6,6 +6,7 @@ import no.nav.common.kafka.consumer.TopicConsumer
 import no.nav.veilarbaktivitet.person.Person
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.*
@@ -15,6 +16,7 @@ class KvpPerioderKafkaConsumer(
     private val kvpAvsluttetService: KVPAvsluttetService
 ) : TopicConsumer<String, KvpPerioderKafkaDTO> {
     @Timed(value = "kvp_perioder_consumer")
+    @Transactional
     override fun consume(consumerRecord: ConsumerRecord<String, KvpPerioderKafkaDTO>): ConsumeStatus {
         val melding = consumerRecord.value()
         val aktorId = Person.aktorId(melding.aktorId)

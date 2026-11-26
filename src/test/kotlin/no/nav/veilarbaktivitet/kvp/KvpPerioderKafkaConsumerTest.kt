@@ -118,31 +118,42 @@ class KvpPerioderKafkaConsumerTest : SpringBootTestBase() {
     }
 
     @Test
-    fun `planlagt møte i fremtiden med kontorsperre skal fortsatt være synlig på siste-aktivitet topic når KVP avsluttes`() {
+    fun `avsluttet KVP skal fjerne alle kontorsperrede møter fra siste-aktivitet topic med en melding`() {
         val sisteAktivitetConsumer = kafkaTestService.createStringStringConsumer(sisteAktivitetHendelseTopic)
         sisteAktivitetConsumer.use { consumer ->
             val møtetidspunkt = ZonedDateTime.now().plusDays(3).truncatedTo(ChronoUnit.SECONDS)
-            val møte = aktivitetTestService.opprettAktivitetViaHttp(
-                mockBrukerMedKvp,
-                mockVeileder,
-                AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE)
-                    .setFraDato(Date.from(møtetidspunkt.toInstant()))
-                    .setTilDato(Date.from(møtetidspunkt.plusHours(1).toInstant()))
-            )
-            assertAktivitetHarForventetKontorsperreEnhet(møte.id.toLong(), kvpEnhetId)
-
-            val meldingEtterOpprettelse = KafkaTestUtils.getSingleRecord(consumer, sisteAktivitetHendelseTopic, DEFAULT_WAIT_TIMEOUT_DURATION)
-            assertThat(meldingEtterOpprettelse.key()).isEqualTo(mockBrukerMedKvp.aktorId.get())
-            assertNestePlanlagteMøte(meldingEtterOpprettelse.value(), møte.id.toLong(), møtetidspunkt.toInstant())
+            val møterMedMeldinger = listOf(møtetidspunkt, møtetidspunkt.minusDays(1)).map { tidspunkt ->
+                val møte = aktivitetTestService.opprettAktivitetViaHttp(
+                    mockBrukerMedKvp,
+                    mockVeileder,
+                    AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE)
+                        .setFraDato(Date.from(tidspunkt.toInstant()))
+                        .setTilDato(Date.from(tidspunkt.plusHours(1).toInstant()))
+                )
+                val meldingEtterOpprettelse = KafkaTestUtils.getSingleRecord(consumer, sisteAktivitetHendelseTopic, DEFAULT_WAIT_TIMEOUT_DURATION)
+                møte to meldingEtterOpprettelse
+            }
 
             publiserKvpPerioderHendelse(kvpAvsluttetJson(ZonedDateTime.now().plusMinutes(1)))
 
-            assertThat(aktivitetTestService.hentAktivitet(mockBrukerMedKvp, mockVeileder, møte.id).status)
-                .isEqualTo(AktivitetStatus.AVBRUTT)
-            val meldingerEtterKvpAvsluttet = KafkaTestUtils.getRecords(consumer, Duration.ofSeconds(2))
+            møterMedMeldinger.forEach { (møte, meldingEtterOpprettelse) ->
+                assertAktivitetHarForventetKontorsperreEnhet(møte.id.toLong(), kvpEnhetId)
+                assertThat(meldingEtterOpprettelse.key()).isEqualTo(mockBrukerMedKvp.aktorId.get())
+                assertNestePlanlagteMøte(meldingEtterOpprettelse.value(), møte.id.toLong(), møte.fraDato.toInstant())
+                assertThat(aktivitetTestService.hentAktivitet(mockBrukerMedKvp, mockVeileder, møte.id).status)
+                    .isEqualTo(AktivitetStatus.AVBRUTT)
+            }
+            val meldingEtterKvpAvsluttet = KafkaTestUtils.getSingleRecord(
+                consumer, sisteAktivitetHendelseTopic, DEFAULT_WAIT_TIMEOUT_DURATION
+            )
+            assertThat(meldingEtterKvpAvsluttet.key()).isEqualTo(mockBrukerMedKvp.aktorId.get())
+            assertThat(meldingEtterKvpAvsluttet.offset()).isGreaterThan(møterMedMeldinger.last().second.offset())
+            assertThat(meldingEtterKvpAvsluttet.value()).isNull()
+
+            val ekstraMeldinger = KafkaTestUtils.getRecords(consumer, Duration.ofSeconds(1))
                 .records(sisteAktivitetHendelseTopic)
                 .filter { it.key() == mockBrukerMedKvp.aktorId.get() }
-            assertThat(meldingerEtterKvpAvsluttet).isEmpty()
+            assertThat(ekstraMeldinger).isEmpty()
         }
     }
 

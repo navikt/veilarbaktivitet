@@ -21,7 +21,7 @@ class KVPAvsluttetService(
         avsluttetBegrunnelse: String,
         kvpAvsluttetTidspunkt: Date
     ) {
-        aktivitetDAO.hentAktiviteterForAktorId(aktoerId)
+        val aktiviteterSomSkalAvbrytes = aktivitetDAO.hentAktiviteterForAktorId(aktoerId)
             .filter(::filtrerKontorSperretOgStatusErIkkeAvBruttEllerFullfort)
             .filter(::filtrerEksterneAktiviteter)
             .filter { aktivitet -> aktivitet.opprettetDato.before(kvpAvsluttetTidspunkt) }
@@ -32,15 +32,18 @@ class KVPAvsluttetService(
                     kvpAvsluttetTidspunkt
                 )
             }
-            .forEach { oppdatertAktivitet ->
-                aktivitetDAO.oppdaterAktivitet(oppdatertAktivitet)
-                if (erAvbruttMoteEllerSamtalereferat(oppdatertAktivitet)) {
-                    //oversiktenService.lagreOppdaterSisteMøteMelding(oppdatertAktivitet.aktorId)
-                    oversiktenService.lagreStoppMeldingOmUdeltSamtalereferatIUtboks(
-                        oppdatertAktivitet.aktorId, oppdatertAktivitet.id
-                    )
-                }
+
+        aktiviteterSomSkalAvbrytes.forEach { oppdatertAktivitet ->
+            aktivitetDAO.oppdaterAktivitet(oppdatertAktivitet)
+            if (erAvbruttMoteEllerSamtalereferat(oppdatertAktivitet)) {
+                oversiktenService.lagreStoppMeldingOmUdeltSamtalereferatIUtboks(
+                    oppdatertAktivitet.aktorId, oppdatertAktivitet.id
+                )
             }
+        }
+        if (aktiviteterSomSkalAvbrytes.any(::erAvbruttMoteEllerSamtalereferat)) {
+            oversiktenService.lagreOppdaterSisteMøteMelding(aktoerId)
+        }
     }
 
     fun håndterKvpAvsluttet(aktoerId: Person.AktorId, begrunnelse: Optional<String>, sluttDato: Optional<Date>) {
