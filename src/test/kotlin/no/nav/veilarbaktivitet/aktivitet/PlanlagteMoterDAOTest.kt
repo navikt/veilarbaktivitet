@@ -14,8 +14,10 @@ import java.time.Instant
 import java.util.Date
 import java.util.concurrent.ThreadLocalRandom
 
-class PlanlagtMoteDAOTest {
-    private val dao = AktivitetDAO(NamedParameterJdbcTemplate(LocalDatabaseSingleton.postgres))
+class PlanlagteMoterDAOTest {
+    private val jdbc = NamedParameterJdbcTemplate(LocalDatabaseSingleton.postgres)
+    private val dao = AktivitetDAO(jdbc)
+    private val planlagteMoterDAO = PlanlagteMoterDAO(jdbc)
     private val aktorId = nyAktorId()
     private val tidspunkt = Date.from(Instant.parse("2026-01-01T12:00:00Z"))
 
@@ -29,7 +31,7 @@ class PlanlagtMoteDAOTest {
                 .withStatus(status)
         )
 
-        val resultat = dao.hentPlanlagteMoter(aktorId, tidspunkt)
+        val resultat = planlagteMoterDAO.hentPlanlagteMoter(aktorId, tidspunkt)
 
         if (status == AktivitetStatus.FULLFORT || status == AktivitetStatus.AVBRUTT) {
             assertThat(resultat).isEmpty()
@@ -61,13 +63,13 @@ class PlanlagtMoteDAOTest {
         val senere = dao.opprettNyAktivitet(mote(5))
         val neste = dao.opprettNyAktivitet(mote(2).withStatus(AktivitetStatus.GJENNOMFORES))
 
-        assertThat(dao.hentPlanlagteMoter(aktorId, tidspunkt))
+        assertThat(planlagteMoterDAO.hentPlanlagteMoter(aktorId, tidspunkt))
             .containsExactly(
                 PlanlagtMote(neste.id, neste.fraDato),
                 PlanlagtMote(senere.id, senere.fraDato),
                 PlanlagtMote(flyttetMote.id, flyttetMote.fraDato),
             )
-        assertThat(dao.hentPlanlagteMoter(nyAktorId(), tidspunkt))
+        assertThat(planlagteMoterDAO.hentPlanlagteMoter(nyAktorId(), tidspunkt))
             .isEmpty()
     }
 
@@ -91,7 +93,7 @@ class PlanlagtMoteDAOTest {
                 .withFraDato(Date(tidspunkt.time + 120_000))
         )
 
-        assertThat(dao.hentPlanlagteMoter(aktorId, tidspunkt))
+        assertThat(planlagteMoterDAO.hentPlanlagteMoter(aktorId, tidspunkt))
             .containsExactly(
                 PlanlagtMote(skjult.id, skjult.fraDato, "1234"),
                 PlanlagtMote(ogsaSkjult.id, ogsaSkjult.fraDato, "1234"),
@@ -107,7 +109,7 @@ class PlanlagtMoteDAOTest {
         val forste = dao.opprettNyAktivitet(mote)
         val andre = dao.opprettNyAktivitet(mote)
 
-        assertThat(dao.hentPlanlagteMoter(aktorId, tidspunkt))
+        assertThat(planlagteMoterDAO.hentPlanlagteMoter(aktorId, tidspunkt))
             .containsExactly(
                 PlanlagtMote(forste.id, forste.fraDato),
                 PlanlagtMote(andre.id, andre.fraDato),
@@ -121,12 +123,12 @@ class PlanlagtMoteDAOTest {
                 .withAktorId(aktorId)
                 .withFraDato(Date(tidspunkt.time + 60_000))
         )
-        assertThat(dao.hentPlanlagteMoter(aktorId, tidspunkt))
+        assertThat(planlagteMoterDAO.hentPlanlagteMoter(aktorId, tidspunkt))
             .containsExactly(PlanlagtMote(mote.id, mote.fraDato))
 
         dao.oppdaterAktivitet(mote.withStatus(AktivitetStatus.AVBRUTT))
 
-        assertThat(dao.hentPlanlagteMoter(aktorId, tidspunkt)).isEmpty()
+        assertThat(planlagteMoterDAO.hentPlanlagteMoter(aktorId, tidspunkt)).isEmpty()
     }
 
     private fun nyAktorId() = Person.aktorId(

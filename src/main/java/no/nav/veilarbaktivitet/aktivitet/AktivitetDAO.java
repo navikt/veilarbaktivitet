@@ -9,7 +9,6 @@ import no.nav.common.json.JsonUtils;
 import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.aktivitet.feil.AktivitetVersjonOutOfOrderException;
 import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvUtdatertVersjonException;
-import no.nav.veilarbaktivitet.config.database.Database;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.stilling_fra_nav.CvKanDelesData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.KontaktpersonData;
@@ -82,32 +81,6 @@ public class AktivitetDAO {
         String sql  = SELECT_AKTIVITET +
                 " WHERE A.AKTOR_ID = :aktorId and A.gjeldende = 1";
         return namedParameterJdbcTemplate.query(sql, params, aktivitetsDataRowMapper);
-    }
-
-    public List<PlanlagtMote> hentPlanlagteMoter(Person.AktorId aktorId, Date tidspunkt) {
-        MapSqlParameterSource params = new MapSqlParameterSource()
-                .addValue("aktorId", aktorId.get())
-                .addValue("tidspunkt", tidspunkt)
-                .addValue("avsluttedeStatuser", PlanlagtMote.IKKE_LENGER_PLANLAGT_STATUSER.stream().map(AktivitetStatus::name).toList());
-        // language=sql
-        String sql = """
-                SELECT A.AKTIVITET_ID, A.FRA_DATO, A.KONTORSPERRE_ENHET_ID FROM AKTIVITET A
-                WHERE A.AKTOR_ID = :aktorId AND A.GJELDENDE = 1 AND A.AKTIVITET_TYPE_KODE = 'MOTE'
-                AND A.FRA_DATO > :tidspunkt
-                AND A.HISTORISK_DATO IS NULL
-                AND A.LIVSLOPSTATUS_KODE NOT IN (:avsluttedeStatuser)
-                ORDER BY A.FRA_DATO, A.AKTIVITET_ID
-                """;
-        // Bruker queryForStream istedetfor queryForObject for å ikke måtte catche exception hvis det ikke finnes noe møte
-        try (var moter = namedParameterJdbcTemplate.queryForStream(sql, params, (rs, rowNum) ->
-            new PlanlagtMote(
-                    rs.getLong("AKTIVITET_ID"),
-                    Database.hentDato(rs, "FRA_DATO"),
-                    rs.getString("KONTORSPERRE_ENHET_ID")
-            )
-        )) {
-            return moter.toList();
-        }
     }
 
     public AktivitetData hentAktivitet(long aktivitetId) {

@@ -44,12 +44,13 @@ public class AktivitetService {
     private final AvtaltMedNavService avtaltMedNavService;
     private final MetricService metricService;
     private final OversiktenService oversiktenService;
+    private final PlanlagteMoterDAO planlagteMoterDAO;
 
     public Optional<PlanlagtMote> hentNestePlanlagteMotePersonHarTilgangTil(
             Person.AktorId aktorId, Predicate<EnhetId> harTilgangTilEnhet) {
         // Cache oppslag på enheter hvis det skulle være flere forskjellige, mulig det finnes cache in AuthService via poao-tilgang bibloteket
         Map<EnhetId, Boolean> enheterMedTilgang = new HashMap<>();
-        return aktivitetDAO.hentPlanlagteMoter(aktorId, new Date()).stream()
+        return planlagteMoterDAO.hentPlanlagteMoter(aktorId, new Date()).stream()
                 .filter(mote -> {
                     var enhet = mote.getKontorsperreEnhetId();
                     return enhet == null || enheterMedTilgang.computeIfAbsent(enhet, harTilgangTilEnhet::test);

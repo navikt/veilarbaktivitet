@@ -1,13 +1,7 @@
 package no.nav.veilarbaktivitet.motesms;
 
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
-import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
-import no.nav.veilarbaktivitet.aktivitet.domain.PlanlagtMote;
-import no.nav.veilarbaktivitet.aktivitet.dto.KanalDTO;
 import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.MinSideVarselId;
-import no.nav.veilarbaktivitet.config.database.Database;
-import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.veilarbdbutil.VeilarbAktivitetSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -15,7 +9,6 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.ResultSet;
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -56,34 +49,6 @@ public class MoteSmsDAO {
                         limit :limit
                         """
                 , params, (rs, rowNum) -> new AktivitetVersjon(rs.getLong("AKTIVITET_ID"), rs.getLong("VERSJON")));
-    }
-
-    List<MoteNotifikasjon> hentMoterUtenVarsel(Duration fra, Duration til, int max) {
-        SqlParameterSource params = new VeilarbAktivitetSqlParameterSource()
-                .addValue("fra", ZonedDateTime.now().plus(fra))
-                .addValue("til", ZonedDateTime.now().plus(til))
-                .addValue("avslutteteAktiviteter", PlanlagtMote.IKKE_LENGER_PLANLAGT_STATUSER.stream().map(AktivitetStatus::name).toList());
-        return jdbc.query("""
-                select a.AKTIVITET_ID as id, a.VERSJON as aktivitet_version, a.AKTOR_ID as aktor_id, a.FRA_DATO as startdato, m.KANAL as kanal 
-                from AKTIVITET a
-                inner join MOTE m on a.AKTIVITET_ID = m.AKTIVITET_ID and a.VERSJON = m.VERSJON
-                where GJELDENDE = 1
-                and FRA_DATO between :fra and :til
-                and AKTIVITET_TYPE_KODE = 'MOTE'
-                and HISTORISK_DATO is null
-                and LIVSLOPSTATUS_KODE not in (:avslutteteAktiviteter)
-                and not exists(select * from GJELDENDE_MOTE_SMS SMS where a.AKTIVITET_ID = SMS.AKTIVITET_ID)
-                """, params, MoteSmsDAO::mapMoteNotifikasjon);
-    }
-
-    @SneakyThrows
-    private static MoteNotifikasjon mapMoteNotifikasjon(ResultSet rs, int r) {
-        int id = rs.getInt("id");
-        int version = rs.getInt("aktivitet_version");
-        Person.AktorId aktorId = Person.aktorId(rs.getString("aktor_id"));
-        KanalDTO kanal = KanalDTO.valueOf(rs.getString("kanal"));
-        ZonedDateTime startTid = Database.hentZonedDateTime(rs, "startdato");
-        return new MoteNotifikasjon(id, version, aktorId, kanal, startTid);
     }
 
     void slettGjeldende(long aktivitetId) {

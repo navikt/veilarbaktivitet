@@ -7,7 +7,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
-record MoteNotifikasjon(long aktivitetId, long aktitetVersion, Person.AktorId aktorId, KanalDTO kanalDTO,
+public record MoteNotifikasjon(long aktivitetId, long aktitetVersion, Person.AktorId aktorId, KanalDTO kanalDTO,
                         ZonedDateTime startTid) {
     private static final String melding = "Vi minner om at du har et %s %s";
     private static final String EPOST_TITEL = "Påminnelse om møte";

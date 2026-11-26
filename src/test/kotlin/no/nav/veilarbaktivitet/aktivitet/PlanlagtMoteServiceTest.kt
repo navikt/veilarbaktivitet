@@ -15,8 +15,8 @@ import java.time.Instant
 import java.util.Date
 
 class PlanlagtMoteServiceTest {
-    private val dao = mock<AktivitetDAO>()
-    private val service = AktivitetService(dao, mock(), mock(), mock())
+    private val dao = mock<PlanlagteMoterDAO>()
+    private val service = AktivitetService(mock(), mock(), mock(), mock(), dao)
     private val aktorId = Person.aktorId("1234567890123")
     private val fraDato = Date.from(Instant.parse("2026-01-01T12:00:00Z"))
 

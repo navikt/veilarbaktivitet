@@ -5,6 +5,7 @@ import jakarta.annotation.PreDestroy
 import lombok.RequiredArgsConstructor
 import lombok.extern.slf4j.Slf4j
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock
+import no.nav.veilarbaktivitet.aktivitet.PlanlagteMoterDAO
 import no.nav.veilarbaktivitet.brukernotifikasjon.MinsideVarselService
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType
 import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.AktivitetVarsel
@@ -28,7 +29,8 @@ import java.util.function.Consumer
 open class MoteSMSService(
     private val moteSmsDAO: MoteSmsDAO,
     private val brukernotifikasjonService: MinsideVarselService,
-    private val batchTrackingDAO: BatchTrackingDAO
+    private val batchTrackingDAO: BatchTrackingDAO,
+    private val planlagteMoterDAO: PlanlagteMoterDAO,
 ) {
     private val scheduledExecutorService: ScheduledExecutorService = Executors.newScheduledThreadPool(1)
     private val log = LoggerFactory.getLogger(javaClass)
@@ -46,7 +48,7 @@ open class MoteSMSService(
     }
 
     open fun sendServicemeldinger(fra: Duration, til: Duration) {
-        moteSmsDAO.hentMoterUtenVarsel(fra, til, 5000)
+        planlagteMoterDAO.hentMoterUtenVarsel(fra, til, 5000)
             .forEach(Consumer { it: MoteNotifikasjon ->
                 if (brukernotifikasjonService.kanVarsles(it.aktorId)) {
                     val varsel = AktivitetVarsel(
