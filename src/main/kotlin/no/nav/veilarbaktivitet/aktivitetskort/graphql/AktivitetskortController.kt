@@ -9,8 +9,8 @@ import no.nav.veilarbaktivitet.aktivitet.AktivitetService
 import no.nav.veilarbaktivitet.aktivitet.Historikk
 import no.nav.veilarbaktivitet.aktivitet.HistorikkService
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
-import no.nav.veilarbaktivitet.aktivitet.domain.PlanlagtMote
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO
+import no.nav.veilarbaktivitet.aktivitet.dto.PlanlagtMoteDto
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper
 import no.nav.veilarbaktivitet.arena.ArenaService
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO
@@ -25,6 +25,7 @@ import org.springframework.graphql.data.method.annotation.SchemaMapping
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Controller
 import org.springframework.web.server.ResponseStatusException
+import java.time.ZoneOffset
 
 @Controller
 class AktivitetskortController(
@@ -99,13 +100,14 @@ class AktivitetskortController(
     }
 
     @QueryMapping
-    fun nestePlanlagteMote(@Argument fnr: String): PlanlagtMote? {
+    fun nestePlanlagteMote(@Argument fnr: String): PlanlagtMoteDto? {
         val eksternBrukerId = getContextUserIdent(fnr)
         authService.sjekkTilgangTilPerson(eksternBrukerId.otherFnr(), TilgangsType.LESE)
         val aktorId = aktorOppslagClient.hentAktorId(eksternBrukerId.otherFnr())
         return aktivitetService.hentNestePlanlagteMotePersonHarTilgangTil(
             Person.AktorId(aktorId.get()),
             { authService.harTilgangTilEnhet(it) })
+            .map { PlanlagtMoteDto(it.id.toString(), it.fraDato.toInstant().atZone(ZoneOffset.UTC)) }
             .orElse(null)
     }
 

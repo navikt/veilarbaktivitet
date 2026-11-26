@@ -1,6 +1,6 @@
 package no.nav.veilarbaktivitet.aktivitetskort.graphql
 
-import java.util.Date
+import no.nav.veilarbaktivitet.aktivitet.dto.PlanlagtMoteDto
 
 class GraphqlResult(
     val data: QueryAktivitetsPerioder?,
@@ -12,12 +12,7 @@ class QueryAktivitetsPerioder(
     val aktivitet: AktivitetQueryDto? = null,
     val eier: Eier? = null,
     val brukersNavn: BrukerNavn? = null,
-    val nestePlanlagteMote: PlanlagtMoteQueryDto? = null,
-)
-
-data class PlanlagtMoteQueryDto(
-    val id: String,
-    val fraDato: Date,
+    val nestePlanlagteMote: PlanlagtMoteDto? = null,
 )
 
 class Location(val line: String, val column: Int)

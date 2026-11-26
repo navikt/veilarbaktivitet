@@ -32,7 +32,7 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
 
     @Test
     fun `bruker og veileder kan hente neste planlagte mote med id og dato`() {
-        val fraDato = Date.from(Instant.now().plusSeconds(3600).truncatedTo(ChronoUnit.SECONDS))
+        val fraDato = Date.from(Instant.now().plusSeconds(3600).truncatedTo(ChronoUnit.MILLIS))
         val mote = aktivitetDAO.opprettNyAktivitet(
             AktivitetDataTestBuilder.nyMoteAktivitet().withAktorId(mockBruker.aktorId).withFraDato(fraDato)
         )
@@ -41,7 +41,7 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
             val result = aktivitetTestService.queryAktivitetskort(mockBruker, innlogget, planlagtMoteQuery)
             assertThat(result.errors).isNull()
             assertThat(result.data?.nestePlanlagteMote?.id).isEqualTo(mote.id.toString())
-            assertThat(result.data?.nestePlanlagteMote?.fraDato).isEqualTo(fraDato)
+            assertThat(result.data?.nestePlanlagteMote?.fraDato?.toInstant()).isEqualTo(fraDato.toInstant())
         }
     }
 
