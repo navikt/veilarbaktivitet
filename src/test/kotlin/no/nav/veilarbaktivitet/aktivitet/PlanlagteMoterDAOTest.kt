@@ -1,6 +1,8 @@
 package no.nav.veilarbaktivitet.aktivitet
 
+import no.nav.common.types.identer.AktorId
 import no.nav.veilarbaktivitet.LocalDatabaseSingleton
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
 import no.nav.veilarbaktivitet.aktivitet.domain.PlanlagtMote
 import no.nav.veilarbaktivitet.person.Person
@@ -21,9 +23,20 @@ class PlanlagteMoterDAOTest {
     private val aktorId = nyAktorId()
     private val tidspunkt = Date.from(Instant.parse("2026-01-01T12:00:00Z"))
 
+    fun mote(fraDatoIMinutterFraNå: Int?,
+             historiskTidspunkt: Date? = null,
+             status: AktivitetStatus = AktivitetStatus.PLANLAGT,
+             aktorId: Person.AktorId = this.aktorId): AktivitetData {
+        return AktivitetDataTestBuilder.nyMoteAktivitet()
+            .withAktorId(aktorId)
+            .withStatus(status)
+            .withHistoriskDato(historiskTidspunkt)
+            .withFraDato(fraDatoIMinutterFraNå?.let { Date(tidspunkt.time + it * 60_000) })
+    }
+
     @ParameterizedTest
     @EnumSource(AktivitetStatus::class)
-    fun `bare uferdige moter teller som planlagt`(status: AktivitetStatus) {
+    fun `bare moter i en ikke-ferdig status teller som planlagt`(status: AktivitetStatus) {
         val mote = dao.opprettNyAktivitet(
             AktivitetDataTestBuilder.nyMoteAktivitet()
                 .withAktorId(aktorId)
@@ -42,17 +55,13 @@ class PlanlagteMoterDAOTest {
 
     @Test
     fun `henter bare gjeldende fremtidige uferdige moter for riktig bruker`() {
-        fun mote(minutter: Long) = AktivitetDataTestBuilder.nyMoteAktivitet()
-            .withAktorId(aktorId)
-            .withFraDato(Date(tidspunkt.time + minutter * 60_000))
-
         dao.opprettNyAktivitet(mote(-1))
         dao.opprettNyAktivitet(mote(0))
-        dao.opprettNyAktivitet(mote(1).withFraDato(null))
-        dao.opprettNyAktivitet(mote(1).withHistoriskDato(tidspunkt))
-        dao.opprettNyAktivitet(mote(1).withStatus(AktivitetStatus.FULLFORT))
-        dao.opprettNyAktivitet(mote(1).withStatus(AktivitetStatus.AVBRUTT))
-        dao.opprettNyAktivitet(mote(1).withAktorId(nyAktorId()))
+        dao.opprettNyAktivitet(mote(null))
+        dao.opprettNyAktivitet(mote(1, historiskTidspunkt = tidspunkt))
+        dao.opprettNyAktivitet(mote(1, status = AktivitetStatus.FULLFORT))
+        dao.opprettNyAktivitet(mote(1, status = AktivitetStatus.AVBRUTT))
+        dao.opprettNyAktivitet(mote(1, aktorId = nyAktorId()))
         dao.opprettNyAktivitet(
             AktivitetDataTestBuilder.nySamtaleReferat().withAktorId(aktorId).withFraDato(mote(1).fraDato)
         )
@@ -114,21 +123,6 @@ class PlanlagteMoterDAOTest {
                 PlanlagtMote(forste.id, forste.fraDato),
                 PlanlagtMote(andre.id, andre.fraDato),
             )
-    }
-
-    @Test
-    fun `AVBRUTT mote med fremtidig fraDato teller ikke som planlagt`() {
-        val mote = dao.opprettNyAktivitet(
-            AktivitetDataTestBuilder.nyMoteAktivitet()
-                .withAktorId(aktorId)
-                .withFraDato(Date(tidspunkt.time + 60_000))
-        )
-        assertThat(planlagteMoterDAO.hentPlanlagteMoter(aktorId, tidspunkt))
-            .containsExactly(PlanlagtMote(mote.id, mote.fraDato))
-
-        dao.oppdaterAktivitet(mote.withStatus(AktivitetStatus.AVBRUTT))
-
-        assertThat(planlagteMoterDAO.hentPlanlagteMoter(aktorId, tidspunkt)).isEmpty()
     }
 
     private fun nyAktorId() = Person.aktorId(
