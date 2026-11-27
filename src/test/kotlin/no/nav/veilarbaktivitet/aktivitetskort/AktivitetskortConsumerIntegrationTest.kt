@@ -342,7 +342,8 @@ class AktivitetskortConsumerIntegrationTest(
         )
         val aktivitetFoer = hentAktivitet(serie.funksjonellId)
         assertThat(aktivitetFoer.oppfolgingsperiodeId).isNotNull()
-        assertThat(aktivitetFoer.isHistorisk).isFalse()
+        assertThat(aktivitetFoer.isHistorisk)
+            .withFailMessage("Aktiviteti gammel periode skal være historisk").isTrue()
         assertThat(aktivitetFoer.eksternAktivitet.detaljer).isNotEmpty
         val aktivitetFoerOpprettetSomHistorisk = jdbcTemplate.queryForObject(
             """
@@ -354,7 +355,7 @@ class AktivitetskortConsumerIntegrationTest(
                 """.trimIndent(), Boolean::class.javaPrimitiveType!!, aktivitetFoer.id.toLong()
         )
         assertThat(aktivitetFoerOpprettetSomHistorisk).isTrue()
-        tiltakMigreringCronService!!.settTiltakOpprettetSomHistoriskTilHistorisk()
+        tiltakMigreringCronService.settTiltakOpprettetSomHistoriskTilHistorisk()
         val aktivitetEtter = hentAktivitet(serie.funksjonellId)
         assertThat(aktivitetEtter.isHistorisk).isTrue()
         assertThat(aktivitetEtter.eksternAktivitet.detaljer).isNotEmpty
