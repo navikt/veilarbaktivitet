@@ -27,7 +27,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -46,7 +45,7 @@ public class AktivitetService {
     private final OversiktenService oversiktenService;
     private final PlanlagteMoterDAO planlagteMoterDAO;
 
-    public Optional<PlanlagtMote> hentNestePlanlagteMotePersonHarTilgangTil(
+    public List<PlanlagtMote> hentPlanlagteMoterPersonHarTilgangTil(
             Person.AktorId aktorId, Predicate<EnhetId> harTilgangTilEnhet) {
         // Cache oppslag på enheter hvis det skulle være flere forskjellige, mulig det finnes cache in AuthService via poao-tilgang bibloteket
         Map<EnhetId, Boolean> enheterMedTilgang = new HashMap<>();
@@ -55,7 +54,7 @@ public class AktivitetService {
                     var enhet = mote.getKontorsperreEnhetId();
                     return enhet == null || enheterMedTilgang.computeIfAbsent(enhet, harTilgangTilEnhet::test);
                 })
-                .findFirst();
+                .toList();
     }
 
     public List<AktivitetData> hentAktiviteterForAktorId(Person.AktorId aktorId) {

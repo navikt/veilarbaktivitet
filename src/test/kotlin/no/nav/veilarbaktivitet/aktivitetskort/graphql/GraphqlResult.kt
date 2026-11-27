@@ -12,7 +12,7 @@ class QueryAktivitetsPerioder(
     val aktivitet: AktivitetQueryDto? = null,
     val eier: Eier? = null,
     val brukersNavn: BrukerNavn? = null,
-    val nestePlanlagteMote: PlanlagtMoteDto? = null,
+    val planlagteMoter: List<PlanlagtMoteDto>? = null,
 )
 
 class Location(val line: String, val column: Int)

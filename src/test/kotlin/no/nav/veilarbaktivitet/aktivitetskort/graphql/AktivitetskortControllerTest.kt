@@ -24,9 +24,9 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
     private val mockBruker by lazy { navMockService.createBruker() }
     private val mockVeileder: MockVeileder by lazy { navMockService.createVeileder(mockBruker) }
 
-    private val planlagtMoteQuery = """
+    private val planlagteMoterQuery = """
         query(${'$'}fnr: String!) {
-            nestePlanlagteMote(fnr: ${'$'}fnr) { id, fraDato }
+            planlagteMoter(fnr: ${'$'}fnr) { id, fraDato }
         }
     """.trimIndent().replace("\n", "")
 
@@ -38,18 +38,18 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
         )
 
         listOf(mockBruker, mockVeileder).forEach { innlogget ->
-            val result = aktivitetTestService.queryAktivitetskort(mockBruker, innlogget, planlagtMoteQuery)
+            val result = aktivitetTestService.queryAktivitetskort(mockBruker, innlogget, planlagteMoterQuery)
             assertThat(result.errors).isNull()
-            assertThat(result.data?.nestePlanlagteMote?.id).isEqualTo(mote.id.toString())
-            assertThat(result.data?.nestePlanlagteMote?.fraDato?.toInstant()).isEqualTo(fraDato.toInstant())
+            assertThat(result.data?.planlagteMoter?.firstOrNull()?.id).isEqualTo(mote.id.toString())
+            assertThat(result.data?.planlagteMoter?.firstOrNull()?.fraDato?.toInstant()).isEqualTo(fraDato.toInstant())
         }
     }
 
     @Test
-    fun `returnerer null nar bruker ikke har planlagte moter`() {
-        val result = aktivitetTestService.queryAktivitetskort(mockBruker, mockBruker, planlagtMoteQuery)
+    fun `returnerer tom liste nar bruker ikke har planlagte moter`() {
+        val result = aktivitetTestService.queryAktivitetskort(mockBruker, mockBruker, planlagteMoterQuery)
         assertThat(result.errors).isNull()
-        assertThat(result.data?.nestePlanlagteMote).isNull()
+        assertThat(result.data?.planlagteMoter).isEmpty()
     }
 
     @Test
@@ -61,18 +61,20 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
                 .withStatus(AktivitetStatus.AVBRUTT)
         )
 
-        val result = aktivitetTestService.queryAktivitetskort(mockBruker, mockBruker, planlagtMoteQuery)
+        val result = aktivitetTestService.queryAktivitetskort(mockBruker, mockBruker, planlagteMoterQuery)
 
         assertThat(result.errors).isNull()
         assertThat(result.data).isNotNull()
-        assertThat(result.data?.nestePlanlagteMote).isNull()
+        assertThat(result.data?.planlagteMoter).isEmpty()
     }
 
     @Test
-    fun `veileder uten persontilgang kan ikke hente neste planlagte mote`() {
+    fun `veileder uten persontilgang kan ikke hente planlagte moter`() {
         val annenBruker = navMockService.createHappyBruker()
-        val result = aktivitetTestService.queryAktivitetskort(annenBruker, mockVeileder, planlagtMoteQuery)
-        assertThat(result.data?.nestePlanlagteMote).isNull()
+
+        val result = aktivitetTestService.queryAktivitetskort(annenBruker, mockVeileder, planlagteMoterQuery)
+
+        assertThat(result.data?.planlagteMoter).isNull()
         assertThat(result.errors!!.first().message).isEqualTo("Ikke tilgang")
     }
 
@@ -90,13 +92,13 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
                 .withFraDato(Date.from(Instant.now().plusSeconds(1800)))
         )
 
-        val result = aktivitetTestService.queryAktivitetskort(annenBruker, mockBruker, planlagtMoteQuery)
+        val result = aktivitetTestService.queryAktivitetskort(annenBruker, mockBruker, planlagteMoterQuery)
         assertThat(result.errors).isNull()
-        assertThat(result.data?.nestePlanlagteMote?.id).isEqualTo(egetMote.id.toString())
+        assertThat(result.data?.planlagteMoter?.firstOrNull()?.id).isEqualTo(egetMote.id.toString())
     }
 
     @Test
-    fun `kontorsperrede moter skjules og neste synlige mote returneres`() {
+    fun `kontorsperrede moter skjules og synliger mote returneres`() {
         val kvpBruker = navMockService.createBruker(
             BrukerOptions.happyBruker().toBuilder().erUnderKvp(true).build()
         )
@@ -109,21 +111,21 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
             AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE)
                 .toBuilder().fraDato(fraDato).tilDato(Date(fraDato.time + 60_000)).build(),
         )
-        val utenSynligeMoter = aktivitetTestService.queryAktivitetskort(kvpBruker, veileder, planlagtMoteQuery)
+        val utenSynligeMoter = aktivitetTestService.queryAktivitetskort(kvpBruker, veileder, planlagteMoterQuery)
         assertThat(utenSynligeMoter.errors).isNull()
-        assertThat(utenSynligeMoter.data?.nestePlanlagteMote).isNull()
+        assertThat(utenSynligeMoter.data?.planlagteMoter).isEmpty()
 
         val synlig = aktivitetDAO.opprettNyAktivitet(
             AktivitetDataTestBuilder.nyMoteAktivitet()
                 .withAktorId(kvpBruker.aktorId).withFraDato(Date(fraDato.time + 120_000))
         )
-        val result = aktivitetTestService.queryAktivitetskort(kvpBruker, veileder, planlagtMoteQuery)
+        val result = aktivitetTestService.queryAktivitetskort(kvpBruker, veileder, planlagteMoterQuery)
         assertThat(result.errors).isNull()
-        assertThat(result.data?.nestePlanlagteMote?.id).isEqualTo(synlig.id.toString())
+        assertThat(result.data?.planlagteMoter?.firstOrNull()?.id).isEqualTo(synlig.id.toString())
 
-        val egetResultat = aktivitetTestService.queryAktivitetskort(kvpBruker, kvpBruker, planlagtMoteQuery)
+        val egetResultat = aktivitetTestService.queryAktivitetskort(kvpBruker, kvpBruker, planlagteMoterQuery)
         assertThat(egetResultat.errors).isNull()
-        assertThat(egetResultat.data?.nestePlanlagteMote?.id).isEqualTo(skjult.id)
+        assertThat(egetResultat.data?.planlagteMoter?.firstOrNull()?.id).isEqualTo(skjult.id)
     }
 
     @Test

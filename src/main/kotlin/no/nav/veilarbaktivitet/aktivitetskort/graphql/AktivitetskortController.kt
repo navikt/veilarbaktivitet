@@ -100,15 +100,14 @@ class AktivitetskortController(
     }
 
     @QueryMapping
-    fun nestePlanlagteMote(@Argument fnr: String): PlanlagtMoteDto? {
+    fun planlagteMoter(@Argument fnr: String): List<PlanlagtMoteDto> {
         val eksternBrukerId = getContextUserIdent(fnr)
         authService.sjekkTilgangTilPerson(eksternBrukerId.otherFnr(), TilgangsType.LESE)
         val aktorId = aktorOppslagClient.hentAktorId(eksternBrukerId.otherFnr())
-        return aktivitetService.hentNestePlanlagteMotePersonHarTilgangTil(
+        return aktivitetService.hentPlanlagteMoterPersonHarTilgangTil(
             Person.AktorId(aktorId.get()),
             { authService.harTilgangTilEnhet(it) })
             .map { PlanlagtMoteDto(it.id.toString(), it.fraDato.toInstant().atZone(ZoneOffset.UTC)) }
-            .orElse(null)
     }
 
     @QueryMapping

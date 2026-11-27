@@ -25,7 +25,7 @@ class PlanlagtMoteServiceTest {
         val mote = PlanlagtMote(1L, fraDato)
         whenever(dao.hentPlanlagteMoter(eq(aktorId), any())).thenReturn(listOf(mote))
 
-        val resultat = service.hentNestePlanlagteMotePersonHarTilgangTil(aktorId) {
+        val resultat = service.hentPlanlagteMoterPersonHarTilgangTil(aktorId) {
             error("Skal ikke sjekke enhetstilgang for et mote uten kontorsperre")
         }
 
@@ -44,7 +44,7 @@ class PlanlagtMoteServiceTest {
             .thenReturn(listOf(skjult, ogsaSkjult, synlig, senere))
         val sjekkedeEnheter = mutableListOf<EnhetId>()
 
-        val resultat = service.hentNestePlanlagteMotePersonHarTilgangTil(aktorId) {
+        val resultat = service.hentPlanlagteMoterPersonHarTilgangTil(aktorId) {
             sjekkedeEnheter.add(it)
             it == medTilgang
         }
@@ -60,7 +60,7 @@ class PlanlagtMoteServiceTest {
         val mote = PlanlagtMote(1L, fraDato, EnhetId.of("1234"))
         whenever(dao.hentPlanlagteMoter(eq(aktorId), any())).thenReturn(listOf(mote))
 
-        val resultat = service.hentNestePlanlagteMotePersonHarTilgangTil(aktorId) { false }
+        val resultat = service.hentPlanlagteMoterPersonHarTilgangTil(aktorId) { false }
 
         assertThat(resultat).isEmpty()
     }
@@ -69,7 +69,7 @@ class PlanlagtMoteServiceTest {
     fun `returnerer tomt nar bruker ikke har planlagte moter`() {
         whenever(dao.hentPlanlagteMoter(eq(aktorId), any())).thenReturn(emptyList())
 
-        val resultat = service.hentNestePlanlagteMotePersonHarTilgangTil(aktorId) {
+        val resultat = service.hentPlanlagteMoterPersonHarTilgangTil(aktorId) {
             error("Skal ikke sjekke enhetstilgang nar det ikke finnes moter")
         }
 
