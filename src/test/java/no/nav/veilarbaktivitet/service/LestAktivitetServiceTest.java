@@ -5,6 +5,7 @@ import lombok.val;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
 import no.nav.veilarbaktivitet.aktivitet.MetricService;
+import no.nav.veilarbaktivitet.aktivitet.PlanlagteMoterDAO;
 import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.*;
 import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.spesialEndringer.EtikettEndring;
@@ -57,6 +58,9 @@ class LestAktivitetServiceTest {
     private AktivitetDAO aktivitetDAO;
 
     @Mock
+    private PlanlagteMoterDAO planlagteMoterDAO;
+
+    @Mock
     private MetricService metricService;
 
     @Mock
@@ -75,7 +79,7 @@ class LestAktivitetServiceTest {
 
     @BeforeEach
     public void setup() {
-        aktivitetService = new AktivitetService(aktivitetDAO, avtaltMedNavService, metricService, oversiktenService);
+        aktivitetService = new AktivitetService(aktivitetDAO, avtaltMedNavService, metricService, oversiktenService, planlagteMoterDAO);
     }
 
     @Test

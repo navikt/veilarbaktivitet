@@ -10,10 +10,12 @@ import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder
 import no.nav.veilarbaktivitet.oppfolging.periode.SisteOppfolgingsperiodeV1
 import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder
+import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder
 import no.nav.veilarbaktivitet.util.DateUtils
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.Test
+import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.*
 
@@ -21,6 +23,110 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
 
     private val mockBruker by lazy { navMockService.createBruker() }
     private val mockVeileder: MockVeileder by lazy { navMockService.createVeileder(mockBruker) }
+
+    private val planlagteMoterQuery = """
+        query(${'$'}fnr: String!) {
+            planlagteMoter(fnr: ${'$'}fnr) { id, fraDato }
+        }
+    """.trimIndent().replace("\n", "")
+
+    @Test
+    fun `bruker og veileder kan hente neste planlagte mote med id og dato`() {
+        val fraDato = Date.from(Instant.now().plusSeconds(3600).truncatedTo(ChronoUnit.MILLIS))
+        val mote = aktivitetDAO.opprettNyAktivitet(
+            AktivitetDataTestBuilder.nyMoteAktivitet().withAktorId(mockBruker.aktorId).withFraDato(fraDato)
+        )
+
+        listOf(mockBruker, mockVeileder).forEach { innlogget ->
+            val result = aktivitetTestService.queryAktivitetskort(mockBruker, innlogget, planlagteMoterQuery)
+            assertThat(result.errors).isNull()
+            assertThat(result.data?.planlagteMoter?.firstOrNull()?.id).isEqualTo(mote.id.toString())
+            assertThat(result.data?.planlagteMoter?.firstOrNull()?.fraDato?.toInstant()).isEqualTo(fraDato.toInstant())
+        }
+    }
+
+    @Test
+    fun `returnerer tom liste nar bruker ikke har planlagte moter`() {
+        val result = aktivitetTestService.queryAktivitetskort(mockBruker, mockBruker, planlagteMoterQuery)
+        assertThat(result.errors).isNull()
+        assertThat(result.data?.planlagteMoter).isEmpty()
+    }
+
+    @Test
+    fun `AVBRUTT mote med fremtidig fraDato returneres ikke som planlagt`() {
+        aktivitetDAO.opprettNyAktivitet(
+            AktivitetDataTestBuilder.nyMoteAktivitet()
+                .withAktorId(mockBruker.aktorId)
+                .withFraDato(Date.from(Instant.now().plusSeconds(3600)))
+                .withStatus(AktivitetStatus.AVBRUTT)
+        )
+
+        val result = aktivitetTestService.queryAktivitetskort(mockBruker, mockBruker, planlagteMoterQuery)
+
+        assertThat(result.errors).isNull()
+        assertThat(result.data).isNotNull()
+        assertThat(result.data?.planlagteMoter).isEmpty()
+    }
+
+    @Test
+    fun `veileder uten persontilgang kan ikke hente planlagte moter`() {
+        val annenBruker = navMockService.createHappyBruker()
+
+        val result = aktivitetTestService.queryAktivitetskort(annenBruker, mockVeileder, planlagteMoterQuery)
+
+        assertThat(result.data?.planlagteMoter).isNull()
+        assertThat(result.errors!!.first().message).isEqualTo("Ikke tilgang")
+    }
+
+    @Test
+    fun `ekstern bruker henter egne moter selv om et annet fnr sendes inn`() {
+        val annenBruker = navMockService.createHappyBruker()
+        val egetMote = aktivitetDAO.opprettNyAktivitet(
+            AktivitetDataTestBuilder.nyMoteAktivitet()
+                .withAktorId(mockBruker.aktorId)
+                .withFraDato(Date.from(Instant.now().plusSeconds(3600)))
+        )
+        aktivitetDAO.opprettNyAktivitet(
+            AktivitetDataTestBuilder.nyMoteAktivitet()
+                .withAktorId(annenBruker.aktorId)
+                .withFraDato(Date.from(Instant.now().plusSeconds(1800)))
+        )
+
+        val result = aktivitetTestService.queryAktivitetskort(annenBruker, mockBruker, planlagteMoterQuery)
+        assertThat(result.errors).isNull()
+        assertThat(result.data?.planlagteMoter?.firstOrNull()?.id).isEqualTo(egetMote.id.toString())
+    }
+
+    @Test
+    fun `kontorsperrede moter skjules og synliger mote returneres`() {
+        val kvpBruker = navMockService.createBruker(
+            BrukerOptions.happyBruker().toBuilder().erUnderKvp(true).build()
+        )
+        val veileder = navMockService.createVeilederMedNasjonalTilgang()
+        val veilederMedKontortilgang = navMockService.createVeileder(kvpBruker)
+        val fraDato = Date.from(Instant.now().plusSeconds(3600))
+        val skjult = aktivitetTestService.opprettAktivitetViaHttp(
+            kvpBruker,
+            veilederMedKontortilgang,
+            AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE)
+                .toBuilder().fraDato(fraDato).tilDato(Date(fraDato.time + 60_000)).build(),
+        )
+        val utenSynligeMoter = aktivitetTestService.queryAktivitetskort(kvpBruker, veileder, planlagteMoterQuery)
+        assertThat(utenSynligeMoter.errors).isNull()
+        assertThat(utenSynligeMoter.data?.planlagteMoter).isEmpty()
+
+        val synlig = aktivitetDAO.opprettNyAktivitet(
+            AktivitetDataTestBuilder.nyMoteAktivitet()
+                .withAktorId(kvpBruker.aktorId).withFraDato(Date(fraDato.time + 120_000))
+        )
+        val result = aktivitetTestService.queryAktivitetskort(kvpBruker, veileder, planlagteMoterQuery)
+        assertThat(result.errors).isNull()
+        assertThat(result.data?.planlagteMoter?.firstOrNull()?.id).isEqualTo(synlig.id.toString())
+
+        val egetResultat = aktivitetTestService.queryAktivitetskort(kvpBruker, kvpBruker, planlagteMoterQuery)
+        assertThat(egetResultat.errors).isNull()
+        assertThat(egetResultat.data?.planlagteMoter?.firstOrNull()?.id).isEqualTo(skjult.id)
+    }
 
     @Test
     fun `skal gruppere pa oppfolgingsperiode (bruker)`() {

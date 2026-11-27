@@ -10,8 +10,8 @@ import no.nav.veilarbaktivitet.aktivitet.Historikk
 import no.nav.veilarbaktivitet.aktivitet.HistorikkService
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO
+import no.nav.veilarbaktivitet.aktivitet.dto.PlanlagtMoteDto
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper
-import no.nav.veilarbaktivitet.aktivitetskort.MigreringService
 import no.nav.veilarbaktivitet.arena.ArenaService
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO
 import no.nav.veilarbaktivitet.config.ownerProviders.AktivitetOwnerProvider
@@ -25,11 +25,11 @@ import org.springframework.graphql.data.method.annotation.SchemaMapping
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Controller
 import org.springframework.web.server.ResponseStatusException
+import java.time.ZoneOffset
 
 @Controller
 class AktivitetskortController(
     val appService: AktivitetAppService,
-    val migreringService: MigreringService,
     val historikkService: HistorikkService,
     val ownerProvider: AktivitetOwnerProvider,
     val aktivitetService: AktivitetService,
@@ -100,6 +100,17 @@ class AktivitetskortController(
     }
 
     @QueryMapping
+    fun planlagteMoter(@Argument fnr: String): List<PlanlagtMoteDto> {
+        val eksternBrukerId = getContextUserIdent(fnr)
+        authService.sjekkTilgangTilPerson(eksternBrukerId.otherFnr(), TilgangsType.LESE)
+        val aktorId = aktorOppslagClient.hentAktorId(eksternBrukerId.otherFnr())
+        return aktivitetService.hentPlanlagteMoterPersonHarTilgangTil(
+            Person.AktorId(aktorId.get()),
+            { authService.harTilgangTilEnhet(it) })
+            .map { PlanlagtMoteDto(it.id.toString(), it.fraDato.toInstant().atZone(ZoneOffset.UTC)) }
+    }
+
+    @QueryMapping
     fun tiltaksaktiviteter(@Argument fnr: String): List<ArenaAktivitetDTO> {
         val adminIdent = authService.getInnloggetVeilederIdent()
         if (!godkjenteAdminIndenter.contains(adminIdent.get())) {
@@ -132,16 +143,16 @@ class AktivitetskortController(
     private fun filtrerKontorsperret(aktiviteter: List<AktivitetData>): List<AktivitetData> {
         // Ikke spør om kontortilgang på nytt for hver aktivitet
         val enheterMedTilgang = mutableMapOf<EnhetId, Boolean>()
-        return aktiviteter.filter { aktivitet ->
-            val enhetId = aktivitet.kontorsperreEnhetId?.let(EnhetId::of)
-            when {
-                enhetId == null -> true
-                enheterMedTilgang[enhetId] == true -> true
-                else -> {
-                    authService.harTilgangTilEnhet(enhetId)
-                        .also { enheterMedTilgang[enhetId] = it }
-                }
-            }
+        return aktiviteter.filter { harTilgangTilAktivitet(it, enheterMedTilgang) }
+    }
+
+    private fun harTilgangTilAktivitet(
+        aktivitet: AktivitetData,
+        enheterMedTilgang: MutableMap<EnhetId, Boolean>,
+    ): Boolean {
+        val enhetId = aktivitet.kontorsperreEnhetId?.let(EnhetId::of) ?: return true
+        return enheterMedTilgang.getOrPut(enhetId) {
+            authService.harTilgangTilEnhet(enhetId)
         }
     }
 

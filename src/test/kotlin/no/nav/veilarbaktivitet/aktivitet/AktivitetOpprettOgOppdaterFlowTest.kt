@@ -47,6 +47,7 @@ import java.util.*
 class AktivitetOpprettOgOppdaterFlowTest {
 
     @Mock lateinit var aktivitetDAO: AktivitetDAO
+    @Mock lateinit var planlagteMoterDAO: PlanlagteMoterDAO
     @Mock lateinit var avtaltMedNavService: AvtaltMedNavService
     @Mock lateinit var metricService: MetricService
     @Mock lateinit var sistePeriodeService: SistePeriodeService
@@ -74,7 +75,7 @@ class AktivitetOpprettOgOppdaterFlowTest {
 
     @BeforeEach
     fun setup() {
-        aktivitetService = AktivitetService(aktivitetDAO, avtaltMedNavService, metricService, oversiktenService)
+        aktivitetService = AktivitetService(aktivitetDAO, avtaltMedNavService, metricService, oversiktenService, planlagteMoterDAO)
         appService = AktivitetAppService(authService, aktivitetService, metricService, personService, bigQueryClient, oversiktenService)
         mapperService = AktivitetDataMapperService(authService, aktorOppslagClient, userInContext, kvpService, oppfolgingsperiodeService)
         controller = AktivitetsplanController(authService, appService, mapperService, userInContext, kvpService)

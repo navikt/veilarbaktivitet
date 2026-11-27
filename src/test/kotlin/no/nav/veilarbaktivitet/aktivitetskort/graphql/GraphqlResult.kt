@@ -1,5 +1,7 @@
 package no.nav.veilarbaktivitet.aktivitetskort.graphql
 
+import no.nav.veilarbaktivitet.aktivitet.dto.PlanlagtMoteDto
+
 class GraphqlResult(
     val data: QueryAktivitetsPerioder?,
     val errors: List<Error>? = null
@@ -10,6 +12,7 @@ class QueryAktivitetsPerioder(
     val aktivitet: AktivitetQueryDto? = null,
     val eier: Eier? = null,
     val brukersNavn: BrukerNavn? = null,
+    val planlagteMoter: List<PlanlagtMoteDto>? = null,
 )
 
 class Location(val line: String, val column: Int)
