@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.kvp
 
+import no.nav.common.json.JsonUtils
 import no.nav.veilarbaktivitet.SpringBootTestBase
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO
@@ -13,14 +14,19 @@ import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder
 import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder
+import no.nav.veilarbaktivitet.util.KafkaTestService.DEFAULT_WAIT_TIMEOUT_DURATION
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.kafka.core.KafkaTemplate
+import org.springframework.kafka.test.utils.KafkaTestUtils
+import java.time.Duration
+import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
+import java.time.temporal.ChronoUnit
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -34,6 +40,9 @@ class KvpPerioderKafkaConsumerTest : SpringBootTestBase() {
 
     @Value("\${topic.inn.kvpPerioder}")
     private lateinit var kvpPerioderTopic: String
+
+    @Value("\${topic.ut.siste-aktivitet-hendelse}")
+    private lateinit var sisteAktivitetHendelseTopic: String
 
     @BeforeEach
     fun before() {
@@ -106,6 +115,52 @@ class KvpPerioderKafkaConsumerTest : SpringBootTestBase() {
 
         val oppdatertAktivitet = aktivitetTestService.hentAktivitet(mockBrukerMedKvp, opprettetAktivitet.id)
         assertThat(oppdatertAktivitet.status).isEqualTo(AktivitetStatus.PLANLAGT)
+    }
+
+    @Test
+    fun `avsluttet KVP skal fjerne alle kontorsperrede møter fra siste-aktivitet topic med en melding`() {
+        val sisteAktivitetConsumer = kafkaTestService.createStringStringConsumer(sisteAktivitetHendelseTopic)
+        sisteAktivitetConsumer.use { consumer ->
+            val møtetidspunkt = ZonedDateTime.now().plusDays(3).truncatedTo(ChronoUnit.SECONDS)
+            val møterMedMeldinger = listOf(møtetidspunkt, møtetidspunkt.minusDays(1)).map { tidspunkt ->
+                val møte = aktivitetTestService.opprettAktivitetViaHttp(
+                    mockBrukerMedKvp,
+                    mockVeileder,
+                    AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE)
+                        .setFraDato(Date.from(tidspunkt.toInstant()))
+                        .setTilDato(Date.from(tidspunkt.plusHours(1).toInstant()))
+                )
+                val meldingEtterOpprettelse = KafkaTestUtils.getSingleRecord(consumer, sisteAktivitetHendelseTopic, DEFAULT_WAIT_TIMEOUT_DURATION)
+                møte to meldingEtterOpprettelse
+            }
+
+            publiserKvpPerioderHendelse(kvpAvsluttetJson(ZonedDateTime.now().plusMinutes(1)))
+
+            møterMedMeldinger.forEach { (møte, meldingEtterOpprettelse) ->
+                assertAktivitetHarForventetKontorsperreEnhet(møte.id.toLong(), kvpEnhetId)
+                assertThat(meldingEtterOpprettelse.key()).isEqualTo(mockBrukerMedKvp.aktorId.get())
+                assertNestePlanlagteMøte(meldingEtterOpprettelse.value(), møte.id.toLong(), møte.fraDato.toInstant())
+                assertThat(aktivitetTestService.hentAktivitet(mockBrukerMedKvp, mockVeileder, møte.id).status)
+                    .isEqualTo(AktivitetStatus.AVBRUTT)
+            }
+            val meldingEtterKvpAvsluttet = KafkaTestUtils.getSingleRecord(
+                consumer, sisteAktivitetHendelseTopic, DEFAULT_WAIT_TIMEOUT_DURATION
+            )
+            assertThat(meldingEtterKvpAvsluttet.key()).isEqualTo(mockBrukerMedKvp.aktorId.get())
+            assertThat(meldingEtterKvpAvsluttet.offset()).isGreaterThan(møterMedMeldinger.last().second.offset())
+            assertThat(meldingEtterKvpAvsluttet.value()).isNull()
+
+            val ekstraMeldinger = KafkaTestUtils.getRecords(consumer, Duration.ofSeconds(1))
+                .records(sisteAktivitetHendelseTopic)
+                .filter { it.key() == mockBrukerMedKvp.aktorId.get() }
+            assertThat(ekstraMeldinger).isEmpty()
+        }
+    }
+
+    private fun assertNestePlanlagteMøte(json: String, forventetId: Long, forventetTidspunkt: Instant) {
+        val nestePlanlagteMote = JsonUtils.getMapper().readTree(json).get("nestePlanlagteMote")
+        assertThat(nestePlanlagteMote.get("id").asLong()).isEqualTo(forventetId)
+        assertThat(Instant.ofEpochSecond(nestePlanlagteMote.get("tidspunkt").asLong())).isEqualTo(forventetTidspunkt)
     }
 
     private fun kvpStartetJson(startetDato: ZonedDateTime): String {

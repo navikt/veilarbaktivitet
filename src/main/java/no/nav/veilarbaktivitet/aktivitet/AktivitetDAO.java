@@ -9,6 +9,8 @@ import no.nav.common.json.JsonUtils;
 import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.aktivitet.feil.AktivitetVersjonOutOfOrderException;
 import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvUtdatertVersjonException;
+import no.nav.veilarbaktivitet.oversikten.AktivitetsplanMote;
+import no.nav.veilarbaktivitet.oversikten.MoteEllerSamtalereferatType;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.stilling_fra_nav.CvKanDelesData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.KontaktpersonData;
@@ -653,6 +655,26 @@ public class AktivitetDAO {
                 "SELECT roller, navn FROM MOTEDELTAKER WHERE aktivitet_id = :aktivitet_id AND aktivitet_versjon = :versjon",
                 params,
                 motedeltakerRowMapper
+        );
+    }
+
+    public List<AktivitetsplanMote> hentAlleMoterForPerson(Person.AktorId aktorId) {
+        return namedParameterJdbcTemplate.query(
+                """
+                        SELECT A.aktivitet_id, A.fra_dato, A.aktivitet_type_kode
+                        FROM AKTIVITET A
+                        WHERE A.aktor_id = :aktorId 
+                          AND A.aktivitet_type_kode IN ('MOTE', 'SAMTALEREFERAT') 
+                          AND A.gjeldende = 1
+                          AND A.historisk_dato IS NULL
+                          AND A.livslopstatus_kode NOT IN ('AVBRUTT')
+                        """,
+                new MapSqlParameterSource().addValue("aktorId", aktorId.get()),
+                (rs, rowNum) -> new AktivitetsplanMote(
+                        rs.getLong("aktivitet_id"),
+                        rs.getTimestamp("fra_dato").toInstant(),
+                        MoteEllerSamtalereferatType.valueOf(rs.getString("aktivitet_type_kode"))
+                )
         );
     }
 

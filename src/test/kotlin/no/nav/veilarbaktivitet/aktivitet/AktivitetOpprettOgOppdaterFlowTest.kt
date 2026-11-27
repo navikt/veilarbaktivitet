@@ -13,25 +13,29 @@ import no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavService
 import no.nav.veilarbaktivitet.eventsLogger.BigQueryClient
 import no.nav.veilarbaktivitet.kvp.KvpService
 import no.nav.veilarbaktivitet.mock.TestData
+import no.nav.veilarbaktivitet.mock.TestData.KJENT_AKTOR_ID
 import no.nav.veilarbaktivitet.oppfolging.periode.Oppfolgingsperiode
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeService
 import no.nav.veilarbaktivitet.oppfolging.periode.SistePeriodeService
 import no.nav.veilarbaktivitet.oversikten.OversiktenService
 import no.nav.veilarbaktivitet.person.Innsender
+import no.nav.veilarbaktivitet.person.Person
 import no.nav.veilarbaktivitet.person.PersonService
 import no.nav.veilarbaktivitet.person.UserInContext
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.EnumSource
 import org.mockito.ArgumentCaptor
 import org.mockito.Mock
 import org.mockito.Mockito.*
 import org.mockito.junit.jupiter.MockitoExtension
+import org.mockito.kotlin.argumentCaptor
 import org.springframework.web.server.ResponseStatusException
 import java.time.ZonedDateTime
 import java.util.*
@@ -123,7 +127,7 @@ class AktivitetOpprettOgOppdaterFlowTest {
     }
 
     private fun captureOppdaterAktivitet(): List<AktivitetData> {
-        val captor = ArgumentCaptor.forClass(AktivitetData::class.java)
+        val captor = argumentCaptor<AktivitetData>()
         verify(aktivitetDAO, atLeastOnce()).oppdaterAktivitet(captor.capture())
         return captor.allValues
     }
@@ -171,10 +175,8 @@ class AktivitetOpprettOgOppdaterFlowTest {
         assertThat(captured.fraDato).isNotEqualTo(captured.tilDato)
     }
 
-    @Disabled
     @Nested
     inner class SisteMoteTilOversikten {
-        /*
 
         @ParameterizedTest
         @EnumSource(value = AktivitetTypeDTO::class, names = ["MOTE", "SAMTALEREFERAT"])
@@ -183,12 +185,11 @@ class AktivitetOpprettOgOppdaterFlowTest {
             val dto = baseDtoMedUnikeVerdier(type)
             stubOpprettNyAktivitetReturnsInput()
 
-            val opprettet = controller.opprettNyAktivitetPaOppfolgingsPeriode(dto, false)
+            controller.opprettNyAktivitetPaOppfolgingsPeriode(dto, false)
 
-            val captor = ArgumentCaptor.forClass(SisteMøte::class.java)
-            verify(oversiktenService).oppdaterSisteMøte(captor.capture())
-            assertThat(captor.value.aktivitetId.toString()).isEqualTo(opprettet.id)
-            assertThat(captor.value.sistEndret).isEqualTo(opprettet.endretDato.toInstant())
+            val captor = argumentCaptor<Person.AktorId>()
+            verify(oversiktenService).lagreOppdaterSisteMøteMelding(captor.capture())
+            assertThat(captor.lastValue.get()).isEqualTo(KJENT_AKTOR_ID.get())
         }
 
         @ParameterizedTest
@@ -201,17 +202,51 @@ class AktivitetOpprettOgOppdaterFlowTest {
                 .build()
             stubHentOgOppdater(eksisterende)
             val dto = AktivitetDTOMapper.mapTilAktivitetDTO(eksisterende, false)
-            dto.tittel = "OPPDATERT_TITTEL"
+            dto.fraDato = Date()
 
             controller.oppdaterAktivitet(dto)
 
-            val lagret = captureOppdaterAktivitet().single()
-            val captor = ArgumentCaptor.forClass(SisteMøte::class.java)
-            verify(oversiktenService).oppdaterSisteMøte(captor.capture())
-            assertThat(captor.value.aktivitetId).isEqualTo(lagret.id)
-            assertThat(captor.value.sistEndret).isEqualTo(lagret.endretDato.toInstant())
+            val captor = argumentCaptor<Person.AktorId>()
+            verify(oversiktenService).lagreOppdaterSisteMøteMelding(captor.capture())
+            assertThat(captor.lastValue.get()).isEqualTo(KJENT_AKTOR_ID.get())
         }
-         */
+
+        @ParameterizedTest
+        @EnumSource(value = AktivitetTypeData::class, names = ["MOTE", "SAMTALEREFERAT"])
+        fun `oppdatering av mote eller samtalereferat til avbrutt oppdaterer siste mote i oversikten`(type: AktivitetTypeData) {
+            setupNavBrukerContextForOppdater()
+            val eksisterende = AktivitetDataTestBuilder.nyAktivitet(type).toBuilder()
+                .id(60L).versjon(2L).avtalt(false).status(AktivitetStatus.GJENNOMFORES).historiskDato(null)
+                .endretDato(fraDato)
+                .build()
+            stubHentOgOppdater(eksisterende)
+            val dto = AktivitetDTOMapper.mapTilAktivitetDTO(eksisterende, false)
+            dto.status = AktivitetStatus.AVBRUTT
+
+            controller.oppdaterStatus(dto)
+
+            val captor = argumentCaptor<Person.AktorId>()
+            verify(oversiktenService).lagreOppdaterSisteMøteMelding(captor.capture())
+            assertThat(captor.lastValue.get()).isEqualTo(KJENT_AKTOR_ID.get())
+        }
+
+        @Test // Samtalereferat kan ikke settes til avtalt
+        fun `oppdatering av fraDato på avtalt mote oppdaterer siste mote i oversikten`() {
+            setupNavBrukerContextForOppdater()
+            val eksisterende = AktivitetDataTestBuilder.nyAktivitet(AktivitetTypeData.MOTE).toBuilder()
+                .id(60L).versjon(2L).avtalt(true).status(AktivitetStatus.GJENNOMFORES).historiskDato(null)
+                .endretDato(fraDato)
+                .build()
+            stubHentOgOppdater(eksisterende)
+            val dto = AktivitetDTOMapper.mapTilAktivitetDTO(eksisterende, false)
+            dto.fraDato = Date()
+
+            controller.oppdaterAktivitet(dto)
+
+            val captor = argumentCaptor<Person.AktorId>()
+            verify(oversiktenService).lagreOppdaterSisteMøteMelding(captor.capture())
+            assertThat(captor.lastValue.get()).isEqualTo(KJENT_AKTOR_ID.get())
+        }
     }
 
     // =====================================================================

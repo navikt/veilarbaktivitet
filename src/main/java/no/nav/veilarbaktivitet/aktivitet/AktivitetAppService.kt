@@ -149,7 +149,7 @@ class AktivitetAppService(
             if (original.aktivitetType == AktivitetTypeData.MOTE) {
                 val tidOgStedEndret = erMoteTidOgStedEndret(
                     original,
-                    (aktivitet as no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.Mote.Endre?)!!
+                    (aktivitet as Mote.Endre)
                 )
                 val detaljerEndret = erMoteDetaljerEndret(original, aktivitet)
 

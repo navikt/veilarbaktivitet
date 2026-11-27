@@ -4,10 +4,13 @@ import net.javacrumbs.shedlock.spring.annotation.SchedulerLock
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.json.JsonUtils
 import no.nav.common.utils.EnvironmentUtils
+import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO
 import no.nav.veilarbaktivitet.aktivitet.AktivitetId
+import no.nav.veilarbaktivitet.outbox.OutboxService
 import no.nav.veilarbaktivitet.oversikten.OversiktenMelding.Kategori.UDELT_SAMTALEREFERAT
 import no.nav.veilarbaktivitet.person.Person.AktorId
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import java.time.Instant
@@ -18,9 +21,13 @@ open class OversiktenService(
     private val aktorOppslagClient: AktorOppslagClient,
     private val oversiktenMeldingMedMetadataRepository: OversiktenMeldingMedMetadataDAO,
     private val oversiktenMeldingAktivitetMappingDao: OversiktenMeldingAktivitetMappingDAO,
-    private val oversiktenProducer: OversiktenProducer
+    private val oversiktenProducer: OversiktenProducer,
+    private val aktivitetDAO: AktivitetDAO,
+    private val outboxService: OutboxService,
+    @Value("\${topic.ut.siste-aktivitet-hendelse}")
+    private val sisteAktivitetHendelseTopic: String,
 
-) {
+    ) {
     private val log = LoggerFactory.getLogger(OversiktenService::class.java)
     private val erProd = EnvironmentUtils.isProduction().orElse(false)
 
@@ -116,13 +123,65 @@ open class OversiktenService(
         }
     }
 
-    // Lager test for denne
-    fun oppdaterSisteMøte(sisteMøte: SisteMøte) {
+    fun lagreOppdaterSisteMøteMelding(aktorId: AktorId) {
+        val møter = aktivitetDAO.hentAlleMoterForPerson(aktorId)
+        outboxService.lagreIOutbox(
+            sisteAktivitetHendelseTopic,
+            aktorId.get(),
+            møter.finnTidspunkter()?.let { JsonUtils.toJson(it) }
+        )
+    }
 
+    fun sendTombstoneForSiteMøteMelding(aktorId: AktorId) {
+        outboxService.lagreIOutbox(
+            sisteAktivitetHendelseTopic,
+            aktorId.get(),
+            null
+        )
     }
 }
 
-class SisteMøte(
-    val aktivitetId: AktivitetId,
-    val sistEndret: Instant,
+fun List<AktivitetsplanMote>.finnTidspunkter(): SisteAktivitetDto? {
+    if (this.isEmpty()) return null
+    val now = Instant.now()
+    val (moter, samtalereferat) = this
+        .sortedBy { it.tidspunkt }
+        .partition { it.type == MoteEllerSamtalereferatType.MOTE }
+    return SisteAktivitetDto(
+        samtalereferat.firstOrNull()?.let { Samtalereferat(it.tidspunkt, it.id) },
+        moter.filter { it.tidspunkt.isBefore(now) }
+            .maxByOrNull { it.tidspunkt }
+            ?.let { Mote( it.tidspunkt, it.id) },
+        moter.firstOrNull { it.tidspunkt.isAfter(now) }?.let { Mote( it.tidspunkt, it.id) }
+    )
+}
+
+data class Mote(
+    val tidspunkt: Instant,
+    val id: Long,
+)
+
+data class Samtalereferat(
+    val tidspunkt: Instant,
+    val id: Long,
+)
+
+/* Aktivtet som i noe har skjedd, ikke som i aktivitetsplanen-aktivitet */
+class SisteAktivitetDto(
+    val sisteSamtalereferat: Samtalereferat?,
+    val sisteGjennomforteMote: Mote?,
+    val nestePlanlagteMote: Mote?,
+)
+
+enum class MoteEllerSamtalereferatType {
+    MOTE,
+    SAMTALEREFERAT,
+}
+data class AktivitetsplanMote(
+    val id: Long,
+    /**
+     *  Fra-tidspunkt på møter eller samtalereferat. Samtalererat settes bruker fra-dato starten av dagen
+     *  */
+    val tidspunkt: Instant,
+    val type: MoteEllerSamtalereferatType,
 )

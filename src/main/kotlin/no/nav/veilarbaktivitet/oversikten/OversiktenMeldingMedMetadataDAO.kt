@@ -4,6 +4,7 @@ import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarbaktivitet.config.database.Database
 import no.nav.veilarbaktivitet.veilarbdbutil.VeilarbAktivitetSqlParameterSource
+import org.jetbrains.annotations.TestOnly
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.jdbc.support.GeneratedKeyHolder
@@ -73,6 +74,7 @@ open class OversiktenMeldingMedMetadataDAO(
         return jdbc.queryForObject(sql, params, rowMapper)
     }
 
+    @TestOnly
     open fun hentUdelteSamtalereferatDerViIkkeHarSendtMeldingTilOversikten(): List<UdeltSamtalereferatUtenMelding> {
         val sql = """
             WITH oversikten_meldinger_gruppert_per_key_og_rangert AS (
@@ -106,57 +108,6 @@ open class OversiktenMeldingMedMetadataDAO(
               AND a.fra_dato < NOW()
               AND a.aktivitet_id NOT IN (SELECT aktivitet_id FROM aktivitet_id_sendt_til_oversikten)
             ORDER BY a.aktivitet_id;
-        """.trimIndent()
-
-        return jdbc.query(sql) { rs: ResultSet, rowNum: Int ->
-            UdeltSamtalereferatUtenMelding(AktorId.of(rs.getString("aktor_id")), rs.getLong("aktivitet_id"))
-        }
-    }
-
-    open fun hentAlleUdelteSamtalereferaterIÅpenPeriode(): List<UdeltSamtalereferatUtenMelding> {
-        val sql = """
-            SELECT
-                a.aktivitet_id,
-                a.aktor_id
-            FROM aktivitet a
-            LEFT JOIN mote m
-            on m.aktivitet_id = a.aktivitet_id and m.versjon = a.versjon
-            where m.referat is not null
-              and m.referat_publisert = 0
-              and a.gjeldende =  1 
-              and a.historisk_dato is null 
-
-        """.trimIndent()
-
-        return jdbc.query(sql) { rs: ResultSet, rowNum: Int ->
-            UdeltSamtalereferatUtenMelding(AktorId.of(rs.getString("aktor_id")), rs.getLong("aktivitet_id"))
-        }
-    }
-
-    open fun hentAlleUdelteSamtalereferaterIAvbruttAktivitet(): List<UdeltSamtalereferatUtenMelding> {
-        val sql = """
-            select a.aktivitet_id,
-                       a.aktor_id
-            from veilarbaktivitet.aktivitet a
-                     join veilarbaktivitet.oversikten_melding_aktivitet_mapping map
-                          on map.aktivitet_id = a.aktivitet_id
-                     join veilarbaktivitet.oversikten_melding_med_metadata om
-                          on om.melding_key = map.oversikten_melding_key
-            where (a.aktivitet_type_kode = 'MOTE' OR a.aktivitet_type_kode = 'SAMTALEREFERAT')
-              and a.livslopstatus_kode = 'AVBRUTT'
-              and exists (
-                select 1
-                from veilarbaktivitet.oversikten_melding_med_metadata x
-                where x.melding_key = om.melding_key
-                  and x.operasjon = 'START'
-            )
-              and not exists (
-                select 1
-                from veilarbaktivitet.oversikten_melding_med_metadata y
-                where y.melding_key = om.melding_key
-                  and y.operasjon = 'STOPP'
-            )
-            group by a.aktivitet_id, a.aktor_id, om.melding_key;
         """.trimIndent()
 
         return jdbc.query(sql) { rs: ResultSet, rowNum: Int ->
@@ -206,53 +157,6 @@ open class OversiktenMeldingMedMetadataDAO(
             UdeltSamtalereferatUtenMelding(AktorId.of(rs.getString("aktor_id")), rs.getLong("aktivitet_id"))
         }
     }
-
-    /**
-     * Finner kasserte aktiviteter (beskrivelse = 'Kassert av NAV') med referat som ikke er publisert,
-     * der det er sendt START-melding til oversikten, men ingen STOPP-melding.
-     */
-    open fun hentKasserteAktiviteterMedStartMeldingUtenStoppMelding(): List<UdeltSamtalereferatUtenMelding> {
-        val sql = """
-            WITH start_meldinger AS (
-                SELECT
-                    map.aktivitet_id,
-                    om.melding_key
-                FROM oversikten_melding_aktivitet_mapping map
-                JOIN oversikten_melding_med_metadata om
-                    ON om.melding_key = map.oversikten_melding_key
-                WHERE om.operasjon = 'START'
-                  AND om.kategori = 'UDELT_SAMTALEREFERAT'
-            ),
-            stopp_meldinger AS (
-                SELECT DISTINCT melding_key
-                FROM oversikten_melding_med_metadata
-                WHERE operasjon = 'STOPP'
-                  AND kategori = 'UDELT_SAMTALEREFERAT'
-            )
-            SELECT
-                a.aktivitet_id,
-                a.aktor_id
-            FROM start_meldinger sm
-            JOIN aktivitet a
-                ON a.aktivitet_id = sm.aktivitet_id
-                AND a.gjeldende = 1
-            JOIN mote m
-                ON m.aktivitet_id = a.aktivitet_id
-                AND m.versjon = a.versjon
-            LEFT JOIN stopp_meldinger stopp
-                ON stopp.melding_key = sm.melding_key
-            WHERE stopp.melding_key IS NULL
-              AND a.beskrivelse = 'Kassert av NAV'
-              AND a.aktivitet_type_kode IN ('MOTE', 'SAMTALEREFERAT')
-              AND m.referat IS NOT NULL
-              AND m.referat_publisert = 0
-        """.trimIndent()
-
-        return jdbc.query(sql) { rs: ResultSet, rowNum: Int ->
-            UdeltSamtalereferatUtenMelding(AktorId.of(rs.getString("aktor_id")), rs.getLong("aktivitet_id"))
-        }
-    }
-
 
     data class UdeltSamtalereferatUtenMelding(
         val aktorId: AktorId,

@@ -12,7 +12,6 @@ import no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.spesialEndringer.Sta
 import no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavService;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.oppfolging.periode.IngenGjeldendePeriodeException;
-import no.nav.veilarbaktivitet.oppfolging.periode.SistePeriodeService;
 import no.nav.veilarbaktivitet.oversikten.OversiktenService;
 import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.person.Person;
@@ -23,10 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Function;
 
 import static java.util.Optional.ofNullable;
@@ -36,6 +32,12 @@ import static no.nav.veilarbaktivitet.aktivitet.domain.aktiviteter.AktivitetsOpp
 @Service
 @AllArgsConstructor
 public class AktivitetService {
+
+    private static final Set<AktivitetTypeData> TYPER_SOM_OPPDATERER_SISTE_AKTIVITET_MELDING =
+        Set.of(
+                AktivitetTypeData.MOTE,
+                AktivitetTypeData.SAMTALEREFERAT
+        );
 
     private final AktivitetDAO aktivitetDAO;
     private final AvtaltMedNavService avtaltMedNavService;
@@ -83,7 +85,11 @@ public class AktivitetService {
     public AktivitetData opprettAktivitetIDB(AktivitetsOpprettelse aktivitet) throws IngenGjeldendePeriodeException {
         var nyAktivivitet = tilAktivitetsData(aktivitet);
         var opprettetAktivitet = aktivitetDAO.opprettNyAktivitet(nyAktivivitet);
-        // TODO: hvis møte/samtalereferat opprettet -> send kafkamelding
+
+        if (TYPER_SOM_OPPDATERER_SISTE_AKTIVITET_MELDING.contains(opprettetAktivitet.getAktivitetType())) {
+            oversiktenService.lagreOppdaterSisteMøteMelding(opprettetAktivitet.getAktorId());
+        }
+
         metricService.opprettNyAktivitetMetrikk(opprettetAktivitet);
         return opprettetAktivitet;
     }
@@ -100,14 +106,13 @@ public class AktivitetService {
                 .transaksjonsType(AktivitetTransaksjonsType.STATUS_ENDRET)
                 .build();
 
-        // TODO: hvis endret dato -> send kafkamelding på nytt topic
         if(nyAktivitet.getStatus() == AktivitetStatus.AVBRUTT || nyAktivitet.getStatus() == AktivitetStatus.FULLFORT){
             avtaltMedNavService.settVarselFerdig(originalAktivitet.getFhoId());
         }
 
         if(erAvbruttMoteEllerSamtalereferat(nyAktivitet)){
-            // TODO: send kafkamelding på nytt topic om avbrutt mote/samtalereferat
             oversiktenService.lagreStoppMeldingOmUdeltSamtalereferatIUtboks(nyAktivitet.getAktorId(), nyAktivitet.getId());
+            oversiktenService.lagreOppdaterSisteMøteMelding(originalAktivitet.getAktorId());
         }
         return aktivitetDAO.oppdaterAktivitet(nyAktivitet);
     }
@@ -178,6 +183,7 @@ public class AktivitetService {
                 ).orElse(null))
                 .build();
         aktivitetDAO.oppdaterAktivitet(oppdatertAktivitet);
+        oversiktenService.lagreOppdaterSisteMøteMelding(originalAktivitet.getAktorId());
     }
 
     public void oppdaterMoteDetaljer(AktivitetData originalAktivitet, Mote.Endre aktivitetData) {
@@ -253,6 +259,10 @@ public class AktivitetService {
         var oppdatertAktivitet = AktivitetsEndringUtil.berikMedAktivitetsTypeSpesifikkData(oppdatertAktivitetBuilder, aktivitet);
         final var result = aktivitetDAO.oppdaterAktivitet(oppdatertAktivitet);
 
+        if (TYPER_SOM_OPPDATERER_SISTE_AKTIVITET_MELDING.contains(aktivitet.getAktivitetType())) {
+            oversiktenService.lagreOppdaterSisteMøteMelding(originalAktivitet.getAktorId());
+        }
+
         metricService.oppdaterAktivitetMetrikk(result, false, originalAktivitet.isAutomatiskOpprettet());
         return result;
     }
@@ -313,4 +323,6 @@ public class AktivitetService {
         };
 
     }
+
+
 }
